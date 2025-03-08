@@ -6696,10 +6696,12 @@ const b = 1;
                   },
                   content: function () {
                     "step 0"
-                    var zhangren = jlsg.findPlayerBySkillName('jlsg_fushe');
-                    zhangren.logSkill('jlsg_fushe', player);
-                    player.damage(zhangren);
-                    zhangren.draw();
+                    var zhangren = lib.jlsg.findPlayerBySkillName('jlsg_fushe');
+                    if (zhangren) {
+                      zhangren.logSkill('jlsg_fushe', player);
+                      player.damage(zhangren);
+                      zhangren.draw();
+                    }
                     "step 1"
                     player.removeSkill("jlsg_fushe_buff");
                   }
