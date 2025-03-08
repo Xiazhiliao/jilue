@@ -6696,10 +6696,12 @@ const b = 1;
                   },
                   content: function () {
                     "step 0"
-                    var zhangren = jlsg.findPlayerBySkillName('jlsg_fushe');
-                    zhangren.logSkill('jlsg_fushe', player);
-                    player.damage(zhangren);
-                    zhangren.draw();
+                    var zhangren = lib.jlsg.findPlayerBySkillName('jlsg_fushe');
+                    if (zhangren) {
+                      zhangren.logSkill('jlsg_fushe', player);
+                      player.damage(zhangren);
+                      zhangren.draw();
+                    }
                     "step 1"
                     player.removeSkill("jlsg_fushe_buff");
                   }
@@ -31801,7 +31803,28 @@ const b = 1;
             jlsg_lingze: {
               audio: "ext:极略:2",
               init() {
+                //来自活动武将
                 game.broadcastAll(() => {
+                  if (!get.bolskillTips) {
+                    get.bolskillTips = function (tipname, id) {
+                      var dibeijing = ui.create.div('.bol-dibeijing', document.body);
+                      dibeijing.style.zIndex = 16;
+                      var skilltip = ui.create.div('.bol-skilltip', dibeijing);
+                      skilltip.innerHTML = tipname;
+                      var herf = document.getElementById(id);
+                      if (herf) {
+                        var left = herf.getBoundingClientRect().left;
+                        if (/mobile|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|OperaMini/i.test(navigator.userAgent)) left += herf.offsetParent.offsetLeft;
+                        left += document.body.offsetWidth * 0.15;
+                        skilltip.style.left = left + 'px';
+                        skilltip.style.top = (herf.getBoundingClientRect().top + 30) + 'px';
+                      }
+                      dibeijing.listen(function (e) {
+                        e.stopPropagation();
+                        this.remove();
+                      })
+                    };
+                  }
                   lib.init.sheet([
                     '.card.jlsg_xuyuan-glow:before{',
                     'opacity:0.2;',
@@ -31810,6 +31833,35 @@ const b = 1;
                     '-webkit-filter:blur(5px);',
                     'filter:blur(5px);',
                     '}'
+                  ].join(''));
+                  lib.init.sheet([
+                    '.bol-dibeijing {',
+                    'height: 100%;',
+                    'width: 100%;',
+                    'position: absolute;',
+                    'left: 0;',
+                    'top: 0;',
+                    'z-index: 8;',
+                    '}',
+                  ].join(''));
+                  lib.init.sheet([
+                    '.bol-skilltip {',
+                    'width: 20%;',
+                    'min-height: 5%;',
+                    'left: 50%;',
+                    ' top: 50%;',
+                    'font-size: 16px;',
+                    'color: #ccad76;',
+                    "font-family: 'shousha';",
+                    'background-color: rgba(36, 29, 19, 0.85);',
+                    'border: #523a24 3px solid;',
+                    'border-radius: 10px;',
+                    'position: absolute;',
+                    'display: block;',
+                    'padding: 8px;',
+                    'transform: translate(-50%, -50%);',
+                    'transition: none;',
+                    '}',
                   ].join(''));
                 });
               },
@@ -31901,13 +31953,13 @@ const b = 1;
                         effectsList[i][0] = list[0] + get.translation(nature) + "伤害" + list[1];
                       }
                     }
-                    else if (str.includes("角色") && str.includes("|")) {
+                    /*else if (str.includes("角色") && str.includes("|")) {
                       let [str1, str3] = str.split("(");
                       let [numList, str2] = str3.split(")");
                       let num = numList.split("|").map(i => Number(i)).randomGet();
                       next.set("num", num)
                       effectsList[i][0] = str1 + get.cnNumber(num) + str2;
-                    }
+                    }*/
                     else if ((str.startsWith("获得") || str.startsWith("弃置")) && str.includes("|")) {
                       let [str1, str3] = str.split("(");
                       let [cardList, str2] = str3.split(")");
@@ -31925,17 +31977,28 @@ const b = 1;
                     }
                     effectsList[i][1].content = next;
                   };
+                  const translate = function (str1, str2) {//来自活动武将
+                    const id = Math.random().toString(36).slice(-8);
+                    return "<a id='" + id + "' style='color:unset' href=\"javascript:get.bolskillTips('" + str2 + "','" + id + "');\">" + str1 + "</a>";
+                  };
                   const effectPrompt = effectsList.map((i, v) => {
                     let str = '<div class="popup text" style="width:calc(100% - 10px);display:inline-block">选项' + get.cnNumber(v + 1, true) + "：" + i[0] + "</div>";
                     if (i[1].content?.gainSkills) {
                       const gainSkills = i[1].content.gainSkills;
-                      for (let skill of gainSkills) {
+                      str = '<div class="popup text" style="width:calc(100% - 10px);display:inline-block">选项' +
+                        get.cnNumber(v + 1, true) +
+                        "：获得" +
+                        translate(get.translation(gainSkills[0]), lib.translate[gainSkills[0] + "_info"]) +
+                        "和" +
+                        translate(get.translation(gainSkills[1]), lib.translate[gainSkills[1] + "_info"]) +
+                        "</div>";
+                      /*for (let skill of gainSkills) {
                         str += '<div class="popup pointerdiv" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' +
                           get.translation(skill) +
                           "】</div><div>" +
                           lib.translate[skill + "_info"] +
                           "</div></div>";
-                      };
+                      };*/
                     }
                     return str;
                   });
@@ -32801,7 +32864,7 @@ const b = 1;
                         return get.value(card, player);
                       },
                     }],
-                    ["获得三张【(wuzhong|jlsgqs_wangmeizhike))】", {
+                    ["获得三张【(wuzhong|jlsgqs_wangmeizhike)】", {
                       content: async function (event, trigger, player) {
                         const cards = [];
                         for (let i = 0; i < 3; i++) {
