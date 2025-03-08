@@ -27967,18 +27967,18 @@ const b = 1;
                 if (name == "lose") return game.filterPlayer(current => {
                   return event.getl(current) && event.getl(current).cards2.length;
                 }).sortBySeat(_status.currentPhase);
-                return event.player;
+                return [event.player];
               },
               filter(event, player, triggername, target) {
                 const name = event.name == "loseAsync" ? "lose" : event.name;
                 const filterx = !player.hasHistory("useSkill", evt => {
                   if (evt.skill != "jlsg_wangyue") return false;
-                  return evt.event._result.cost_data == name;
+                  return evt.event._result.cost_data?.name == name;
                 });
                 if (!filterx) return false;
                 if (name == 'lose') return event.type == 'discard';
-                else if (name == 'loseHp') return game.hasPlayer(p => p.isDamaged());
-                else return target?.isIn();
+                else if (name == 'loseHp') return game.hasPlayer(current => current.isDamaged());
+                else return game.hasPlayer(current => current != target);
               },
               async cost(event, trigger, player) {
                 let prompt = `望月:令一名角色`;
@@ -27986,10 +27986,8 @@ const b = 1;
                 if (name == 'lose') prompt += `摸${trigger.getl(event.indexedData).cards2.length}张牌`;
                 else if (name == 'loseHp') prompt += `回复${trigger.num}点体力`;
                 else prompt += `加${trigger.num}点体力上限`;
-                const { result } = await player.chooseTarget(prompt)
-                  .set("filterTarget", (_, player, target) => {
-                    return target != _status.event.source;
-                  })
+                event.result = await player.chooseTarget(prompt)
+                  .set("filterTarget", (_, player, target) => target != _status.event.source)
                   .set("ai", (target) => {
                     const player = get.player(),
                       name = get.event("key");
@@ -27998,14 +27996,14 @@ const b = 1;
                     else return get.attitude(player, target);
                   })
                   .set("key", name)
-                  .set("source", event.indexedData);
-                event.result = result;
-                if (result.bool) event.result.cost_data = name;
+                  .set("source", event.indexedData)
+                  .forResult();
+                event.result.cost_data = { name };
               },
               async content(event, trigger, player) {
                 let target = event.targets[0];
                 if (target.ai.shown > player.ai.shown) player.addExpose(0.2);
-                let name = event.cost_data;
+                let name = event.cost_data?.name;
                 if (name == 'lose') await target.draw(trigger.num, player);
                 else if (name == 'loseHp') await target.recover(trigger.num, player);
                 else await target.gainMaxHp(trigger.num);
