@@ -31920,6 +31920,7 @@ const b = 1;
                     else if (str == "随机两个技能") {
                       let gains = lib.skill.jlsg_lingze.skills
                         .randomGet(2);
+                        .randomGets(2);
                       next.set("gainSkills", gains);
                       let list = gains.map(i => `【${get.skillTranslation(i, trigger.player)}】`);
                       effectsList[i][0] = `获得${list}`;
@@ -33335,7 +33336,11 @@ const b = 1;
               get skills() {
                 const skills = [];
                 for (const packname in lib.characterPack) {
+                  if (![
+                    "standard","shenhua","jlsg_sk", "jlsg_skpf", "jlsg_sr", "jlsg_soul", "jlsg_sy", "jlAddition",
+                  ].includes(packname)) continue;
                   const pack = lib.characterPack[packname];
+                  if (!Object.keys(pack).length) continue;
                   for (const i in pack) {
                     if (i.includes("xushao") || i.includes("zuoci")) continue;
                     if (lib.filter.characterDisabled(i)) continue;
