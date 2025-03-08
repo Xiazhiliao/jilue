@@ -31841,66 +31841,66 @@ const b = 1;
                 if (!trigger.player.countExpansions("jlsg_zhuxing")) trigger.player.unmarkSkill("jlsg_zhuxing");
                 game.addCardKnower([_status.pileTop], "everyone");
                 const list = ["选项一", "选项二", "选项三", "cancel2"],
-                  directionList = [
+                  typeList = [
                     "征伐（额外获得一张随机类型的临时【杀】）",
                     "宁息（额外获得一张临时【桃】）",
                     "混沌（额外获得一张随机临时牌）",
                   ];
-                const { result: direction } = await trigger.player.chooseControl(list)
-                  .set("choiceList", directionList)
+                const { result: typeChoose } = await trigger.player.chooseControl(list)
+                  .set("choiceList", typeList)
                   .set("prompt", "灵泽：请选择一个命运")
                   .set("ai", () => {
                     const player = _status.event.player;
                     if (player.isDamaged()) return "选项二";
                     return "选项一";
                   });
-                if (direction.control != "cancel2") {
-                  let name, control;
-                  switch (direction.control) {
-                    case "选项一": name = "sha"; control = "damage"; break;
-                    case "选项二": name = "tao"; control = "recover"; break;
-                    case "选项三": name = null; control = "chaos"; break;
+                if (typeChoose.control != "cancel2") {
+                  let name, type;
+                  switch (typeChoose.control) {
+                    case "选项一": name = "sha"; type = "damage"; break;
+                    case "选项二": name = "tao"; type = "recover"; break;
+                    case "选项三": name = null; type = "chaos"; break;
                   };
-                  const copyorigin = lib.skill.jlsg_lingze.getEffects[control];
-                  const copy = copyorigin.randomGets(3).
+                  const copy = lib.skill.jlsg_lingze.getEffects[type].randomGets(3),
                     card = lib.skill.jlsg_lingze.createTempCard(name);
                   if (card) await trigger.player.gain(card, "draw");
-                  const effects = [[null, {}], [null, {}], [null, {}]];
+                  const effectsList = [[null, {}], [null, {}], [null, {}]];
                   for (let i = 0; i < copy.length; i++) {
-                    effects[i][0] = copy[i][0];
-                    effects[i][1].content = copy[i][1].content;
-                    effects[i][1].effect = copy[i][1].effect;
+                    effectsList[i][0] = copy[i][0];
+                    effectsList[i][1].content = copy[i][1].content;
+                    effectsList[i][1].effect = copy[i][1].effect;
                   };
                   if (!copy.some(i => i[0] == "随机两个技能") && Math.random() < 0.5) {
-                    effects[2] = ["随机两个技能", {
+                    effectsList[2] = ["随机两个技能", {
                       content: async function (event, trigger, player) {
                         await player.addSkills(event.gainSkills);
                       },
                       effect() { return 4; },
                     }];
                   }
-                  else if (effects.some((i, v) => i[0] == "随机两个技能" && v != 2)) {
-                    const num = effects.map(i => i[0]).indexOf("随机两个技能");
-                    effects[num] = effects[2];
-                    effects[2] = ["随机两个技能", {
+                  else if (effectsList.some((i, v) => i[0] == "随机两个技能" && v != 2)) {
+                    const num = effectsList.map(i => i[0]).indexOf("随机两个技能");
+                    effectsList[num] = effectsList[2];
+                    effectsList[2] = ["随机两个技能", {
                       content: async function (event, trigger, player) {
                         await player.addSkills(event.gainSkills);
                       },
                       effect() { return 4; },
                     }];
                   }
-                  for (let i = 0; i < effects.length; i++) {
-                    const [str, { content }] = effects[i];
+                  for (let i = 0; i < effectsList.length; i++) {
+                    const [str, { content }] = effectsList[i];
                     const next = game.createEvent("jlsg_xuyuan_effect", false, event)
-                      .set("player", trigger.player);
+                      .set("player", trigger.player)
+                      .set("jlsg_xuyuan_type", type);
                     event.next.remove(next);
-                    next.setContent(content)
+                    next.setContent(content);
                     if (str.includes("伤害")) {
                       let nature = lib.card.sha.nature.concat([null]).randomGet();
                       next.set("nature", nature)
                       if (nature !== null) {
                         let list = str.split("伤害");
-                        effects[i][0] = list[0] + get.translation(nature) + "伤害" + list[1];
+                        effectsList[i][0] = list[0] + get.translation(nature) + "伤害" + list[1];
                       }
                     }
                     else if (str.includes("角色") && str.includes("|")) {
@@ -31908,24 +31908,25 @@ const b = 1;
                       let [numList, str2] = str3.split(")");
                       let num = numList.split("|").map(i => Number(i)).randomGet();
                       next.set("num", num)
-                      effects[i][0] = str1 + get.cnNumber(num) + str2;
+                      effectsList[i][0] = str1 + get.cnNumber(num) + str2;
                     }
                     else if ((str.startsWith("获得") || str.startsWith("弃置")) && str.includes("|")) {
                       let [str1, str3] = str.split("(");
                       let [cardList, str2] = str3.split(")");
                       let cardName = cardList.split("|").randomGet();
                       next.set("cardName", cardName)
-                      effects[i][0] = str1 + get.translation(cardName) + str2;
+                      effectsList[i][0] = str1 + get.translation(cardName) + str2;
                     }
                     else if (str == "随机两个技能") {
-                      let gains = lib.skill.jlsg_lingze.skills.randomGets(2);
+                      let gains = lib.skill.jlsg_lingze.skills
+                        .randomGet(2);
                       next.set("gainSkills", gains);
                       let list = gains.map(i => `【${get.skillTranslation(i, trigger.player)}】`);
-                      effects[i][0] = `获得${list}`;
+                      effectsList[i][0] = `获得${list}`;
                     }
-                    effects[i][1].content = next;
+                    effectsList[i][1].content = next;
                   };
-                  const effectList = effects.map((i, v) => {
+                  const effectPrompt = effectsList.map((i, v) => {
                     let str = '<div class="popup text" style="width:calc(100% - 10px);display:inline-block">选项' + get.cnNumber(v + 1, true) + "：" + i[0] + "</div>";
                     if (i[1].content?.gainSkills) {
                       const gainSkills = i[1].content.gainSkills;
@@ -31939,23 +31940,23 @@ const b = 1;
                     }
                     return str;
                   });
-                  const { result: effect } = await trigger.player.chooseControl(list)
-                    .set("dialog", ["灵泽：请选择一个效果", [effectList, "textbutton"]])
+                  const { result: effectChoose } = await trigger.player.chooseControl(list)
+                    .set("dialog", ["灵泽：请选择一个效果", [effectPrompt, "textbutton"]])
                     .set("ai", () => {
                       if (_status.event.choice) return _status.event.choice;
                       return ["选项一", "选项二", "选项三"].randomGet();
                     })
                     .set("choice", (function () {
-                      let aiList = effects.map(i => {
+                      let aiList = effectsList.map(i => {
                         let arr = i[1].content.nature || i[1].content.cardName;
                         return i[1].effect(player, arr);
                       });
                       let max = Math.max(...aiList);
                       return list[aiList.indexOf(max)];
                     })());
-                  if (effect.control != "cancel2") {
-                    game.log(trigger.player, "获得的效果为", `#r${effects[list.indexOf(effect.control)][0]}`);
-                    const next = effects[list.indexOf(effect.control)][1].content;
+                  if (effectChoose.control != "cancel2") {
+                    game.log(trigger.player, "获得的效果为", `#r${effectsList[list.indexOf(effectChoose.control)][0]}`);
+                    const next = effectsList[list.indexOf(effectChoose.control)][1].content;
                     event.next.add(next);
                     await next;
                   }
