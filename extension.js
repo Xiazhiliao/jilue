@@ -31841,66 +31841,66 @@ const b = 1;
                 if (!trigger.player.countExpansions("jlsg_zhuxing")) trigger.player.unmarkSkill("jlsg_zhuxing");
                 game.addCardKnower([_status.pileTop], "everyone");
                 const list = ["选项一", "选项二", "选项三", "cancel2"],
-                  directionList = [
+                  typeList = [
                     "征伐（额外获得一张随机类型的临时【杀】）",
                     "宁息（额外获得一张临时【桃】）",
                     "混沌（额外获得一张随机临时牌）",
                   ];
-                const { result: direction } = await trigger.player.chooseControl(list)
-                  .set("choiceList", directionList)
+                const { result: typeChoose } = await trigger.player.chooseControl(list)
+                  .set("choiceList", typeList)
                   .set("prompt", "灵泽：请选择一个命运")
                   .set("ai", () => {
                     const player = _status.event.player;
                     if (player.isDamaged()) return "选项二";
                     return "选项一";
                   });
-                if (direction.control != "cancel2") {
-                  let name, control;
-                  switch (direction.control) {
-                    case "选项一": name = "sha"; control = "damage"; break;
-                    case "选项二": name = "tao"; control = "recover"; break;
-                    case "选项三": name = null; control = "chaos"; break;
+                if (typeChoose.control != "cancel2") {
+                  let name, type;
+                  switch (typeChoose.control) {
+                    case "选项一": name = "sha"; type = "damage"; break;
+                    case "选项二": name = "tao"; type = "recover"; break;
+                    case "选项三": name = null; type = "chaos"; break;
                   };
-                  const copyorigin = lib.skill.jlsg_lingze.getEffects[control];
-                  const copy = copyorigin.randomGets(3).
+                  const copy = lib.skill.jlsg_lingze.getEffects[type].randomGets(3),
                     card = lib.skill.jlsg_lingze.createTempCard(name);
                   if (card) await trigger.player.gain(card, "draw");
-                  const effects = [[null, {}], [null, {}], [null, {}]];
+                  const effectsList = [[null, {}], [null, {}], [null, {}]];
                   for (let i = 0; i < copy.length; i++) {
-                    effects[i][0] = copy[i][0];
-                    effects[i][1].content = copy[i][1].content;
-                    effects[i][1].effect = copy[i][1].effect;
+                    effectsList[i][0] = copy[i][0];
+                    effectsList[i][1].content = copy[i][1].content;
+                    effectsList[i][1].effect = copy[i][1].effect;
                   };
                   if (!copy.some(i => i[0] == "随机两个技能") && Math.random() < 0.5) {
-                    effects[2] = ["随机两个技能", {
+                    effectsList[2] = ["随机两个技能", {
                       content: async function (event, trigger, player) {
                         await player.addSkills(event.gainSkills);
                       },
                       effect() { return 4; },
                     }];
                   }
-                  else if (effects.some((i, v) => i[0] == "随机两个技能" && v != 2)) {
-                    const num = effects.map(i => i[0]).indexOf("随机两个技能");
-                    effects[num] = effects[2];
-                    effects[2] = ["随机两个技能", {
+                  else if (effectsList.some((i, v) => i[0] == "随机两个技能" && v != 2)) {
+                    const num = effectsList.map(i => i[0]).indexOf("随机两个技能");
+                    effectsList[num] = effectsList[2];
+                    effectsList[2] = ["随机两个技能", {
                       content: async function (event, trigger, player) {
                         await player.addSkills(event.gainSkills);
                       },
                       effect() { return 4; },
                     }];
                   }
-                  for (let i = 0; i < effects.length; i++) {
-                    const [str, { content }] = effects[i];
+                  for (let i = 0; i < effectsList.length; i++) {
+                    const [str, { content }] = effectsList[i];
                     const next = game.createEvent("jlsg_xuyuan_effect", false, event)
-                      .set("player", trigger.player);
+                      .set("player", trigger.player)
+                      .set("jlsg_xuyuan_type", type);
                     event.next.remove(next);
-                    next.setContent(content)
+                    next.setContent(content);
                     if (str.includes("伤害")) {
                       let nature = lib.card.sha.nature.concat([null]).randomGet();
                       next.set("nature", nature)
                       if (nature !== null) {
                         let list = str.split("伤害");
-                        effects[i][0] = list[0] + get.translation(nature) + "伤害" + list[1];
+                        effectsList[i][0] = list[0] + get.translation(nature) + "伤害" + list[1];
                       }
                     }
                     else if (str.includes("角色") && str.includes("|")) {
@@ -31908,24 +31908,26 @@ const b = 1;
                       let [numList, str2] = str3.split(")");
                       let num = numList.split("|").map(i => Number(i)).randomGet();
                       next.set("num", num)
-                      effects[i][0] = str1 + get.cnNumber(num) + str2;
+                      effectsList[i][0] = str1 + get.cnNumber(num) + str2;
                     }
                     else if ((str.startsWith("获得") || str.startsWith("弃置")) && str.includes("|")) {
                       let [str1, str3] = str.split("(");
                       let [cardList, str2] = str3.split(")");
                       let cardName = cardList.split("|").randomGet();
                       next.set("cardName", cardName)
-                      effects[i][0] = str1 + get.translation(cardName) + str2;
+                      effectsList[i][0] = str1 + get.translation(cardName) + str2;
                     }
                     else if (str == "随机两个技能") {
-                      let gains = lib.skill.jlsg_lingze.skills.randomGets(2);
+                      let gains = lib.skill.jlsg_lingze.skills
+                        .filter(skill => lib.skill.jlsg_lingze.typeSkills[type].some(i => i == lib.translate[skill]))
+                        .randomGets(2);
                       next.set("gainSkills", gains);
                       let list = gains.map(i => `【${get.skillTranslation(i, trigger.player)}】`);
-                      effects[i][0] = `获得${list}`;
+                      effectsList[i][0] = `获得${list}`;
                     }
-                    effects[i][1].content = next;
+                    effectsList[i][1].content = next;
                   };
-                  const effectList = effects.map((i, v) => {
+                  const effectPrompt = effectsList.map((i, v) => {
                     let str = '<div class="popup text" style="width:calc(100% - 10px);display:inline-block">选项' + get.cnNumber(v + 1, true) + "：" + i[0] + "</div>";
                     if (i[1].content?.gainSkills) {
                       const gainSkills = i[1].content.gainSkills;
@@ -31939,23 +31941,23 @@ const b = 1;
                     }
                     return str;
                   });
-                  const { result: effect } = await trigger.player.chooseControl(list)
-                    .set("dialog", ["灵泽：请选择一个效果", [effectList, "textbutton"]])
+                  const { result: effectChoose } = await trigger.player.chooseControl(list)
+                    .set("dialog", ["灵泽：请选择一个效果", [effectPrompt, "textbutton"]])
                     .set("ai", () => {
                       if (_status.event.choice) return _status.event.choice;
                       return ["选项一", "选项二", "选项三"].randomGet();
                     })
                     .set("choice", (function () {
-                      let aiList = effects.map(i => {
+                      let aiList = effectsList.map(i => {
                         let arr = i[1].content.nature || i[1].content.cardName;
                         return i[1].effect(player, arr);
                       });
                       let max = Math.max(...aiList);
                       return list[aiList.indexOf(max)];
                     })());
-                  if (effect.control != "cancel2") {
-                    game.log(trigger.player, "获得的效果为", `#r${effects[list.indexOf(effect.control)][0]}`);
-                    const next = effects[list.indexOf(effect.control)][1].content;
+                  if (effectChoose.control != "cancel2") {
+                    game.log(trigger.player, "获得的效果为", `#r${effectsList[list.indexOf(effectChoose.control)][0]}`);
+                    const next = effectsList[list.indexOf(effectChoose.control)][1].content;
                     event.next.add(next);
                     await next;
                   }
@@ -33331,10 +33333,91 @@ const b = 1;
                 this.getEffects = { damage, recover, chaos };
                 return { damage, recover, chaos };
               },
+              get typeSkills() {
+                let list = {
+                  damage: ['长驱', '电界', '横江', '无双', '龙胆', '习武', '酒诗',
+                    '狂风', '纵欲', '慧觑', '止戈', '断粮', '引兵', '神速',
+                    '咆哮', '武圣', '权倾', '扫讨', '笔伐', '剑舞', '贿生',
+                    '悲歌', '缮甲', '献祭', '征南', '整毅', '蒺藜', '义从',
+                    '扰梦', '虎痴', '啖睛', '诈降', '谱毁', '无畏', '焚营',
+                    '伏诛', '严教', '授计', '溃诛', '祸世', '鸩毒', '湮灭',
+                    '母仪', '反间', '千幻', '神戟', '琴音', '顺世', '铁骑',
+                    '尚义', '猛进', '主宰', '惴恐', '逆施', '奔袭', '夙隐',
+                    '诋毁', '鱼忧', '索魂', '八门', '三治', '残掠', '仇决',
+                    '国色', '鬼门', '极弓', '蛮裔', '震魂', '劫焰', '刚烈',
+                    '卸甲', '调度', '拒战', '观虚', '木牛', '寝情', '暴政',
+                    '突围', '轻袭', '薮影', '眩惑', '神威', '缔盟', '鸡肋',
+                    '魔兽', '傲才', '沉鱼', '魔舞', '魅心', '送丧', '落雷',
+                    '狂傲', '纵情', '解烦', '温酒', '踏破', '凤吟', '虎啸',
+                    '司敌', '搏战', '忠勇', '求援', '屯田', '逐寇', '曼舞',
+                    '过论', '忠魂', '蚕食', '勇继', '国士', '画策', '游侠',
+                    '贺春', '炼体', '狂斧', '戟舞', '献州', '奋威', '伏射',
+                    '虚猩', '活墨', '天启', '朝臣', '颂词', '驱虎', '狼顾',
+                    '灭计', '谦冲', '蓄劲', '魔箭', '奇袭', '恃傲', '制敌',
+                    '死谏', '弓骑', '乱嗣', '强袭', '凌波', '星舞', '专擅',
+                    '乱武', '旋风', '修罗', '三绝', '绝策', '决裂', '咒缚',
+                    '激诏', '攻心', '延粮', '谗陷', '集军', '折节', '火计',
+                    '醉酒', '截军', '妖惑', '待劳', '掠阵', '乱政', '凌怒',
+                    '祸水', '忧戎', '悍勇', '落雁', '素检', '藏书', '永劫',
+                    '神愤', '舌剑', '埋伏', '烈弓', '烈医', '逐鹿', '知命',
+                    '摧锋', '陷嗣', '挑衅', '横行', '射戟', '戚乱', '龙咆',
+                    '朝凰', '酋首', '龙魂', '迷乱', '极武', '筹略', '米道',
+                    '罪论', '布教', '独进', '战绝', '飞军'],
+                  recover: ['甘露', '孤城', '芳馨', '礼让', '存嗣', '严整', '天辩',
+                    '伏枥', '豹变', '法恩', '匡弼', '红颜', '大雾', '遗计',
+                    '蛮王', '兴学', '秉壹', '品第', '天姿', '姻盟', '绝勇',
+                    '御策', '诛暴', '羽化', '据守', '纵玄', '义谏', '谦逊',
+                    '温良', '明政', '矫诏', '威风', '才遇', '倾国', '娇媚',
+                    '无言', '五禽', '帷幕', '锦织', '鏖战', '放权', '狂暴',
+                    '闭月', '凤仪', '经纶', '连营', '七星', '乘风', '隐世',
+                    '天命', '溃围', '全政', '智迟', '极略', '贤士', '招降',
+                    '闪戏', '强识', '衍息', '仁德', '恭慎', '怀璧', '奇才',
+                    '勘误', '享乐', '帷幄', '困奋', '空城', '储元', '仁心',
+                    '权略', '淑贤', '雅士', '直言', '良缘', '游龙', '捧日',
+                    '归命', '昭心', '资国', '尚俭', '闺秀', '归心', '断念',
+                    '奋激', '涅槃', '武志', '省身', '武继', '忍忌', '落英',
+                    '扶汉', '祸心', '涉猎', '好施', '制衡', '父志', '普渡',
+                    '缓兵', '誓仇', '八阵', '忘隙', '昂扬', '陈情', '密诏',
+                    '明策', '才捷', '衡势', '掣政', '狡慧', '追尊', '倾城',
+                    '虎踞', '雅虑', '儒宗', '刚直', '激词', '伏间', '鼓舌',
+                    '自守', '无前', '迭嶂', '宴诛', '绝境', '淫恣', '英才',
+                    '举荐', '博略', '行殇', '怀异', '拜月', '重生', '权计',
+                    '矢北', '仙授', '结姻', '刀侍', '反骨', '渐营', '天香',
+                    '雄略', '龙变', '元化', '枭姬', '单骑', '同心', '狂言'],
+                  chaos: ['五禽', '烈弓', '冲阵', '凌虐', '募马', '残掠', '咆哮',
+                    '勘误', '征南', '米道', '智愚', '凌弱', '震魂', '流离',
+                    '乱武', '刚直', '摧锋', '劝降', '伏诛', '刻死', '享乐',
+                    '掩杀', '慷忾', '品第', '天策', '搏战', '大雾', '剑舞',
+                    '缓兵', '太平', '折节', '箜篌', '逆战', '掣政', '温良',
+                    '当先', '焚城', '帷幕', '天妒', '神戟', '国色', '追击',
+                    '制合', '八门', '炼体', '雷魂', '七星', '三分', '攻心',
+                    '蒺藜', '空城', '观虚', '火计', '激词', '变天', '骄矜',
+                    '恩怨', '雷祭', '洞察', '魔箭', '恃傲', '烈医', '虎缚',
+                    '严整', '饵敌', '固政', '忧恤', '威震', '闭月', '飞军',
+                    '蓄劲', '追忆', '龙吟', '隐世', '衡势', '凤吟', '断粮',
+                    '娇媚', '绝境', '专擅', '承志', '伏枥', '伏间', '酒诗',
+                    '连环', '才鉴', '乱政', '素检', '流云', '离间', '御象',
+                    '战绝', '暴政', '狂暴', '勇烈', '蛮王', '落英', '涅槃',
+                    '雅虑', '狂傲', '司敌', '峻刑', '回春', '挑衅', '惠敛',
+                    '狂袭', '倾城', '横江', '曼舞', '商道', '神愤', '君望',
+                    '天辩', '悍勇', '顺世', '鱼忧', '贤士', '滔乱', '雄异',
+                    '机巧', '弓骑', '刀侍', '怒发', '魅惑', '狂骨', '风雅',
+                    '魔舞', '截军', '匡弼', '索魂', '千幻', '闪戏', '挥泪',
+                    '不屈', '无畏', '结姻', '罪论', '怀橘', '巧变', '淑贤',
+                    '鏖战', '忧戎', '千骑', '湮灭', '狂言', '仙授', '纵玄'],
+                };
+                delete this.typeSkills;
+                this.typeSkills = list;
+                return list;
+              },
               get skills() {
                 const skills = [];
                 for (const packname in lib.characterPack) {
+                  if (![
+                    "standard","shenhua","jlsg_sk", "jlsg_skpf", "jlsg_sr", "jlsg_soul", "jlsg_sy", "jlAddition",
+                  ].includes(packname)) continue;
                   const pack = lib.characterPack[packname];
+                  if (!Object.keys(pack).length) continue;
                   for (const i in pack) {
                     if (i.includes("xushao") || i.includes("zuoci")) continue;
                     if (lib.filter.characterDisabled(i)) continue;
