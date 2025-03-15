@@ -25768,7 +25768,7 @@ const b = 1;
                       if (trigger.player == game.me) {
                         if (!game.notMe) game.swapPlayerAuto(trigger.player._trueMe);
                         else delete game.notMe;
-                        if (_status.auto) ui.click.auto();
+                        //if (!_status.auto) ui.click.auto();
                       }
                       delete player.storage.jlsg_lihun;
                       delete trigger.player._trueMe;
@@ -25800,21 +25800,18 @@ const b = 1;
                           if (num[0] === num[1]) num[0] = 1;
                           num[1] = 1;
                         }
-                        return;
                       }
-                      if (num[1] > 0) {
+                      else if (num[1] > 0) {
                         num[1] = Infinity;
-                        return;
                       }
                       else if (num[0] <= -1 || num[1] <= -1) {
                         num[0] = 1;
                         num[1] = Infinity;
-                        return;
                       }
-                      if (get.info(card, player).filterTarget) {
+                      else if (get.info(card, player)?.filterTarget) {
+                        if (typeof num == "number") num = [num, num];
                         num[0] = 1;
                         num[1] = Infinity;
-                        return;
                       }
                     },
                   },
@@ -31731,7 +31728,8 @@ const b = 1;
               trigger: { global: "useCard" },
               filter(event) {
                 const card = event.card;
-                if (!["basic", "trick"].includes(get.type(card))) return false;
+                if (!["basic", "trick"].includes(get.type(card, null, false))) return false;
+                if (!lib.card[event.card.name]?.enable) return false;
                 return get.is.ordinaryCard(card);
               },
               async cost(event, trigger, player) {
@@ -32596,7 +32594,7 @@ const b = 1;
                         return player.getUseValue(card);
                       },
                     }],
-                    ["获得一张【(cixiong|fangtian|qinggang|qilin|zhuque】、一张【酒】、两张随机属性【杀】", {
+                    ["获得一张【(cixiong|fangtian|qinggang|qilin|zhuque)】、一张【酒】、两张随机属性【杀】", {
                       content: async function (event, trigger, player) {
                         const cards = [
                           lib.skill.jlsg_lingze.createTempCard(event.cardName),
@@ -33326,7 +33324,7 @@ const b = 1;
                         const { result } = await player.chooseTarget("选择一名角色，令其对其余所有角色连续使用六张同名非延时锦囊牌", true)
                           .set("filterTarget", (_, player, target) => get.event("list").some(name => target.hasUseTarget(name)))
                           .set("ai", target => Math.random())
-                          .set("list", list)
+                          .set("list", list);
                         if (result.bool) {
                           const target = result.targets[0];
                           const cards = list.filter(name => target.hasUseTarget(name));
@@ -34013,7 +34011,7 @@ const b = 1;
             jlsg_hualong: "化龙",
             jlsg_hualong_info: "回合开始阶段，你可以选择一名其他角色并弃置所有“潜渊”标记，令其执行这些标记记录的负面效果(负面效果的数值为本次弃置的标记数)，然后将你的各项属性和最小手牌数改为X（X为以此法弃置的标记总数）",
             jlsg_zhuxing: "逐星",
-            jlsg_zhuxing_info: "每回合限两次，当任意角色使用出牌阶段可以使用的非转化的实体牌或非延时锦囊牌时，你可以将值置于一名角色的武将牌上，称为“逐星”牌，然后你可以令当前使用的牌无效。一名角色的回合开始时，你可以视为对其依次使用其武将牌上的所有“逐星”牌。",
+            jlsg_zhuxing_info: "每回合限两次，当任意角色使用出牌阶段可以使用的非转化的实体牌或非延时锦囊牌时，你可以将之置于一名角色的武将牌上，称为“逐星”牌，然后你可以令当前使用的牌无效。一名角色的回合开始时，你可以视为对其依次使用其武将牌上的所有“逐星”牌。",
             jlsg_lingze: "灵泽",
             jlsg_lingze_info: "任意角色的出牌阶段开始时，或受到伤害时，若其有“逐星”牌，你可以将其中一张置于牌堆顶，令其进行一次“许愿”。",
           },
@@ -36544,7 +36542,7 @@ const b = 1;
             jlsgsy_shiao_info: '回合开始阶段开始时，你可以视为对手牌数少于你的一名其他角色使用一张【杀】；回合结束阶段开始时你可以视为对手牌数大于你的一名其他角色使用一张【杀】',
             jlsgsy_kuangxi_info: '你使用锦囊牌后，可以视为对此牌的目标使用【杀】。若你以此法没有造成伤害，你失去1点体力。',
             jlsgsy_baonuweiyan_info: '锁定技，当你体力降至4或者更少时，你变身为暴怒魏延并立即开始你的回合',
-            jlsgsy_fangu_info: '锁定技，每当你受到一次伤害后，当前回合结束，你执行1个额外回合',
+            jlsgsy_fangu_info: '锁定技，当你受到伤害后，结束当前回合，你执行一个额外回合',
 
             jlsgsy_bolue_info: '锁定技，回合开始前，你随机获得一个魏/一个蜀/一个吴势力的技能，直到下个回合开始。',
             jlsgsy_baonusimayi: '暴怒',
