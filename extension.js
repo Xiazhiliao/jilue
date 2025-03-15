@@ -22481,6 +22481,8 @@ const b = 1;
             jlsgsoul_pangtong: ["male", "shen", 3, ["jlsg_qifeng", "jlsg_lunce"], ["name:庞|统"]],
             jlsgsoul_sp_zhaoyun: ["male", "shen", 1, ["jlsg_qianyuan", "jlsg_hualong"], ["shu", "name:赵|云"]],
             jlsgsoul_sp_sunshangxiang: ["female", "shen", 3, ["jlsg_zhuxing", "jlsg_lingze"], ["wu", "name:孙|尚香"]],
+            jlsgsoul_caiwenji: ["female", "shen", 3, ["jlsg_hanshuang", "jlsg_liluan"], ["qun", "name:蔡|琰"]],
+
           },
           characterIntro: {},
           skill: {
@@ -30466,7 +30468,6 @@ const b = 1;
                 },
               },
             },
-            //SK神庞统
             jlsg_qifeng: {
               audio: "ext:极略:2",
               onremove: true,
@@ -31352,7 +31353,6 @@ const b = 1;
                 expose: 0.25,
               },
             },
-            //SP神赵云
             jlsg_qianyuan: {
               audio: "ext:极略:2",
               init(player) {
@@ -31592,7 +31592,7 @@ const b = 1;
                 }
               },
               ai: {//@.修改
-                effect: {//一坨，还得改
+                effect: {
                   target(card, player, target) {
                     if (card.name == "tiesuo" && target.storage.jlsg_qianyuan.link === false) return [0, 1];
                     if ((card.name == "shunshou" || card.name == "guohe") && target.storage.jlsg_qianyuan.discard === false) return [0, 1];
@@ -31711,7 +31711,6 @@ const b = 1;
                 combo: "jlsg_qianyuan",
               },
             },
-            //SP神孙尚香
             jlsg_zhuxing: {
               audio: "ext:极略:2",
               intro: {
@@ -33680,6 +33679,148 @@ const b = 1;
                 },
               },
             },
+            jlsg_hanshuang: {
+              audio: "ext:极略:2",
+              trigger: { global: "damageBegin3" },
+              filter: () => true,
+              async cost(event, trigger, player) {
+                const { player: target, source, card } = trigger,
+                  [SUB, ADD] = ["减伤", "加伤"],
+                  list = ["加伤", "减伤", "cancel2"],
+                  num = player.getRoundHistory("useSkill", evt => evt.skill == "jlsg_hanshuang" && evt.targets?.includes(trigger.player)).length + 1;
+                let prompt = `${get.translation(target)}即将受到${source ? "来自" + get.translation(source) : "无来源"}的${trigger.num}点伤害，你可以选择一项：`;
+                const choiceTexts = [`1.令其摸${get.cnNumber(num)}张牌并令此次伤害+${num}`, `2.令其弃置${get.cnNumber(num)}张牌并令此次伤害-${num}`];
+                if (target.countDiscardableCards(target, "he") < num) {
+                  list.remove("减伤")
+                  choiceTexts[1] = `<span style="text-decoration: line-through;">${choiceTexts[1]}</span>`
+                }
+                choiceTexts.forEach(text => (prompt += "<br>" + text));
+                const { result } = await player.chooseControl(list)
+                  .set("prompt", get.prompt("jlsg_hanshuang", target))
+                  .set("prompt2", prompt).set("ai", () => get.event("choice"))
+                  .set(
+                    "choice",
+                    (() => {
+                      const damageEff = get.damageEffect(target, source, player, trigger.nature),
+                        guohe = get.effect(target, { name: "guohe_copy2" }, target, player),
+                        draw = get.effect(target, { name: "draw" }, target, player);
+                      const canFilterDamage = target.hasSkillTag("filterDamage", null, {
+                        player: source,
+                        card,
+                      });
+                      if (damageEff > 0) {
+                        if (!canFilterDamage &&
+                          (target.getHp() <= trigger.num + num ||
+                            guohe <= draw)
+                        ) return ADD;
+                        else {
+                          if (get.attitude(player, target) > 0 && (damageEff === 0 || canFilterDamage)) return ADD;
+                          if (
+                            target.getHp() +
+                            target.countCards("hs", card => {
+                              return target.canSaveCard(card, target);
+                            }) >
+                            trigger.num + 1 &&
+                            !list.includes(SUB)
+                          )
+                            return ADD;
+                        }
+                      } else {
+                        if (get.attitude(player, target) > 0) {
+                          if (damageEff === 0 || canFilterDamage) return ADD;
+                          if (
+                            target.getHp() +
+                            target.countCards("hs", card => target.canSaveCard(card, target)) >
+                            trigger.num + num
+                          ) return ADD;
+                          else if (
+                            (target.countDiscardableCards(target, "he") >= trigger.num
+                              || trigger.num >= target.getHp()
+                            ) && list.includes(SUB)
+                          ) return SUB;
+                        }
+                        else if (
+                          target.hasSkillTag("maixie") &&
+                          trigger.num === 1 &&
+                          damageEff < -20 &&
+                          list.includes(SUB)
+                        ) return SUB;
+                      }
+                      return "cancel2";
+                    })()
+                  )
+                if (result.control !== "cancel2") {
+                  event.result = {
+                    bool: true,
+                    targets: [target],
+                    cost_data: {
+                      control: result.control,
+                      num,
+                    },
+                  };
+                }
+              },
+              async content(event, trigger, player) {
+                const { control, num } = event.cost_data,
+                  { player: target } = trigger;
+                if (control === "减伤") {
+                  await target.chooseToDiscard(num, true, "he");
+                  game.log(player, "令此伤害", `#y-${num}`);
+                  trigger.num -= Math.min(num, trigger.num);
+                } else {
+                  await target.draw(num);
+                  game.log(player, "令此伤害", `#y+${num}`);
+                  trigger.num += num;
+                }
+                await game.delayx();
+              },
+            },
+            jlsg_liluan: {
+              audio: "ext:极略:2",
+              trigger: { global: ["loseBefore", "drawBefore"] },
+              usable: 1,
+              filter(event, player) {
+                if (event.name == "lose") return event.type == "discard";
+                else return event.num > 0;
+              },
+              async cost(event, trigger, player) {
+                const { player: target } = trigger,
+                  num = trigger.name == "lose" ? trigger.cards.filter(card => get.owner(card) == target).length : trigger.num;
+                const prompt = `${get.translation(target)}即将${trigger.name == "lose" ? "弃置" : "摸"}${get.cnNumber(num)}张牌，是否取消此操作改为其以外的角色各${trigger.name == "lose" ? "随机弃置" : "摸"}一张牌？`;
+                event.result = await player.chooseBool()
+                  .set("prompt", get.prompt("jlsg_liluan", target))
+                  .set("prompt2", prompt)
+                  .set("ai", (event, player) => {
+                    const trigger = event.getTrigger(),
+                      target = event.getTrigger().player;
+                    const targetEff = get.effect(target, { name: trigger.type == "lose" ? "guohe_copy2" : "draw" }, target, player) * get.event("num"),
+                      sumEff = game.filterPlayer(current => current != target)
+                        .reduce((sum, current) => sum + get.effect(current, { name: trigger.type == "lose" ? "guohe_copy2" : "draw" }, current, player), 0);
+                    return targetEff <= sumEff;
+                  })
+                  .set("num", num)
+                  .forResult();
+                event.result.targets = [target];
+              },
+              async content(event, trigger, player) {
+                const { player: target } = trigger,
+                  targets = game.filterPlayer(current => current != target).sortBySeat(_status.currentPhase);
+                if (trigger.name == "lose") {
+                  trigger.cards = trigger.cards.filter(i => get.owner(i) != target);
+                  const lose_list = [];
+                  for (let current of targets) {
+                    const cards = current.getDiscardableCards(current, "he")
+                    if (cards.length) lose_list.add([current, cards.randomGets(1)]);
+                  };
+                  game.log(player, "取消了", target, "的弃牌");
+                  await game.loseAsync({ lose_list }).setContent("discardMultiple");
+                } else {
+                  trigger.cancel();
+                  game.log(player, "取消了", target, "的摸牌");
+                  await game.asyncDraw(targets);
+                }
+              }
+            },
           },
           translate: {
             jlsg_soul: "魂烈包",
@@ -33724,6 +33865,10 @@ const b = 1;
             jlsgsoul_xiaoqiao: 'SK神小乔',
             jlsgsoul_caoren: 'SK神曹仁',
             jlsgsoul_caopi: 'SK神曹丕',
+            jlsgsoul_pangtong: "SK神庞统",
+            jlsgsoul_sp_zhaoyun: "SP神赵云",
+            jlsgsoul_sp_sunshangxiang: "SP神孙尚香",
+            jlsgsoul_caiwenji: "SK神蔡文姬",
 
             jlsg_yinyang_s: '阴阳',
             jlsg_yinyang_s_info: '锁定技，若你的体力：多于已损失体力，你拥有〖极阳〗；少于已损失体力，你拥有〖极阴〗；等于已损失体力，你拥有〖相生〗。',
@@ -33998,9 +34143,6 @@ const b = 1;
             jlsg_old_danjing_info: '出牌阶段限一次，你可以失去1点体力，然后令一名其他角色摸三张牌或弃置三张牌。',
             jlsg_old_zhonghun_info: '限定技，当你死亡时，你可以令一名其他角色获得你当前的所有技能。',
 
-            jlsgsoul_pangtong: "SK神庞统",
-            jlsgsoul_sp_zhaoyun: "SP神赵云",
-            jlsgsoul_sp_sunshangxiang: "SP神孙尚香",
             jlsg_qifeng: "栖凤",
             jlsg_qifeng_info: "锁定技，当你进入濒死状态时，你减1点体力上限，回复体力至1点，摸0张牌，然后对一名其他角色造成0点火焰伤害。",
             jlsg_lunce: "论策",
@@ -34014,6 +34156,11 @@ const b = 1;
             jlsg_zhuxing_info: "每回合限两次，当任意角色使用出牌阶段可以使用的非转化的实体牌或非延时锦囊牌时，你可以将之置于一名角色的武将牌上，称为“逐星”牌，然后你可以令当前使用的牌无效。一名角色的回合开始时，你可以视为对其依次使用其武将牌上的所有“逐星”牌。",
             jlsg_lingze: "灵泽",
             jlsg_lingze_info: "任意角色的出牌阶段开始时，或受到伤害时，若其有“逐星”牌，你可以将其中一张置于牌堆顶，令其进行一次“许愿”。",
+            jlsg_hanshuang: "寒霜",
+            jlsg_hanshuang_info: "当任意角色受到伤害时，你可以令其摸X张牌并令此伤害+X，或令其弃置x张牌并令此伤害-X(X为此技能本轮对其发动的次数）。",
+            jlsg_liluan: "离乱",
+            jlsg_liluan_info: "每回合限一次，你可以将任意角色的弃置牌改为其以外的所有角色各随机弃置一张牌，或将任意角色的摸牌改为其以外的所有角色各摸一张牌。",
+
           },
           dynamicTranslate: {
             jlsg_xiejia: function (player) {
