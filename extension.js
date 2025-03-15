@@ -33702,8 +33702,8 @@ const b = 1;
                     "choice",
                     (() => {
                       const damageEff = get.damageEffect(target, source, player, trigger.nature),
-                        guohe = get.effect(target, { name: "guohe_copy2" }, target, player),
-                        draw = get.effect(target, { name: "draw" }, target, player);
+                        guohe = get.effect(target, { name: "guohe_copy2" }, target, player) * num,
+                        draw = get.effect(target, { name: "draw" }, target, player) * num;
                       const canFilterDamage = target.hasSkillTag("filterDamage", null, {
                         player: source,
                         card,
@@ -33711,16 +33711,12 @@ const b = 1;
                       if (damageEff > 0) {
                         if (!canFilterDamage &&
                           (target.getHp() <= trigger.num + num ||
-                            guohe <= draw)
+                            guohe < draw)
                         ) return ADD;
                         else {
                           if (get.attitude(player, target) > 0 && (damageEff === 0 || canFilterDamage)) return ADD;
                           if (
-                            target.getHp() +
-                            target.countCards("hs", card => {
-                              return target.canSaveCard(card, target);
-                            }) >
-                            trigger.num + 1 &&
+                            target.getHp() + target.countCards("hs", card => target.canSaveCard(card, target)) > trigger.num + 1 &&
                             !list.includes(SUB)
                           )
                             return ADD;
@@ -33729,15 +33725,18 @@ const b = 1;
                         if (get.attitude(player, target) > 0) {
                           if (damageEff === 0 || canFilterDamage) return ADD;
                           if (
-                            target.getHp() +
-                            target.countCards("hs", card => target.canSaveCard(card, target)) >
-                            trigger.num + num
+                            target.getHp() + target.countCards("hs", card => target.canSaveCard(card, target)) > trigger.num + num &&
+                            draw > guohe
                           ) return ADD;
-                          else if (
-                            (target.countDiscardableCards(target, "he") >= trigger.num
-                              || trigger.num >= target.getHp()
-                            ) && list.includes(SUB)
-                          ) return SUB;
+                          else {
+                            const discardableCards = target.getDiscardableCards(target, "he");
+                            if (
+                              (discardableCards.length >= trigger.num ||
+                                trigger.num >= target.getHp() ||
+                                discardableCards.reduce((sum, card) => sum + target.getUseValue(card), 0) > Math.abs(guohe)
+                              ) && list.includes(SUB)
+                            ) return SUB;
+                          }
                         }
                         else if (
                           target.hasSkillTag("maixie") &&
@@ -33793,10 +33792,10 @@ const b = 1;
                   .set("ai", (event, player) => {
                     const trigger = event.getTrigger(),
                       target = event.getTrigger().player;
-                    const targetEff = get.effect(target, { name: trigger.type == "lose" ? "guohe_copy2" : "draw" }, target, player) * get.event("num"),
+                    const targetEff = get.effect(target, { name: trigger.name == "lose" ? "guohe_copy2" : "draw" }, target, player) * get.event("num"),
                       sumEff = game.filterPlayer(current => current != target)
-                        .reduce((sum, current) => sum + get.effect(current, { name: trigger.type == "lose" ? "guohe_copy2" : "draw" }, current, player), 0);
-                    return targetEff <= sumEff;
+                        .reduce((sum, current) => sum + get.effect(current, { name: trigger.name == "lose" ? "guohe_copy2" : "draw" }, current, player), 0);
+                    return targetEff < sumEff;
                   })
                   .set("num", num)
                   .forResult();
