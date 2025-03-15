@@ -32593,7 +32593,7 @@ const b = 1;
                         return player.getUseValue(card);
                       },
                     }],
-                    ["获得一张【(cixiong|fangtian|qinggang|qilin|zhuque】、一张【酒】、两张随机属性【杀】", {
+                    ["获得一张【(cixiong|fangtian|qinggang|qilin|zhuque)】、一张【酒】、两张随机属性【杀】", {
                       content: async function (event, trigger, player) {
                         const cards = [
                           lib.skill.jlsg_lingze.createTempCard(event.cardName),
@@ -33323,7 +33323,7 @@ const b = 1;
                         const { result } = await player.chooseTarget("选择一名角色，令其对其余所有角色连续使用六张同名非延时锦囊牌", true)
                           .set("filterTarget", (_, player, target) => get.event("list").some(name => target.hasUseTarget(name)))
                           .set("ai", target => Math.random())
-                          .set("list", list)
+                          .set("list", list);
                         if (result.bool) {
                           const target = result.targets[0];
                           const cards = list.filter(name => target.hasUseTarget(name));
