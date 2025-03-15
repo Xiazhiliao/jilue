@@ -25768,7 +25768,7 @@ const b = 1;
                       if (trigger.player == game.me) {
                         if (!game.notMe) game.swapPlayerAuto(trigger.player._trueMe);
                         else delete game.notMe;
-                        if (_status.auto) ui.click.auto();
+                        //if (!_status.auto) ui.click.auto();
                       }
                       delete player.storage.jlsg_lihun;
                       delete trigger.player._trueMe;
@@ -25800,21 +25800,18 @@ const b = 1;
                           if (num[0] === num[1]) num[0] = 1;
                           num[1] = 1;
                         }
-                        return;
                       }
-                      if (num[1] > 0) {
+                      else if (num[1] > 0) {
                         num[1] = Infinity;
-                        return;
                       }
                       else if (num[0] <= -1 || num[1] <= -1) {
                         num[0] = 1;
                         num[1] = Infinity;
-                        return;
                       }
-                      if (get.info(card, player).filterTarget) {
+                      else if (get.info(card, player)?.filterTarget) {
+                        if (typeof num == "number") num = [num, num];
                         num[0] = 1;
                         num[1] = Infinity;
-                        return;
                       }
                     },
                   },
