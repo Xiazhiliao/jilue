@@ -28603,74 +28603,39 @@ const b = 1;
                 global: 'phaseBefore',
                 player: ['enterGame', 'phaseBegin', 'phaseEnd'],
               },
-              filter(event, player, triggerName) {
-                var num = 0;
-                let players = game.filterPlayer(p => p.getSkills(null, false, false).some(s => s.startsWith('jlsg_tiangong_jiguan_')));
-                for (var i = 0; i < players.length; i++) {
-                  num += players[i].getSkills(null, false, false).filter(s => s.startsWith('jlsg_tiangong_jiguan_')).length;
-                }
-                return (triggerName != 'phaseBefore' || game.phaseNumber == 0) && num < 7;
+              getIndex(event) {
+                if (event.name == 'phase' && game.phaseNumber == 0) return 2;
+                return 1;
               },
-              direct: true,
-              frequent: true,
-              content: function () {
-                'step 0'
-                event.cnt = 1;
-                if (trigger.name == 'phase' && game.phaseNumber == 0) {
-                  event.cnt = 2;
-                }
-                'step 1'
-                if (event.cnt <= 0) {
-                  event.finish();
-                  return;
-                }
-                player.chooseBool(get.prompt2(event.name))
-                  .set('frequentSkill', event.name);
-                'step 2'
-                if (!result.bool) {
-                  event.finish();
-                  return;
-                }
-                player.logSkill(event.name);
-                var skillCnt = _status.jlsg_tiangong_jiguanCount || 0;
+              filter(event, player, triggerName) {
+                return (triggerName != 'phaseBefore' || game.phaseNumber == 0)
+                  && game.hasPlayer(p => p.getSkills(null, false, false).filter(s => s.startsWith('jlsg_tiangong_jiguan_').length < 7));
+              },
+              check(event, player) {
+                return true;
+              },
+              async content(event, trigger, player) {
+                const skillCnt = _status.jlsg_tiangong_jiguanCount || 0;
                 _status.jlsg_tiangong_jiguanCount = skillCnt + 1;
-
                 game.broadcast(function (cnt) {
                   _status.jlsg_tiangong_jiguanCount = cnt;
                 }, _status.jlsg_tiangong_jiguanCount);
-                event.skill = {
+                const skill = {
                   audio: 'jlsg_tiangong',
                   forced: true,
                   name: `jlsg_tiangong_jiguan_${skillCnt}`,
-                  filter(event, player) {
-                    if (this.extraFilter && !this.extraFilter(event, player)) {
-                      return false;
-                    }
+                  filter: function (event, player) {
+                    if (!this?.extraFilter(event, player)) return false;
                     return this.targetFilter(player).length;
                   },
-                  content() {
-                    'step 0'
-                    event.targets = lib.skill[event.name].targetFilter(player).sortBySeat();
-                    'step 1'
-                    var target = event.targets.shift();
-                    if (!target) {
-                      event.finish();
-                      return;
-                    }
-                    lib.skill[event.name].effect(target);
-                    event.redo();
+                  async content(event, trigger, player) {
+                    const targets = lib.skill[event.name].targetFilter(player).sortBySeat();
+                    for (let target of targets) {
+                      await lib.skill[event.name].effect(target);
+                    };
                   },
                 };
-                game.broadcastAll(
-                  (a, b) => {
-                    lib.translate[a] = b;
-                  },
-                  event.skill.name,
-                  lib.skill.jlsg_tiangong.skillName
-                    .map(list => list[skillCnt % list.length])
-                    .join(''),
-                );
-                var choices = [
+                const triggersList = [
                   '回合开始阶段，',
                   '判定阶段开始时，',
                   '摸牌阶段开始时，',
@@ -28704,20 +28669,13 @@ const b = 1;
                   '每回合限X次(X: 1-3)，当你失去技能后，',
                   '每回合限X次(X: 1-3)，当你横置/重置/翻面后，',
                 ];
-                event.choices = choices.randomGets(3).map(s => s.replace(`每回合限X次(X: 1-3)`, `每回合限${Math.floor(Math.random() * 3) + 1}次`));
-                player.chooseControlList('请选择机关技能的发动时机', event.choices, /* true */)
-                  .set('ai', () => Math.floor(Math.random() * _status.event.choiceList.length));
-                'step 3'
-                if (result.control == 'cancel2') {
-                  event.finish();
-                  return;
-                }
-                var choice = event.choices[result.index];
-                event.skillInfo = '锁定技，' + choice;
-                var skill = event.skill;
-
-                var re = /每回合限(\d+)次，(.*)/;
-                var match = choice.match(re);
+                let choices = triggersList.randomGets(3).map(s => s.replace(`每回合限X次(X: 1-3)`, `每回合限${Math.floor(event.getRand() * 3) + 1}次`));
+                const { result: chooseTrigger } = await player.chooseControlList('请选择机关技能的发动时机', choices)
+                  .set('ai', () => Math.floor(get.event().getRand() * _status.event.choiceList.length));
+                if (chooseTrigger.control == "cancel2") return;
+                let choice = choices[chooseTrigger.index];
+                let skillInfo = '锁定技，' + choice;
+                const match = choice.match(/每回合限(\d+)次，(.*)/);
                 if (match) {
                   skill.cnt = parseInt(match[1]);
                   choice = match[2];
@@ -28760,7 +28718,7 @@ const b = 1;
                     };
                     skill.extraFilter = function (event, player) {
                       return player.getHistory('useSkill', e => e.skill == this.name).length < this.cnt
-                        && event.getg(player).length > 0;
+                        && event.getg && event.getg(player).length > 0;
                     };
                     break;
                   case '当你使用基本牌后，':
@@ -28811,9 +28769,7 @@ const b = 1;
                       global: ['equipAfter', 'addJudgeAfter', 'gainAfter', 'loseAsyncAfter', 'addToExpansionAfter'],
                     };
                     skill.extraFilter = function (event, player) {
-                      if (player.getHistory('useSkill', e => e.skill == this.name).length >= this.cnt) {
-                        return false;
-                      }
+                      if (player.getHistory('useSkill', e => e.skill == this.name).length >= this.cnt) return false;
                       const evt = event.getl(player);
                       return evt && evt.player == player && evt.es && evt.es.length > 0;
                     };
@@ -28869,13 +28825,13 @@ const b = 1;
                     };
                     break;
                   case '当你回复体力或加体力上限后，':
-                    skill.trigger = { player: ['recoverAfter', 'gainMaxHpAfter'] };
+                    skill.trigger = { player: ['recoverEnd', 'gainMaxHpEnd'] };
                     skill.extraFilter = function (event, player) {
                       return player.getHistory('useSkill', e => e.skill == this.name).length < this.cnt;
                     };
                     break;
                   case '当你失去体力或减体力上限后，':
-                    skill.trigger = { player: ['loseHpEnd', 'loseMaxHpAfter'] };
+                    skill.trigger = { player: ['loseHpEnd', 'loseMaxHpEnd'] };
                     skill.extraFilter = function (event, player) {
                       return player.getHistory('useSkill', e => e.skill == this.name).length < this.cnt;
                     };
@@ -28914,11 +28870,9 @@ const b = 1;
                     break;
                   default:
                     console.error('jlsg_tiangong description not found', choice);
-                    event.finish();
                     return;
-                }
-                'step 4'
-                var choices = Object.keys(lib.skill.jlsg_tiangong.targetFilters);
+                };
+                choices = Object.keys(lib.skill.jlsg_tiangong.targetFilters);
                 // safe guard
                 if (!game.hasPlayer(p => p.hasSex('male'))) {
                   choices.remove('所有男性角色');
@@ -28930,99 +28884,88 @@ const b = 1;
                   if (!game.hasPlayer(p => p.group == group)) {
                     choices.remove(`所有${lib.translate[group]}势力角色`);
                   }
-                }
-                event.choices = choices.randomGets(3);
+                };
+                const targetFilters = choices.randomGets(3);
                 // increae chance
-                if (!event.choices.includes('你') && Math.random() < 0.3) {
-                  event.choices[2] = '你';
-                  event.choices.randomSort();
+                if (!targetFilters.includes('你') && Math.random() < 0.3) {
+                  targetFilters[2] = '你';
+                  targetFilters.randomSort();
                 }
-                else if (!event.choices.includes('所有其他角色') && Math.random() < 0.3) {
-                  event.choices[2] = '所有其他角色';
-                  event.choices.randomSort();
+                else if (!targetFilters.includes('所有其他角色') && Math.random() < 0.3) {
+                  targetFilters[2] = '所有其他角色';
+                  targetFilters.randomSort();
                 }
-                player.chooseControlList(`###请选择机关技能的作用目标###${event.skillInfo}...`, event.choices, true)
-
-                  .set('ai', () => Math.floor(Math.random() * _status.event.choiceList.length));
-                'step 5'
-                if (result.control == 'cancel2') {
-                  event.finish();
-                  return;
-                }
-                var choice = event.choices[result.index];
-                var skill = event.skill;
-                event.skillInfo += choice;
+                const { result: chooseTargetFilter } = await player.chooseControlList(`###请选择机关技能的作用目标###${skillInfo}...`, targetFilters, true)
+                  .set('ai', () => Math.floor(get.event().getRand() * _status.event.choiceList.length));
+                if (chooseTargetFilter.control == "cancel2") return;
+                choice = choices[chooseTargetFilter.index];
+                skillInfo += choice;
                 skill.targetFilter = lib.skill.jlsg_tiangong.targetFilters[choice];
                 if (!skill.targetFilter) {
                   console.error('jlsg_tiangong description not found', choice);
-                  event.finish();
                   return;
                 }
-                'step 6'
-                var choices = Object.keys(lib.skill.jlsg_tiangong.effects);
-                if (event.skillInfo.includes('所有')) {
+                choices = Object.keys(lib.skill.jlsg_tiangong.effects);
+                if (skillInfo.includes('所有')) {
                   choices = choices.filter(c => !lib.skill.jlsg_tiangong.effects[c].multi);
                 }
-                choices = choices.randomGets(3);
-                event.choices = choices;
-                player.chooseControlList(`###请选择机关技能的作用效果###${event.skillInfo}...`, choices, true)
-                  .set('prompt2', event.skillInfo + "...")
-                  .set('ai', () => Math.floor(Math.random() * _status.event.choiceList.length));
-                'step 7'
-                if (result.control == 'cancel2') {
-                  event.finish();
-                  return;
-                }
-                var choice = event.choices[result.index];
-                var skill = event.skill;
-                event.skillInfo += choice + '。';
+                const effects = choices.randomGets(3);
+                const { result: chooseEffect } = await player.chooseControlList(`###请选择机关技能的作用效果###${skillInfo}...`, effects, true)
+                  .set('ai', () => Math.floor(get.event().getRand() * _status.event.choiceList.length));
+                if (chooseEffect.control == "cancel2") return;
+                choice = choices[chooseEffect.index];
+                skillInfo += choice + '。';
                 var { content, positive } = lib.skill.jlsg_tiangong.effects[choice];
                 if (!content) {
                   console.error('jlsg_tiangong description not found', content);
-                  event.finish();
                   return;
                 }
                 skill.effect = content;
+                const list = game.filterPlayer().reduce((arr, current) => {
+                  arr.addArray(current.getSkills(null, false, false).filter(s => s.startsWith('jlsg_tiangong_jiguan_')).map(s => lib.translate[s]))
+                  return arr.unique();
+                }, []);
+                const translate = lib.skill.jlsg_tiangong.skillName.filter(i => !list.includes(i)).randomGet();
                 game.broadcastAll(
-                  (a, b) => {
-                    lib.translate[a] = b;
+                  function (skill, name, translate, info) {
+                    lib.skill[name] = skill;
+                    lib.translate[name] = translate;
+                    lib.translate[name + "_info"] = info
                   },
-                  skill.name + '_info',
-                  event.skillInfo,
-                );
-                game.broadcastAll(
-                  (a, b) => {
-                    lib.skill[a] = b;
-                  },
-                  skill.name,
                   skill,
+                  skill.name,
+                  translate,
+                  skillInfo
                 );
-                player.chooseTarget(
-                  `###请选择获得机关${lib.translate[skill.name]}技能的角色###${event.skillInfo}`,
+                const { result: chooseTarget } = await player.chooseTarget(
+                  `###请选择获得机关${lib.translate[skill.name]}技能的角色###${skillInfo}`,
                   (_, player, target) => target.getSkills(null, false, false).filter(s => s.startsWith('jlsg_tiangong_jiguan_')).length < 7,
                   true,
                 )
                   .set('ai', target => {
-                    let eff = _status.event.positive(target) + _status.event.positive(target) + _status.event.positive(target);
-                    if (get.attitude(_status.event.player, target) < 0) {
-                      return -eff + 1 + Math.random();
+                    let eff = get.event("positive")(target) + get.event("positive")(target) + get.event("positive")(target);
+                    if (get.attitude(get.player(), target) < 0) {
+                      return -eff + 1 + get.event().getRand();
                     }
-                    return eff + (_status.event.player == target ? 1 : 0) + Math.random();
+                    return eff + (get.player() == target ? 1 : 0) + get.event().getRand();
                   })
                   .set('positive', positive);
-                'step 8'
-                if (!result.bool) {
-                  event.finish();
-                  return;
-                }
-                result.targets[0].addSkills(event.skill.name);
-                event.cnt--;
-                event.goto(1);
+                if (!chooseTarget?.bool || !chooseTarget?.targets?.length) return;
+                await chooseTarget.targets[0].addSkills(skill.name);
               },
-              skillName: [
-                ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
-                ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'],
-              ],
+              get skillName() {
+                let Heaven = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
+                  Earth = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'],
+                  result = [];
+                for (let i of Heaven) {
+                  for (let j of Earth) {
+                    result.add(i + j);
+                  };
+                };
+                delete this.skillName;
+                this.skillName = result;
+                return result;
+              },
               get targetFilters() {
                 let result = {
                   '你': (player) => [player],
@@ -29107,10 +29050,10 @@ const b = 1;
                     positive: (player) => true,
                     multi: true,
                   },
-                  // '视为使用【桃园结义】': {
-                  //   content: (player) => player,
-                  //   positive: (player) => true,
-                  // },
+                  '视为使用【桃园结义】': {
+                    content: (player) => player.chooseUseTarget({ name: 'taoyuan' }, true),
+                    positive: (player) => true,
+                  },
                   '视为使用【五谷丰登】': {
                     content: (player) => player.chooseUseTarget({ name: 'wugu' }, true),
                     positive: (player) => true,
@@ -29257,7 +29200,7 @@ const b = 1;
                   },
                   '失去1点体力然后摸五张牌': {
                     content: (player) => {
-                      var next = game.createEvent('jlsg_tiangong_jiguan_event0');
+                      var next = game.createEvent('jlsg_tiangong_jiguan_event', false);
                       next.player = player;
                       next.setContent(function () {
                         'step 0'
@@ -29301,7 +29244,7 @@ const b = 1;
                   '随机获得其他角色各一张牌': {
                     content: (player) => {
                       // TODO: refactor with async
-                      var next = game.createEvent('jlsg_tiangong_jiguan_event1');
+                      var next = game.createEvent('jlsg_tiangong_jiguan_event', false);
                       next.player = player;
                       next.setContent(function () {
                         'step 0'
