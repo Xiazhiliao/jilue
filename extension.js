@@ -24139,7 +24139,12 @@ const b = 1;
               check: function (card) {
                 let player = _status.event.player;
                 if (ui.selected.cards.length) {
-                  let targets = game.filterPlayer(target => _status.event?.filterTarget({ name: 'sha', nature: 'fire' }, player, target));
+                  let targets = game.filterPlayer(target => {
+                    const filter = _status.event?.filterTarget;
+                    if (typeof filter == "function") return filter({ name: 'sha', nature: 'fire' }, player, target);
+                    else if (typeof filter == "boolean") return filter;
+                    return false;
+                  });
                   let effect = targets.map(t => get.effect(t, { name: 'sha', nature: 'fire' }, player, player))
                     .reduce((a, b) => Math.max(a, b));
                   if (effect > 0) {
