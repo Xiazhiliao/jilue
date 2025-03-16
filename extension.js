@@ -10401,46 +10401,89 @@ const b = 1;
               audio: "ext:极略:2",
               trigger: { global: 'phaseUseBegin' },
               filter(event, player) {
-                return event.player.isDamaged() && event.player.countCards('he') >= event.player.getDamagedHp();
+                const num = event.player.getDamagedHp();
+                const wugu = get.autoViewAs({ name: "wugu", isCard: num == 0 }, "unsure"),
+                  tao = get.autoViewAs({ name: "tao", isCard: num == 0 }, "unsure");
+                if (!event.player.hasUseTarget(tao) && !event.player.hasUseTarget(wugu)) return false;
+                return event.player.countCards('he') >= num;
               },
-              direct: true,
-              content() {
-                'step 0'
-                player.choosePlayerCard('he', trigger.player, get.prompt2(event.name, trigger.player), trigger.player.getDamagedHp())
-                  .set('ai', function (button) {
-                    var val = get.buttonValue(button);
-                    if (get.attitude(_status.event.player, get.owner(button.link)) > 0) return 1.6 / _status.event.selectButton[0] - val - Math.random() / 2;
-                    return val;
-                  });
-                'step 1'
-                if (!result.bool) {
-                  event.finish();
-                  return;
+              async cost(event, trigger, player) {
+                const num = trigger.player.getDamagedHp();
+                const wugu = get.autoViewAs({ name: "wugu", isCard: num == 0 }, "unsure"),
+                  tao = get.autoViewAs({ name: "tao", isCard: num == 0 }, "unsure");
+                const cards = [wugu, tao].filter(card => trigger.player.hasUseTarget(card));
+                let str = `${num == 0 ? `令${get.translation(trigger.player)}视为使用` : `选择${get.translation(trigger.player)}的${get.cnNumber(num)}张牌当作`}一张`,
+                  str2 = cards.map(card => card.name);
+                if (str.length == 1) str += lib.translate[str2[0]] + "使用";
+                else str += str2.map(card => lib.translate[card]).join("或") + "使用";
+                let keys = ["effect", "canUse", "effect_use", "getUseValue"],
+                  value = 0,
+                  choice,
+                  next;
+                for (const card of cards) {
+                  let newV = lib.skill.dcpandi.getUseValue(card, trigger.player, player);
+                  if (newV > value) {
+                    value = newV;
+                    choice = card.name;
+                  }
+                  for (let key of keys) {
+                    let info = _status.event._tempCache[key];
+                    for (let i in info) {
+                      if (i.indexOf(player.playerid) > -1 && i.endsWith("-") && i.indexOf("c:") == -1) delete _status.event._tempCache[key][i];
+                    };
+                  };
+                };
+                if (num == 0) {
+                  next = player.chooseBool(str)
+                    .set("ai", (event, player) => get.event("choice"))
                 }
-                player.logSkill(event.name, trigger.player);
-                event.cards = result.cards;
-                var list = ['tao', 'wugu']
-                  .filter(c => trigger.player.hasUseTarget({ name: c }, null, true));
-                if (list.length == 0) {
-                  event.finish();
-                  return;
+                else {
+                  next = player.choosePlayerCard('he', trigger.player, get.prompt("jlsg_youxu", trigger.player))
+                    .set("prompt2", str)
+                    .set("selectButton", [num, num])
+                    .set("target", trigger.player)
+                    .set('ai', button => {
+                      const player = get.player(),
+                        target = get.event("target"),
+                        val = get.buttonValue(button);
+                      if (get.attitude(player, target) > 0) {
+                        return 1.6 / _status.event.selectButton[0] - val - Math.random() / 2;
+                      }
+                      return val;
+                    })
+                    .set("filterOk", function () {
+                      const player = get.player();
+                      if (_status.connectMode && !player.isAuto) return true;
+                      else if (!_status.auto) return true;
+                      return get.event("choice");
+                    })
                 }
-                if (list.length == 1) {
-                  event.card == list[0];
-                  return;
+                const { result } = await next.set("choice", choice)
+                event.result = {
+                  bool: result.bool,
+                  targets: [trigger.player],
+                  cards: result.links ?? [],
+                  cost_data: {
+                    choice: choice,
+                    choiceList: str2,
+                  },
+                };
+              },
+              async content(event, trigger, player) {
+                const { cost_data: { choiceList } } = event;
+                if (choiceList.length == 0) return;
+                else if (choiceList.length == 1) event.cardName = choiceList[0];
+                else {
+                  event.cardName = await player.chooseControl(choiceList)
+                    .set('prompt', `###请选择一项###${get.translation(trigger.player)}要使用的牌`)
+                    .set('ai', (event, player) => event.cost_data?.choice ?? 0)
+                    .forResultControl();
                 }
-                player.chooseControl(list)
-                  .set('prompt', `###请选择一项###${get.translation(trigger.player)}使用的牌`)
-                  .set('choice', get.attitude(player, trigger.player) > 0 ? 0 : 1);
-                'step 2'
-                if (!event.card) {
-                  event.card = result.control;
-                }
-                if (trigger.player.ai.shown > player.ai.shown) {
-                  player.addExpose(0.2);
-                }
-                trigger.player.chooseUseTarget({ name: event.card }, event.cards, true, 'noTargetDelay', 'nodelayx')
+                if (trigger.player.ai.shown > player.ai.shown) player.addExpose(0.2);
+                const card = get.autoViewAs({ name: event.cardName, isCard: trigger.player.isHealthy() }, event.cards)
+                const next = trigger.player.chooseUseTarget(card, true, 'noTargetDelay', 'nodelayx')
                   .set('oncard', function (c, p) { this.noai = true; });
+                await next;
               },
             },
             jlsg_zhulu: {
