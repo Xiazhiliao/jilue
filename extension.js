@@ -26841,16 +26841,14 @@ const b = 1;
                 _status.jlsg_luocha_list = [];
                 _status.jlsg_luocha_list_hidden = [];
                 for (var c of _status.characterlist) {
-                  if (!get.character(c)) continue;
                   let list = (get.character(c)[3] ?? []).filter(s => lib.skill[s] && lib.translate[s] && lib.translate[s + '_info']);
                   _status.jlsg_luocha_list.addArray(
                     list.filter(s => lib.skill[s].shaRelated)
                   );
-                  console.log(get.player())
                   _status.jlsg_luocha_list_hidden.addArray(
-                    list.filter(s => get.skillInfoTranslation(s, get.player()).includes('【杀】'))
+                    list.filter(s => get.plainText(get.skillInfoTranslation(s, get.player())).includes('【杀】'))
                   );
-                }
+                };
               },
               trigger: {
                 player: "enterGame",
@@ -26872,9 +26870,8 @@ const b = 1;
                 } else {
                   let list1 = _status.jlsg_luocha_list.filter(s => !player.hasSkill(s)).randomSort(),
                     list2 = _status.jlsg_luocha_list_hidden.filter(s => !player.hasSkill(s)).randomSort()
-                  let skills = list1.concat(list2).unique().randomGets(num);
+                  let skills = list1.concat(list2).unique().randomRemove(num);
                   if (!skills.length) game.log("没有可以获得的技能了");
-                  if (!skills.includes("tdoluochong")) skills[0] = "tdoluochong";
                   else await player.addSkills(skills);
                 }
                 await game.delayx();
