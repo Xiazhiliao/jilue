@@ -10405,7 +10405,7 @@ const b = 1;
                 const wugu = get.autoViewAs({ name: "wugu", isCard: num == 0 }, "unsure"),
                   tao = get.autoViewAs({ name: "tao", isCard: num == 0 }, "unsure");
                 if (!event.player.hasUseTarget(tao) && !event.player.hasUseTarget(wugu)) return false;
-                return event.player.countCards('he') >= event.player.getDamagedHp();
+                return event.player.countCards('he') >= num;
               },
               async cost(event, trigger, player) {
                 const num = trigger.player.getDamagedHp();
