@@ -29626,6 +29626,18 @@ const b = 1;
               content: function () {
                 'step 0'
                 var targets = lib.skill.jlsg_linglong.validTargets(player, trigger.removeSkill);
+                const list = {};
+                for (let target of targets) {
+                  if (!list[target.playerid]) list[target.playerid] = {};
+                  const skills = lib.skill.jlsg_linglong.validSkillsOthers(target);
+                  for (let skill of skills) {
+                    const { targetFilter, positive } = lib.skill[skill];
+                    const targets = targetFilter(target);
+                    let eff = positive(targets, target, player);
+                    list[target.playerid][skill] = eff;
+                  };
+                };
+                event.list = list;
                 var prompt = `###${get.prompt(event.name)}###选择失去技能的角色`;
                 if (trigger.name == 'changeSkills') {
                   prompt += `来抵消失去${trigger.removeSkill.map(s => `【${get.translation(s)}】`).join("")}`;
@@ -29640,8 +29652,9 @@ const b = 1;
                 player.chooseTarget(prompt, (_, player, target) => {
                   return _status.event.targets.includes(target);
                 })
-                  .set('ai', (target, targets) => Math.random())
-                  .set('targets', targets);
+                  .set('ai', (target, targets) => 20 - Math.min(Object.values(get.event("choice")[target.playerid])))
+                  .set('targets', targets)
+                  .set("choice", list);
                 'step 1'
                 if (!result.bool) {
                   event.finish();
