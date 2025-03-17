@@ -39331,7 +39331,7 @@ onclick="if (lib.jlsg) lib.jlsg.showRepoElement(this)"></img>
       diskURL: "",
       forumURL: "",
       mirrorURL: "https://github.com/xiaoas/jilue",
-      version: "2.7.0228",
+      version: "2.7.0317",
       changelog: `
 <a onclick="if (jlsg) jlsg.showRepo()" style="cursor: pointer;text-decoration: underline;">
 Visit Repository</a><br>
@@ -39339,11 +39339,15 @@ Visit Repository</a><br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
 汇报bug点我</span><br>
+2025.03.17更新<br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SK神蔡文姬</div><br>
+&ensp; 修复若干bug(离魂、逐星、龙魂、罗刹)<br>
+&ensp; 优化忧恤写法，优化天工、玲珑ai<br>
+<span style="font-size: large;">历史：</span><br>
 2025.02.28更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="watermm">SK诸葛诞</div><br>
 &ensp; 调整武将<span style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SP神赵云</span>技能为最新版[6.4.3]<br>
 &ensp; 修复[天工]托管时的一个bug<br>
-<span style="font-size: large;">历史：</span><br>
 2025.02.26更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SK神庞统</div><br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SP神赵云</div><br>
