@@ -29482,7 +29482,7 @@ const b = 1;
                   result[`随机获得一个${lib.translate[g]}势力技能`] = {
                     content: async function (event, trigger, player) {
                       let skills = player.getSkills();
-                      let skill = _status.jlsgsy_bolue_list[lib.skill[event.name].groupType]
+                      let skill = _status.jlsgsy_bolue_list[lib.skill[event.getParent().name]?.groupType]
                         .filter(s => !skills.includes(s)).randomGet();
                       player.popup(skill);
                       await player.addSkills(skill);
