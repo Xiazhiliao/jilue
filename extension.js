@@ -28609,7 +28609,7 @@ const b = 1;
               },
               filter(event, player, triggerName) {
                 return (triggerName != 'phaseBefore' || game.phaseNumber == 0)
-                  && game.hasPlayer(p => p.getSkills(null, false, false).filter(s => s.startsWith('jlsg_tiangong_jiguan_').length < 7));
+                  && game.hasPlayer(p => p.getSkills(null, false, false).filter(s => s.startsWith('jlsg_tiangong_jiguan_')).length < 7);
               },
               check(event, player) {
                 return true;
@@ -28904,7 +28904,7 @@ const b = 1;
                 const { result: chooseTargetFilter } = await player.chooseControlList(`###请选择机关技能的作用目标###${skillInfo}...`, targetFilters, true)
                   .set('ai', () => Math.floor(get.event().getRand() * _status.event.choiceList.length));
                 if (chooseTargetFilter.control == "cancel2") return;
-                choice = choices[chooseTargetFilter.index];
+                choice = targetFilters[chooseTargetFilter.index];
                 skillInfo += choice;
                 skill.targetFilter = lib.skill.jlsg_tiangong.targetFilters[choice];
                 if (!skill.targetFilter) {
@@ -28919,7 +28919,7 @@ const b = 1;
                 const { result: chooseEffect } = await player.chooseControlList(`###请选择机关技能的作用效果###${skillInfo}...`, effects, true)
                   .set('ai', () => Math.floor(get.event().getRand() * _status.event.choiceList.length));
                 if (chooseEffect.control == "cancel2") return;
-                choice = choices[chooseEffect.index];
+                choice = effects[chooseEffect.index];
                 skillInfo += choice + '。';
                 const { content, positive, groupType = null } = lib.skill.jlsg_tiangong.effects[choice];
                 if (!content) {
