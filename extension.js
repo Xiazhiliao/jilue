@@ -31561,8 +31561,9 @@ const b = 1;
                     player.storage = new Proxy(player.storage, {
                       set: function (target, key, value) {
                         target[key] = value;
-                        if (key == "skill_blocker" || key.startsWith("temp_ban_")) {
-                          let event = get.event();
+                        let event = get.event();
+                        if (event?.name.startsWith("jlsg_") && event?.name.endsWith("_check")) return true;
+                        if ((key == "skill_blocker" || key.startsWith("temp_ban_"))) {
                           event.set("jlsg_check", [player, key, value]);
                           event.trigger("jlsg_check");
                         }
@@ -31574,6 +31575,7 @@ const b = 1;
                         target[key] = value;
                         if (!key.endsWith("_awake")) {
                           let event = get.event();
+                          if (event.name?.startsWith("jlsg_") && event.name?.endsWith("_check")) return true;
                           if (event.jlsg_check_last) {
                             if (!event.jlsg_check_last[event.jlsg_check[1]].length) {
                               event.jlsg_check[2] = event.jlsg_check_last[event.jlsg_check[1] + "2"];
@@ -31944,7 +31946,7 @@ const b = 1;
                         if (num1 >= num2) return;
                         str2 = `<span class='center text'>已转化次数（${num1}/${num2}） </span>`;
                       }
-                      const { result } = await player.chooseBool().set("prompt", str).set("prompt2", str2);
+                      const { result } = await player.chooseBool().set("prompt", str).set("prompt2", str2).set("ai", () => true);
                       if (!result.bool) return;
                       player.storage[event.name + "_direct"] = 1;
                       player.when({ global: ["phaseBeginStart", "phaseAfter"] })
