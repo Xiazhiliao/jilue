@@ -13301,7 +13301,7 @@ const b = 1;
                       return result;
                     }
                   });
-                  player.isUnderControl
+                  //player.isUnderControl
                   let isUnderControl = Object.getOwnPropertyDescriptor(lib.element.Player.prototype, 'isUnderControl');
                   Object.defineProperty(lib.element.Player.prototype, 'isUnderControl', {
                     ...isUnderControl,
@@ -31553,9 +31553,122 @@ const b = 1;
                 expose: 0.25,
               },
             },
+            jlsg_check: {
+              init(player, s) {
+                if (!_status.jlsg_check) {
+                  game.broadcastAll(function () {
+                    _status.jlsg_check = true;
+                    player.storage = new Proxy(player.storage, {
+                      set: function (target, key, value) {
+                        target[key] = value;
+                        if (key == "skill_blocker" || key.startsWith("temp_ban_")) {
+                          let event = get.event();
+                          event.set("jlsg_check", [player, key, value]);
+                          event.trigger("jlsg_check");
+                        }
+                        return true;
+                      },
+                    });
+                    player.disabledSkills = new Proxy(player.disabledSkills, {
+                      set: function (target, key, value) {
+                        target[key] = value;
+                        if (!key.endsWith("_awake")) {
+                          let event = get.event();
+                          if (event.jlsg_check_last) {
+                            if (!event.jlsg_check_last[event.jlsg_check[1]].length) {
+                              event.jlsg_check[2] = event.jlsg_check_last[event.jlsg_check[1] + "2"];
+                              if ("jlsg_check" in event) event.trigger("jlsg_check");
+                            }
+                          }
+                        }
+                        return true;
+                      },
+                    });
+                    let disableSkill = Object.getOwnPropertyDescriptor(lib.element.Player.prototype, 'disableSkill');
+                    Object.defineProperty(lib.element.Player.prototype, 'disableSkill', {
+                      ...disableSkill,
+                      value: function (skill, skills) {
+                        let event = get.event();
+                        let list = Array.isArray(skills) ? skills : [skills];
+                        lib.skill.jlsg_check.expandSkills(list);
+                        if (!event.jlsg_check_last) event.jlsg_check_last = {};
+                        if (!event.jlsg_check_last[skill]) event.jlsg_check_last[skill] = [];
+                        if (!event.jlsg_check_last[skill + "2"]) event.jlsg_check_last[skill + "2"] = [];
+                        if (!event.jlsg_check_last[skill].length) {
+                          event.jlsg_check_last[skill + "2"].addArray(list);
+                          event.jlsg_check_last[skill].addArray(list);
+                        }
+                        else {
+                          let list2 = list.filter(i => !event.jlsg_check_last[skill].includes(i));
+                          event.jlsg_check_last[skill].addArray(list2);
+                          event.jlsg_check_last[skill + "2"].addArray(list2);
+                        }
+                        if (typeof skills == "string") event.jlsg_check_last[skill].remove(skills);
+                        event.set("jlsg_check", [this, skill, skills]);
+                        return disableSkill.value.apply(this, arguments);
+                      }
+                    });
+                  });
+                }
+              },
+              expandSkills(skills) {
+                let stop = false;
+                while (!stop) {
+                  stop = true;
+                  for (let i of skills) {
+                    let info = lib.skill[i];
+                    if (info) {
+                      if (info.group) {
+                        const adds = (Array.isArray(info.group) ? info.group : [info.group]).filter(i => lib.skill[i]);
+                        if (adds.every(j => skills.includes(i))) {
+                          stop = true;
+                          continue;
+                        } else {
+                          stope = false;
+                          skills.addArray(adds);
+                        }
+                      }
+                    }
+                  };
+                };
+                return skills;
+              },
+              trigger: {
+                global: "jlsg_check",
+              },
+              charlotte: true,
+              forced: true,
+              popup: false,
+              filter(event, player) {
+                return event?.jlsg_check?.[0] == player;
+              },
+              enableSkill(event, trigger, player) {
+                const [_, key, value] = trigger.jlsg_check;
+                delete trigger.jlsg_check;
+                if (key == "skill_blocker") {
+                  let list = player.storage.skill_blocker?.slice() || [];
+                  list.removeArray(value);
+                  if (player.storage.skill_blocker) player.storage.skill_blocker = list;
+                  if (!player.storage.skill_blocker) delete player.storage.skill_blocker;
+                  for (let i of value) {
+                    if (lib.skill[i]) player.removeSkill(i);
+                  }
+                }
+                else if (key.startsWith("temp_ban_")) {
+                  delete player.storage[key];
+                }
+                else {
+                  delete trigger.jlsg_check_last;
+                  player.enableSkill(key);
+                };
+                player.update();
+                game.delayx();
+              },
+            },
             jlsg_qianyuan: {
               audio: "ext:极略:2",
               init(player) {
+                player.addInvisibleSkill("jlsg_qianyuan_check");
                 player.storage.jlsg_qianyuan = {
                   damage: false,
                   loseHp: false,
@@ -31741,7 +31854,7 @@ const b = 1;
                 else if (key == "loseMaxHp") next = player.loseMaxHp(1);
                 else if (key == "discard") next = player.discard(player.getDiscardableCards(player, "he").randomGets(1));
                 else if (key == "loseSkill") next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
-                else if (key == "disableSkill") next = player.storage.jlsg_qianyuan.disableSkill = true;
+                else if (key == "disableSkill") next = player.addTempSkill("baiban");
                 else if (key == "link") next = player.link();
                 else if (key == "turnOver") next = player.turnOver();
                 return next;
@@ -31789,6 +31902,71 @@ const b = 1;
                   num: num,
                   nature: nature,
                   str: str,
+                }
+              },
+              subSkill: {
+                check: {
+                  inherit: "jlsg_check",
+                  async content(event, trigger, player) {
+                    if (!player.hasSkill("jlsg_qianyuan", null, false, false)) return;
+                    const [_, key, value] = trigger.jlsg_check;
+                    if (!player.storage[event.name + "_direct"]) {
+                      let str = `潜渊:是否将此次负面效果<span class='yellowtext'>失效技能(`
+                      if (key == "skill_blocker") {
+                        if (value.every(i => !player.storage.skill_blocker?.includes(i))) return;
+                        let skills = player.getSkills(null, false, false),
+                          list = [];
+                        for (let i of value) {
+                          for (let skill of skills) {
+                            if (lib.skill[i] && lib.skill[i].skillBlocker && lib.skill[i].skillBlocker(skill, player)) list.add(skill);
+                          };
+                        };
+                        str += get.translation(list);
+                      }
+                      else if (key.startsWith("temp_ban_")) {
+                        if (!Object.keys(player.storage).some(i => i == key)) return;
+                        str += get.translation(key.slice(9));
+                      }
+                      else {
+                        if (!value.every(i => player.disabledSkills[i]?.includes(key))) return;
+                        str += get.translation(value);
+                      }
+                      if (player.storage.jlsg_qianyuan["disableSkill"] === false) str += ")无效？";
+                      else str += ")转换？";
+                      let storage = player.storage.jlsg_qianyuan,
+                        num1 = 0, num2 = game.countPlayer(),
+                        str2 = "";
+                      if (storage[lib.skill.jlsg_qianyuan.translate["disableSkill"]] === true) {
+                        num1 = player.getHistory("useSkill", evt => {
+                          if (evt.skill != "jlsg_qianyuan") return false;
+                          return evt.event.jlsg_qianyuan;
+                        }).length;
+                        if (num1 >= num2) return;
+                        str2 = `<span class='center text'>已转化次数（${num1}/${num2}） </span>`;
+                      }
+                      const { result } = await player.chooseBool().set("prompt", str).set("prompt2", str2);
+                      if (!result.bool) return;
+                      player.storage[event.name + "_direct"] = 1;
+                      player.when({ global: ["phaseBeginStart", "phaseAfter"] })
+                        .then(() => { delete player.storage[storage] })
+                        .vars({ storage: event.name + "_direct" });
+                      player.logSkill("jlsg_qianyuan");
+                    }
+                    await lib.skill.jlsg_check.enableSkill(event, trigger, player);
+                    if (player.storage[event.name + "_direct"] > 1) game.log(player, "取消了", `#y失效技能`);
+                    else if (player.storage.jlsg_qianyuan["disableSkill"] === true) {
+                      player.storage[event.name + "_direct"]++
+                      event.jlsg_qianyuan = true;
+                      await lib.skill.jlsg_qianyuan.transfer(trigger, player, "disableSkill");
+                    }
+                    else {
+                      player.storage[event.name + "_direct"]++
+                      player.storage.jlsg_qianyuan["disableSkill"] = true;
+                      game.log(player, "取消了", `#y失效技能`);
+                      player.storage.jlsg_qianyuan.record["disableSkill"] = true;
+                    }
+                  },
+
                 }
               },
               ai: {//@.修改
@@ -36636,7 +36814,7 @@ const b = 1;
               trigger: { player: "phaseBegin" },
               locked: true,
               logAudio(event, player, triggername, _, costResult) {
-                const num = costResult.cost_data.num;
+                const num = costResult?.cost_data?.num || 3;
                 return [`ext:极略/jlsgsy_moshou${num}.mp3`];
               },
               async cost(event, trigger, player) {
@@ -36659,6 +36837,8 @@ const b = 1;
                     target.addTempSkill("jlsgsy_moshou_2", { player: "phaseEnd" });
                   }
                 }
+                else if (num == 3) player.addInvisibleSkill("jlsgsy_moshou_check");
+                if (num != 3) player.removeInvisibleSkill("jlsgsy_moshou_check");
                 await player.draw(player.storage.jlsgsy_moshou[num.toString()]);
               },
               getSkills(player) {
@@ -36780,6 +36960,21 @@ const b = 1;
                         else if (get.name(card) == "tiesuo" && !target.isLinked()) return "zerotarget";
                       }
                     },
+                  },
+                },
+                check: {
+                  inherit: "jlsg_check",
+                  async content(event, trigger, player) {
+                    console.log(trigger);
+                    if ((trigger.getParent().player || trigger.player) == player) return;
+                    if (!player.storage[event.name + "_direct"]) {
+                      player.storage[event.name + "_direct"] = true;
+                      player.when({ global: ["phaseBeginStart", "phaseAfter"] })
+                        .then(() => { delete player.storage[storage] })
+                        .vars({ storage: event.name + "_direct" });
+                      await player.logSkill("jlsgsy_moshou", void 0, void 0, void 0, ["ext:极略/jlsgsy_moshou3.mp4"]);
+                    }
+                    await lib.skill.jlsg_check.enableSkill(event, trigger, player);
                   },
                 },
               },
