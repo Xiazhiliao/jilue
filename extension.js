@@ -28294,7 +28294,7 @@ const b = 1;
                 return true;
               },
               viewAsFilter: function (player) {
-                let cnt = Number(player.hasSkill("jlsg_liegong_used")) ?? 0;
+                let cnt = player.storage.jlsg_liegong_used ?? 0;
                 return player.countCards('h') && cnt < (player.isDamaged() ? 2 : 1);
               },
               selectCard: [1, 4],
@@ -28310,6 +28310,7 @@ const b = 1;
               precontent() {
                 "step 0"
                 player.addTempSkill("jlsg_liegong_used");
+                player.storage.jlsg_liegong_used++;
               },
               mod: {
                 targetInRange: function (card, player) {
@@ -28322,6 +28323,10 @@ const b = 1;
               group: ['jlsg_liegong2', 'jlsg_liegong3'],
               subSkill: {
                 used: {
+                  init(player) {
+                    player.storage.jlsg_liegong_used = 0;
+                  },
+                  onremove: true,
                   charlotte: true,
                   sub: true,
                 },
