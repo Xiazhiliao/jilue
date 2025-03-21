@@ -25907,37 +25907,32 @@ const b = 1;
               trigger: { player: 'dying' },
               locked: true,
               direct: true,
-              content() {
-                'step 0'
-                var cards = Array.from(ui.cardPile.childNodes).filter(
-                  c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name)
-                );
-                cards.push(...game.filterPlayer()
-                  .map(p => p.getCards('h', c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name)))
-                  .flat()
-                );
-                event.cards = cards.filter(card => {
-                  if (trigger?.filterCard) {
-                    let filter = trigger.filterCard;
-                    if (typeof filter == "function") return filter(card, player, trigger);
-                    else if (typeof filter == "boolean") return filter;
+              async content(event, trigger, player) {
+                const cards = Array.from(ui.cardPile.childNodes)
+                  .filter(c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name))
+                  .concat(game.filterPlayer()
+                    .map(p => p.getCards('h', c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name)))
+                    .flat())
+                  .filter(card => {
+                    if (trigger?.filterCard) {
+                      let filter = trigger.filterCard;
+                      if (typeof filter == "function") return filter(card, player, trigger);
+                      else if (typeof filter == "boolean") return filter;
+                    }
+                    return player.canUse(card, player, false, trigger);
+                  });
+                while (player.isDying()) {
+                  await player.logSkill(event.name);
+                  const card = cards.randomRemove();
+                  if (!card) break;
+                  const next = player.useCard(card, player);
+                  const owner = get.owner(card);
+                  if (owner && owner != player) {
+                    next.throw = false;
+                    owner.$throw(card);
                   }
-                  return player.canUse(card, player, false, trigger);
-                });
-                'step 1'
-                if (!event.cards.length || !player.isDying()) {
-                  event.finish();
-                  return;
+                  await next;
                 }
-                player.logSkill(event.name);
-                var card = event.cards.randomRemove();
-                var next = player.useCard(card, player);
-                var owner = get.owner(card);
-                if (owner && owner != player) {
-                  next.throw = false;
-                  owner.$throw(card);
-                }
-                event.redo();
               }
             },
             jlsg_shayi: {
