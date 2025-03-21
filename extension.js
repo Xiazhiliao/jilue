@@ -25915,8 +25915,15 @@ const b = 1;
                 cards.push(...game.filterPlayer()
                   .map(p => p.getCards('h', c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name)))
                   .flat()
-                );
-                event.cards = cards;
+                )?.unique();
+                event.cards = cards.filter(card => {
+                  if (trigger?.filterCard) {
+                    let filter = trigger.filterCard;
+                    if (typeof filter == "function") return filter(card, player, trigger);
+                    else if (typeof filter == "boolean") return filter;
+                  }
+                  return player.canUse(card, player, false, trigger);
+                });
                 'step 1'
                 if (!event.cards.length || !player.isDying()) {
                   event.finish();
