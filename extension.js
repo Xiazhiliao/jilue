@@ -16502,6 +16502,10 @@ const b = 1;
               position: "h",
               filterCard: true,
               selectCard: -1,
+              discard: false,
+              lose: false,
+              log: false,
+              locked: false,
               prompt: "无双：是否弃置所有手牌并摸等量张牌，视为使用【杀】？",
               viewAsFilter: function (player) {
                 if (!player.countCards('h')) return false;
@@ -16523,10 +16527,6 @@ const b = 1;
                   cards: [],
                 }
               },
-              discard: false,
-              lose: false,
-              log: false,
-              locked: false,
               onuse(event, player) {
                 let hs = player.getCards("h");
                 player.logSkill("jlsg_spwq_wushuang");
@@ -16538,22 +16538,22 @@ const b = 1;
               subSkill: {
                 useCardTo: {
                   trigger: { player: "useCardToPlayered" },
-                  filter(event, player, name, target) {
+                  filter(event, player, name) {
+                    const target = event.target;
                     if (!target || !target.isIn() || event.getParent().excluded.includes(target)) return false;
                     return event.card.name == "sha" && event.card.storage?.jlsg_spwq_wushuang;
                   },
-                  getIndex: (event) => event.targets,
                   async cost(event, trigger, player) {
-                    const target = event.indexedData;
+                    const target = trigger.target;
                     if (!target.isIn()) return;
                     event.result = {
                       bool: true,
                       targets: [target],
                     }
-                    if (trigger.card.storage.jlsg_spwq_wushuang_double) event.result.cost_data = [0, 1];
+                    if (trigger.card.storage.jlsg_spwq_wushuang_double) event.result.cost_data = { choice: [0, 1] };
                     else {
                       const { result } = await player.chooseButton(true, [
-                        get.prompt("jlsg_spwq_wushuang"),
+                        get.prompt("jlsg_spwq_wushuang", target),
                         [
                           [
                             [0, `将${get.translation(target)}区域里所有牌于本回合内移出游戏`],
@@ -16567,12 +16567,13 @@ const b = 1;
                           const player = get.player(),
                             target = get.event("target");
                           if (get.attitude(player, target) < 1) {
-                            if (get.effect(target, { name: "sha", isCard: true, cards: [] }, player, target) > target.countCards("hej")) return button.link == 1;
+                            const sha = get.autoViewAs({ name: "sha", isCard: true }, []);
+                            if (get.effect(target, sha, player, target) > target.countCards("hej")) return button.link == 1;
                             else return button.link == 0;
                           }
                           else return 1;
                         });
-                      if (result.bool && result.links) event.result.cost_data = result.links;
+                      if (result.bool && result.links) event.result.cost_data = { choice: result.links };
                     }
                   },
                   async content(event, trigger, player) {
@@ -16581,13 +16582,14 @@ const b = 1;
                       trigger.parent.baseDamage *= 2;
                       trigger.parent.extraDamage *= 2;
                     }
-                    const target = event.targets[0];
-                    if (event.cost_data.includes(0) && target.countCards("hej")) {
+                    const target = trigger.target,
+                      { choice } = event.cost_data;
+                    if (choice.includes(0) && target.countCards("hej")) {
                       target.addTempSkill("jlsg_spwq_wushuang_lose");
                       await target.addToExpansion("log", "giveAuto", target.getCards("hej"), target)
                         .set("gaintag", ["jlsg_spwq_wushuang"]);
                     }
-                    if (event.cost_data.includes(1)) target.addTempSkill("baiban");
+                    if (choice.includes(1)) target.addTempSkill("baiban");
                   },
                 },
                 lose: {
