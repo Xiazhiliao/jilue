@@ -25915,7 +25915,7 @@ const b = 1;
                 cards.push(...game.filterPlayer()
                   .map(p => p.getCards('h', c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name)))
                   .flat()
-                )?.unique();
+                );
                 event.cards = cards.filter(card => {
                   if (trigger?.filterCard) {
                     let filter = trigger.filterCard;
