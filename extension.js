@@ -8608,47 +8608,43 @@ const b = 1;
             },
             jlsg_yuyou: {
               audio: "ext:极略:2",
-              trigger: { player: 'gainEnd' },
+              trigger: {
+                player: 'gainAfter',
+                global: 'loseAsyncAfter',
+              },
               forced: true,
               filter: function (event, player) {
-                return event.cards.length > 1;
+                if (!event.getg || !event.getg(player)) return false;
+                return event.getg(player).length > 1;
               },
-              content: function () {
-                'step 0'
-                player.chooseCard('选择一张牌保留', true,
-                  c => _status.event.cards.includes(c),
-                  c => get.useful(c, _status.event.player),
-                ).set('cards', trigger.cards);
-                'step 1'
-                event.cards = trigger.cards;
-                if (result.bool) {
-                  event.cards = event.cards.filter(c => !result.cards.includes(c));
+              async content(event, trigger, player) {
+                const cards = trigger.getg(player);
+                const { result: chooseCard } = await player.chooseCard('鱼忧：选择一张牌保留', true)
+                  .set("filterCard", (card, player) => get.event("cardx").includes(card))
+                  .set("ai", card => get.useful(card, get.player()))
+                  .set("cardx", cards);
+                let cards2 = cards.slice()
+                if (chooseCard.bool) {
+                  cards.remove(chooseCard.cards[0]);
+                  await player.discard(cards);
                 }
-                player.discard(event.cards);
-                'step 2'
-                if (!event.cards.length || !game.hasPlayer(p => p.hasSex('male'))) {
-                  event.finish();
-                  return;
-                }
-                player.chooseTarget(`###${get.prompt(event.name)}###令一名男性角色弃置牌或失去体力`, (_, p, t) => t.hasSex('male'), t => -get.attitude(_status.event.player, t));
-                'step 3'
-                if (!result.bool) {
-                  event.finish();
-                  return;
-                }
-                event.target = result.targets[0];
-                player.line(event.target);
-                if (!['nei', 'rYe', 'bYe'].includes(player.identity) && event.target.ai.shown > player.ai.shown) {
+                if (!cards.length || !game.hasPlayer(p => p.hasSex('male'))) return;
+                const { result: chooseTarget } = await player.chooseTarget(`###${get.prompt(event.name)}###令一名男性角色弃置牌或失去体力`)
+                  .set("filterTarget", (_, player, target) => target.hasSex("male"))
+                  .set("ai", target => {
+                    const player = get.player();
+                    return get.effect(target, { name: "losehp" }, player, player) + get.effect(target, { name: "guohe_copy2" }, player, player);
+                  })
+                if (!chooseTarget.bool || !chooseTarget.targets) return;
+                const { targets: [target] } = chooseTarget;
+                player.line(target);
+                if (!['nei', 'rYe', 'bYe'].includes(player.identity) && target.ai.shown > player.ai.shown) {
                   player.addExpose(0.2);
                 }
-                var eff = lib.jlsg.getLoseHpEffect(event.target) * 3;
-                event.target.chooseToDiscard('he', `弃置${get.cnNumber(event.cards.length)}张牌，或者失去1点体力`, event.cards.length)
-                  .set('eff', eff / event.cards.length)
+                const { result } = await target.chooseToDiscard('he', `弃置${get.cnNumber(cards.length)}张牌，或者失去1点体力`, [cards.length, cards.length])
+                  .set('eff', lib.jlsg.getLoseHpEffect(target) * 3 / cards.length)
                   .set('ai', c => get.unuseful(c) - _status.event.eff);
-                'step 4'
-                if (!result.bool) {
-                  event.target.loseHp();
-                }
+                if (!result.bool) await target.loseHp(1);
               },
             },
             jlsg_huituo: {
