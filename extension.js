@@ -8482,14 +8482,20 @@ const b = 1;
             },
             jlsg_jinzhi: {
               audio: "ext:极略:2",
+              intro: {
+                content: function (storage, player, skill) {
+                  if (!storage?.length) return "";
+                  return '本轮使用了' + storage.reduce((a, b) => a + ' ' + get.translation(b), '');
+                },
+              },
               enable: 'chooseToUse',
               hiddenCard: function (player, name) {
                 if (['basic', 'trick'].includes(get.type(name)) && lib.inpile.includes(name)
-                  && player.countCards('h') && !player.getStorage('jlsg_jinzhi2').includes(name) && player.getStorage('jlsg_jinzhi2').length < 4) return true;
+                  && player.countCards('h') && !player.getStorage('jlsg_jinzhi').includes(name) && player.getStorage('jlsg_jinzhi').length < 4) return true;
               },
               filter: function (event, player) {
                 let hs = player.getCards("h"),
-                  storage = player.getStorage('jlsg_jinzhi2');
+                  storage = player.getStorage('jlsg_jinzhi');
                 if (!hs.length || storage.length >= 4) return false;
                 for (let i of lib.inpile) {
                   if (storage.includes(i)) continue;
@@ -8508,7 +8514,7 @@ const b = 1;
                     list = [];
                   for (let i = 0; i < lib.inpile.length; i++) {
                     let name = lib.inpile[i];
-                    if (player.getStorage('jlsg_jinzhi2').includes(name)) continue;
+                    if (player.getStorage('jlsg_jinzhi').includes(name)) continue;
                     let cardx = get.autoViewAs({ name: name }, hs);
                     if (name == 'sha') {
                       if (event.filterCard(cardx, player, event)) list.push(['基本', '', 'sha']);
@@ -8527,7 +8533,7 @@ const b = 1;
                 },
                 check: function (button) {
                   var player = _status.event.player;
-                  var storage = player.getStorage('jlsg_jinzhi2');
+                  var storage = player.getStorage('jlsg_jinzhi');
                   if (player.countCards('h', button.link[2]) > 0 && storage.length < player.countCards('h')) return 0;
                   if (['wugu', 'zhulu_card'].includes(button.link[2])) return 0;
                   var effect = player.getUseValue({
@@ -8553,15 +8559,15 @@ const b = 1;
                       result.cards = player.getCards("h");
                       result.card.cards = player.getCards("h");
                       player.addTempSkill('jlsg_jinzhi2', 'roundStart');
-                      player.markAuto('jlsg_jinzhi2', [result.card.name]);
+                      player.markAuto('jlsg_jinzhi', [result.card.name]);
                     },
                   }
                 },
                 prompt: function (links, player) {
                   var card = get.translation({ name: links[0][2], nature: links[0][3] });
                   var str = '将所有手牌当做' + card + '使用';
-                  if (player.getStorage('jlsg_jinzhi2').length) {
-                    str += `,然后摸${get.cnNumber(player.getStorage('jlsg_jinzhi2').length)}张牌`;
+                  if (player.getStorage('jlsg_jinzhi').length) {
+                    str += `,然后摸${get.cnNumber(player.getStorage('jlsg_jinzhi').length)}张牌`;
                   }
                 }
               },
@@ -8570,8 +8576,8 @@ const b = 1;
                 respondShan: true,
                 respondSha: true,
                 skillTagFilter: function (player, tag, arg) {
-                  if (arg && arg.name && player.getStorage('jlsg_jinzhi2').includes(arg.name)) return false;
-                  return player.countCards('h') && player.getStorage('jlsg_jinzhi2').length < 4;
+                  if (arg && arg.name && player.getStorage('jlsg_jinzhi').includes(arg.name)) return false;
+                  return player.countCards('h') && player.getStorage('jlsg_jinzhi').length < 4;
                 },
                 result: {
                   player: function (player) {
@@ -8583,15 +8589,7 @@ const b = 1;
             },
             jlsg_jinzhi2: {
               sourceSkill: "jlsg_jinzhi",
-              onremove: true,
-              intro: {
-                content: function (storage, player, skill) {
-                  return '本轮使用了' + storage.reduce((a, b) => a + ' ' + get.translation(b), '');
-                },
-              },
-              init: function (player) {
-                player.storage.jlsg_jinzhi2 = [];
-              },
+              onremove: ["jlsg_jinzhi"],
               trigger: { player: ['useCardAfter', 'respondAfter'] },
               forced: true,
               charlotte: true,
@@ -8600,10 +8598,8 @@ const b = 1;
                 return event.skill == 'jlsg_jinzhi_backup';
               },
               content: function () {
-                var index = player.storage.jlsg_jinzhi2.indexOf(trigger.card.name) + 1;
-                if (index > 0) {
-                  player.draw(index);
-                }
+                var index = (player.storage.jlsg_jinzhi?.length || 0) + 1;
+                if (index > 0) player.draw(index);
               },
             },
             jlsg_yuyou: {
