@@ -8482,14 +8482,20 @@ const b = 1;
             },
             jlsg_jinzhi: {
               audio: "ext:极略:2",
+              intro: {
+                content: function (storage, player, skill) {
+                  if (!storage?.length) return "";
+                  return '本轮使用了' + storage.reduce((a, b) => a + ' ' + get.translation(b), '');
+                },
+              },
               enable: 'chooseToUse',
               hiddenCard: function (player, name) {
                 if (['basic', 'trick'].includes(get.type(name)) && lib.inpile.includes(name)
-                  && player.countCards('h') && !player.getStorage('jlsg_jinzhi2').includes(name) && player.getStorage('jlsg_jinzhi2').length < 4) return true;
+                  && player.countCards('h') && !player.getStorage('jlsg_jinzhi').includes(name) && player.getStorage('jlsg_jinzhi').length < 4) return true;
               },
               filter: function (event, player) {
                 let hs = player.getCards("h"),
-                  storage = player.getStorage('jlsg_jinzhi2');
+                  storage = player.getStorage('jlsg_jinzhi');
                 if (!hs.length || storage.length >= 4) return false;
                 for (let i of lib.inpile) {
                   if (storage.includes(i)) continue;
@@ -8508,7 +8514,7 @@ const b = 1;
                     list = [];
                   for (let i = 0; i < lib.inpile.length; i++) {
                     let name = lib.inpile[i];
-                    if (player.getStorage('jlsg_jinzhi2').includes(name)) continue;
+                    if (player.getStorage('jlsg_jinzhi').includes(name)) continue;
                     let cardx = get.autoViewAs({ name: name }, hs);
                     if (name == 'sha') {
                       if (event.filterCard(cardx, player, event)) list.push(['基本', '', 'sha']);
@@ -8527,7 +8533,7 @@ const b = 1;
                 },
                 check: function (button) {
                   var player = _status.event.player;
-                  var storage = player.getStorage('jlsg_jinzhi2');
+                  var storage = player.getStorage('jlsg_jinzhi');
                   if (player.countCards('h', button.link[2]) > 0 && storage.length < player.countCards('h')) return 0;
                   if (['wugu', 'zhulu_card'].includes(button.link[2])) return 0;
                   var effect = player.getUseValue({
@@ -8553,15 +8559,15 @@ const b = 1;
                       result.cards = player.getCards("h");
                       result.card.cards = player.getCards("h");
                       player.addTempSkill('jlsg_jinzhi2', 'roundStart');
-                      player.markAuto('jlsg_jinzhi2', [result.card.name]);
+                      player.markAuto('jlsg_jinzhi', [result.card.name]);
                     },
                   }
                 },
                 prompt: function (links, player) {
                   var card = get.translation({ name: links[0][2], nature: links[0][3] });
                   var str = '将所有手牌当做' + card + '使用';
-                  if (player.getStorage('jlsg_jinzhi2').length) {
-                    str += `,然后摸${get.cnNumber(player.getStorage('jlsg_jinzhi2').length)}张牌`;
+                  if (player.getStorage('jlsg_jinzhi').length) {
+                    str += `,然后摸${get.cnNumber(player.getStorage('jlsg_jinzhi').length)}张牌`;
                   }
                 }
               },
@@ -8570,8 +8576,8 @@ const b = 1;
                 respondShan: true,
                 respondSha: true,
                 skillTagFilter: function (player, tag, arg) {
-                  if (arg && arg.name && player.getStorage('jlsg_jinzhi2').includes(arg.name)) return false;
-                  return player.countCards('h') && player.getStorage('jlsg_jinzhi2').length < 4;
+                  if (arg && arg.name && player.getStorage('jlsg_jinzhi').includes(arg.name)) return false;
+                  return player.countCards('h') && player.getStorage('jlsg_jinzhi').length < 4;
                 },
                 result: {
                   player: function (player) {
@@ -8583,15 +8589,7 @@ const b = 1;
             },
             jlsg_jinzhi2: {
               sourceSkill: "jlsg_jinzhi",
-              onremove: true,
-              intro: {
-                content: function (storage, player, skill) {
-                  return '本轮使用了' + storage.reduce((a, b) => a + ' ' + get.translation(b), '');
-                },
-              },
-              init: function (player) {
-                player.storage.jlsg_jinzhi2 = [];
-              },
+              onremove: ["jlsg_jinzhi"],
               trigger: { player: ['useCardAfter', 'respondAfter'] },
               forced: true,
               charlotte: true,
@@ -8600,55 +8598,49 @@ const b = 1;
                 return event.skill == 'jlsg_jinzhi_backup';
               },
               content: function () {
-                var index = player.storage.jlsg_jinzhi2.indexOf(trigger.card.name) + 1;
-                if (index > 0) {
-                  player.draw(index);
-                }
+                var index = (player.storage.jlsg_jinzhi?.length || 0) + 1;
+                if (index > 0) player.draw(index);
               },
             },
             jlsg_yuyou: {
               audio: "ext:极略:2",
-              trigger: { player: 'gainEnd' },
+              trigger: {
+                player: 'gainAfter',
+                global: 'loseAsyncAfter',
+              },
               forced: true,
               filter: function (event, player) {
-                return event.cards.length > 1;
+                if (!event.getg || !event.getg(player)) return false;
+                return event.getg(player).length > 1;
               },
-              content: function () {
-                'step 0'
-                player.chooseCard('选择一张牌保留', true,
-                  c => _status.event.cards.includes(c),
-                  c => get.useful(c, _status.event.player),
-                ).set('cards', trigger.cards);
-                'step 1'
-                event.cards = trigger.cards;
-                if (result.bool) {
-                  event.cards = event.cards.filter(c => !result.cards.includes(c));
+              async content(event, trigger, player) {
+                const cards = trigger.getg(player);
+                const { result: chooseCard } = await player.chooseCard('鱼忧：选择一张牌保留', true)
+                  .set("filterCard", (card, player) => get.event("cardx").includes(card))
+                  .set("ai", card => get.useful(card, get.player()))
+                  .set("cardx", cards);
+                let cards2 = cards.slice()
+                if (chooseCard.bool) {
+                  cards.remove(chooseCard.cards[0]);
+                  await player.discard(cards);
                 }
-                player.discard(event.cards);
-                'step 2'
-                if (!event.cards.length || !game.hasPlayer(p => p.hasSex('male'))) {
-                  event.finish();
-                  return;
-                }
-                player.chooseTarget(`###${get.prompt(event.name)}###令一名男性角色弃置牌或失去体力`, (_, p, t) => t.hasSex('male'), t => -get.attitude(_status.event.player, t));
-                'step 3'
-                if (!result.bool) {
-                  event.finish();
-                  return;
-                }
-                event.target = result.targets[0];
-                player.line(event.target);
-                if (!['nei', 'rYe', 'bYe'].includes(player.identity) && event.target.ai.shown > player.ai.shown) {
+                if (!cards.length || !game.hasPlayer(p => p.hasSex('male'))) return;
+                const { result: chooseTarget } = await player.chooseTarget(`###${get.prompt(event.name)}###令一名男性角色弃置牌或失去体力`)
+                  .set("filterTarget", (_, player, target) => target.hasSex("male"))
+                  .set("ai", target => {
+                    const player = get.player();
+                    return get.effect(target, { name: "losehp" }, player, player) + get.effect(target, { name: "guohe_copy2" }, player, player);
+                  })
+                if (!chooseTarget.bool || !chooseTarget.targets) return;
+                const { targets: [target] } = chooseTarget;
+                player.line(target);
+                if (!['nei', 'rYe', 'bYe'].includes(player.identity) && target.ai.shown > player.ai.shown) {
                   player.addExpose(0.2);
                 }
-                var eff = lib.jlsg.getLoseHpEffect(event.target) * 3;
-                event.target.chooseToDiscard('he', `弃置${get.cnNumber(event.cards.length)}张牌，或者失去1点体力`, event.cards.length)
-                  .set('eff', eff / event.cards.length)
+                const { result } = await target.chooseToDiscard('he', `弃置${get.cnNumber(cards.length)}张牌，或者失去1点体力`, [cards.length, cards.length])
+                  .set('eff', lib.jlsg.getLoseHpEffect(target) * 3 / cards.length)
                   .set('ai', c => get.unuseful(c) - _status.event.eff);
-                'step 4'
-                if (!result.bool) {
-                  event.target.loseHp();
-                }
+                if (!result.bool) await target.loseHp(1);
               },
             },
             jlsg_huituo: {
@@ -33701,7 +33693,7 @@ const b = 1;
                         return 5.5;
                       },
                     }],
-                    ["选择一名角色，令其对其余所有角色连续使用六张同名非延时锦囊牌", {
+                    ["选择一名角色，令其对其余所有角色连续使用六张同名普通锦囊牌", {
                       content: async function (event, trigger, player) {
                         const list = lib.inpile.filter(name => {
                           if (get.type(name, null, false) != "trick") return false;
@@ -33709,7 +33701,7 @@ const b = 1;
                           if (!info || info.filterAddedTarget) return false;
                           return true;
                         });
-                        const { result } = await player.chooseTarget("选择一名角色，令其对其余所有角色连续使用六张同名非延时锦囊牌", true)
+                        const { result } = await player.chooseTarget("选择一名角色，令其对其余所有角色连续使用六张同名普通锦囊牌", true)
                           .set("filterTarget", (_, player, target) => get.event("list").some(name => target.hasUseTarget(name)))
                           .set("ai", target => Math.random())
                           .set("list", list);
@@ -33717,10 +33709,42 @@ const b = 1;
                           const target = result.targets[0];
                           const cards = list.filter(name => target.hasUseTarget(name));
                           event.card = get.autoViewAs({ name: cards.randomGet(), isCard: true }, []);
-                          game.log(target, "抽中的牌为", get.translation(event.card.name));
-                          const targets = game.filterPlayer(current => current != target);
+                          game.log(target, "使用的牌为", get.translation(event.card.name));
+                          const targets = game.filterPlayer(current => current != target && target.canUse(event.card, current, false, event));
                           for (let i = 0; i < 6; i++) {
+                            if (!target.isIn()) break;
                             await target.useCard(event.card, targets.filter(i => i.isIn())).set("addCount", false);
+                          };
+                        }
+                      },
+                      effect(player) {
+                        return 2;
+                      },
+                    }],
+                    ["选择一名角色，令其对其余所有角色连续使用六张随机普通锦囊牌", {
+                      content: async function (event, trigger, player) {
+                        const list = lib.inpile.filter(name => {
+                          if (get.type(name, null, false) != "trick") return false;
+                          let info = lib.card[name];
+                          if (!info || info.filterAddedTarget) return false;
+                          return true;
+                        });
+                        const { result } = await player.chooseTarget("选择一名角色，令其对其余所有角色连续使用六张随机普通锦囊牌", true)
+                          .set("filterTarget", (_, player, target) => get.event("list").some(name => target.hasUseTarget(name)))
+                          .set("ai", target => Math.random())
+                          .set("list", list);
+                        if (result.bool) {
+                          const target = result.targets[0];
+                          const cards = list.filter(name => target.hasUseTarget(name));
+                          event.cards = [];
+                          while (event.cards.length < 6 && target.isIn()) {
+                            const card = get.autoViewAs({ name: cards.randomGet(), isCard: true }, []);
+                            event.cards.push(card.name);
+                            const targets = game.filterPlayer(current => {
+                              if (current == target) return false;
+                              return target.canUse(card, current, false, event);
+                            });
+                            await target.useCard(card, targets).set("addCount", false);
                           };
                         }
                       },
