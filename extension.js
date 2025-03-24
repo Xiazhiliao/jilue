@@ -33521,7 +33521,7 @@ const b = 1;
                         return 5.5;
                       },
                     }],
-                    ["选择一名角色，令其对其余所有角色连续使用六张同名非延时锦囊牌", {
+                    ["选择一名角色，令其对其余所有角色连续使用六张同名普通锦囊牌", {
                       content: async function (event, trigger, player) {
                         const list = lib.inpile.filter(name => {
                           if (get.type(name, null, false) != "trick") return false;
@@ -33529,7 +33529,7 @@ const b = 1;
                           if (!info || info.filterAddedTarget) return false;
                           return true;
                         });
-                        const { result } = await player.chooseTarget("选择一名角色，令其对其余所有角色连续使用六张同名非延时锦囊牌", true)
+                        const { result } = await player.chooseTarget("选择一名角色，令其对其余所有角色连续使用六张同名普通锦囊牌", true)
                           .set("filterTarget", (_, player, target) => get.event("list").some(name => target.hasUseTarget(name)))
                           .set("ai", target => Math.random())
                           .set("list", list);
@@ -33537,10 +33537,42 @@ const b = 1;
                           const target = result.targets[0];
                           const cards = list.filter(name => target.hasUseTarget(name));
                           event.card = get.autoViewAs({ name: cards.randomGet(), isCard: true }, []);
-                          game.log(target, "抽中的牌为", get.translation(event.card.name));
-                          const targets = game.filterPlayer(current => current != target);
+                          game.log(target, "使用的牌为", get.translation(event.card.name));
+                          const targets = game.filterPlayer(current => current != target && target.canUse(event.card, current, false, event));
                           for (let i = 0; i < 6; i++) {
+                            if (!target.isIn()) break;
                             await target.useCard(event.card, targets.filter(i => i.isIn())).set("addCount", false);
+                          };
+                        }
+                      },
+                      effect(player) {
+                        return 2;
+                      },
+                    }],
+                    ["选择一名角色，令其对其余所有角色连续使用六张随机普通锦囊牌", {
+                      content: async function (event, trigger, player) {
+                        const list = lib.inpile.filter(name => {
+                          if (get.type(name, null, false) != "trick") return false;
+                          let info = lib.card[name];
+                          if (!info || info.filterAddedTarget) return false;
+                          return true;
+                        });
+                        const { result } = await player.chooseTarget("选择一名角色，令其对其余所有角色连续使用六张随机普通锦囊牌", true)
+                          .set("filterTarget", (_, player, target) => get.event("list").some(name => target.hasUseTarget(name)))
+                          .set("ai", target => Math.random())
+                          .set("list", list);
+                        if (result.bool) {
+                          const target = result.targets[0];
+                          const cards = list.filter(name => target.hasUseTarget(name));
+                          event.cards = [];
+                          while (event.cards.length < 6 && target.isIn()) {
+                            const card = get.autoViewAs({ name: cards.randomGet(), isCard: true }, []);
+                            event.cards.push(card.name);
+                            const targets = game.filterPlayer(current => {
+                              if (current == target) return false;
+                              return target.canUse(card, current, false, event);
+                            });
+                            await target.useCard(card, targets).set("addCount", false);
                           };
                         }
                       },
