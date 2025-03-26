@@ -29617,27 +29617,26 @@ const b = 1;
                 else if (event.name == 'changeSkills') {
                   if (!event.removeSkill.length) return false;
                   if (event.getParent().name == 'jlsg_linglong') return false;
-                  return lib.skill.jlsg_linglong.validTargets(player, event.removeSkill).length;
                 }
-                return lib.skill.jlsg_linglong.validTargets(player).length;
+                else {
+                  if (event.getParent().player == player) return false;
+                }
+                return lib.skill.jlsg_linglong.validTargets(player,event.removeSkill).length;
               },
-              direct: true,
-              content: function () {
-                'step 0'
-                var targets = lib.skill.jlsg_linglong.validTargets(player, trigger.removeSkill);
-                const list = {};
+              async cost(event, trigger, player) {
+                const targets = lib.skill.jlsg_linglong.validTargets(player, trigger.removeSkill),
+                  list = {};
                 for (let target of targets) {
                   if (!list[target.playerid]) list[target.playerid] = {};
                   const skills = lib.skill.jlsg_linglong.validSkillsOthers(target);
                   for (let skill of skills) {
                     const { targetFilter, positive } = lib.skill[skill];
-                    const targets = targetFilter(target);
-                    let eff = positive(targets, target, player);
+                    const targets1 = targetFilter(target);
+                    let eff = positive(targets1, target, player);
                     list[target.playerid][skill] = eff;
                   };
                 };
-                event.list = list;
-                var prompt = `###${get.prompt(event.name)}###选择失去技能的角色`;
+                let prompt = `###${get.prompt("jlsg_linglong")}###选择失去技能的角色`;
                 if (trigger.name == 'changeSkills') {
                   prompt += `来抵消失去${trigger.removeSkill.map(s => `【${get.translation(s)}】`).join("")}`;
                 } else {
@@ -29648,86 +29647,64 @@ const b = 1;
                   }[trigger.name];
                   prompt += `来抵消或转移<span style="font-weight: bold;">${eff}</span>效果`;
                 }
-                player.chooseTarget(prompt, (_, player, target) => {
+                event.result = await player.chooseTarget(prompt, (_, player, target) => {
                   return _status.event.targets.includes(target);
                 })
-                  .set('ai', (target, targets) => 20 - Math.min(Object.values(get.event("choice")[target.playerid])))
+                  .set('ai', target => 20 - Math.min(Object.values(get.event("choice")[target.playerid])))
                   .set('targets', targets)
-                  .set("choice", list);
-                'step 1'
-                if (!result.bool) {
-                  event.finish();
-                  return;
-                }
-                var target = result.targets[0];
-                event.target = target;
-                var skills;
+                  .set("choice", list)
+                  .forResult();
+                event.result.cost_data = { list };
+              },
+              async content(event, trigger, player) {
+                const { targets: [target], cost_data: { list } } = event;
+                let skills,
+                  removeSkill;
                 if (target == player) {
                   skills = lib.skill.jlsg_linglong.validSkillsSelf(target, trigger.removeSkill);
                 } else {
                   skills = lib.skill.jlsg_linglong.validSkillsOthers(target);
                 }
-                if (!skills.length) {
-                  event.finish();
-                  return;
-                }
-                player.logSkill(event.name, target);
-                if (skills.length == 1) {
-                  event._result = {
-                    bool: true,
-                    links: skills,
-                  };
-                  return;
-                }
-                var next = player.chooseButton([
-                  `玲珑:请选择${get.translation(target)}失去的技能`,
-                  [skills.map(s => [s, get.translation(s)]), 'tdnodes'],
-                ]).set('forced', true).set("ai", button => {
-                  return 20 - get.event("choice")[button.link];
-                }).set("choice", event.list[target.playerid]);
-                if (trigger.name == 'changeSkills' && trigger.removeSkill.length > 1) {
-                  next.set('selectButton', [1, trigger.removeSkill.length]);
-                }
-                'step 2'
-                if (!result.bool) {
-                  event.finish();
-                  return;
-                }
-                var target = event.target;
-                target.removeSkills(result.links);
-                if (trigger.name != 'changeSkills') {
-                  if (target == player) {
-                    trigger.neutralize();
-                  } else {
-                    trigger.player = target;
+                if (skills.length == 1) removeSkill = skills;
+                else {
+                  const next = player.chooseButton([
+                    `玲珑:请选择${get.translation(target)}失去的技能`,
+                    [skills.map(s => [s, get.translation(s)]), 'tdnodes'],
+                  ]).set('forced', true).set("ai", button => {
+                    return 20 - get.event("choice")[button.link];
+                  }).set("choice", list[target.playerid]);
+                  if (trigger.name == 'changeSkills' && trigger.removeSkill.length > 1) {
+                    next.set('selectButton', [1, trigger.removeSkill.length]);
                   }
-                  event.finish();
+                  const { result: chooseRemove } = await next;
+                  if (!chooseRemove.bool) return;
+                  removeSkill = chooseRemove.links;
+                }
+                await target.removeSkills(removeSkill);
+                if (trigger.name != 'changeSkills') {
+                  if (target == player) await trigger.neutralize();
+                  else trigger.player = target;
                   return;
                 }
-                if (result.links.length >= trigger.removeSkill.length) {
-                  event._result = {
-                    bool: true,
-                    links: trigger.removeSkill.slice(),
-                  };
-                  return;
+                let retainSkill;
+                if (removeSkill.length >= trigger.removeSkill.length) retainSkill = trigger.removeSkill;
+                else {
+                  const next = player.chooseButton([
+                    `玲珑:请选择${get.translation(removeSkill.length)}个技能不被失去`,
+                    [trigger.removeSkill.map(s => [s, get.translation(s)]), 'tdnodes'],
+                  ]);
+                  next.set('forced', true);
+                  next.set('selectButton', result.links.length);
+                  const { result: chooseRetain } = await next;
+                  if (!chooseRetain.bool) return;
+                  retainSkill = chooseRetain.links;
                 }
-                var next = player.chooseButton([
-                  `玲珑:请选择${get.translation(result.links.length)}个技能不被失去`,
-                  [trigger.removeSkill.map(s => [s, get.translation(s)]), 'tdnodes'],
-                ]);
-                next.set('forced', true);
-                next.set('selectButton', result.links.length);
-                'step 3'
-                if (!result.bool) {
-                  event.finish();
-                  return;
-                }
-                trigger.removeSkill.removeArray(result.links);
-                game.log(player, '失去', ...result.links.map(i => {
+                trigger.removeSkill.removeArray(retainSkill);
+                game.log(player, '失去', ...retainSkill.map(i => {
                   return '#g【' + get.translation(i) + '】';
                 }), '技能的效果被抵消了');
                 if (!trigger.addSkill.length && !trigger.removeSkill.length) {
-                  trigger.neutralize();
+                  await trigger.neutralize();
                 }
               },
               validSkillsSelf: function (player, ignoreSkills) {
