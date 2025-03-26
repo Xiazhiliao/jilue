@@ -28633,8 +28633,7 @@ const b = 1;
                     return this.targetFilter(player).sortBySeat();
                   },
                   async content(event, trigger, player) {
-                    const targets = lib.skill[event.name].targetFilter(player).sortBySeat();
-                    for (let target of targets) {
+                    for (let target of event.targets) {
                       const next = game.createEvent("jlsg_tiangong_jiguan_event", false)
                         .set("player", target)
                         .setContent(lib.skill[event.name].effect);
@@ -29485,7 +29484,6 @@ const b = 1;
                       let skills = player.getSkills();
                       let skill = _status.jlsgsy_bolue_list[lib.skill[event.getParent().name]?.groupType]
                         .filter(s => !skills.includes(s)).randomGet();
-                      player.popup(skill);
                       await player.addSkills(skill);
                     },
                     positive(targets, player, viewer) {
