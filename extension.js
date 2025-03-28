@@ -26919,7 +26919,9 @@ const b = 1;
               getSkills(player) {
                 return player.getSkills(null, false, false).filter(
                   s => lib.translate[s] && lib.translate[s + '_info']
-                    && lib.skill[s] && !lib.skill[s].nopopup && !lib.skill[s].equipSkill
+                    && lib.skill[s] && !lib.skill[s].nopopup
+                    && !lib.skill[s].charlotte
+                    && !lib.skill[s].equipSkill
                 );
               },
               filter: function (event, player) {
@@ -29621,7 +29623,7 @@ const b = 1;
                 else {
                   if (event.getParent().player == player) return false;
                 }
-                return lib.skill.jlsg_linglong.validTargets(player,event.removeSkill).length;
+                return lib.skill.jlsg_linglong.validTargets(player, event.removeSkill).length;
               },
               async cost(event, trigger, player) {
                 const targets = lib.skill.jlsg_linglong.validTargets(player, trigger.removeSkill),
@@ -33248,7 +33250,7 @@ const b = 1;
                             })
                           if (result.bool) {
                             let gains = get.gainableSkills();
-                            gains.removeArray(player.getSkills());
+                            gains.removeArray(player.getSkills(null, false, false));
                             let num = Math.min(result.links.length * 3, 50)
                             gains = gains.randomGets(num);
                             player.changeSkills(gains, result.links)
