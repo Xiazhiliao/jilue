@@ -39592,7 +39592,7 @@ onclick="if (lib.jlsg) lib.jlsg.showRepoElement(this)"></img>
       diskURL: "",
       forumURL: "",
       mirrorURL: "https://github.com/xiaoas/jilue",
-      version: "2.7.0317",
+      version: "2.7.0330",
       changelog: `
 <a onclick="if (jlsg) jlsg.showRepo()" style="cursor: pointer;text-decoration: underline;">
 Visit Repository</a><br>
@@ -39600,11 +39600,17 @@ Visit Repository</a><br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
 汇报bug点我</span><br>
+2025.03.30更新<br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="firemm">SK杨婉</div><br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="woodmm">冠勇盖世·孙策</div><br>
+&ensp; 修复技能bug（天工、烈弓、绝世、传说无双、鬼驱、灵泽）<br>
+&ensp; 优化技能（锦织、鱼忧、玲珑）<br>
+&ensp; 修复资料页无法播放武将阵亡配音的bug<br>
+<span style="font-size: large;">历史：</span><br>
 2025.03.17更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SK神蔡文姬</div><br>
 &ensp; 修复若干bug(离魂、逐星、龙魂、罗刹)<br>
 &ensp; 优化忧恤写法，优化天工、玲珑ai<br>
-<span style="font-size: large;">历史：</span><br>
 2025.02.28更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="watermm">SK诸葛诞</div><br>
 &ensp; 调整武将<span style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SP神赵云</span>技能为最新版[6.4.3]<br>
@@ -39623,19 +39629,6 @@ style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="orangemm">妖媚之殃</div><br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="orangemm">南中魔兽</div><br>
 &ensp; 修复若干历史遗留bug<br>
-2024.10.03更新<br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SK神曹丕</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="woodmm">SP庞统</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="woodmm">SK吕岱</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="qunmm">SK万年公主</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="qunmm">SK王元姬</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="watermm">SK张昌蒲</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="qunmm">杀破万千•吕布</div><br>
-&ensp; 接入无名杀姓名API<br>
-2024.08.04更新<br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="watermm">SP姜维</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="soilmm">SK黄皓</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="soilmm">SK花鬘</div><br>
 `
       ,
     }, files: { "character": [], "card": [], "skill": [] }
