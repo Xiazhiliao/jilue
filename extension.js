@@ -106,7 +106,7 @@ const b = 1;
           }
         }
       };
-      var suppressDieAudio = function (name) {
+      /*var suppressDieAudio = function (name) {
         var cfile = lib.character[name];
         if (cfile) {
           if (cfile[4] === undefined) {
@@ -115,21 +115,21 @@ const b = 1;
             cfile[4].add('die_audio');
           }
         }
-      };
+      };*/
       for (var i of Object.keys(lib.characterPack['jlsg_sr'])) {
         trivialSolveCharacterReplace(i);
-        suppressDieAudio(i);
+        //suppressDieAudio(i);
       }
       for (var i of Object.keys(lib.characterPack['jlsg_sk'])) {
         trivialSolveCharacterReplace(i);
-        suppressDieAudio(i);
+        //suppressDieAudio(i);
       }
       for (var i of Object.keys(lib.characterPack['jlsg_soul'])) {
         trivialSolveCharacterReplace(i, 'shen_');
-        suppressDieAudio(i);
+        //suppressDieAudio(i);
       }
       for (var i of Object.keys(lib.characterPack['jlsg_sy'])) {
-        suppressDieAudio(i);
+        //suppressDieAudio(i);
         if (!lib.config.forbidai_user.includes(i))
           lib.config.forbidai.remove(i);
       }
@@ -665,6 +665,7 @@ const b = 1;
       });
       let postProcessPack = (pack) => {
         for (var i in pack.character) {
+          if (!pack.character[i][4]) pack.character[i][4] = [];
           pack.character[i][4].push(`die:ext:极略/die/${i}.mp3`);
           if (i in pack.translate && !i.startsWith('jlsgsy')) {
             let name = pack.translate[i];
@@ -724,7 +725,7 @@ const b = 1;
                 'jlsgsk_mayunlu', 'jlsgsk_zhongyao', 'jlsgsk_nanhualaoxian', 'jlsgsk_jiangwei', 'jlsgsk_huanghao',
                 'jlsgsk_huaman', 'jlsgsk_pangtong', 'jlsgsk_lvdai', 'jlsgsk_wangyuanji', 'jlsgsk_zhangchangpu',
                 "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan",
-                "jlsgsk_lvkai", "jlsgsk_zhugedan","jlsgsk_yangwan"],
+                "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan"],
               jlsg_pojun: ['jlsgsk_zhuran', 'jlsgsk_yanliang', 'jlsgsk_chendao', 'jlsgsk_dingfeng', 'jlsgsk_dongzhuo',
                 'jlsgsk_yujin', 'jlsgsk_panfeng', 'jlsgsk_jiangqin', 'jlsgsk_guanxing', 'jlsgsk_guansuo',
                 'jlsgsk_baosanniang', 'jlsgsk_dongbai', 'jlsgsk_xushi', 'jlsgsk_caoxiu', 'jlsgsk_caojie'],
