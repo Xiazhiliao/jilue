@@ -35676,37 +35676,29 @@ const b = 1;
               },
             },
             jlsgsy_shiao: {
-              audio: "ext:极略:true", // audio: ['shiao'],
-              trigger: { player: 'phaseZhunbeiBegin' },
+              audio: ["ext:极略/jlsgsy_shiao2.mp3", "ext:极略:true"],
+              trigger: { player: ['phaseZhunbeiBegin', 'phaseJieshuBegin'] },
               direct: true,
-              unique: true,
               filter: function (event, player) {
                 return game.hasPlayer(function (current) {
-                  return current.countCards('h') < player.countCards('h');
-                });
-              },
-              content: function () {
-                player.chooseUseTarget(game.filterPlayer(function (current) {
-                  return current.countCards('h') < player.countCards('h');
-                }), '###是否发动【恃傲】？###视为对一名手牌小于你的角色使用一张【杀】', { name: 'sha' }, false, 'nodistance').logSkill = 'jlsgsy_shiao';
-              },
-              group: ['jlsgsy_shiao2']
-            },
-            jlsgsy_shiao2: {
-              audio: "ext:极略:true", // audio: ['shiao2'],
-              trigger: { player: 'phaseJieshuBegin' },
-              direct: true,
-              unique: true,
-              filter: function (event, player) {
-                return game.hasPlayer(function (current) {
+                  if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
+                  if (event.name == "phaseZhunbei") return current.countCards('h') < player.countCards('h');
                   return current.countCards('h') > player.countCards('h');
                 });
               },
-              content: function () {
-                player.chooseUseTarget(game.filterPlayer(function (current) {
-                  return current.countCards('h') > player.countCards('h');
-                }), '###是否发动【恃傲】？###视为对一名手牌大于你的角色使用一张【杀】', { name: 'sha' }, false, 'nodistance').logSkill = 'jlsgsy_shiao2';
-              }
+              async content(event, trigger, player) {
+                await player.chooseUseTarget(
+                  game.filterPlayer(function (current) {
+                    if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
+                    if (event.name == "phaseZhunbei") return current.countCards('h') < player.countCards('h');
+                    return current.countCards('h') > player.countCards('h');
+                  }),
+                  `###是否发动【恃傲】？###视为对一名手牌${trigger.name == "phaseZhunbei" ? "小于" : "大于"}你的角色使用一张【杀】`,
+                  get.autoViewAs({ name: "sha" }, []),
+                  false,
+                  'nodistance'
+                ).set("logSkill", 'jlsgsy_shiao');
+              },
             },
             jlsgsy_kuangxi: {
               audio: "ext:极略:2", // audio: ['kuangxi', 2],
@@ -37105,7 +37097,6 @@ const b = 1;
             jlsgsy_canlue2: '残掠',
             jlsgsy_baonucaifuren: '暴怒',
             jlsgsy_shiao: '恃傲',
-            jlsgsy_shiao2: '恃傲',
             jlsgsy_kuangxi: '狂袭',
             jlsgsy_baonuweiyan: '暴怒',
             jlsgsy_baonuzhangrang: '暴怒',
