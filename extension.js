@@ -35707,24 +35707,26 @@ const b = 1;
                 let targets = event.targets.slice().remove(player);
                 if (!targets || targets.length == 0 || !event.card) return false;
                 if (event.card.name == 'wuxie') return false;
-                return get.type(event.card, 'trick') == 'trick';
+                if (get.type2(event.card) != 'trick') return false;
+                return targets.some(target => player.canUse(get.autoViewAs({ name: "sha" }, []), target, false));
               },
               check: function (event, player) {
-                let targets = event.targets.slice().remove(player),
-                  att = 0;
+                let targets = event.targets.slice()
+                  .remove(player)
+                  .filter(target => player.canUse(get.autoViewAs({ name: "sha" }, []), target, false));
+                let att = 0;
                 for (var i = 0; i < targets.length; i++) {
-                  att += ai.get.effect(targets[i], { name: 'sha' }, player, player);
+                  att += get.effect(targets[i], get.autoViewAs({ name: "sha" }, []), player, player);
                 }
                 return att > 1;
               },
-              content: function () {
-                "step 0"
-                let targets = trigger.targets.slice().remove(player);
-                event.evt = player.useCard({ name: 'sha', jlsgsy_kuangxi: true }, targets, false);
-                "step 1"
-                let evt = player.getHistory('sourceDamage', e => e.getParent(2) === event.evt);
-                if (!evt.length && player.isIn()) {
-                  player.loseHp();
+              async content(event, trigger, player) {
+                const targets = trigger.targets.slice()
+                  .remove(player)
+                  .filter(target => player.canUse(get.autoViewAs({ name: "sha" }, []), target, false));
+                await player.useCard(get.autoViewAs({ name: "sha" }, []), targets, false);
+                if (!player.hasHistory('sourceDamage', e => e.getParent(3) === event)) {
+                  if (player.isIn()) await player.loseHp(1);
                 }
               },
               ai: {
