@@ -32157,24 +32157,25 @@ const b = 1;
               filter(event) {
                 const card = event.card;
                 if (!["basic", "trick"].includes(get.type(card, null, false))) return false;
-                if (!lib.card[event.card.name]?.enable) return false;
+                if (lib.card[event.card.name]?.notarget) return false;
                 return get.is.ordinaryCard(card);
               },
               async cost(event, trigger, player) {
-                const targets = game.filterPlayer().reduce((list, current) => {
-                  let effect = get.effect(current, trigger.card, player, player);
-                  if (current.countExpansions("jlsg_zhuxing") > 3) effect = -114514;
-                  if (!list[current.playerid]) list[current.playerid] = effect;
-                  return list;
-                }, {});
-                if (targets[player.playerid] <= 0) targets[player.playerid] = -get.effect(player, trigger.card, player, player) - 1;
-                const num = Math.max(...Object.values(targets));
-                const choice = Object.keys(targets).find(i => targets[i] == num);
                 event.result = await player.chooseTarget(`###逐星：是否将${get.translation(trigger.card)}置于一名角色的武将牌上称为“逐星”牌###然后你可以令此牌无效`)
                   .set("ai", target => {
                     return target.playerid == _status.event.choice;
                   })
-                  .set("choice", choice)
+                  .set("choice", (function () {
+                    const targets = game.filterPlayer().reduce((list, current) => {
+                      let effect = get.effect(current, trigger.card, player, player);
+                      if (current.countExpansions("jlsg_zhuxing") > 3) effect = -114514;
+                      if (!list[current.playerid]) list[current.playerid] = effect;
+                      return list;
+                    }, {});
+                    if (targets[player.playerid] <= 0) targets[player.playerid] = -get.effect(player, trigger.card, player, player) - 1;
+                    const num = Math.max(...Object.values(targets));
+                    return Object.keys(targets).find(i => targets[i] == num);
+                  })())
                   .forResult();
               },
               async content(event, trigger, player) {
@@ -32215,12 +32216,14 @@ const b = 1;
                   },
                   logTarget: "player",
                   async content(event, trigger, player) {
-                    const cards = trigger.player.getExpansions("jlsg_zhuxing").map(card => {
-                      const [suit, number, name, nature] = get.cardInfo(card);
-                      return get.autoViewAs({ name, number, suit, nature }, []);
-                    }).reverse();
+                    const cards = trigger.player.getExpansions("jlsg_zhuxing").reverse();
                     for (let card of cards) {
-                      if (trigger.player.isIn()) await player.useCard(card, trigger.player).set("addCount", false);
+                      if (!trigger.player.isIn()) break;
+                      const [suit, number, name, nature] = get.cardInfo(card);
+                      const cardx = get.autoViewAs({ name, number, suit, nature }, []);
+                      if (player.canUse(cardx, trigger.player, false)) {
+                        await player.useCard(card, trigger.player).set("addCount", false);
+                      }
                     };
                   },
                 },
