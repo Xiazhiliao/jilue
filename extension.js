@@ -13562,48 +13562,24 @@ const b = 1;
                   p.storage.zhibi = p.getStorage('zhibi').concat(recruit);
                   recruit.storage.zhibi = recruit.getStorage('zhibi').concat(p);
                   p.ai.modAttitudeFrom = function (from, to, att) {
-                    if (from.storage.jlsg_xinghan_recruit) {
-                      let origin = from.getStorage('jlsg_xinghan_recruit');
-                      if (to?.playerid == origin?.playerid || to.getStorage('jlsg_xinghan_recruit')?.playerid == origin?.playerid) {
-                        return 5;
-                      }
-                      const currents = game.filterPlayer(current => {
-                        if (current == form) return false;
-                        if (current.storage.jlsg_xinghan_recruit?.playerid == origin?.playerid || current?.playerid == origin?.playerid) return false;
-                        return true;
-                      }, undefined, true);
-                      if (currents.length == 1 && currents[0] == to) return -2;
-                      return get.attitude(origin, to);
-                    }
-                    const currents = game.filterPlayer(current => {
-                      if (current == form) return false;
-                      if (current.storage.jlsg_xinghan_recruit?.playerid == from?.playerid) return false;
-                      return true;
-                    }, undefined, true);
-                    if (currents.length == 1 && currents[0] == to) return -2;
-                    return att;
+                    const fromOringin = from.storage.jlsg_xinghan_recruit || from,
+                      toOringin = to.storage.jlsg_xinghan_recruit || to;
+                    const currents = game.filterPlayer(null, undefined, true)
+                      .map(i => i.storage.jlsg_xinghan_recruit || i)
+                      .unique();
+                    currents.remove(fromOringin);
+                    if (currents.length == 1 && currents[0] == toOringin) return -2;
+                    return get.attitude(fromOringin, toOringin);
                   }
                   p.ai.modAttitudeTo = function (from, to, att) {
-                    if (to.storage.jlsg_xinghan_recruit) {
-                      let origin = to.getStorage('jlsg_xinghan_recruit');
-                      if (from.playerid == origin?.playerid || from.getStorage('jlsg_xinghan_recruit')?.playerid == origin?.playerid) {
-                        return 5;
-                      }
-                      const currents = game.filterPlayer(current => {
-                        if (current == to) return false;
-                        if (current.storage.jlsg_xinghan_recruit?.playerid == origin?.playerid) return false;
-                        return true;
-                      }, undefined, true);
-                      if (currents.length == 1 && currents[0] == from) return -2;
-                      return get.attitude(from, origin);
-                    }
-                    const currents = game.filterPlayer(current => {
-                      if (current == to) return false;
-                      if (current.storage.jlsg_xinghan_recruit?.playerid == to?.playerid) return false;
-                      return true;
-                    }, undefined, true);
-                    if (currents.length == 1 && currents[0] == from) return -2;
-                    return att;
+                    const fromOringin = from.storage.jlsg_xinghan_recruit || from,
+                      toOringin = to.storage.jlsg_xinghan_recruit || to;
+                    const currents = game.filterPlayer(null, undefined, true)
+                      .map(i => i.storage.jlsg_xinghan_recruit || i)
+                      .unique();
+                    currents.remove(toOringin);
+                    if (currents.length == 1 && currents[0] == fromOringin) return -2;
+                    return get.attitude(fromOringin, toOringin);
                   }
                 };
                 // AI attitude
