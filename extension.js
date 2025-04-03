@@ -5878,6 +5878,7 @@ const b = 1;
                 for (var i of list) {
                   skills.addArray((get.character(i)[3] || []).filter(function (skill) {
                     var info = get.info(skill);
+                    if (lib.filter.skillDisabled(skill)) return false;
                     return info && !info.zhuSkill && !info.hiddenSkill && !info.charlotte && !info.hiddenSkill && !info.dutySkill;
                   }));
                 }
@@ -10890,10 +10891,16 @@ const b = 1;
                 if (!"cards" in event.card || !event.card.cards.length) return false;
                 return !event.card.isCard;
               },
-              content() {
-                var skill = lib.skill.jlsg_fuhan.list.randomGet();
-                lib.skill.jlsg_fuhan.list.remove(skill);
-                player.addSkills(skill);
+              async content(event, trigger, player) {
+                let skills = lib.skill.jlsg_fuhan.list;
+                skills.removeArray(
+                  game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
+                )
+                if (!skills.length) {
+                  game.log("没有技能了");
+                  return;
+                }
+                await player.addSkills(skills.randomGet());
               },
             },
             jlsg_pindi: {
@@ -11540,11 +11547,14 @@ const b = 1;
                     .filter(c => get.character(c, 1) == 'wu')
                     .map(c => get.character(c)[3])
                     .flat()
-                    .filter(s => !get.info(s).charlotte)
+                    .filter(s => {
+                      if (lib.filter.skillDisabled(s)) return false;
+                      return !get.info(s).charlotte;
+                    })
                 );
-                for (let s of player.getSkills()) {
-                  skills.delete(s);
-                }
+                skills.removeArray((
+                  game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
+                ));
                 let skill = [...skills].randomGet();
                 if (skill) {
                   player.addSkills(skill);
@@ -11570,11 +11580,14 @@ const b = 1;
                   jlsg.characterList
                     .map(c => get.character(c)[3])
                     .flat()
-                    .filter(s => !get.info(s).charlotte)
+                    .filter(s => {
+                      if (lib.filter.skillDisabled(s)) return false;
+                      return !get.info(s).charlotte
+                    })
                 );
-                for (let s of result.targets[0].getSkills()) {
-                  skills.delete(s);
-                }
+                skills.removeArray(
+                  game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
+                )
                 let skill = [...skills].randomGet();
                 if (skill) {
                   result.targets[0].addSkills(skill);
@@ -12250,9 +12263,7 @@ const b = 1;
                     .map(c => get.character(c)[3])
                     .flat()
                     .filter(s => {
-                      if (player.hasSkill(s)) {
-                        return false;
-                      }
+                      if (lib.filter.skillDisabled(s)) return false;
                       let skill = lib.skill[s];
                       return skill &&
                         !skill.zhuSkill &&
@@ -12263,6 +12274,9 @@ const b = 1;
                         !skill.dutySkill;
                     });
                   skills = [... new Set(skills)];
+                  skills.removeArray(
+                    game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
+                  )
                   skills = skills.randomGets(cnt2);
                   player.addSkills(skills);
                   for (let s of skills) {
@@ -13072,9 +13086,9 @@ const b = 1;
                           for (let name of jlsg.characterList) {
                             skills.addArray(get.character(name)?.[3] ?? []);
                           }
-                          for (let p of game.filterPlayer()) {
-                            skills.removeArray(p.getSkills(null, false, false));
-                          }
+                          skills.removeArray(
+                            game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
+                          )
                           let skill = skills.randomGet();
                           if (!skill) {
                             break;
@@ -28700,11 +28714,10 @@ const b = 1;
                 let skills = {};
                 let players = game.players.concat(game.dead);
                 for (let c of lib.jlsg.characterList) {
-                  if (players.includes(c)) continue;
-                  if (!get.character(c) || !get.character(c)[3]) continue;
+                  if (!get.character(c) || !get.character(c)[3]?.length) continue;
                   let sex = get.character(c, 0);
                   skills[sex] = skills[sex] || [];
-                  skills[sex].addArray(get.character(c)[3].filter(s => lib.skill[s] && !lib.skill[s].charlotte));
+                  skills[sex].addArray(get.character(c)[3].filter(s => !lib.filter.skillDisabled(s) && !lib.skill[s]?.charlotte));
                 }
                 delete this.skills;
                 this.skills = skills;
@@ -28718,6 +28731,9 @@ const b = 1;
                   if (sex === target.sex) continue;
                   skills.addArray(lib.skill.jlsg_xingwu.skills[sex].filter(s => !targetSkills.includes(s)));
                 }
+                skills.removeArray(
+                  game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
+                )
                 skills = skills.randomGets(cnt);
                 if (!skills.length) return;
                 target.storage.jlsg_xingwu_skill = target.storage.jlsg_xingwu_skill || [];
@@ -29717,9 +29733,14 @@ const b = 1;
                   result[`随机获得一个${lib.translate[g]}势力技能`] = {
                     content: async function (event, trigger, player) {
                       let skills = player.getSkills();
+                      if (!_status.jlsgsy_bolue_list) {
+                        lib.skill.jlsgsy_bolue.initList();
+                      }
                       let skill = _status.jlsgsy_bolue_list[lib.skill[event.getParent().name]?.groupType]
-                        .filter(s => !skills.includes(s)).randomGet();
-                      await player.addSkills(skill);
+                      skill.removeArray(
+                        game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
+                      )
+                      await player.addSkills(skill.randomGet());
                     },
                     positive(targets, player, viewer) {
                       return Math.sign(get.attitude(viewer, player));
@@ -35009,7 +35030,7 @@ const b = 1;
                     result[info[1]] = new Set();
                   }
                   info[3]
-                    .filter(s => lib.skill[s] && (!lib.skill[s].ai || !lib.skill[s].ai.neg))
+                    .filter(s => !lib.filter.skillDisabled(s) && (!lib.skill[s]?.ai || !lib.skill[s]?.ai?.neg))
                     .forEach(s => result[info[1]].add(s));
                 }
                 for (let g in result) {
