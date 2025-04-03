@@ -14768,10 +14768,17 @@ const b = 1;
             jlsg_guanxu: {
               audio: "ext:极略:2",
               init(player) {
-                player.storage.jlsg_guanxu = new Array(8)
-                  .fill(1)
-                  .map((v, i) => i)
+                player.storage.jlsg_guanxu = Array
+                  .from({ length: 8 }, (v, i) => i)
                   .randomGet();
+                player.markSkill("jlsg_guanxu");
+              },
+              onremove: true,
+              intro: {
+                nocount: true,
+                content(storage, player) {
+                  return get.skillInfoTranslation("jlsg_guanxu", player);
+                },
               },
               trigger: { global: "phaseBegin" },
               filter(event, player) {
@@ -14950,6 +14957,7 @@ const b = 1;
                     replace: {},
                   });
                 if (result.bool) {
+                  game.log("本次效果为：", str);
                   const cardx = result.links;
                   if (storage > 0 && storage < 6) await trigger.player.discard(cardx);
                   switch (storage) {
@@ -14990,7 +14998,7 @@ const b = 1;
                       break;
                     case 3:
                       var skills = get.gainableSkills();
-                      skills.removeArray(player.getSkills());
+                      skills.removeArray(player.getSkills(null, false, false));
                       skills = skills.randomGets(3);
                       var buttons = skills.map(i => [
                         i,
@@ -15039,9 +15047,8 @@ const b = 1;
                 }
                 else await game.delayx();
                 let num2 = player.storage.jlsg_guanxu;
-                player.storage.jlsg_guanxu = new Array(8)
-                  .fill(1)
-                  .map((v, i) => i)
+                player.storage.jlsg_guanxu = Array
+                  .from({ length: 8 }, (v, i) => i)
                   .remove(num2)
                   .randomGet();
                 player.update();
@@ -15067,7 +15074,7 @@ const b = 1;
               },
               prompt2(event, player) {
                 let str = "然后可以";
-                if (player.hasSkill("jlsg_guanxu")) str += "重置“观虚”";
+                if (player.hasSkill("jlsg_guanxu", null, false, false)) str += "重置“观虚”";
                 else str += "获得“观虚”";
                 return str;
               },
@@ -15088,9 +15095,8 @@ const b = 1;
                 if (!player.hasSkill("jlsg_guanxu")) await player.addSkills("jlsg_guanxu");
                 else {
                   let num2 = player.storage.jlsg_guanxu
-                  player.storage.jlsg_guanxu = new Array(8)
-                    .fill(1)
-                    .map((v, i) => i)
+                  player.storage.jlsg_guanxu = Array
+                    .from({ length: 8 }, (v, i) => i)
                     .remove(num2)
                     .randomGet();
                   player.update();
@@ -16211,7 +16217,7 @@ const b = 1;
             },
 
             jlsg_guanxu: function (player) {
-              if (!player.storage.jlsg_guanxu && player.storage.jlsg_guanxu != 0) return "任意角色的回合开始时，你可以观看其手牌，然后你可以。。。";
+              if (!"jlsg_guanxu" in player.storage || typeof player.storage.jlsg_guanxu != "number") return "任意角色的回合开始时，你可以观看其手牌，然后你可以。。。";
               let map = new Map([
                 [0, "获得其中至多X张牌（X为其体力）。"],
                 [1, "弃置其中一张牌，令其加1点体力上限并回复1点体力。"],
