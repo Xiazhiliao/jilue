@@ -29944,7 +29944,7 @@ const b = 1;
                 }
                 await target.removeSkills(removeSkill);
                 if (trigger.name != 'changeSkills') {
-                  if (target == player) await trigger.neutralize();
+                  if (target == player) await trigger.cancel();
                   else trigger.player = target;
                   return;
                 }
@@ -29966,7 +29966,7 @@ const b = 1;
                   return '#g【' + get.translation(i) + '】';
                 }), '技能的效果被抵消了');
                 if (!trigger.addSkill.length && !trigger.removeSkill.length) {
-                  await trigger.neutralize();
+                  await trigger.cancel();
                 }
               },
               validSkillsSelf: function (player, ignoreSkills) {
@@ -34548,7 +34548,7 @@ const b = 1;
             jlsg_tiangong: '天工',
             jlsg_tiangong_info: '游戏开始/回合开始/回合结束时，你可以创造2/1/1个机关技能并令一名角色获得之。一名角色至多拥有七个机关技能。',
             jlsg_linglong: '玲珑',
-            jlsg_linglong_info: '当其他角色令你受到伤害时/失去体力时/减体力上限前/失去技能前，你可以令你失去一个非初始技能，然后抵消此效果;或令一名其他角色失去一个机关技能，然后将此效果转移给该角色（若效果为失去技能则改为抵消效果）。',
+            jlsg_linglong_info: '当其他角色令你受到伤害时/失去体力时/减体力上限前/失去技能前，你可以令你失去一个非初始技能，然后取消此效果;或令一名其他角色失去一个机关技能，然后将此效果转移给该角色（若效果为失去技能则改为取消效果）。',
 
             jlsg_feiying_info: '锁定技，若你的武将牌正面朝上，你使用【杀】无距离限制；若你的武将牌正面朝下，你不能成为【杀】的目标。',
             jlsg_guixin_info: '当你受到一次伤害后，你可以获得每名其他角色区域里的一张牌，再摸X张牌（X为阵亡/败退的角色数），然后翻面。',
