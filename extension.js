@@ -15133,7 +15133,10 @@ const b = 1;
               trigger: { global: "phaseUseBegin" },
               filter(event, player) {
                 const target = event.player,
-                  next = event.player.getNext();
+                  next = event.player.getNext(),
+                  sha = get.autoViewAs({ name: "sha" }, []),
+                  shunshou = get.autoViewAs({ name: "shunshou" }, []);
+                if (!target.canUse(sha, next, false) && !target.canUse(shunshou, next, false)) return false;
                 return target.isIn() && target != next;
               },
               check(event, player) {
@@ -15152,8 +15155,11 @@ const b = 1;
               async content(event, trigger, player) {
                 const target = trigger.player,
                   next = trigger.player.getNext(),
-                  list = ["sha", "shunshou"];
-                if (!next.countCards("hej")) list.remove("shunshou");
+                  list = ["sha", "shunshou"].filter(name => {
+                    const card = get.autoViewAs({ name }, []);
+                    return trigger.player.canUse(card, next, false);
+                  });
+                if (!next.countGainableCards(trigger.player, "hej")) list.remove("shunshou");
                 const { result } = await player.chooseControl(list)
                   .set("prompt", `请选择${get.translation(target)}对${get.translation(next)}使用的牌`)
                   .set("ai", () => get.event("choice"))
@@ -15167,7 +15173,7 @@ const b = 1;
                   })());
                 if (result.control != "cancel2") {
                   const card = get.autoViewAs({ name: result.control }, []);
-                  await target.useCard(card, next).set("addCount", false);
+                  await target.useCard(card, next, false);
                 }
               },
             },
@@ -17007,18 +17013,18 @@ const b = 1;
                   .filter(evt => evt.card == trigger.card)
                   .step(async (event, trigger, player) => {
                     if (!target.countCards("h")) return;
-                    if (player.canUse(card, target, false)) await player.useCard(card, target).set("addCount", false);
+                    if (player.canUse(card, target, false)) await player.useCard(card, target, false);
                   });
               },
               ai: {
                 effect: {
                   target(card, player, target) {
                     if (!["sha", "juedou"].includes(card.name)) return;
-                    if (player.countGainableCards(target, "h")) return [1, 1, 1, -1];
+                    if (player.countGainableCards(target, "h")) return [1, 0.5, 1, -0.5];
                   },
                   player(card, player, target) {
                     if (!["sha", "juedou"].includes(card.name)) return;
-                    if (target.countGainableCards(player, "h")) return [1, 1, 1, -1];
+                    if (target.countGainableCards(player, "h")) return [1, 0.5, 1, -0.5];
                   },
                 }
               },
@@ -17040,7 +17046,7 @@ const b = 1;
                 const { result } = await player.chooseToCompare(target);
                 if (result.winner == player) {
                   await player.draw(2);
-                  if (player.canUse(card, target, false)) await player.useCard(card, target).set("addCount", false);
+                  if (player.canUse(card, target, false)) await player.useCard(card, target, false);
                 }
                 else {
                   const bool = player.chooseBool(`威风：是否令${get.translation(target)}摸两张牌并视为对你使用一张【杀】？`)
@@ -17054,7 +17060,7 @@ const b = 1;
                     .forResultBool();
                   if (bool) {
                     await target.draw(2);
-                    if (target.canUse(card, player, false)) await target.useCard(card, player).set("addCount", false);
+                    if (target.canUse(card, player, false)) await target.useCard(card, player, false);
                   }
                 }
               },
@@ -32222,7 +32228,7 @@ const b = 1;
                       const [suit, number, name, nature] = get.cardInfo(card);
                       const cardx = get.autoViewAs({ name, number, suit, nature }, []);
                       if (player.canUse(cardx, trigger.player, false)) {
-                        await player.useCard(card, trigger.player).set("addCount", false);
+                        await player.useCard(card, trigger.player, false);
                       }
                     };
                   },
@@ -33764,7 +33770,7 @@ const b = 1;
                           const targets = game.filterPlayer(current => current != target && target.canUse(event.card, current, false, event));
                           for (let i = 0; i < 6; i++) {
                             if (!target.isIn()) break;
-                            await target.useCard(event.card, targets.filter(i => i.isIn())).set("addCount", false);
+                            await target.useCard(event.card, targets.filter(i => i.isIn()), false);
                           };
                         }
                       },
@@ -33795,7 +33801,7 @@ const b = 1;
                               if (current == target) return false;
                               return target.canUse(card, current, false, event);
                             });
-                            await target.useCard(card, targets).set("addCount", false);
+                            await target.useCard(card, targets, false);
                           };
                         }
                       },
