@@ -13575,7 +13575,7 @@ const b = 1;
                 for (let p of players) {
                   p.storage.zhibi = p.getStorage('zhibi').concat(recruit);
                   recruit.storage.zhibi = recruit.getStorage('zhibi').concat(p);
-                  p.ai.modAttitudeFrom = function (from, to, att) {
+                  /*p.ai.modAttitudeFrom = function (from, to, att) {
                     const fromOringin = from.storage.jlsg_xinghan_recruit || from,
                       toOringin = to.storage.jlsg_xinghan_recruit || to;
                     const currents = game.filterPlayer(null, undefined, true)
@@ -13594,29 +13594,36 @@ const b = 1;
                     currents.remove(toOringin);
                     if (currents.length == 1 && currents[0] == fromOringin) return -2;
                     return get.attitude(fromOringin, toOringin);
-                  }
+                  }*/
                 };
                 // AI attitude
                 player.markAuto('jlsg_xinghan', recruit);
-                /*if (get.attitude(player, recruit) <= 0 || get.attitude(recruit, player) <= 0) {
-                  if (_status.jlsg_xinghan_attitude_patch) {
-                    console.error("jlsg_xinghan get.attitude not working");
-                  } else {
-                    _status.jlsg_xinghan_attitude_patch = true;
-                    get.attitude = new Proxy(get.attitude, {
-                      apply(target, thisArg, argumentsList) {
-                        let [from, to] = argumentsList;
-                        if (from?.storage.jlsg_xinghan_recruit) {
-                          argumentsList[0] = from.storage.jlsg_xinghan_recruit;
-                        }
-                        if (to?.storage.jlsg_xinghan_recruit) {
-                          argumentsList[1] = to.storage.jlsg_xinghan_recruit;
-                        }
-                        return Reflect.apply(target, thisArg, argumentsList);
-                      },
-                    });
-                  }
-                }*/
+                if (!_status.jlsg_xinghan_attitude_patch) {
+                  _status.jlsg_xinghan_attitude_patch = true;
+                  get.attitude = new Proxy(get.attitude, {
+                    apply(target, thisArg, argumentsList) {
+                      let [from, to] = argumentsList;
+                      if (from?.storage.jlsg_xinghan_recruit) {
+                        argumentsList[0] = from.storage.jlsg_xinghan_recruit;
+                      }
+                      if (to?.storage.jlsg_xinghan_recruit) {
+                        argumentsList[1] = to.storage.jlsg_xinghan_recruit;
+                      }
+                      game.broadcastAll(function () {
+                        const list = game.players.filter(i => i.storage.jlsg_xinghan_recruit);
+                        _status.jlsg_xinghan_attitude = list;
+                        game.players.removeArray(list);
+                      });
+                      const att = Reflect.apply(target, thisArg, argumentsList);
+                      game.broadcastAll(function () {
+                        const list = _status.jlsg_xinghan_attitude.slice();
+                        game.players.addArray(list);
+                        game.players.sortBySeat();
+                      });
+                      return att;
+                    },
+                  });
+                }
                 //
                 game.triggerEnter(recruit);
               },
