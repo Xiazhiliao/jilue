@@ -13447,10 +13447,8 @@ const b = 1;
                   `招募一名的${get.translation(result.control)}势力武将`,
                   [choices, 'character'],
                 ]);
-                event.result = {
-                  bool: result2.bool,
-                  cost_data: [result.control, result2.links[0]],
-                };
+                event.result = { bool: result2.bool, };
+                if (result2.bool) event.result.cost_data = [result.control, result2.links[0]];
               },
               async content(event, trigger, player) {
                 let [token, name] = event.cost_data;
@@ -13576,24 +13574,24 @@ const b = 1;
                   p.storage.zhibi = p.getStorage('zhibi').concat(recruit);
                   recruit.storage.zhibi = recruit.getStorage('zhibi').concat(p);
                   p.ai.modAttitudeFrom = function (from, to, att) {
-                    const fromOringin = from.storage.jlsg_xinghan_recruit || from,
-                      toOringin = to.storage.jlsg_xinghan_recruit || to;
+                    from = from.storage.jlsg_xinghan_recruit || from;
+                    to = to.storage.jlsg_xinghan_recruit || to;
                     const currents = game.filterPlayer(null, undefined, true)
                       .map(i => i.storage.jlsg_xinghan_recruit || i)
                       .unique();
-                    currents.remove(fromOringin);
-                    if (currents.length == 1 && currents[0] == toOringin) return -2;
-                    return get.attitude(fromOringin, toOringin);
+                    currents.remove(from);
+                    if (currents.length == 1 && currents[0] == to) return -2;
+                    return get.attitude(from, to);
                   }
                   p.ai.modAttitudeTo = function (from, to, att) {
-                    const fromOringin = from.storage.jlsg_xinghan_recruit || from,
-                      toOringin = to.storage.jlsg_xinghan_recruit || to;
+                    from = from.storage.jlsg_xinghan_recruit || from;
+                    to = to.storage.jlsg_xinghan_recruit || to;
                     const currents = game.filterPlayer(null, undefined, true)
                       .map(i => i.storage.jlsg_xinghan_recruit || i)
                       .unique();
-                    currents.remove(toOringin);
-                    if (currents.length == 1 && currents[0] == fromOringin) return -2;
-                    return get.attitude(fromOringin, toOringin);
+                    currents.remove(to);
+                    if (currents.length == 1 && currents[0] == from) return -2;
+                    return get.attitude(from, to);
                   }
                 };
                 // AI attitude
