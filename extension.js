@@ -18025,23 +18025,21 @@ const b = 1;
               }
             },
             jlsg_huxiao2: {
+              sourceSkill: "jlsg_huxiao",
               audio: false,
               trigger: { player: 'shaEnd' },
               forced: true,
               popup: false,
               content: function () {
-                var evt = _status.event;
-                for (var i = 0; i < 10; i++) {
-                  if (evt && evt.getParent) {
-                    evt = evt.getParent();
-                  }
-                  if (evt.name == 'phaseUse') {
-                    evt.skipped = true;
-                    break;
-                  }
+                var evt = _status.event.getParent("phaseUse");
+                if (evt && evt.name == "phaseUse") {
+                  evt.skipped = true;
+                }
+                var evt = _status.event.getParent("phase");
+                if (evt && evt.name == "phase") {
+                  evt.finish();
                 }
                 player.turnOver();
-                player.skip('phaseDiscard');
               }
             },
             jlsg_guicai: {
@@ -19591,11 +19589,12 @@ const b = 1;
               }
             },
             jlsg_shixue2: {
+              sourceSkill: "jlsg_shixue",
               trigger: { player: 'shaMiss' },
               forced: true,
               popup: false,
               content: function () {
-                player.chooseToDiscard(2, true);
+                player.chooseToDiscard(2, true, "he");
               }
             },
             jlsg_guoshi: {
@@ -22098,7 +22097,7 @@ const b = 1;
               direct: true,
               content: function () {
                 'step 0'
-                if (!trigger.player.inRangeOf(player) && (trigger.target != player && !trigger.target.inRangeOf(player))) {
+                if (trigger.player.inRangeOf(player)) {
                   var next = player.chooseBool(get.prompt('jlsg_zhaoxiang', trigger.player));
                   next.ai = function () {
                     return get.effect(trigger.target, trigger.card, trigger.player, player) < 0;
@@ -22110,8 +22109,10 @@ const b = 1;
                   }
                   var next = player.chooseToDiscard(get.prompt('jlsg_zhaoxiang', trigger.player));
                   next.ai = function (card) {
+                    const player = get.player(),
+                      trigger = get.event().getTrigger();
                     var income = Math.min(-get.effect(trigger.target, trigger.card, trigger.player, player) * 1.5,
-                      get.effect(trigger.player, { name: 'shunshou' }, player, player) / 1.5
+                      get.effect(trigger.player, { name: 'shunshou_copy2' }, player, player) / 1.5
                     );
                     return income - get.value(card);
                   };
@@ -22122,17 +22123,14 @@ const b = 1;
                   if (!result.cards) {
                     player.logSkill('jlsg_zhaoxiang', trigger.player);
                   }
-                  if (trigger.player.countCards('h')) {
-                    trigger.player.chooseCard('交给' + get.translation(player) + '一张牌或令打出的杀无效').set('ai', function (card) {
-                      if (get.effect(player, trigger.card, trigger.player, trigger.player) < 0) {
-                        return -1;
-                      }
-                      if (_status.event.getParent().player.hasSkill('jiu')) {
-                        return 7 - get.value(card);
-                      } else {
-                        return 6 - get.value(card);
-                      }
-                    });
+                  if (trigger.player.countCards('he')) {
+                    trigger.player.chooseBool('令' + get.translation(player) + '获得你的一张牌或令打出的杀无效')
+                      .set('ai', function (event, player) {
+                        const trigger = event.getTrigger(),
+                          source = get.event("source");
+                        let num = trigger.targets.reduce((n, target) => n + get.effect(target, trigger.card, player, player), 0);
+                        return get.effect(player, { name: "shunshou_copy2" }, source, player) < num;
+                      }).set("source", player);
                   } else {
                     trigger.untrigger();
                     trigger.finish();
@@ -22146,7 +22144,7 @@ const b = 1;
                   trigger.untrigger();
                   trigger.finish();
                 } else {
-                  player.gain(result.cards, trigger.player, 'giveAuto');
+                  player.gainPlayerCard(trigger.player, true);
                 }
               },
               ai: {
@@ -32229,7 +32227,7 @@ const b = 1;
                       const [suit, number, name, nature] = get.cardInfo(card);
                       const cardx = get.autoViewAs({ name, number, suit, nature }, []);
                       if (player.canUse(cardx, trigger.player, false)) {
-                        await player.useCard(card, trigger.player, false);
+                        await player.useCard(cardx, trigger.player, false);
                       }
                     };
                   },
