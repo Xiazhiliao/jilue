@@ -9917,22 +9917,22 @@ const b = 1;
                   if (game.hasPlayer(function (current) {
                     return player.canUse(card, current);
                   })) {
-                    lib.skill.mozhix.viewAs = card;
+                    game.broadcastAll(card => (lib.skill.jlsg_mozhix.viewAs = card), card);
                     var next = player.chooseToUse();
                     if (next.isOnline()) {
                       player.send(function (card) {
-                        lib.skill.mozhix.viewAs = card;
+                        lib.skill.jlsg_mozhix.viewAs = card;
                       }, card)
                     }
                     next.logSkill = 'jlsg_shibei';
                     next.set('openskilldialog', '矢北：将一张手牌当' + get.translation(card) + '使用');
                     next.set('norestore', true);
-                    next.set('_backupevent', 'mozhix');
+                    next.set('_backupevent', 'jlsg_mozhi');
                     next.set('custom', {
                       add: {},
                       replace: { window: function () { } }
                     });
-                    next.backup('mozhix');
+                    next.backup('jlsg_mozhi');
                   }
                 }
               },
