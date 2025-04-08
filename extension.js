@@ -39611,7 +39611,7 @@ onclick="if (lib.jlsg) lib.jlsg.showRepoElement(this)"></img>
       diskURL: "",
       forumURL: "",
       mirrorURL: "https://github.com/xiaoas/jilue",
-      version: "2.7.0330",
+      version: "2.7.0408",
       changelog: `
 <a onclick="if (jlsg) jlsg.showRepo()" style="cursor: pointer;text-decoration: underline;">
 Visit Repository</a><br>
@@ -39619,13 +39619,16 @@ Visit Repository</a><br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
 汇报bug点我</span><br>
+2025.04.08更新<br>
+&ensp; 修复bug（逐星、恃傲、图南、兴汉、玲珑）<br>
+&ensp; 优化技能（千幻、三绝、芳魂、天道、博略、天工、观虚）<br>
+<span style="font-size: large;">历史：</span><br>
 2025.03.30更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="firemm">SK杨婉</div><br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="woodmm">冠勇盖世·孙策</div><br>
 &ensp; 修复技能bug（天工、烈弓、绝世、传说无双、鬼驱、灵泽）<br>
 &ensp; 优化技能（锦织、鱼忧、玲珑）<br>
 &ensp; 修复资料页无法播放武将阵亡配音的bug<br>
-<span style="font-size: large;">历史：</span><br>
 2025.03.17更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SK神蔡文姬</div><br>
 &ensp; 修复若干bug(离魂、逐星、龙魂、罗刹)<br>
