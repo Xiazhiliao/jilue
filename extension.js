@@ -8601,7 +8601,7 @@ const b = 1;
                 return event.skill == 'jlsg_jinzhi_backup';
               },
               content: function () {
-                var index = (player.storage.jlsg_jinzhi?.length || 0) + 1;
+                var index = player.storage.jlsg_jinzhi?.length || 0;
                 if (index > 0) player.draw(index);
               },
             },
@@ -32206,16 +32206,34 @@ const b = 1;
                   audio: "ext:极略:2",
                   trigger: { global: "phaseBegin" },
                   filter(event, player) {
-                    return event.player.countExpansions("jlsg_zhuxing");
+                    if (!event.player.countExpansions("jlsg_zhuxing")) return false;
+                    return event.player.getExpansions("jlsg_zhuxing").some(card => {
+                      const [suit, number, name, nature] = get.cardInfo(card);
+                      const cardx = get.autoViewAs({ name, number, suit, nature }, []);
+                      return player.canUse(cardx, event.player, false);
+                    });
                   },
                   prompt(event, player) {
                     return `逐星：是否对${get.translation(event.player)}依次使用“逐星”牌？`;
                   },
                   prompt2(event, player) {
-                    return `${get.translation(event.player.getExpansions("jlsg_zhuxing").reverse())}`;
+                    const cards = event.player.getExpansions("jlsg_zhuxing")
+                      .reverse()
+                      .filter(card => {
+                        const [suit, number, name, nature] = get.cardInfo(card);
+                        const cardx = get.autoViewAs({ name, number, suit, nature }, []);
+                        return player.canUse(cardx, event.player, false);
+                      });
+                    return `${get.translation(cards)}`;
                   },
                   check(event, player) {
-                    const cards = event.player.getExpansions("jlsg_zhuxing").reverse();
+                    const cards = event.player.getExpansions("jlsg_zhuxing")
+                      .reverse()
+                      .filter(card => {
+                        const [suit, number, name, nature] = get.cardInfo(card);
+                        const cardx = get.autoViewAs({ name, number, suit, nature }, []);
+                        return player.canUse(cardx, event.player, false);
+                      });
                     let eff = cards.reduce((num, card) => num + get.effect(event.player, get.autoViewAs(card, []), player, player), 0);
                     return eff > 0;
                   },
