@@ -10895,7 +10895,12 @@ const b = 1;
                 let skills = lib.skill.jlsg_fuhan.list;
                 skills.removeArray(
                   game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
-                )
+                );
+                skills = skills.filter(skill => {
+                  const info = lib.skill[skill];
+                  if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                  return true;
+                });
                 if (!skills.length) {
                   game.log("没有技能了");
                   return;
@@ -11555,6 +11560,11 @@ const b = 1;
                 skills.removeArray((
                   game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
                 ));
+                skills = skills.filter(skill => {
+                  const info = lib.skill[skill];
+                  if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                  return true;
+                });
                 let skill = [...skills].randomGet();
                 if (skill) {
                   player.addSkills(skill);
@@ -11587,7 +11597,12 @@ const b = 1;
                 );
                 skills.removeArray(
                   game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
-                )
+                );
+                skills = skills.filter(skill => {
+                  const info = lib.skill[skill];
+                  if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                  return true;
+                });
                 let skill = [...skills].randomGet();
                 if (skill) {
                   result.targets[0].addSkills(skill);
@@ -12276,12 +12291,14 @@ const b = 1;
                   skills = [... new Set(skills)];
                   skills.removeArray(
                     game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
-                  )
+                  );
+                  skills = skills.filter(skill => {
+                    const info = lib.skill[skill];
+                    if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                    return true;
+                  });
                   skills = skills.randomGets(cnt2);
-                  player.addSkills(skills);
-                  for (let s of skills) {
-                    player.popup(s);
-                  }
+                  if (skills.length) player.addSkills(skills);
                 }
                 'step 1'
                 if (!player.isIn()) {
@@ -12424,9 +12441,14 @@ const b = 1;
                   skills.addArray(get.character(name)?.[3] ?? []);
                 }
                 // TODO
-                let skill = skills.removeArray(player.getSkills(null, false, false)).randomGet();
-                if (skill) {
-                  player.addSkills(skill);
+                skills.removeArray(player.getSkills(null, false, false));
+                skills = skills.filter(skill => {
+                  const info = lib.skill[skill];
+                  if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                  return true
+                });
+                if (skills.length) {
+                  player.addSkills(skills.randomGet());
                 }
               },
             },
@@ -13088,7 +13110,12 @@ const b = 1;
                           }
                           skills.removeArray(
                             game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
-                          )
+                          );
+                          skills = skills.filter(skill => {
+                            const info = lib.skill[skill];
+                            if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                            return true;
+                          });
                           let skill = skills.randomGet();
                           if (!skill) {
                             break;
@@ -14997,6 +15024,11 @@ const b = 1;
                     case 3:
                       var skills = get.gainableSkills();
                       skills.removeArray(player.getSkills(null, false, false));
+                      skills = skills.filter(skill => {
+                        const info = lib.skill[skill];
+                        if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                        return true;
+                      });
                       skills = skills.randomGets(3);
                       var buttons = skills.map(i => [
                         i,
@@ -15010,7 +15042,6 @@ const b = 1;
                         .set("ai", button => get.skillRank(button.link))
                         .set("source", trigger.player);
                       if (result2.bool) {
-                        trigger.player.popup(result2.links[0]);
                         await trigger.player.addSkills(result2.links);
                       }
                       break;
@@ -27114,10 +27145,16 @@ const b = 1;
                   game.log("没有可以获得的技能了");
                 } else {
                   let list1 = _status.jlsg_luocha_list.filter(s => !player.hasSkill(s)).randomSort(),
-                    list2 = _status.jlsg_luocha_list_hidden.filter(s => !player.hasSkill(s)).randomSort()
-                  let skills = list1.concat(list2).unique().randomRemove(num);
+                    list2 = _status.jlsg_luocha_list_hidden.filter(s => !player.hasSkill(s)).randomSort();
+                  let skills = list1.concat(list2)
+                    .unique()
+                    .filter(skill => {
+                      const info = lib.skill[skill];
+                      if (info.ai?.combo) return player.hasSkill(info.ai.combo, null, false, false);
+                      return true;
+                    });
                   if (!skills.length) game.log("没有可以获得的技能了");
-                  else await player.addSkills(skills);
+                  else await player.addSkills(skills.randomGets(num));
                 }
                 await game.delayx();
               },
@@ -28735,7 +28772,12 @@ const b = 1;
                 }
                 skills.removeArray(
                   game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
-                )
+                );
+                skills = skills.filter(skill => {
+                  const info = lib.skill[skill];
+                  if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                  return true;
+                });
                 skills = skills.randomGets(cnt);
                 if (!skills.length) return;
                 target.storage.jlsg_xingwu_skill = target.storage.jlsg_xingwu_skill || [];
@@ -29741,7 +29783,12 @@ const b = 1;
                       let skill = _status.jlsgsy_bolue_list[lib.skill[event.getParent().name]?.groupType]
                       skill.removeArray(
                         game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
-                      )
+                      );
+                      skills = skills.filter(skill => {
+                        const info = lib.skill[skill];
+                        if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                        return true;
+                      });
                       await player.addSkills(skill.randomGet());
                     },
                     positive(targets, player, viewer) {
@@ -31598,7 +31645,7 @@ const b = 1;
                             if (player.hasSkill(s)) return false;
                             let info = get.info(s);
                             if (!info || info.unique || info.charlotte) return false;
-                            if (info?.ai?.combo) return player.hasSkill(info.ai.combo);
+                            if (info.ai?.combo) return player.hasSkill(info.ai.combo);
                             if (info.zhuSkill) return player.isZhu2();
                             return true;
                           });
@@ -33528,6 +33575,11 @@ const b = 1;
                           if (result.bool) {
                             let gains = get.gainableSkills();
                             gains.removeArray(player.getSkills(null, false, false));
+                            gains=gains.filter(skill=>{
+                              const info=lib.skill[skill];
+                              if(info.ai?.combo) return player.hasSkill(info.ai?.combo,null,false,false);
+                              return true;
+                            });
                             let num = Math.min(result.links.length * 3, 50)
                             gains = gains.randomGets(num);
                             player.changeSkills(gains, result.links)
@@ -33835,8 +33887,13 @@ const b = 1;
                           for (const target of result.targets) {
                             const loseList = target.getSkills(null, false, false).removeArray(target.getStockSkills());
                             if (loseList.length) await target.removeSkills(loseList.randomGet());
-                            const addList = lib.skill.jlsg_lingze.skills.randomGets(2);
-                            if (addList) await target.addSkills(addList);
+                            const addList = lib.skill.jlsg_lingze.skills;
+                            const skills = addList.filter(skill => {
+                              const info = lib.skill[skill];
+                              if (info.ai?.combo) return target.hasSkill(info.ai?.combo, null, false, false);
+                              return true;
+                            }).randomGets(2);
+                            if (skills) await target.addSkills(skills);
                           };
                         }
                       },
