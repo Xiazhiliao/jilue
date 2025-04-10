@@ -9919,20 +9919,15 @@ const b = 1;
                   })) {
                     game.broadcastAll(card => (lib.skill.jlsg_mozhix.viewAs = card), card);
                     var next = player.chooseToUse();
-                    if (next.isOnline()) {
-                      player.send(function (card) {
-                        lib.skill.jlsg_mozhix.viewAs = card;
-                      }, card)
-                    }
                     next.logSkill = 'jlsg_shibei';
                     next.set('openskilldialog', '矢北：将一张手牌当' + get.translation(card) + '使用');
                     next.set('norestore', true);
-                    next.set('_backupevent', 'jlsg_mozhi');
+                    next.set('_backupevent', 'jlsg_mozhix');
                     next.set('custom', {
                       add: {},
                       replace: { window: function () { } }
                     });
-                    next.backup('jlsg_mozhi');
+                    next.backup('jlsg_mozhix');
                   }
                 }
               },
@@ -10680,7 +10675,6 @@ const b = 1;
                     check: function (card) {
                       return 12 - get.value(card);
                     },
-                    filterOk: false,
                     selectTarget: [1, Infinity],
                     filterTarget(card, player, target) {
                       return player != target && lib.filter.targetEnabled2(card, player, target);
@@ -33575,9 +33569,9 @@ const b = 1;
                           if (result.bool) {
                             let gains = get.gainableSkills();
                             gains.removeArray(player.getSkills(null, false, false));
-                            gains=gains.filter(skill=>{
-                              const info=lib.skill[skill];
-                              if(info.ai?.combo) return player.hasSkill(info.ai?.combo,null,false,false);
+                            gains = gains.filter(skill => {
+                              const info = lib.skill[skill];
+                              if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
                               return true;
                             });
                             let num = Math.min(result.links.length * 3, 50)
