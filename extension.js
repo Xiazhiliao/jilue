@@ -725,7 +725,7 @@ const b = 1;
                 'jlsgsk_mayunlu', 'jlsgsk_zhongyao', 'jlsgsk_nanhualaoxian', 'jlsgsk_jiangwei', 'jlsgsk_huanghao',
                 'jlsgsk_huaman', 'jlsgsk_pangtong', 'jlsgsk_lvdai', 'jlsgsk_wangyuanji', 'jlsgsk_zhangchangpu',
                 "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan",
-                "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan"],
+                "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun"],
               jlsg_pojun: ['jlsgsk_zhuran', 'jlsgsk_yanliang', 'jlsgsk_chendao', 'jlsgsk_dingfeng', 'jlsgsk_dongzhuo',
                 'jlsgsk_yujin', 'jlsgsk_panfeng', 'jlsgsk_jiangqin', 'jlsgsk_guanxing', 'jlsgsk_guansuo',
                 'jlsgsk_baosanniang', 'jlsgsk_dongbai', 'jlsgsk_xushi', 'jlsgsk_caoxiu', 'jlsgsk_caojie'],
@@ -874,6 +874,7 @@ const b = 1;
             jlsgsk_lvkai: ["male", "shu", 3, ["jlsg_tunan", "jlsg_bijing"], ["name:吕|凯"]],
             jlsgsk_zhugedan: ["male", "wei", 5, ["jlsg_gongao", "jlsg_juyi", "jlsg_weizhong"], ["name:诸葛|诞"]],
             jlsgsk_yangwan: ["female", "shu", 3, ["jlsg_youyan", "jlsg_zhuihuan"], ["name:杨|null"]],
+            jlsgsk_cenhun: ["male", "wu", 3, ["jlsg_jishe", "jlsg_lianhuo"], ["name:岑|昏"]],
           },
           characterIntro: {
             jlsgsk_kuaiyue: "蒯越（？－214年），字异度，襄阳中庐（今湖北襄阳西南）人。东汉末期人物，演义中为蒯良之弟。原本是荆州牧刘表的部下，曾经在刘表初上任时帮助刘表铲除荆州一带的宗贼（以宗族、乡里关系组成的武装集团）。刘表病逝后与刘琮一同投降曹操，后来官至光禄勋。",
@@ -15509,6 +15510,125 @@ const b = 1;
                 },
               },
             },
+            jlsg_jishe: {
+              audio: "ext:极略:2",
+              enable: "phaseUse",
+              onChooseToUse(event) {
+                if (!event.jlsg_jishe && !game.online) {
+                  const cards = [];
+                  for (let name of lib.inpile) {
+                    if (get.type(name, null, false) != "trick") continue;
+                    const card = get.autoViewAs({ name, isCard: true }, []);
+                    if (!get.tag(card, "natureDamage") && get.tag(card, "damage")) continue;
+                    if (event.filterCard(card, player, event)) cards.add(name);
+                  };
+                  event.set("jlsg_jishe", cards);
+                }
+              },
+              filter(event, player) {
+                return event.jlsg_jishe?.length;
+              },
+              chooseButton: {
+                dialog(event, player) {
+                  const list = event.jlsg_jishe.map(name => ["锦囊", "", name]);
+                  return ui.create.dialog("极奢", [event.jlsg_jishe, "vcard"]);
+                },
+                check(button) {
+                  const player = get.player(),
+                    card = get.autoViewAs({ name: button.link[2], isCard: true }, []);
+                  if (["wugu", "zhulu_card", "yiyi", "lulitongxin", "lianjunshengyan", "diaohulishan"].includes(card.name)) return 0;
+                  return player.getUseValue(card);
+                },
+                backup(links, player) {
+                  return {
+                    filterCard: false,
+                    selectCard: 0,
+                    audio: "jlsg_jishe",
+                    popname: true,
+                    viewAs: get.autoViewAs({ name: links[0][2], isCard: true }, []),
+                    async precontent(event, trigger, player) {
+                      player.addTempSkill("jlsg_jishe_used", { player: "phaseUseAfter" });
+                      player.storage.jlsg_jishe_used++;
+                      player.markSkill("jlsg_jishe_used");
+                      player.when({ player: "useCardAfter" })
+                        .filter(evt => evt.skill == "jlsg_jishe_backup")
+                        .step(async function (event, trigger, player) {
+                          if (player.storage.jlsg_jishe_used > player.maxHp) await player.loseMaxHp(1);
+                        });
+                    },
+                  };
+                },
+                prompt(links, player) {
+                  const card = get.autoViewAs({ name: links[0][2] }, []);
+                  return "极奢：视为使用一张" + get.translation(card);
+                },
+              },
+              subSkill: {
+                backup: {},
+                used: {
+                  sub: true,
+                  sourceSkill: "jlsg_jishe",
+                  init(player, skill) {
+                    player.storage[skill] = 0;
+                  },
+                  onremove: true,
+                  charlotte: true,
+                  mark: true,
+                  marktext: "奢",
+                  intro: {
+                    markcount(storage) {
+                      return storage;
+                    },
+                    content(storage) {
+                      return `本阶段已发动${storage}次`;
+                    }
+                  }
+                },
+              },
+              ai: {
+                fireAttack: true,
+                order(item, player) {
+                  const used = player.storage.jlsg_jishe_used || 0;
+                  if (used >= player.maxHp) return player.maxHp;
+                  return 10;
+                },
+                result: {
+                  player(player) {
+                    const event = get.event();
+                    if (event.jlsg_jishe?.length) {
+                      const cards = event.jlsg_jishe.map(name => get.autoViewAs({ name }, []));
+                      return Number(cards.some(card => (get.value(card) + player.maxHp * 2 - 18 > 0)));
+                    }
+                    return 0;
+                  },
+                },
+              },
+            },
+            jlsg_lianhuo: {
+              audio: "ext:极略:2",
+              trigger: {
+                target: "useCardToTargeted",
+                player: "damageBegin3",
+              },
+              filter(event, player) {
+                if (event.name == "damage") {
+                  return event.hasNature("fire") && player.isLinked() && event.num > 0;
+                }
+                return ["basic", "trick"].includes(get.type2(event.card));
+              },
+              forced: true,
+              logAudio(event, player) {
+                if (event.name == "damage") return ["ext:极略/jlsg_lianhuo2.mp3"];
+                return ["ext:极略/jlsg_lianhuo1.mp3"];
+              },
+              async content(event, trigger, player) {
+                if (trigger.name == "damage") trigger.num += 2;
+                else await player.link();
+              },
+              ai: {
+                neg: true,
+              },
+            },
           },
           translate: {
             jlsg_sk: "SK武将",
@@ -15640,6 +15760,7 @@ const b = 1;
             jlsgsk_lvkai: "SK吕凯",
             jlsgsk_zhugedan: "SK诸葛诞",
             jlsgsk_yangwan: "SK杨婉",
+            jlsgsk_cenhun: "SK岑昏",
 
             jlsg_hemeng: '和盟',
             jlsg_sujian: '素检',
@@ -16200,6 +16321,10 @@ const b = 1;
             jlsg_zhuihuan: "追还",
             jlsg_zhuihuan_info: "准备阶段，你可以对你的上个回合开始后对你造成过伤害的其他角色各造成2点伤害。",
             jlsg_zhuihuan_append: '<span style="font-family: yuanli">记录截取自上个回合开始时至当前回合开始时</span>',
+            jlsg_jishe: "极奢",
+            jlsg_jishe_info: "出牌阶段，你可以视为使用任意不能造成伤害或只能造成属性伤害的普通锦囊牌。以此法使用的牌结算后，若你于本阶段内发动此技能的次数大于你的体力上限，你减1点体力上限。",
+            jlsg_lianhuo: "链祸",
+            jlsg_lianhuo_info: "锁定技，当你成为任意角色使用基本牌或锦囊牌的目标后，你横置。当你横置时，你受到的火焰伤害+2。",
           },
           dynamicTranslate: {
             jlsg_zhidi: function (player) {
