@@ -15625,6 +15625,15 @@ const b = 1;
               },
               ai: {
                 neg: true,
+                effect: {
+                  target(card, player, target) {
+                    if (target.isLinked()) return;
+                    if (get.tag(card, "fireDamage")) {
+                      if (player.hasSkillTag("jueqing", false, target)) return;
+                      return [1, -3];
+                    }
+                  }
+                },
               },
             },
           },
