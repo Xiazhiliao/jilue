@@ -15520,7 +15520,7 @@ const b = 1;
                     if (get.type(name, null, false) != "trick") continue;
                     const card = get.autoViewAs({ name, isCard: true }, []);
                     if (!get.tag(card, "natureDamage") && get.tag(card, "damage")) continue;
-                    if (event.filterCard(card, player, event)) cards.add(name);
+                    if (event.filterCard(card, event.player, event)) cards.add(name);
                   };
                   event.set("jlsg_jishe", cards);
                 }
@@ -15588,16 +15588,14 @@ const b = 1;
               ai: {
                 fireAttack: true,
                 order(item, player) {
-                  const used = player.storage.jlsg_jishe_used || 0;
-                  if (used >= player.maxHp) return player.maxHp;
-                  return 10;
+                  return 2 * player.maxHp - (player.storage.jlsg_jishe_used || 0);
                 },
                 result: {
                   player(player) {
                     const event = get.event();
                     if (event.jlsg_jishe?.length) {
                       const cards = event.jlsg_jishe.map(name => get.autoViewAs({ name }, []));
-                      return Number(cards.some(card => (get.value(card) + player.maxHp * 2 - 18 > 0)));
+                      return Number(cards.some(card => (get.value(card) + player.maxHp * 3 - 16 - (player.storage.jlsg_jishe_used || 0) > 0)));
                     }
                     return 0;
                   },
@@ -28894,7 +28892,7 @@ const b = 1;
                 );
                 skills = skills.filter(skill => {
                   const info = lib.skill[skill];
-                  if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+                  if (info.ai?.combo) return target.hasSkill(info.ai?.combo, null, false, false);
                   return true;
                 });
                 skills = skills.randomGets(cnt);
