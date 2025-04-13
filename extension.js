@@ -32335,7 +32335,7 @@ const b = 1;
               filter(event) {
                 const card = event.card;
                 if (!["basic", "trick"].includes(get.type(card, null, false))) return false;
-                if (lib.card[event.card.name]?.notarget) return false;
+                if (lib.card[card.name]?.notarget || !lib.card[card.name]?.enable) return false;
                 return get.is.ordinaryCard(card);
               },
               async cost(event, trigger, player) {
@@ -32381,9 +32381,7 @@ const b = 1;
                   filter(event, player) {
                     if (!event.player.countExpansions("jlsg_zhuxing")) return false;
                     return event.player.getExpansions("jlsg_zhuxing").some(card => {
-                      const [suit, number, name, nature] = get.cardInfo(card);
-                      const cardx = get.autoViewAs({ name, number, suit, nature }, []);
-                      return player.canUse(cardx, event.player, false);
+                      return !lib.card[card.name]?.notarget && lib.card[card.name]?.enable;
                     });
                   },
                   prompt(event, player) {
@@ -32393,9 +32391,7 @@ const b = 1;
                     const cards = event.player.getExpansions("jlsg_zhuxing")
                       .reverse()
                       .filter(card => {
-                        const [suit, number, name, nature] = get.cardInfo(card);
-                        const cardx = get.autoViewAs({ name, number, suit, nature }, []);
-                        return player.canUse(cardx, event.player, false);
+                        return !lib.card[card.name]?.notarget && lib.card[card.name]?.enable;
                       });
                     return `${get.translation(cards)}`;
                   },
@@ -32403,9 +32399,7 @@ const b = 1;
                     const cards = event.player.getExpansions("jlsg_zhuxing")
                       .reverse()
                       .filter(card => {
-                        const [suit, number, name, nature] = get.cardInfo(card);
-                        const cardx = get.autoViewAs({ name, number, suit, nature }, []);
-                        return player.canUse(cardx, event.player, false);
+                        return !lib.card[card.name]?.notarget && lib.card[card.name]?.enable;
                       });
                     let eff = cards.reduce((num, card) => num + get.effect(event.player, get.autoViewAs(card, []), player, player), 0);
                     return eff > 0;
@@ -32415,11 +32409,10 @@ const b = 1;
                     const cards = trigger.player.getExpansions("jlsg_zhuxing").reverse();
                     for (let card of cards) {
                       if (!trigger.player.isIn()) break;
+                      if (lib.card[card.name]?.notarget || !lib.card[card.name]?.enable) continue;
                       const [suit, number, name, nature] = get.cardInfo(card);
                       const cardx = get.autoViewAs({ name, number, suit, nature }, []);
-                      if (player.canUse(cardx, trigger.player, false)) {
-                        await player.useCard(cardx, trigger.player, false);
-                      }
+                      await player.useCard(cardx, trigger.player, false);
                     };
                   },
                 },
@@ -38034,6 +38027,7 @@ const b = 1;
           },
           skill: {
             jlsgqs_relic: {
+              audio: false,
               trigger: { player: 'equipEnd' },
               forced: true,
               filter: function (event, player) {
@@ -38046,19 +38040,22 @@ const b = 1;
                 var type = get.subtype(trigger.card, player)[5];
                 var card = null, cards = [];
                 if (type == '3') {
-                  card = player.getCards('e', { subtype: "equip4" });
+                  card = player.getVCards('e', { subtype: "equip4" });
                 } else {
-                  card = player.getCards('e', { subtype: "equip3" });
+                  card = player.getVCards('e', { subtype: "equip3" });
                 }
                 if (!card) {
                   event.finish(); return;
                 }
                 cards = cards.concat(card);
-                card = player.getCards('e', { subtype: "equip5" });
+                card = player.getVCards('e', { subtype: "equip5" });
                 if (!card) {
                   event.finish(); return;
                 }
                 cards = cards.concat(card);
+                if (!cards.length) {
+                  event.finish(); return;
+                }
                 var prompt = "将" + cards.map(card => get.translation(card)).join("或") + "置入弃牌堆";
                 player.chooseCard('e', prompt, card => cards.includes(card), true);
                 'step 1'
