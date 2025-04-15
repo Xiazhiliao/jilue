@@ -13584,7 +13584,7 @@ const b = 1;
                 });
                 if (recruit.showIdentity) {
                   game.broadcastAll(function (player, recruit) {
-                    if (player.identity && !game.getIdentityList(player)) {
+                    if (player.identity && (!game.getIdentityList || !game.getIdentityList(player))) {
                       recruit.setIdentity();
                     } else {
                       recruit.setIdentity(player.node.identity.firstChild.innerHTML, player.node.identity.dataset.color);
