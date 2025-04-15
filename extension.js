@@ -8651,163 +8651,123 @@ const b = 1;
               audio: "ext:极略:2",
               trigger: { player: ['phaseZhunbeiBegin'] },
               init: function (player) {
-                player.storage.jlsg_huituo = 15;
+                player.storage.jlsg_huituo = Array.from({ length: 4 }, () => true);
               },
               filter: function (event, player) {
-                return player.storage.jlsg_huituo;
+                return player.storage.jlsg_huituo?.some(i => i === true);
               },
-              direct: true,
-              content: function () {
-                'step 0'
-                var eff = new Map();
-                event.eff = eff;
-                for (var p of game.filterPlayer()) {
-                  eff.set(p, [0, -1]); // eff, choice
+              async cost(event, trigger, player) {
+                let choiceList = [
+                  `令一名角色回复体力至全场唯一最多`,
+                  `令一名角色摸牌至全场唯一最多`,
+                  `选择一名角色，系统为该角色的每个空装备栏选择一张装备牌，然后该角色使用之`,
+                  `令其他一名角色获得技能〖恢拓〗`,
+                ];
+                if (game.filterPlayer().every(current => current.hasSkill("jlsg_huituo", null, false, false))) choiceList = choiceList.slice(0, -1);
+                const choice = choiceList.filter((v, i) => player.storage.jlsg_huituo[i]);
+                let target, target1, eff = [null, 0];
+                for (let i of choice) {
+                  switch (choiceList.indexOf(i)) {
+                    case 0:
+                      target1 = game.findPlayer(current => current.isMaxHp());
+                      for (let current of game.filterPlayer()) {
+                        if (current.hp == target1.hp) continue;
+                        let currentEff = get.recoverEffect(current, player, player);
+                        if (currentEff > eff[1]) {
+                          target = current;
+                          eff = [0, currentEff];
+                        }
+                      };
+                      break;
+                    case 1:
+                      target1 = game.findPlayer(current => current.isMaxHandcard());
+                      for (let current of game.filterPlayer()) {
+                        if (current.countCards("h") == target1.countCards("h")) continue;
+                        let currentEff = get.effect(current, { name: "draw" }, player, player);
+                        if (currentEff > eff[1]) {
+                          target = current;
+                          eff = [1, currentEff];
+                        }
+                      };
+                      break;
+                    case 2:
+                      for (let current of game.filterPlayer()) {
+                        const emptySlots = (Array.from({ length: 5 }, (v, i) => i + 1).reduce((sum, type) => sum + current.countEmptySlot(type), 0));
+                        if (emptySlots == 0) continue;
+                        let currentEff = get.attitude(player, current) * emptySlots;
+                        if (currentEff > eff[1]) {
+                          target = current;
+                          eff = [2, currentEff];
+                        }
+                      };
+                      break;
+                    case 3:
+                      for (let current of game.filterPlayer()) {
+                        if (current.hasSkill("jlsg_huituo", null, false, false)) continue;
+                        let currentEff = get.attitude(player, current) > 1 ? get.attitude(player, current) * 3 : 0;
+                        if (currentEff > eff[1]) {
+                          target = current;
+                          eff = [3, currentEff];
+                        }
+                      };
+                      break;
+                  };
+                };
+                event.result = await player.chooseTarget(get.prompt("jlsg_huituo"))
+                  .set("prompt2", choice.map((v, i) => `${i + 1}.${v}`).join("<br>"))
+                  .set("filterTarget", (_, player, target) => {
+                    const choice = get.event("choice");
+                    if (choice.length == 1 && choice[0].includes("恢拓")) return !target.hasSkill("jlsg_huituo", null, false, false);
+                    return true;
+                  })
+                  .set("ai", target => target == get.event("choiseTarget"))
+                  .set("choice", choice)
+                  .set("choiseTarget", target)
+                  .forResult();
+                if (event.result?.bool) {
+                  event.result.cost_data = { choice: eff[0] };
                 }
-                if (player.storage.jlsg_huituo & 1) { // recover
-                  var top = game.filterPlayer().reduce((a, b) => Math.max(a, b.hp), 0);
-                  var draw = game.countPlayer(p => p.hp == top) > 1;
-                  for (var p of game.filterPlayer()) {
-                    if (p.isHealthy()) {
-                      continue;
-                    }
-                    var targetNum = top;
-                    if (draw || p.hp != top) {
-                      targetNum = top + 1;
-                    }
-                    var newEff = Math.min(p.maxHp, targetNum) - p.hp;
-                    newEff *= get.recoverEffect(p, player, player);
-                    var [preEff, _] = eff.get(p);
-                    if (newEff > preEff) {
-                      eff.set(p, [newEff, 0])
-                    }
-                  }
-                }
-                if (player.storage.jlsg_huituo & 2) { // draw
-                  var top = game.filterPlayer().reduce((a, b) => Math.max(a, b.countCards('h')), 0);
-                  var draw = game.countPlayer(p => p.countCards('h') == top) > 1;
-                  for (var p of game.filterPlayer()) {
-                    var targetNum = top;
-                    if (draw || p.countCards('h') != top) {
-                      targetNum = top + 1;
-                    }
-                    var newEff = targetNum - p.countCards('h');
-                    newEff *= 2 * get.attitude(player, p);
-                    var [preEff, _] = eff.get(p);
-                    if (newEff > preEff) {
-                      eff.set(p, [newEff, 1])
-                    }
-                  }
-                }
-                if (player.storage.jlsg_huituo & 4) { // equip
-                  for (var p of game.filterPlayer()) {
-                    var newEff = [1, 2, 3, 4, 5].filter(n => p.isEmpty(n)).length;
-                    newEff *= 2.5 * get.attitude(player, p);
-                    var [preEff, _] = eff.get(p);
-                    if (newEff > preEff) {
-                      eff.set(p, [newEff, 2])
-                    }
-                  }
-                }
-                if (player.storage.jlsg_huituo & 8) { // give skill
-                  for (var p of game.filterPlayer()) {
-                    if (p.hasSkill(event.name)) {
-                      continue;
-                    }
-                    var newEff = 9 * (get.attitude(player, p) - 2);
-                    var [preEff, _] = eff.get(p);
-                    if (newEff > preEff) {
-                      eff.set(p, [newEff, 3])
-                    }
-                  }
-                }
-                // console.log(eff);
-                var target, maxEff = 24;
-                for (var [p, [curEff, _]] of eff.entries()) {
-                  if (curEff > maxEff) {
-                    maxEff = curEff;
-                    target = p;
-                  }
-                }
-                player.chooseTarget(`###${get.prompt(event.name)}###选择一个目标`)
-                  .set('ai', function (p) {
-                    return p == _status.event.choice ? 1 : 0;
-                  }).set('choice', target);
-                'step 1'
-                if (!result.bool) {
-                  event.finish();
-                  return;
-                }
-                event.target = result.targets[0]
-                var target = event.target;
-                event.translate = [
+              },
+              async content(event, trigger, player) {
+                const { cost_data: { choice }, targets: [target] } = event;
+                let choiceList = [
                   `令${get.translation(target)}回复体力至全场唯一最多`,
                   `令${get.translation(target)}摸牌至全场唯一最多`,
-                  `令${get.translation(target)}从弃牌堆或牌堆随机选择装备并依次使用`,
+                  `系统为${get.translation(target)}的每个空装备栏选择一张装备牌，然后其使用之`,
                   `令${get.translation(target)}获得技能〖恢拓〗`,
                 ];
-                var indexes = [0, 1, 2, 3];
-                if (target.hasSkill(event.name)) {
-                  indexes.length = 3;
-                }
-                indexes = indexes.filter(n => player.storage.jlsg_huituo & (2 ** n));
-                var [_, choice] = event.eff.get(target);
-                player.chooseControlList(indexes.map(n => event.translate[n]), function () { return _status.event.choice; })
-                  .set('choice', indexes.indexOf(choice));
-                event.indexes = indexes;
-                'step 2'
-                if (result.control == 'cancel2') {
-                  event.finish();
-                  return;
-                }
-                player.logSkill(event.name, target);
-                var index = event.indexes[result.index];
-                game.log(player, event.translate[index])
-                player.storage.jlsg_huituo ^= 2 ** index;
-                switch (index) {
+                if (target == player) choiceList = choiceList.slice(0, -1);
+                const list = choiceList.filter((v, i) => player.storage.jlsg_huituo[i]);
+                const { result } = await player.chooseControlList(list, true)
+                  .set("ai", () => get.event("choice") || Math.floor(get.event().getRand() * get.event().controls.length + 1))
+                  .set("choice", (function () {
+                    return list.indexOf(choiceList[choice]);
+                  })());
+                const num = choiceList.indexOf(list[result?.index]);
+                if (num < 0) return;
+                player.storage.jlsg_huituo[num] = false;
+                switch (num) {
                   case 0:
-                    var top = game.filterPlayer(p => p != target).reduce((a, b) => Math.max(a, b.hp), 0);
-                    if (top + 1 > target.hp) {
-                      target.recover(top + 1 - target.hp)
-                    }
+                    await target.recoverTo(game.findPlayer(current => current.isMaxHp())?.hp);
                     break;
                   case 1:
-                    var top = game.filterPlayer(p => p != target).reduce((a, b) => Math.max(a, b.countCards('h')), 0);
-                    target.drawTo(top + 1);
+                    await target.drawTo(game.findPlayer(current => current.isMaxHandcard())?.countCards(0));
+                    break;
+                  case 2:
+                    let num = 0;
+                    while (num < 5) {
+                      num++
+                      if (!target.hasEmptySlot(num)) continue;
+                      const card = get.cardPile(function (card) {
+                        return get.subtype(card) == "equip" + num && target.canUse(card, target);
+                      });
+                      if (card) await target.chooseUseTarget(card, true, "nopopup");
+                    };
                     break;
                   case 3:
-                    target.addSkills(event.name);
+                    await target.addSkills("jlsg_huituo");
                     break;
-                  default:
-                    break;
-                }
-                event.num = 0;
-                if (index != 2) {
-                  event.finish();
-                }
-                'step 3'
-                event.num = 0;
-                'step 4'
-                while (!event.target.isEmpty(event.num)) {
-                  event.num++;
-                  if (event.num > 5) {
-                    return;
-                  }
-                }
-                var card = get.cardPile(function (card) {
-                  return get.subtype(card) == 'equip' + event.num && event.target.canUse(card, event.target);
-                });
-                if (card) {
-                  event.target.chooseUseTarget(card, true, 'nopopup');
-                }
-                event.num++;
-                if (event.num <= 5) event.redo();
-                'step 5'
-                event.retry = event.retry || 0;
-                ++event.retry;
-                if (event.retry <= 2 && [1, 2, 3, 4, 5].filter(n => event.target.isEmpty(n)).length) {
-                  event.goto(3);
-                }
+                };
               },
             },
             jlsg_xingshuai: {
@@ -15937,7 +15897,7 @@ const b = 1;
             jlsg_yuyou: '鱼忧',
             jlsg_yuyou_info: '锁定技，你一次获得至少两张牌后，你须选择保留其中一张并弃置其余的牌，然后你可以令一名男性角色选择一项：1.弃置等量的牌；2.失去一点体力。',
             jlsg_huituo: '恢拓',
-            jlsg_huituo_info: '准备阶段，你可以选择一名角色并选择一项：1.令其回复体力至唯一最多；2.令其摸牌至唯一最多；3.令其从弃牌堆或牌堆随机选择装备并依次使用，直到装备区没有空位；4.令其获得〖恢拓〗。每项限一次。',
+            jlsg_huituo_info: '准备阶段，你可以选择一名角色并选择一项：1.令其回复体力至唯一最多；2.令其摸牌至唯一最多；3.选择一名角色，系统为该角色的每个空装备栏选择一张装备牌，然后该角色使用之；4.令其获得〖恢拓〗。每项限一次。',
             jlsg_xingshuai: '兴衰',
             jlsg_xingshuai_info: '你受到其他角色造成的伤害后，可以令一名其他角色选择一项：1.翻面；2.令你与此回合结束后执行一个额外的回合。',
             jlsg_zhanjue: '战绝',
@@ -16384,6 +16344,19 @@ const b = 1;
                 [7, `将其中一张牌置于牌堆顶，令其进行"闪电"判定。`],
               ]);
               return "任意角色的回合开始时，你可以观看其手牌，然后你可以" + map.get(player.storage.jlsg_guanxu);
+            },
+            jlsg_huituo(player) {
+              const storage = player.storage?.jlsg_huituo || [true, true, true, true];
+              const choiceList = [
+                `1.令一名角色回复体力至全场唯一最多`,
+                `2.令一名角色摸牌至全场唯一最多`,
+                `3.选择一名角色，系统为该角色的每个空装备栏选择一张装备牌，然后该角色使用之`,
+                `4.令其他一名角色获得技能〖恢拓〗`
+              ];
+              for (let i in choiceList) {
+                if (!storage[i]) choiceList[i] = `<span style="text-decoration: line-through;">${choiceList[i]}</span>`;
+              };
+              return `准备阶段，你可以选择一名角色并选择一项：${choiceList.join(";")}。每项限一次。`
             },
           },
         };
