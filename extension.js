@@ -39769,7 +39769,7 @@ onclick="if (lib.jlsg) lib.jlsg.showRepoElement(this)"></img>
       diskURL: "",
       forumURL: "",
       mirrorURL: "https://github.com/xiaoas/jilue",
-      version: "2.7.0408",
+      version: "2.7.0418",
       changelog: `
 <a onclick="if (jlsg) jlsg.showRepo()" style="cursor: pointer;text-decoration: underline;">
 Visit Repository</a><br>
@@ -39777,10 +39777,14 @@ Visit Repository</a><br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
 汇报bug点我</span><br>
+2025.04.18更新<br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="woodmm">SK岑昏</div><br>
+&ensp; 修复bug（矫诏、矢北、星舞、逐星、兴汉）<br>
+&ensp; 优化技能（恢拓）<br>
+<span style="font-size: large;">历史：</span><br>
 2025.04.08更新<br>
 &ensp; 修复bug（逐星、恃傲、图南、兴汉、玲珑）<br>
 &ensp; 优化技能（千幻、三绝、芳魂、天道、博略、天工、观虚）<br>
-<span style="font-size: large;">历史：</span><br>
 2025.03.30更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="firemm">SK杨婉</div><br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="woodmm">冠勇盖世·孙策</div><br>
