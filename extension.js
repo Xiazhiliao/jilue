@@ -882,7 +882,7 @@ const b = 1;
           },
           skill: {
             jlsg_zhengyi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: ['chooseToUse', 'chooseToRespond'],
               hiddenCard: function (player, name) {
                 if (get.type(name) != 'basic' || name == 'shan') return false;
@@ -1053,7 +1053,7 @@ const b = 1;
               inherit: 'wusheng',
             },
             jlsg_quanlue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: "phaseUseBegin",
               },
@@ -1129,7 +1129,7 @@ const b = 1;
               },
             },
             jlsg_huaiju: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: [
                   "phaseJudgeEnd",
@@ -1156,7 +1156,7 @@ const b = 1;
               },
             },
             jlsg_huntian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "discardEnd" },
               filter: function (event, player) {
                 for (var i = 0; i < event.cards.length; i++) {
@@ -1195,7 +1195,7 @@ const b = 1;
               }
             },
             jlsg_cangshu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "useCard" },
               // usable: 1,
               direct: true,
@@ -1229,7 +1229,7 @@ const b = 1;
 
             },
             jlsg_kanwu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: ['chooseToUse', 'chooseToRespond'],
               hiddenCard: function (player, name) {
                 if (get.type(name) != 'basic' || name == 'shan') return false;
@@ -1371,7 +1371,7 @@ const b = 1;
               }
             },
             jlsg_huage: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: "phaseUse",
               usable: 1,
               selectTarget: -1,
@@ -1419,7 +1419,7 @@ const b = 1;
               },
             },
             jlsg_muyi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "phaseBegin" },
               filter: function (event, player) {
                 return event.player != player && event.player.countCards('he') && player.hasSkill('jlsg_muyi');
@@ -1476,7 +1476,7 @@ const b = 1;
               },
             },
             jlsg_diezhang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'useCard' },
               frequent: true,
               filter: function (event, player) {
@@ -1512,7 +1512,7 @@ const b = 1;
               },
             },
             jlsg_xiongyi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               forced: true,
               trigger: { player: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
@@ -1528,7 +1528,7 @@ const b = 1;
               }
             },
             jlsg_sijian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: 'loseAfter',
                 global: ['equipAfter', 'addJudgeAfter', 'gainAfter', 'loseAsyncAfter', 'addToExpansionAfter'],
@@ -1561,7 +1561,7 @@ const b = 1;
               }
             },
             jlsg_gangzhi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               logAudio(event, player) {
                 if (player.countDiscardableCards(player, "h")) return ["ext:极略/audio/skill/jlsg_gangzhi1.mp3"];
                 return ["ext:极略/audio/skill/jlsg_gangzhi2.mp3"];
@@ -1627,7 +1627,7 @@ const b = 1;
               },
             },
             jlsg_yanxi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: ['phaseZhunbeiBegin', 'phaseJieshuBegin'] },
               frequent: true,
               filter: function (event, player) {
@@ -1638,7 +1638,7 @@ const b = 1;
               },
             },
             jlsg_zhige: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               group: ["jlsg_zhige_3", "jlsg_zhige_4"],
             },
             jlsg_zhige_3: {
@@ -1738,7 +1738,7 @@ const b = 1;
               },
             },
             jlsg_wangsi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageEnd' },
               filter: function (event, player) {
                 return event.source && event.source != player && event.source.countCards('h') != 0;
@@ -1757,7 +1757,7 @@ const b = 1;
               }
             },
             jlsg_shangyi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filterTarget: function (card, player, target) {
@@ -1819,7 +1819,7 @@ const b = 1;
               }
             },
             jlsg_kuangzheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               direct: true,
               trigger: { player: 'phaseEnd' },
               filter: function (event, player) {
@@ -1853,7 +1853,7 @@ const b = 1;
               }
             },
             jlsg_bibu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               group: ['jlsg_bibu1'],
               trigger: { global: 'phaseJieshuBegin' },
               frequent: true,
@@ -1867,7 +1867,7 @@ const b = 1;
               }
             },
             jlsg_bibu1: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseJieshuBegin' },
               direct: true,
               filter: function (event, player) {
@@ -1918,7 +1918,7 @@ const b = 1;
             },
             jlsg_bibu2: {},
             jlsg_duanlan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filter: function (event, player) {
@@ -2145,7 +2145,7 @@ const b = 1;
               },
             },
             jlsg_yaoming_: {
-              audio: "ext:极略:4",
+              audio: "ext:极略/audio/skill:4",
             },
             jlsg_yaoming_1: {
               audio: "ext:极略/audio/skill:true",
@@ -2241,7 +2241,7 @@ const b = 1;
             jlsg_kuangfu: {
               trigger: { source: 'damageEnd' },
               direct: true,
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               filter: function (event) {
                 if (event._notrigger.includes(event.player)) return false;
                 return event.card && event.card.name == 'sha' && event.player.countCards('e');
@@ -2251,7 +2251,7 @@ const b = 1;
               }
             },
             jlsg_zhoufu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseBegin' },
               filter: function (event, player) {
                 return player.countCards('h') != 0 && event.player != player;
@@ -2322,7 +2322,7 @@ const b = 1;
             //   },
             // },
             jlsg_yingbing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               trigger: { global: 'judgeEnd' },
               filter: function (event, player) {
@@ -2374,7 +2374,7 @@ const b = 1;
               }
             },
             jlsg_tuodao: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { target: 'shaMiss' },
               filter: function (event, player) {
                 return event.player.inRangeOf(player);
@@ -2409,7 +2409,7 @@ const b = 1;
               }
             },
             jlsg_zhuiji: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               forced: true,
               trigger: {
                 source: 'damageEnd',
@@ -2462,7 +2462,7 @@ const b = 1;
               },
             },
             jlsg_xionglie: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               direct: true,
               shaRelated: true,
               trigger: { player: 'useCardToPlayered' },
@@ -2525,7 +2525,7 @@ const b = 1;
               },
             },
             jlsg_chenqing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'dying' },
               usable: 1,
               filter: function (event, player) {
@@ -2652,7 +2652,7 @@ const b = 1;
               }
             },
             jlsg_mozhi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseJieshuBegin' },
               direct: true,
               filter: function (event, player) {
@@ -2699,7 +2699,7 @@ const b = 1;
               popname: true,
             },
             jlsg_hemeng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               filter: function (event, player) {
                 return player.countCards('h') && player.storage.jlsg_hemeng_usable;
@@ -2743,7 +2743,7 @@ const b = 1;
               }
             },
             jlsg_sujian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'gainEnd' },
               filter: function (event, player) {
                 // return (event.cards[0].original == 'h' || event.cards[0].original == 'e' || event.cards[0].original == 'j');
@@ -2771,7 +2771,7 @@ const b = 1;
               }
             },
             jlsg_yexi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'phaseJieshuBegin' },
               filter: function (event, player) {
                 return player.countCards('h') > 0;
@@ -2894,7 +2894,7 @@ const b = 1;
               }
             },
             jlsg_kuangyan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               group: ['jlsg_kuangyan1', 'jlsg_kuangyan2']
             },
             jlsg_kuangyan1: {
@@ -2945,7 +2945,7 @@ const b = 1;
               group: null,
             },
             jlsg_chaochen: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               usable: 1,
               enable: 'phaseUse',
               filterCard: true,
@@ -3008,7 +3008,7 @@ const b = 1;
               }
             },
             jlsg_quanzheng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { target: 'useCardToBefore' },
               filter: function (event, player) {
                 if (event.player == player) return false;
@@ -3022,7 +3022,7 @@ const b = 1;
               }
             },
             jlsg_shejian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               filter: function (event, player) {
                 return !player.get('e', '2') &&
@@ -3058,7 +3058,7 @@ const b = 1;
             },
             jlsg_shejian2: {},
             jlsg_kuangao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { target: 'shaAfter' },
               filter: function (event, player) {
                 if (!event.player) return false;
@@ -3147,7 +3147,7 @@ const b = 1;
               // }
             },
             jlsg_yinbing: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'shaBegin' },
               filter: function (event, player) {
                 if (event.player == player || event.target == player) return false;
@@ -3194,7 +3194,7 @@ const b = 1;
               },
             },
             jlsg_fenwei: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { source: 'damageBegin1' },
               filter: function (event, player) {
                 return event.card && event.card.name == 'sha' && event.notLink() && event.player.countCards('h');
@@ -3222,7 +3222,7 @@ const b = 1;
             },
             jlsg_shiyong: {
               trigger: { player: 'damageEnd' },
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               filter: function (event) {
                 if (event.card && (event.card.name == 'sha')) {
                   if (get.color(event.card) == 'red') return true;
@@ -3258,7 +3258,7 @@ const b = 1;
             },
             jlsg_angyang: {
               shaRelated: true,
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: ['shaBefore', 'juedouBefore'] },
               filter: function (event, player) {
                 if (event.card.name == 'juedou') return true;
@@ -3311,7 +3311,7 @@ const b = 1;
               },
             },
             jlsg_weifeng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
                 return player.countCards('h') < player.hp && game.countPlayer(p => player.canCompare(p));
@@ -3347,7 +3347,7 @@ const b = 1;
               }
             },
             jlsg_xieli: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               zhuSkill: true,
               trigger: { player: 'chooseToCompareBegin' },
               filter: function (event, player) {
@@ -3403,7 +3403,7 @@ const b = 1;
               },
             },
             jlsg_jushou: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'phaseJieshuBegin' },
               check: function (event, player) {
                 var num = game.filterPlayer(p => p != player && player.inRangeOf(p)).length;
@@ -3423,7 +3423,7 @@ const b = 1;
               inherit: 'yicong'
             },
             jlsg_muma: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'loseAfter' },
               forced: true,
               filter: function (event, player) {
@@ -3444,7 +3444,7 @@ const b = 1;
               },
             },
             jlsg_suiji: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseDiscardBegin' },
               filter: function (event, player) {
                 return event.player != player && player.countCards('h');
@@ -3497,7 +3497,7 @@ const b = 1;
               }
             },
             jlsg_fengyi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { target: 'useCardToBefore' },
               filter: function (event, player) {
                 return get.type(event.card) == 'trick' && event.targets.length == 1;
@@ -3519,7 +3519,7 @@ const b = 1;
               }
             },
             jlsg_yalv: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: ['damageEnd', 'phaseUseBegin'] },
               frequent: true,
               content: function () {
@@ -3544,7 +3544,7 @@ const b = 1;
               }
             },
             jlsg_xiemu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'phaseZhunbeiBegin' },
               direct: true,
               filter: function (event, player) {
@@ -3575,7 +3575,7 @@ const b = 1;
             },
             jlsg_xiemu2: {
               trigger: { global: 'phaseJieshuBegin' },
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               logTarget: 'player',
               prompt2: function (event, player) {
                 if (player == event.player) {
@@ -3601,7 +3601,7 @@ const b = 1;
             },
             jlsg_xiemu3: {},
             jlsg_zhejie: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'phaseDiscardEnd' },
               filter: function (event, player) {
                 return event.player != player && player.countCards('h') > 0;
@@ -3661,7 +3661,7 @@ const b = 1;
               }
             },
             jlsg_fengya: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'damageBegin3' },
               frequent: true,
               filter: function (event) {
@@ -3697,7 +3697,7 @@ const b = 1;
               }
             },
             jlsg_yijian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'phaseUseBefore' },
               direct: true,
               content: function () {
@@ -3745,7 +3745,7 @@ const b = 1;
               }
             },
             jlsg_feijun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               popup: false,
               trigger: { player: 'phaseUseBegin' },
               forced: true,
@@ -3790,7 +3790,7 @@ const b = 1;
               audio: 'ext:极略/audio/skill:true',
             },
             jlsg_muniu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: ['equipAfter', 'addJudgeAfter', 'loseAfter', 'gainAfter', 'loseAsyncAfter', 'addToExpansionAfter'],
               },
@@ -3884,7 +3884,7 @@ const b = 1;
               },
             },
             jlsg_liuma: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               usable: 1,
               enable: 'phaseUse',
               filterCard: function (card) {
@@ -3934,7 +3934,7 @@ const b = 1;
               }
             },
             jlsg_baozheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseJieshuBegin' },
               forced: true,
               priority: 10,
@@ -4029,7 +4029,7 @@ const b = 1;
               }
             },
             jlsg_lingnu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseEnd' },
               forced: true,
               priority: 9,
@@ -4076,7 +4076,7 @@ const b = 1;
               }
             },
             jlsg_zhongyong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseZhunbeiBegin' },
               check: function (event, player) {
                 return (!player.hasJudge('lebu') || !player.hasJudge('bingliang')) && (player.hp >= 2 || player.hasCard('tao', 'h')) &&
@@ -4162,7 +4162,7 @@ const b = 1;
               }
             },
             jlsg_danshou: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 target: "useCardToTargeted",
               },
@@ -4185,7 +4185,7 @@ const b = 1;
               },
             },
             jlsg_yonglie: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'damageEnd' },
               filter: function (event, player) {
                 return event.card && event.card.name == 'sha' && event.notLink() && event.player.inRangeOf(player) && event.source && event.source.isAlive();
@@ -4206,7 +4206,7 @@ const b = 1;
               },
             },
             jlsg_hengshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseDiscardBegin' },
               frequent: true,
               filter: function (event, player) {
@@ -4232,7 +4232,7 @@ const b = 1;
               }
             },
             jlsg_zhijiao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseJieshuBegin' },
               unique: true,
               limited: true,
@@ -4352,7 +4352,7 @@ const b = 1;
               }
             },
             jlsg_jiwux: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               trigger: { player: 'phaseUseBegin' },
               shaRelated: true,
               filter: function (event, player) {
@@ -4592,7 +4592,7 @@ const b = 1;
               // }
             },
             jlsg_daoshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseJieshuBegin' },
               filter: function (event, player) {
                 return event.player.countCards('e') > 0 && (player == event.player || player.hasSkill("jlsg_daoshi"));
@@ -4627,7 +4627,7 @@ const b = 1;
               }
             },
             jlsg_lirang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseZhunbeiEnd' },
               filter: function (event, player) {
                 if (event.player != player && !player.hasSkill('jlsg_lirang')) return false;
@@ -4721,7 +4721,7 @@ const b = 1;
               }
             },
             jlsg_xianshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageBegin3' },
               filter: function (event, player) {
                 return (event.source != undefined);
@@ -4766,7 +4766,7 @@ const b = 1;
               }
             },
             jlsg_chengxiang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               inherit: 'chengxiang',
               content: function () {
                 "step 0"
@@ -4825,14 +4825,14 @@ const b = 1;
               },
             },
             jlsg_renxin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               inherit: 'oldrenxin',
               // ai: {
               //   expose: 0.5
               // }
             },
             jlsg_midao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filterTarget: function (card, player, target) {
@@ -4903,7 +4903,7 @@ const b = 1;
               }
             },
             jlsg_yishe: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filterTarget: function (card, player, target) {
@@ -4928,7 +4928,7 @@ const b = 1;
               }
             },
             jlsg_pudu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               unique: true,
               limited: true,
               enable: 'phaseUse',
@@ -5042,7 +5042,7 @@ const b = 1;
               }
             },
             jlsg_zongqing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseDrawBegin' },
               check: function (event, player) {
                 if (player.isDamaged() && player.countCards('h', { color: 'red' })) return 2;
@@ -5122,7 +5122,7 @@ const b = 1;
               }
             },
             jlsg_bugua: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'judgeBefore' },
               content: function () {
                 'step 0'
@@ -5221,7 +5221,7 @@ const b = 1;
               }
             },
             jlsg_zhaoxin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageEnd' },
               filter: function (event, player) {
                 if (game.online) {
@@ -5252,7 +5252,7 @@ const b = 1;
               }
             },
             jlsg_zhihe: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               enable: 'phaseUse',
               filter: function (event, player) {
@@ -5310,7 +5310,7 @@ const b = 1;
               }
             },
             jlsg_caijie: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'phaseZhunbeiBegin' },
               check: function (event, player) {
                 var cards = player.get('h');
@@ -5345,7 +5345,7 @@ const b = 1;
               }
             },
             jlsg_jilei: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'damageEnd' },
               check: function (event, player) {
                 return get.attitude(player, event.source) < 0;
@@ -5408,7 +5408,7 @@ const b = 1;
               },
             },
             jlsg_yanliang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
                 return player.countDiscardableCards(player, 'he');
@@ -5475,7 +5475,7 @@ const b = 1;
               }
             },
             jlsg_duzhi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'recoverEnd' },
               direct: true,
               content: function () {
@@ -5532,7 +5532,7 @@ const b = 1;
                   if (card.name == 'shan') return 'jiu';
                 },
               },
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: "useCard",
               },
@@ -5545,7 +5545,7 @@ const b = 1;
               },
             },
             jlsg_baoli: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               enable: 'phaseUse',
               filterTarget: function (card, player, target) {
@@ -5563,7 +5563,7 @@ const b = 1;
               }
             },
             jlsg_huanbing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { target: 'shaBefore' },
               // filter: function (event, player) {
               //   if (get.itemtype(event.card) != 'card') return false;
@@ -5593,7 +5593,7 @@ const b = 1;
               group: 'jlsg_huanbing2'
             },
             jlsg_huanbing2: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
                 return player.getExpansions('jlsg_huanbing').length;
@@ -5625,7 +5625,7 @@ const b = 1;
               }
             },
             jlsg_hongyuan: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               usable: 1,
               enable: 'phaseUse',
               filter: function (event, player) {
@@ -5667,7 +5667,7 @@ const b = 1;
               },
             },
             jlsg_huaqiang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               enable: 'phaseUse',
               filter: function (event, player) {
@@ -5706,7 +5706,7 @@ const b = 1;
               }
             },
             jlsg_chaohuang: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               usable: 1,
               enable: 'phaseUse',
               filterTarget: function (card, player, target) {
@@ -5734,7 +5734,7 @@ const b = 1;
               }
             },
             jlsg_old_zhishi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               srlose: true,
               enable: "phaseUse",
               usable: 1,
@@ -5796,7 +5796,7 @@ const b = 1;
               },
             },
             jlsg_huilian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               usable: 1,
               enable: 'phaseUse',
               filterTarget: function (card, player, target) {
@@ -5829,7 +5829,7 @@ const b = 1;
               }
             },
             jlsg_wenliang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'judgeAfter' },
               frequent: true,
               filter: function (event, player) {
@@ -5840,7 +5840,7 @@ const b = 1;
               }
             },
             jlsg_qianhuan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               // forbid:['guozhan'],
               trigger: {
                 player: 'enterGame',
@@ -6024,7 +6024,7 @@ const b = 1;
               },
             },
             jlsg_jinglun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               trigger: { global: ['respond', 'useCard'] },
               filter: function (event, player) {
@@ -6058,7 +6058,7 @@ const b = 1;
               },
             },
             jlsg_ruzong: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               group: ['jlsg_ruzong_wuxie', 'jlsg_ruzong_shan'],
               subSkill: {
                 wuxie: { // 闪当无懈
@@ -6098,7 +6098,7 @@ const b = 1;
               },
             },
             jlsg_leiji: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: "useCard", },
               mark: true,
               marktext: "祭",
@@ -6152,7 +6152,7 @@ const b = 1;
               }
             },
             jlsg_shanxi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'judgeEnd' },
               forced: true,
               filter: function (event, player) {
@@ -6169,7 +6169,7 @@ const b = 1;
               }
             },
             jlsg_guhuo: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               trigger: { global: 'phaseBegin' },
               filter: function (event, player) {
                 return player.canCompare(event.player); // && !event.player.hasSkill("jlsg_chanyuan");
@@ -6253,7 +6253,7 @@ const b = 1;
               }
             },
             jlsg_fulu: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               trigger: { player: "damageEnd" },
               getIndex(event) {
                 return event.num;
@@ -6310,7 +6310,7 @@ const b = 1;
               },
             },
             jlsg_guixiu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'phaseDiscardBefore' },
               frequent: true,
               filter: function (event, player) {
@@ -6322,7 +6322,7 @@ const b = 1;
               },
             },
             jlsg_cunsi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'die' },
               skillAnimation: true,
               animationColor: 'orange',
@@ -6376,7 +6376,7 @@ const b = 1;
               group: 'jlsg_yongjue2',
             },
             jlsg_yongjue2: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               marktext: "嗣",
               intro: {
                 name: "存嗣",
@@ -6431,7 +6431,7 @@ const b = 1;
               audio: "ext:极略/audio/skill:true",
             },
             jlsg_gongshen: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               filterCard: true,
               selectCard: 3,
@@ -6471,7 +6471,7 @@ const b = 1;
               }
             },
             jlsg_jianyue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseJieshuBegin' },
               filter: function (event, player) {
                 if (ui.discardPile.hasChildNodes() == false) return false;
@@ -6509,7 +6509,7 @@ const b = 1;
               }
             },
             jlsg_pengri: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               selectTarget: -1,
               usable: 1,
@@ -6559,7 +6559,7 @@ const b = 1;
               }
             },
             jlsg_danmou: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageEnd' },
               filter: function (event, player) {
                 return event.source && event.source.isAlive() && event.source != player
@@ -6599,7 +6599,7 @@ const b = 1;
               }
             },
             jlsg_fushe: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseUseBegin' },
               filter: function (event, player) {
                 return event.player.inRangeOf(player) && event.player != player;
@@ -6721,7 +6721,7 @@ const b = 1;
               }
             },
             jlsg_ziguo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filter: function (event, player) {
@@ -6770,7 +6770,7 @@ const b = 1;
               }
             },
             jlsg_shangdao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
                 return event.player.countCards('h') > player.countCards('h');
@@ -6783,7 +6783,7 @@ const b = 1;
               }
             },
             jlsg_hengjiang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseDiscardBegin' },
               filter: function (event, player) {
                 return [-1, 0, 1].includes(player.countCards('h') - player.getHandcardLimit());
@@ -6914,7 +6914,7 @@ const b = 1;
               },
             },
             jlsg_zhuanshan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: ['phaseZhunbeiBegin', 'phaseJieshuEnd'] },
               direct: true,
               content: function () {
@@ -6983,7 +6983,7 @@ const b = 1;
               }
             },
             jlsg_zhenlie: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { target: 'useCardToTargeted' },
               filter: function (event, player) {
                 return event.player != player && event.card && (event.card.name == 'sha' || get.type(event.card) == 'trick');
@@ -7045,7 +7045,7 @@ const b = 1;
               }
             },
             jlsg_miji: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: ['phaseZhunbeiBegin', 'phaseJieshuBegin'] },
               filter: function (event, player, name) {
                 if (name == 'phaseZhunbeiBegin') {
@@ -7108,7 +7108,7 @@ const b = 1;
               }
             },
             jlsg_yongji: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageSource' },
               forced: true,
               filter: function (event, player) {
@@ -7128,7 +7128,7 @@ const b = 1;
               }
             },
             jlsg_yongjiBuff: {
-              // audio: "ext:极略:1",
+              // audio: "ext:极略/audio/skill:1",
               // trigger:{player:'useCard1'},
               // forced:true,
               // filter:function(event,player){
@@ -7149,7 +7149,7 @@ const b = 1;
               onremove: true,
             },
             jlsg_wuzhi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               forced: true,
               trigger: { player: 'phaseDiscardEnd' },
               filter: function (event, player) {
@@ -7174,7 +7174,7 @@ const b = 1;
             },
             // 真有你的啊 用别人的字做技能名
             jlsg_yidu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: 'loseAfter',
                 global: ['equipAfter', 'addJudgeAfter', 'gainAfter', 'loseAsyncAfter', 'addToExpansionAfter'],
@@ -7216,7 +7216,7 @@ const b = 1;
             },
             jlsg_zhubao: {
               group: 'jlsg_zhubao_phase',
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               direct: true,
               trigger: {
                 global: ['loseAfter', 'equipAfter', 'addJudgeAfter', 'gainAfter', 'loseAsyncAfter', 'addToExpansionAfter'],
@@ -7302,11 +7302,11 @@ const b = 1;
               },
             },
             jlsg_buqu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               inherit: 'buqu',
             },
             jlsg_fenji: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 global: 'shaBegin',
               },
@@ -7328,7 +7328,7 @@ const b = 1;
               }
             },
             jlsg_jiaomei: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               usable: 1,
               trigger: {
                 player: 'useCardToPlayered',
@@ -7369,7 +7369,7 @@ const b = 1;
               },
             },
             jlsg_huoshui: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: 'phaseJieshuBegin',
               },
@@ -7416,7 +7416,7 @@ const b = 1;
               },
             },
             jlsg_hubu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'damageEnd', source: 'damageEnd' },
               filter: function (event) {
                 return event.card && event.card.name == 'sha'; // && event.notLink();
@@ -7451,7 +7451,7 @@ const b = 1;
               }
             },
             jlsg_yuhua: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageBegin2', player: 'damageBegin4' },
               intro: {
                 content: '已发动过#次',
@@ -7498,7 +7498,7 @@ const b = 1;
               },
             },
             jlsg_dengxian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               skillAnimation: true,
               animationColor: 'orange',
               unique: true,
@@ -7554,7 +7554,7 @@ const b = 1;
               },
             },
             jlsg_tiance: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseZhunbeiBegin' },
               direct: true,
               content: function () {
@@ -7604,7 +7604,7 @@ const b = 1;
               }
             },
             jlsg_jiexin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageEnd' },
               direct: true,
               content: function () {
@@ -7656,7 +7656,7 @@ const b = 1;
               }
             },
             jlsg_zhengnan: { // 征南
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: "phaseUse",
               usable: 1,
               filterTarget: function (card, player, target) {
@@ -7785,13 +7785,13 @@ const b = 1;
               },
             },
             jlsg_tongxin_f: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
             },
             jlsg_tongxin_m: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
             },
             jlsg_jianwu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'useCard' },
               forced: true,
               silent: true,
@@ -7836,7 +7836,7 @@ const b = 1;
               },
             },
             jlsg_zhennan: { // 镇南
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               trigger: { global: 'useCardToTargeted' },
               filter: function (event, player) {
@@ -7868,7 +7868,7 @@ const b = 1;
               }
             },
             jlsg_shemi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'chooseToDiscardBegin' },
               direct: true,
               intro: {
@@ -7992,7 +7992,7 @@ const b = 1;
               },
             },
             jlsg_jiaohui: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageBegin2' },
               frequent: true,
               direct: true,
@@ -8031,7 +8031,7 @@ const b = 1;
             },
             jlsg_wengua: {
               global: 'jlsg_wengua2',
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
             },
             jlsg_wengua2: {
               sub: true,
@@ -8127,7 +8127,7 @@ const b = 1;
               },
             },
             jlsg_fuzhu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               limited: true,
               skillAnimation: true,
@@ -8163,7 +8163,7 @@ const b = 1;
               },
             },
             jlsg_yinyuan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init: function (player) {
                 player.storage.jlsg_yinyuan = [];
               },
@@ -8206,7 +8206,7 @@ const b = 1;
               }
             },
             jlsg_konghou: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'useCard' },
               direct: true,
               preHidden: true,
@@ -8244,7 +8244,7 @@ const b = 1;
               },
             },
             jlsg_zhidi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseZhunbeiBegin' },
               shaRelated: true,
               init: function (player) {
@@ -8328,7 +8328,7 @@ const b = 1;
               }
             },
             jlsg_jijun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               enable: 'phaseUse',
               complexCard: true,
@@ -8419,7 +8419,7 @@ const b = 1;
               }
             },
             jlsg_fangtong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               derivation: ['leiji', 'jlsg_zhoufu', 'jlsg_shendao', 'jlsgsy_biantian'],
               trigger: {
                 player: ["addToExpansionAfter", "gainAfter"],
@@ -8485,7 +8485,7 @@ const b = 1;
               },
             },
             jlsg_jinzhi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               intro: {
                 content: function (storage, player, skill) {
                   if (!storage?.length) return "";
@@ -8607,7 +8607,7 @@ const b = 1;
               },
             },
             jlsg_yuyou: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: 'gainAfter',
                 global: 'loseAsyncAfter',
@@ -8648,7 +8648,7 @@ const b = 1;
               },
             },
             jlsg_huituo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: ['phaseZhunbeiBegin'] },
               init: function (player) {
                 player.storage.jlsg_huituo = Array.from({ length: 4 }, () => true);
@@ -8776,7 +8776,7 @@ const b = 1;
               },
             },
             jlsg_xingshuai: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageEnd' },
               direct: true,
               content: function () {
@@ -8820,7 +8820,7 @@ const b = 1;
               }
             },
             jlsg_zhanjue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               group: ["zhanjue", "zhanjue4"],
               trigger: {
                 player: 'loseAfter',
@@ -8851,7 +8851,7 @@ const b = 1;
               },
             },
             jlsg_yanzhu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 3,
               enable: 'phaseUse',
               filterTarget: true,
@@ -8900,7 +8900,7 @@ const b = 1;
               }
             },
             jlsg_xingxue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: 'phaseJieshuBegin'
               },
@@ -8951,7 +8951,7 @@ const b = 1;
               },
             },
             jlsg_taoluan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: 'useCardToPlayered',
               },
@@ -9070,7 +9070,7 @@ const b = 1;
               },
             },
             jlsg_shiqiao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: "phaseEnd",
               },
@@ -9091,7 +9091,7 @@ const b = 1;
               }
             },
             jlsg_yingge: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: "phaseUseBegin",
               },
@@ -9179,7 +9179,7 @@ const b = 1;
               },
             },
             jlsg_kuangbi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'useCard2' },
               direct: true,
               filter: function (event, player) {
@@ -9238,7 +9238,7 @@ const b = 1;
             },
             jlsg_kuangbi2: {},
             jlsg_taoxi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               enable: 'phaseUse',
               content: function () {
@@ -9308,7 +9308,7 @@ const b = 1;
               },
             },
             jlsg_huaibi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               marktext: '玺',
               intro: {
                 content: 'expansion',
@@ -9393,7 +9393,7 @@ const b = 1;
 
             },
             jlsg_zhixi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               enable: 'phaseUse',
               init(player) {
@@ -9436,7 +9436,7 @@ const b = 1;
               },
             },
             jlsg_caijian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               marktext: '鉴',
               intro: {
                 content: 'expansion',
@@ -9511,7 +9511,7 @@ const b = 1;
               },
             },
             jlsg_zhishix: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               filter: function (event, player) {
                 let suits = new Set(
@@ -9584,7 +9584,7 @@ const b = 1;
               },
             },
             jlsg_anguo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseDrawBegin2' },
               filter: function (event, player) {
                 return !event.numFixed && event.num > 0;
@@ -9641,7 +9641,7 @@ const b = 1;
               },
             },
             jlsg_quanxiang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               filter: function (event, player) {
                 return !player.hasSkillTag('noCompareSource') && !player.hasSkill('jlsg_quanxiang3');
@@ -9710,7 +9710,7 @@ const b = 1;
               },
             },
             jlsg_gushe: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'compare', target: 'compare' },
               filter: function (event, player) {
                 return !event.iwhile && player.countMark('jlsg_raoshe');
@@ -9738,7 +9738,7 @@ const b = 1;
               },
             },
             jlsg_jici: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageBegin2' },
               filter: function (event, player) {
                 return event.source && event.source != player
@@ -9769,7 +9769,7 @@ const b = 1;
               },
             },
             jlsg_hechun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               selectTarget: -1,
@@ -9823,7 +9823,7 @@ const b = 1;
               },
             },
             jlsg_daiyan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseAfter' },
               direct: true,
               init: function (player) {
@@ -9861,11 +9861,11 @@ const b = 1;
               },
             },
             jlsg_jianying: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               inherit: 'dcjianying',
             },
             jlsg_shibei: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: "damageEnd",
               },
@@ -9914,7 +9914,7 @@ const b = 1;
               },
             },
             jlsg_kuizhu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               forced: true,
               trigger: { player: 'phaseJieshuBegin' },
               content: function () {
@@ -9946,7 +9946,7 @@ const b = 1;
               },
             },
             jlsg_chezheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: ['phaseUseAfter'] },
               filter: function (event, player) {
                 if (event.skill) {
@@ -10014,7 +10014,7 @@ const b = 1;
               }
             },
             jlsg_jueyong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageBegin1' },
               direct: true,
               filter: function (event, player) {
@@ -10096,7 +10096,7 @@ const b = 1;
             },
             jlsg_jueyong2: {},
             jlsg_choujue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               viewAs: {
                 name: 'sha',
@@ -10153,7 +10153,7 @@ const b = 1;
               },
             },
             jlsg_juzhan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "phaseUseBegin" },
               filter(event, player) {
                 return event.player != player;
@@ -10182,7 +10182,7 @@ const b = 1;
               }
             },
             jlsg_zuilun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseJieshuBegin' },
               forced: true,
               content() {
@@ -10238,7 +10238,7 @@ const b = 1;
               }
             },
             jlsg_fuzhi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               animationColor: 'thunder',
               skillAnimation: true,
               juexingji: true,
@@ -10258,7 +10258,7 @@ const b = 1;
               }
             },
             jlsg_jiejun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "useCardAfter" },
               filter(event, player) {
                 return event.player != player
@@ -10296,7 +10296,7 @@ const b = 1;
               }
             },
             jlsg_xiecui: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'damageBegin2' },
               filter(event, player) {
                 if (!event.source || event.source !== _status.currentPhase) {
@@ -10354,7 +10354,7 @@ const b = 1;
 
             },
             jlsg_youxu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseUseBegin' },
               filter(event, player) {
                 const num = event.player.getDamagedHp();
@@ -10443,7 +10443,7 @@ const b = 1;
               },
             },
             jlsg_zhulu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageSource' },
               filter(event, player) {
                 return event.player.countCards('he');
@@ -10472,7 +10472,7 @@ const b = 1;
 
             },
             jlsg_limu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               mod: {
                 cardUsableTarget: function (card, player, target) {
                   if (player.countCards('j')) return true;
@@ -10514,7 +10514,7 @@ const b = 1;
               },
             },
             jlsg_huaiyi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               delay: false,
@@ -10590,7 +10590,7 @@ const b = 1;
               }
             },
             jlsg_jiaozhao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filter: function (event, player) {
@@ -10674,7 +10674,7 @@ const b = 1;
               },
             },
             jlsg_danxin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageEnd' },
               frequent: true,
               derivation: 'jlsg_jiaozhao',
@@ -10748,7 +10748,7 @@ const b = 1;
               }
             },
             jlsg_fanghun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: ["chooseToUse", "chooseToRespond"],
               position: "hs",
               locked: false,
@@ -10834,7 +10834,7 @@ const b = 1;
               },
             },
             jlsg_fuhan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'useCardAfter' },
               frequent: true,
               get list() {
@@ -10869,7 +10869,7 @@ const b = 1;
               },
             },
             jlsg_pindi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               filter(event, player) {
                 return player.countDiscardableCards(player, 'h') && game.hasPlayer(p => p != player && !player.getStorage('jlsg_pindi_target').includes(p));
@@ -10951,7 +10951,7 @@ const b = 1;
               }
             },
             jlsg_faen: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'turnOverEnd' },
               frequent(event, player) {
                 return event.player == player;
@@ -10964,7 +10964,7 @@ const b = 1;
               }
             },
             jlsg_diaodu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "phaseZhunbeiBegin" },
               direct: true,
               content() {
@@ -11071,7 +11071,7 @@ const b = 1;
               }
             },
             jlsg_diancai: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseJieshuBegin' },
               direct: true,
               content() {
@@ -11150,7 +11150,7 @@ const b = 1;
               }
             },
             jlsg_zhendu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseUseBegin' },
               check(event, player) {
                 if (event.player == player) {
@@ -11195,7 +11195,7 @@ const b = 1;
               },
             },
             jlsg_qiluan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseEnd' },
               filter(event, player) {
                 return event.player.isIn();
@@ -11219,7 +11219,7 @@ const b = 1;
               },
             },
             jlsg_wurong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filterTarget(card, player, target) {
@@ -11331,7 +11331,7 @@ const b = 1;
               },
             },
             jlsg_shanjia: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               mod: {
                 globalFrom: function (from, to, distance) {
                   if (!from.hasEmptySlot(4)) return false;
@@ -11373,7 +11373,7 @@ const b = 1;
               }
             },
             jlsg_jili: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'useCardAfter' },
               filter(event, player) {
                 if (get.type2(event.card) == 'trick') {
@@ -11435,7 +11435,7 @@ const b = 1;
               },
             },
             jlsg_dujin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               mod: {
                 cardUsable: function (card, player, num) {
                   if (card.name == 'sha') return Infinity;
@@ -11496,7 +11496,7 @@ const b = 1;
               }
             },
             jlsg_sanjue: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               trigger: { player: 'useCard' },
               filter: function (event, player) {
                 let s = player.storage.jlsg_sanjue || {};
@@ -11570,7 +11570,7 @@ const b = 1;
               },
             },
             jlsg_canshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: ["recoverAfter", "gainMaxHpAfter"],
                 player: "damageEnd",
@@ -11615,7 +11615,7 @@ const b = 1;
               }
             },
             jlsg_xianji: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: 'phaseZhunbeiBegin',
               },
@@ -11671,7 +11671,7 @@ const b = 1;
               }
             },
             jlsg_hanyong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               group: ['jlsg_hanyong_guanshi', 'jlsg_hanyong_tengjia1', 'jlsg_hanyong_tengjia2', 'jlsg_hanyong_tengjia3'],
               subSkill: {
                 guanshi: {
@@ -11773,7 +11773,7 @@ const b = 1;
               }
             },
             jlsg_lingruo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: 'useCardToPlayered',
                 target: 'useCardToTargeted',
@@ -11852,7 +11852,7 @@ const b = 1;
               },
             },
             jlsg_fujian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseZhunbeiBegin' },
               direct: true,
               content() {
@@ -11949,7 +11949,7 @@ const b = 1;
               }
             },
             jlsg_fengyin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageBegin1' },
               logTarget: 'player',
               filter(event, player) {
@@ -11984,7 +11984,7 @@ const b = 1;
               }
             },
             jlsg_rongzhuang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               escalate(player) {
                 return player.getEquips(1).length && player.getEquips(2).length;
               },
@@ -12014,7 +12014,7 @@ const b = 1;
               }
             },
             jlsg_huomo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'chooseToUse',
               hiddenCard: function (player, name) {
                 if (get.type(name) != 'basic') return false;
@@ -12144,7 +12144,7 @@ const b = 1;
               }
             },
             jlsg_dingguan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'useCardToPlayered' },
               filter(event, player) {
                 if (!event.isFirstTarget) return false;
@@ -12172,7 +12172,7 @@ const b = 1;
               },
             },
             jlsg_xianshou: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseBegin' },
               direct: true,
               content() {
@@ -12220,7 +12220,7 @@ const b = 1;
               derivation: 'jlsg_tiandao',
             },
             jlsg_tiandao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init(player) {
                 player.storage.jlsg_tiandao = [1, 1, 1, 1];
               },
@@ -12307,7 +12307,7 @@ const b = 1;
               },
             },
             jlsg_chengfeng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "damageBegin2" },
               forced: true,
               content() {
@@ -12345,7 +12345,7 @@ const b = 1;
               },
             },
             jlsg_kunfen: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: ["damageEnd", "loseHpEnd", "loseMaxHpAfter"] },
               forced: true,
               async content(event, trigger, player) {
@@ -12376,7 +12376,7 @@ const b = 1;
               },
             },
             jlsg_caiyu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "phaseZhunbeiBegin" },
               check(event, player) {
                 if (player.maxHp <= 1 || player.isHealthy()) {
@@ -12413,7 +12413,7 @@ const b = 1;
               },
             },
             jlsg_qinqing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "phaseJieshuBegin" },
               async cost(event, trigger, player) {
                 event.result = await player
@@ -12454,7 +12454,7 @@ const b = 1;
               },
             },
             jlsg_huisheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "damageBegin4" },
               filter: function (event, player) {
                 if (!player.countCards("h")) return false;
@@ -12511,7 +12511,7 @@ const b = 1;
               },
             },
             jlsg_manyi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: "useCardToPlayered",
                 target: "useCardToTargeted",
@@ -12554,7 +12554,7 @@ const b = 1;
               },
             },
             jlsg_souying: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'respondAfter' },
               filter(event, player) {
                 switch (event.card.name) {
@@ -12593,7 +12593,7 @@ const b = 1;
               onremove: true,
             },
             jlsg_guolun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init(player) {
                 player.storage.jlsg_guolun = 0;
               },
@@ -12821,7 +12821,7 @@ const b = 1;
               }
             },
             jlsg_songsang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'die' },
               filter(event, player) {
                 return event.player != player;
@@ -12836,7 +12836,7 @@ const b = 1;
               },
             },
             jlsg_qinguo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               locked: false,
               mod: {
                 playerEnabled: (card, player, target) => {
@@ -12998,7 +12998,7 @@ const b = 1;
               }
             },
             jlsg_zhenge: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               derivation: 'jlsg_zhenge_derivation',
               trigger: { player: 'useCardBegin' },
               silent: true,
@@ -13247,7 +13247,7 @@ const b = 1;
             },
             jlsg_zhenge_derivation: { sub: true },
             jlsg_xinghan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               forbid: ['hearth', 'guozhan'],
               changeSeat: true,
               init(player) {
@@ -13687,7 +13687,7 @@ const b = 1;
               },
             },
             jlsg_qianchong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               group: ['jlsg_qianchong_red', 'jlsg_qianchong_black', 'jlsg_qianchong_extra'],
               subSkill: {
                 red: {
@@ -13856,7 +13856,7 @@ const b = 1;
               },
             },
             jlsg_shangjian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseDiscardBegin' },
               filter(event, player) {
                 return player.countCards('h') > player.getHandcardLimit();
@@ -13922,7 +13922,7 @@ const b = 1;
               }
             },
             jlsg_yanjiao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init(player) {
                 player.storage.jlsg_yanjiao = [null, false, false, false, false];
               },
@@ -14107,7 +14107,7 @@ const b = 1;
               }
             },
             jlsg_xingshen: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "damageEnd" },
               filter(event, player) {
                 return event.num > 0;
@@ -14133,7 +14133,7 @@ const b = 1;
             },
 
             jlsg_jianzheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "useCardToPlayer" },
               filter: function (event, player) {
                 if (player.hasSkill("jlsg_jianzheng_used") || !event.isFirstTarget) return false;
@@ -14224,7 +14224,7 @@ const b = 1;
               },
             },
             jlsg_tianbian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: ["chooseToUse", "chooseToRespond"],
               trigger: { global: ["chooseToCompareBegin"] },
               hiddenCard(player, name) {
@@ -14405,7 +14405,7 @@ const b = 1;
               },
             },
             jlsg_xuhe: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "useCard2" },
               filter(event, player) {
                 if (!["basic", "trick"].includes(get.type(event.card))) return false;
@@ -14477,7 +14477,7 @@ const b = 1;
               },
             },
             jlsg_zhukou: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               direct: true,
               trigger: { global: "phaseUseEnd" },
               filter(event, player) {
@@ -14591,7 +14591,7 @@ const b = 1;
               },
             },
             jlsg_duannian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "phaseUseBegin" },
               filter(event, player) {
                 return player.countDiscardableCards(player, "h");
@@ -14628,7 +14628,7 @@ const b = 1;
               }
             },
             jlsg_jingce: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               onremove: true,
               locked: false,
               mod: {
@@ -14751,7 +14751,7 @@ const b = 1;
               },
             },
             jlsg_guanxu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init(player) {
                 player.storage.jlsg_guanxu = Array
                   .from({ length: 8 }, (v, i) => i)
@@ -15047,7 +15047,7 @@ const b = 1;
               },
             },
             jlsg_yashi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "damageEnd" },
               getIndex(event, player) {
                 return event.num;
@@ -15114,7 +15114,7 @@ const b = 1;
               },
             },
             jlsg_tunan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "phaseUseBegin" },
               filter(event, player) {
                 const target = event.player,
@@ -15163,7 +15163,7 @@ const b = 1;
               },
             },
             jlsg_bijing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { target: "useCardToTargeted" },
               filter(event, player) {
                 if (event.player == player) return false;
@@ -15240,7 +15240,7 @@ const b = 1;
               },
             },
             jlsg_gongao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "dying" },
               filter(event, player) {
                 if (event.player == player) return false;
@@ -15257,7 +15257,7 @@ const b = 1;
               },
             },
             jlsg_juyi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               onremove: true,
               mod: {
                 maxHandcard: function (player, num) {
@@ -15317,7 +15317,7 @@ const b = 1;
               },
             },
             jlsg_weizhong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               onremove: true,
               trigger: { player: ["gainMaxHpEnd", "loseMaxHpEnd", "dying"] },
               filter(event, player) {
@@ -15337,7 +15337,7 @@ const b = 1;
             },
             //SK杨婉
             jlsg_youyan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "useCardAfter" },
               filter(event, player) {
                 if (event.card.storage?.jlsg_youyan) return false;
@@ -15400,7 +15400,7 @@ const b = 1;
               },
             },
             jlsg_zhuihuan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               onremove: true,
               intro: {
                 nocount: true,
@@ -15476,7 +15476,7 @@ const b = 1;
               },
             },
             jlsg_jishe: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: "phaseUse",
               onChooseToUse(event) {
                 if (!event.jlsg_jishe && !game.online) {
@@ -15568,7 +15568,7 @@ const b = 1;
               },
             },
             jlsg_lianhuo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 target: "useCardToTargeted",
                 player: "damageBegin3",
@@ -16395,7 +16395,7 @@ const b = 1;
           },
           skill: {
             jlsg_jieyin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               filterCard: true,
               usable: 1,
@@ -16439,7 +16439,7 @@ const b = 1;
               }
             },
             jlsg_xiaoji: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: 'loseAfter',
                 global: ['equipAfter', 'addJudgeAfter', 'gainAfter', 'loseAsyncAfter', 'addToExpansionAfter'],
@@ -16534,7 +16534,7 @@ const b = 1;
               }
             },
             jlsg_syqj_wusheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: ['chooseToRespond', 'chooseToUse'],
               filterCard: function (card, player) {
                 return get.color(card) == 'red';
@@ -16598,7 +16598,7 @@ const b = 1;
               },
             },
             jlsg_sslh_luoshen: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseZhunbeiBegin' },
               frequent: true,
               content: function () {
@@ -16668,7 +16668,7 @@ const b = 1;
               },
             },
             jlsg_sslh_qingguo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               filter: function (event, player) {
                 return event.player != player && event.card && (event.card.name == 'sha' || get.type(event.card) == 'trick');
               },
@@ -16733,7 +16733,7 @@ const b = 1;
               },
             },
             jlsg_spwq_wushuang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               mod: {
                 cardUsable(card, player, num) {
                   if (_status.event.skill == "jlsg_spwq_wushuang") return Infinity;
@@ -16931,7 +16931,7 @@ const b = 1;
             },
             //貂蝉（水墨丹青）
             jlsg_smdq_lijian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               multitarget: true,
               complexCard: true,
               discard: false,
@@ -17045,7 +17045,7 @@ const b = 1;
               },
             },
             jlsg_smdq_biyue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "phaseJieshuBegin" },
               check(event, player) {
                 const targets = game.filterPlayer(cur => cur != player);
@@ -17092,7 +17092,7 @@ const b = 1;
               },
             },
             jlsg_gygs_angyang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: "useCardToPlayered",
                 target: "useCardToTargeted",
@@ -17159,7 +17159,7 @@ const b = 1;
               },
             },
             jlsg_gygs_weifeng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "phaseZhunbeiBegin" },
               filter(event, player) {
                 if (event.player == player) return false;
@@ -17362,7 +17362,7 @@ const b = 1;
               },
             },
             jlsg_wuwei: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'phaseDrawBegin' },
               priority: -1,
@@ -17509,7 +17509,7 @@ const b = 1;
               },
             },
             jlsg_liuyun: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -17575,7 +17575,7 @@ const b = 1;
               }
             },
             jlsg_lingbo: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { global: 'phaseBegin' },
               direct: true,
@@ -17631,7 +17631,7 @@ const b = 1;
               }
             },
             jlsg_qingcheng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: ['chooseToUse', 'chooseToRespond'],
               filterCard: function () { return false; },
@@ -17657,7 +17657,7 @@ const b = 1;
               group: ['jlsg_qingcheng2']
             },
             jlsg_qingcheng2: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: ['chooseToUse', 'chooseToRespond'],
               filterCard: function () { return false; },
               selectCard: -1,
@@ -17681,7 +17681,7 @@ const b = 1;
               }
             },
             // jlsg_lingbo: {
-            //   audio: "ext:极略:1",
+            //   audio: "ext:极略/audio/skill:1",
             //   srlose: true,
             //   group: ['jlsg_lingbo1', 'jlsg_lingbo2'],
             // },
@@ -17754,7 +17754,7 @@ const b = 1;
             //   },
             // },
             // jlsg_liuyun: {
-            //   audio: "ext:极略:2",
+            //   audio: "ext:极略/audio/skill:2",
             //   srlose: true,
             //   enable: 'phaseUse',
             //   usable: 1,
@@ -17809,7 +17809,7 @@ const b = 1;
             //   },
             // },
             // jlsg_qingcheng_yang: {
-            //   audio: "ext:极略:1",
+            //   audio: "ext:极略/audio/skill:1",
             //   group: ['jlsg_qingcheng_yang1', 'jlsg_qingcheng_yang2'],
             // },
             // jlsg_qingcheng_yang1: {
@@ -17917,7 +17917,7 @@ const b = 1;
             //   }
             // },
             // jlsg_qingcheng_yin: {
-            //   audio: "ext:极略:1",
+            //   audio: "ext:极略/audio/skill:1",
             //   group: ['jlsg_qingcheng_yin1', 'jlsg_qingcheng_yin2'],
             // },
             // jlsg_qingcheng_yin1: {
@@ -18178,7 +18178,7 @@ const b = 1;
               }
             },
             jlsg_guicai: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { global: 'judge' },
               check: function (event, player) {
@@ -18538,7 +18538,7 @@ const b = 1;
               },
             },
             jlsg_huiqu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
@@ -18783,7 +18783,7 @@ const b = 1;
               }
             },
             jlsg_xingyi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               srlose: true,
@@ -18818,7 +18818,7 @@ const b = 1;
               }
             },
             jlsg_guagu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { global: 'dying' },
               priority: 6,
@@ -18862,7 +18862,7 @@ const b = 1;
               }
             },
             jlsg_wuqin: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'phaseJieshuEnd' },
               filter: function (event, player) {
@@ -18890,7 +18890,7 @@ const b = 1;
               }
             },
             jlsg_lijian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -18938,7 +18938,7 @@ const b = 1;
               }
             },
             jlsg_manwu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -18970,7 +18970,7 @@ const b = 1;
               }
             },
             jlsg_baiyue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               srlose: true,
               forced: true,
               popup: false,
@@ -19033,7 +19033,7 @@ const b = 1;
               }
             },
             // jlsg_baiyue: {
-            //   audio: "ext:极略:2",
+            //   audio: "ext:极略/audio/skill:2",
             //   srlose: true,
             //   trigger: { player: 'phaseEnd' },
             //   filter: function (event, player) {
@@ -19085,7 +19085,7 @@ const b = 1;
             //   }
             // },
             jlsg_yinmeng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               group: ['jlsg_yinmeng2'],
@@ -19142,7 +19142,7 @@ const b = 1;
               }
             },
             jlsg_xianger: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: {
                 global: "phaseBegin",
@@ -19212,7 +19212,7 @@ const b = 1;
               },
             },
             jlsg_juelie: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -19267,7 +19267,7 @@ const b = 1;
               }
             },
             jlsg_fangxin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               srlose: true,
               enable: 'chooseToUse',
               discard: false,
@@ -19326,7 +19326,7 @@ const b = 1;
               check: function (event, player) {
                 return get.attitude(player, event.player) > 0;
               },
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               filter: function (event, player) {
                 if (event.type == 'dying') {
                   return event.filterCard({ name: 'tao' }, player) && ((!player.hasJudge('lebu') && player.countCards('he', { suit: 'diamond' })) || (!player.hasJudge('bingliang') && player.countCards('he', { suit: 'club' })));
@@ -19377,7 +19377,7 @@ const b = 1;
               }
             },
             jlsg_xiyu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'phaseBegin' },
               direct: true,
@@ -19404,7 +19404,7 @@ const b = 1;
               }
             },
             jlsg_wanrou: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: {
                 player: "loseAfter",
@@ -19495,7 +19495,7 @@ const b = 1;
               },
             },
             jlsg_zhouyan: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               usable: 1,
               enable: 'phaseUse',
@@ -19714,7 +19714,7 @@ const b = 1;
               },
             },
             jlsg_shixue: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'shaBegin' },
               frequent: true,
@@ -19733,7 +19733,7 @@ const b = 1;
               }
             },
             jlsg_guoshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               srlose: true,
               trigger: { global: 'phaseJieshuBegin' },
               filter: function (event, player) {
@@ -20003,7 +20003,7 @@ const b = 1;
               }
             },
             jlsg_old_yingcai: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'phaseDrawBegin' },
               check: function () {
@@ -20035,7 +20035,7 @@ const b = 1;
               }
             },
             jlsg_weibao: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -20099,7 +20099,7 @@ const b = 1;
               }
             },
             jlsg_choulve: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -20241,7 +20241,7 @@ const b = 1;
               }
             },
             jlsg_old_youxia: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -20355,7 +20355,7 @@ const b = 1;
               },
             },
             jlsg_youxia: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               srlose: true,
               enable: 'phaseUse',
               filterTarget: function (card, target, player) {
@@ -20396,7 +20396,7 @@ const b = 1;
                 global: "useCardToPlayered",
               },
               srlose: true,
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               filter: function (event, player) {
                 if (event.player == player) return false;
                 if (event.getParent().triggeredTargets3.length > 1) return false;
@@ -20435,7 +20435,7 @@ const b = 1;
               },
             },
             jlsg_dailao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               srlose: true,
               enable: 'phaseUse',
@@ -20487,7 +20487,7 @@ const b = 1;
               }
             },
             jlsg_old_dailao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               srlose: true,
               enable: 'phaseUse',
@@ -20617,7 +20617,7 @@ const b = 1;
               }
             },
             jlsg_youdi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: ['chooseToUse', 'chooseToRespond'],
               filterCard: function () {
@@ -20666,7 +20666,7 @@ const b = 1;
               }
             },
             jlsg_ruya: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'loseEnd' },
               frequent: true,
@@ -20694,7 +20694,7 @@ const b = 1;
             },
             jlsg_quanheng: {
               srlose: true,
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               filter: function (event, player) {
@@ -20731,7 +20731,7 @@ const b = 1;
                   return {
                     filterCard: true,
                     selectCard: [1, Infinity],
-                    audio: "ext:极略:1",
+                    audio: "ext:极略/audio/skill:1",
                     popname: true,
                     position: 'hs',
                     ai1: function (card) {
@@ -20807,7 +20807,7 @@ const b = 1;
               }
             },
             jlsg_xionglve: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               marktext: '略',
               trigger: { player: 'phaseDrawBegin' },
@@ -20842,7 +20842,7 @@ const b = 1;
               group: ['jlsg_xionglve2'],
             },
             jlsg_xionglve2: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               filter: function (event, player) {
                 return player.getExpansions('jlsg_xionglve').length > 0;
@@ -21029,7 +21029,7 @@ const b = 1;
                               return false
                             },
                             selectCard: -1,
-                            audio: "ext:极略:1",
+                            audio: "ext:极略/audio/skill:1",
                             popname: true,
                             viewAs: { name: links[0][2] },
                             onuse: function (result, player) {
@@ -21089,7 +21089,7 @@ const b = 1;
               }
             },
             jlsg_fuzheng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               unique: true,
               zhuSkill: true,
               group: ['jlsg_fuzheng2'],
@@ -21156,7 +21156,7 @@ const b = 1;
               }
             },
             jlsg_jiuzhu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { global: ['loseAfter', 'loseAsyncAfter', 'cardsDiscardAfter'] },
               filter: function (event, player) {
@@ -21204,7 +21204,7 @@ const b = 1;
               }
             },
             jlsg_tuwei: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { global: 'cardsDiscardAfter' },
               filter: function (event, player) {
@@ -21271,7 +21271,7 @@ const b = 1;
               }
             },
             // jlsg_xujin: {
-            //     audio: "ext:极略:1",
+            //     audio: "ext:极略/audio/skill:1",
             //     srlose: true,
             //     trigger: { player: 'phaseDrawBefore' },
             //     content: function () {
@@ -21338,7 +21338,7 @@ const b = 1;
             //     }
             //   },
             jlsg_xujin: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: "phaseDrawBegin1", },
               forced: true,
@@ -21422,7 +21422,7 @@ const b = 1;
               },
             },
             jlsg_paoxiao: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               shaRelated: true,
               trigger: { source: 'damageAfter' },
@@ -21447,7 +21447,7 @@ const b = 1;
             },
             jlsg_benxi: {
               shaRelated: true,
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'shaBegin' },
               forced: true,
@@ -21472,7 +21472,7 @@ const b = 1;
               }
             },
             jlsg_yaozhan: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -21526,7 +21526,7 @@ const b = 1;
               }
             },
             jlsg_wenjiu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -21566,7 +21566,7 @@ const b = 1;
               }
             },
             jlsg_wenjiu2: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'shaBegin' },
               filter: function (event, player) {
                 return player.getExpansions('jlsg_wenjiu').length;
@@ -21611,7 +21611,7 @@ const b = 1;
               }
             },
             jlsg_shuixi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
@@ -21671,7 +21671,7 @@ const b = 1;
               }
             },
             jlsg_sanfen: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -21712,7 +21712,7 @@ const b = 1;
               }
             },
             jlsg_guanxing: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: ['phaseZhunbeiBegin', 'phaseJieshuBegin'] },
               frequent: true,
@@ -21725,7 +21725,7 @@ const b = 1;
               }
             },
             jlsg_weiwo: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'damageBegin' },
               filter: function (event, player) {
@@ -21767,7 +21767,7 @@ const b = 1;
               }
             },
             jlsg_shouji: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -21855,7 +21855,7 @@ const b = 1;
               }
             },
             jlsg_hemou: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { global: 'phaseUseBegin' },
               filter: function (event, player) {
@@ -21995,7 +21995,7 @@ const b = 1;
               }
             },
             jlsg_qicai: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { player: 'loseEnd' },
               frequent: true,
@@ -22030,7 +22030,7 @@ const b = 1;
               }
             },
             jlsg_rende: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { global: 'phaseJieshuEnd' },
               filter: function (event, player) {
@@ -22075,7 +22075,7 @@ const b = 1;
               }
             },
             jlsg_chouxi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               usable: 1,
               srlose: true,
               enable: 'phaseUse',
@@ -22223,7 +22223,7 @@ const b = 1;
               }
             },
             jlsg_zhaoxiang: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: { global: 'shaBegin' },
               filter: function (event, player) {
@@ -22287,7 +22287,7 @@ const b = 1;
               }
             },
             jlsg_zhishi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               srlose: true,
               enable: 'phaseUse',
               usable: 1,
@@ -22386,7 +22386,7 @@ const b = 1;
 
             jlsg_zhonghou: {
               unique: true,
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               srlose: true,
               trigger: {
                 global: ['useCardBefore', 'respondBefore'],
@@ -22548,7 +22548,7 @@ const b = 1;
               }
             },
             jlsg_ganglie: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'phaseUseBegin' },
               srlose: true,
               check: function (event, player) {
@@ -22575,7 +22575,7 @@ const b = 1;
                   }
                 },
                 phaseEnd: {
-                  audio: "ext:极略:2",
+                  audio: "ext:极略/audio/skill:2",
                   trigger: { player: 'phaseEnd' },
                   forced: true,
                   filter: function (event, player) {
@@ -22908,7 +22908,7 @@ const b = 1;
           characterIntro: {},
           skill: {
             jlsg_guixin: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'damageEnd' },
               check: function (event, player) {
                 if (player.isTurnedOver()) return true;
@@ -23062,7 +23062,7 @@ const b = 1;
               unique: true,
             },
             jlsg_hufu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filterTarget: function (card, player, target) {
@@ -23082,7 +23082,7 @@ const b = 1;
               }
             },
             jlsg_yanmie: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               filter: function (event, player) {
                 return player.countCards('he', { suit: 'spade' }) > 0;
@@ -23130,7 +23130,7 @@ const b = 1;
               }
             },
             jlsg_shunshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { target: 'useCardToBegin' },
               filter: function (event, player) {
                 return event.player != player && get.type(event.card) == 'basic'
@@ -23178,7 +23178,7 @@ const b = 1;
               }
             },
             jlsg_junwang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: ['phaseUseBegin', 'phaseUseEnd'] },
               forced: true,
               filter: function (event, player) {
@@ -23201,7 +23201,7 @@ const b = 1;
               }
             },
             jlsg_jizhao: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: "phaseUse",
               filterCard: true,
               selectCard: [1, Infinity],
@@ -23253,7 +23253,7 @@ const b = 1;
               },
             },
             jlsg_jizhao_zhao: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: "phaseEnd",
               },
@@ -23274,7 +23274,7 @@ const b = 1;
               },
             },
             jlsg_qixing: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 global: 'phaseBefore',
                 player: 'enterGame'
@@ -23361,7 +23361,7 @@ const b = 1;
               }
             },
             jlsg_kuangfeng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseZhunbeiBegin' },
               direct: true,
               filter: function (event, player) {
@@ -23439,7 +23439,7 @@ const b = 1;
               filter: function (event, player) {
                 return player.getExpansions('jlsg_qixing').length;
               },
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               content: function () {
                 "step 0"
                 player.chooseTarget('选择角色获得大雾标记',
@@ -23521,7 +23521,7 @@ const b = 1;
               }
             },
             jlsg_yaozhi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: ['phaseBegin', 'damageEnd', 'phaseJieshuBegin'],
               },
@@ -23701,7 +23701,7 @@ const b = 1;
               },
             },
             jlsg_xingyun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               forced: true,
               trigger: { player: 'phaseEnd' },
               unique: true,
@@ -23831,7 +23831,7 @@ const b = 1;
               }
             },
             jlsg_jilve: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               enable: 'phaseUse',
               filter: function (event, player) {
                 return !player.hasSkill('jlsg_jilve2');
@@ -23863,7 +23863,7 @@ const b = 1;
             },
             jlsg_jilve2: {},
             jlsg_tongtian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               unique: true,
               skillAnimation: true,
@@ -23928,7 +23928,7 @@ const b = 1;
 
             },
             jlsg_tongtian_wei: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               mark: true,
               marktext: "魏",
               unique: true,
@@ -23942,7 +23942,7 @@ const b = 1;
             },
             jlsg_tongtian_wu: {
               unique: true,
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               mark: true,
               marktext: "吴",
               intro: {
@@ -23951,7 +23951,7 @@ const b = 1;
               inherit: 'zhiheng',
             },
             jlsg_tongtian_shu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               mark: true,
               unique: true,
               marktext: "蜀",
@@ -23962,7 +23962,7 @@ const b = 1;
             },
             jlsg_tongtian_qun: {
               inherit: "wansha",
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               mark: true,
               unique: true,
               marktext: "群",
@@ -23996,7 +23996,7 @@ const b = 1;
               }
             },
             jlsg_jieyan: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'useCardToBefore' },
               direct: true,
               filter: function (event, player) {
@@ -24052,7 +24052,7 @@ const b = 1;
               },
             },
             jlsg_fenying: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: "damageAfter" },
               frequent: true,
               filter: function (event, player) {
@@ -24092,7 +24092,7 @@ const b = 1;
             },
             jlsg_kuangbao: {
               group: ['jlsg_kuangbao1'],
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 global: 'phaseBefore',
                 player: 'enterGame',
@@ -24124,7 +24124,7 @@ const b = 1;
               },
             },
             jlsg_wumou: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'useCard' },
               forced: true,
               filter: function (event) {
@@ -24155,7 +24155,7 @@ const b = 1;
               },
             },
             jlsg_wuqian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               filter: function (event, player) {
@@ -24201,7 +24201,7 @@ const b = 1;
               }
             },
             jlsg_shenfen: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               filter: function (event, player) {
@@ -24259,7 +24259,7 @@ const b = 1;
                   if (['sha', 'tao'].includes(card.name)) return 'juedou';
                 },
               },
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'useCard' },
               forced: true,
               filter: function (event, player) {
@@ -24298,7 +24298,7 @@ const b = 1;
               }
             },
             jlsg_suohun: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: 'damageEnd',
                 source: 'damageSource',
@@ -24392,7 +24392,7 @@ const b = 1;
               }
             },
             jlsg_juejing: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               forced: true,
               charlotte: true,
               unique: true,
@@ -24458,7 +24458,7 @@ const b = 1;
               }
             },
             jlsg_longhun: {
-              audio: "ext:极略:4",
+              audio: "ext:极略/audio/skill:4",
               group: ["jlsg_longhun1", "jlsg_longhun2", "jlsg_longhun3", "jlsg_longhun4", "jlsg_longhun_sp"],
               subSkill: {
                 sp: {
@@ -24636,7 +24636,7 @@ const b = 1;
               }
             },
             jlsg_old_nizhan: {
-              // audio: "ext:极略:1",
+              // audio: "ext:极略/audio/skill:1",
               audio: "jlsg_nizhan",
               trigger: { global: 'damageBegin2' },
               filter: function (event) {
@@ -24685,7 +24685,7 @@ const b = 1;
               }
             },
             jlsg_old_cuifeng: {
-              // audio: "ext:极略:1",
+              // audio: "ext:极略/audio/skill:1",
               audio: "jlsg_cuifeng",
               trigger: { player: 'phaseJieshuBegin' },
               forced: true,
@@ -24724,7 +24724,7 @@ const b = 1;
               }
             },
             jlsg_old_weizhen: {
-              // audio: "ext:极略:1",
+              // audio: "ext:极略/audio/skill:1",
               audio: "jlsg_weizhen",
               trigger: { player: 'phaseBegin' },
               filter: function (event, player) {
@@ -24766,7 +24766,7 @@ const b = 1;
               }
             },
             jlsg_nizhan: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'phaseZhunbeiBegin' },
               forced: true,
               filter: function (event, player) {
@@ -24785,7 +24785,7 @@ const b = 1;
               },
             },
             jlsg_cuifeng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               selectTarget: 2,
@@ -24823,7 +24823,7 @@ const b = 1;
               }
             },
             jlsg_weizhen: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               unique: true,
               trigger: { global: 'phaseDrawBegin2' },
               forced: true,
@@ -24930,7 +24930,7 @@ const b = 1;
               }
             },
             jlsg_old_suyin: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'loseEnd' },
               direct: true,
               filter: function (event, player) {
@@ -24960,7 +24960,7 @@ const b = 1;
               }
             },
             jlsg_zhiming: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               filterTarget: lib.filter.notMe,
@@ -25040,7 +25040,7 @@ const b = 1;
               }
             },
             jlsg_suyin: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: 'loseAfter',
                 global: ['equipAfter', 'addJudgeAfter', 'gainAfter', 'loseAsyncAfter', 'addToExpansionAfter'],
@@ -25081,7 +25081,7 @@ const b = 1;
               }
             },
             jlsg_dianjie: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: ['phaseDrawBefore', 'phaseUseBefore'] },
               prompt: function (event, player) {
                 if (event.name == 'phaseDraw') {
@@ -25215,7 +25215,7 @@ const b = 1;
               }
             },
             jlsg_leihun: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: "damageBegin4",
               },
@@ -25366,7 +25366,7 @@ const b = 1;
               }
             },
             jlsg_shelie: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: "useCard",
               },
@@ -25390,7 +25390,7 @@ const b = 1;
               },
             },
             jlsg_gongxin: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               filterTarget: function (card, player, target) {
@@ -25456,7 +25456,7 @@ const b = 1;
             jlsg_tianqi: {
               // TODO: delete excessive audio clips
               // usable: 1,
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: ['chooseToUse', 'chooseToRespond'],
               hiddenCard: function (player, name) {
                 return lib.inpile.includes(name) && !player.isDying() && !player.hasSkill('jlsg_tianqi_phase');
@@ -25751,7 +25751,7 @@ const b = 1;
               },
             },
             jlsg_tianji: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'phaseUseBegin' },
               frequent: true,
               filter: function (event, player) {
@@ -25896,7 +25896,7 @@ const b = 1;
               }
             },
             jlsg_xianzhu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'recoverAfter' },
               check: function (event, player) {
                 return get.attitude(player, event.player) > 0;
@@ -25997,7 +25997,7 @@ const b = 1;
             //   }
             // },
             jlsg_liangyuan: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               skillAnimation: true,
               unique: true,
@@ -26045,7 +26045,7 @@ const b = 1;
             },
             jlsg_tianzi: {
               srlose: true,
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'phaseDrawBefore' },
               filter: function (event, player) {
                 return !event.numFixed;
@@ -26084,7 +26084,7 @@ const b = 1;
               }
             },
             jlsg_meixin: {
-              audio: "ext:极略:4",
+              audio: "ext:极略/audio/skill:4",
               enable: 'phaseUse',
               usable: 1,
               filterCard: true,
@@ -26150,7 +26150,7 @@ const b = 1;
               }
             },
             jlsg_lihun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseEnd' },
               filter: () => true,
               async cost(event, trigger, player) {
@@ -26247,7 +26247,7 @@ const b = 1;
               }
             },
             jlsg_jueshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               priority: 114514,
               forced: true,
               trigger: { player: 'showCharacterEnd' },
@@ -26314,7 +26314,7 @@ const b = 1;
               }
             },
             jlsg_shayi: {
-              audio: "ext:极略:4",
+              audio: "ext:极略/audio/skill:4",
               trigger: { player: 'phaseUseBegin' },
               filter: function (event, player) {
                 return player.countCards('h') > 0;
@@ -26340,7 +26340,7 @@ const b = 1;
               },
               subSkill: {
                 buff: {
-                  audio: 'ext:极略:2',
+                  audio: 'ext:极略/audio/skill:2',
                   enable: ['chooseToRespond', 'chooseToUse'],
                   filterCard: function (card) {
                     return get.color(card) == 'black';
@@ -26445,7 +26445,7 @@ const b = 1;
             },
             jlsg_yinshi: {
               forced: true,
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'damageBegin4' },
               filter: function (event) {
                 return event.num > 0;
@@ -26474,7 +26474,7 @@ const b = 1;
             },
 
             jlsg_zhitian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { player: 'phaseBegin' },
               forced: true,
               unique: true,
@@ -26540,7 +26540,7 @@ const b = 1;
               },
             },
             jlsg_zhiji: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               usable: 1,
               enable: 'phaseUse',
               filter: function (event, player) {
@@ -26563,7 +26563,7 @@ const b = 1;
               group: ['jlsg_zhiji_damage'],
               subSkill: {
                 damage: {
-                  audio: 'ext:极略:1',
+                  audio: 'ext:极略/audio/skill:1',
                   trigger: { player: 'damageEnd' },
                   check: () => true,
                   content: function () {
@@ -26603,7 +26603,7 @@ const b = 1;
               }
             },
             jlsg_yuanhua: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               mark: true,
               intro: {
                 content: '发动元化移出游戏了#张牌',
@@ -26639,7 +26639,7 @@ const b = 1;
               },
             },
             jlsg_guiyuan: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               global: 'jlsg_guiyuan_ai',
               enable: 'phaseUse',
               usable: 1,
@@ -26683,7 +26683,7 @@ const b = 1;
               }
             },
             jlsg_chongsheng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               unique: true,
               limited: true,
               trigger: { global: 'dying' },
@@ -26802,7 +26802,7 @@ const b = 1;
               }
             },
             jlsg_old_danjing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               direct: true,
@@ -26853,7 +26853,7 @@ const b = 1;
             jlsg_old_zhonghun: {
               unique: true,
               limited: true,
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'dieBegin' },
               direct: true,
               content: function () {
@@ -26876,7 +26876,7 @@ const b = 1;
             },
 
             jlsg_qinyin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               direct: true,
               trigger: {
                 player: "phaseDiscardBefore",
@@ -27011,7 +27011,7 @@ const b = 1;
               mark: true,
               forceDie: true,
               enable: "phaseUse",
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               animationColor: "metal",
               skillAnimation: "legend",
               init: function (player) {
@@ -27087,7 +27087,7 @@ const b = 1;
               },
             },
             jlsg_qianqi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: 'enterGame',
                 global: 'phaseBefore',
@@ -27148,7 +27148,7 @@ const b = 1;
               },
             },
             jlsg_qianqi2: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               prompt: '弃置一枚「千骑」标记，视为使用一张杀',
               enable: 'chooseToUse',
               viewAs: {
@@ -27179,7 +27179,7 @@ const b = 1;
               },
             },
             jlsg_juechen: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageBegin2' },
               direct: true,
               shaRelated: true,
@@ -27213,7 +27213,7 @@ const b = 1;
               },
             },
             jlsg_luocha: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               initList: function () {
                 if (!_status.characterlist) {
                   lib.skill.pingjian.initList();
@@ -27264,7 +27264,7 @@ const b = 1;
               },
             },
             jlsg_shajue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filterTarget: lib.filter.notMe,
@@ -27303,7 +27303,7 @@ const b = 1;
               },
             },
             jlsg_guiqu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               unique: true,
               enable: 'chooseToUse',
               getSkills(player) {
@@ -27381,7 +27381,7 @@ const b = 1;
               }
             },
             jlsg_shenfu: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               init: function (player) {
                 player.storage.jlsg_shenfu = [];
               },
@@ -27452,7 +27452,7 @@ const b = 1;
               }
             },
             jlsg_lvezhen: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'useCardToPlayered' },
               filter: function (event, player) {
                 var phaseUse = _status.event.getParent('phaseUse');
@@ -27471,7 +27471,7 @@ const b = 1;
             },
             jlsg_lvezhen2: {},
             jlsg_youlong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               forced: true,
               charlotte: true,
               unique: true,
@@ -27530,7 +27530,7 @@ const b = 1;
               },
             },
             jlsg_danjing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: [
                   "damageEnd",
@@ -27581,7 +27581,7 @@ const b = 1;
               },
             },
             jlsg_zhonghun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               unique: true,
               limited: true,
               enable: "phaseUse",
@@ -27676,7 +27676,7 @@ const b = 1;
               },
             },
             jlsg_yinyang_s: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               derivation: ['jlsg_jiyang', 'jlsg_jiyin', 'jlsg_xiangsheng'],
               forced: true,
               charlotte: true,
@@ -27713,7 +27713,7 @@ const b = 1;
               },
             },
             jlsg_jiyang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               sub: true,
               unique: true,
               init: function (player) {
@@ -27781,7 +27781,7 @@ const b = 1;
               },
             },
             jlsg_jiyin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               sub: true,
               unique: true,
               init: function (player) {
@@ -27849,7 +27849,7 @@ const b = 1;
               },
             },
             jlsg_xiangsheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               sub: true,
               unique: true,
               init: function (player) {
@@ -27917,7 +27917,7 @@ const b = 1;
               },
             },
             jlsg_dingming: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: ['phaseZhunbeiBegin', 'damageEnd'],
               },
@@ -28013,7 +28013,7 @@ const b = 1;
               }
             },
             jlsg_lianti: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               forced: true,
               charlotte: true,
               unique: true,
@@ -28096,7 +28096,7 @@ const b = 1;
               },
             },
             jlsg_yanlie: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               usable: 1,
               filterCard: true,
@@ -28157,7 +28157,7 @@ const b = 1;
               },
             },
             jlsg_fengying: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'drawBegin' },
               getIndex(event) {
                 return event.num;
@@ -28179,7 +28179,7 @@ const b = 1;
               }
             },
             jlsg_zhiti: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageBegin2' },
               filter(event, player) {
                 if (event.player == player) {
@@ -28305,7 +28305,7 @@ const b = 1;
               },
             },
             jlsg_huchi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'phaseUse',
               viewAs: {
                 name: 'juedou',
@@ -28358,7 +28358,7 @@ const b = 1;
               },
             },
             jlsg_xiejia: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageBegin1' },
               filter: function (event, player) {
                 if (!player.isEmpty(2)) return false;
@@ -28392,7 +28392,7 @@ const b = 1;
               }
             },
             jlsg_wangyue: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: ['loseAfter', 'loseAsyncAfter', 'loseHpAfter', 'loseMaxHpAfter'],
               },
@@ -28444,7 +28444,7 @@ const b = 1;
               },
             },
             jlsg_luoyan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseJieshuBegin' },
               direct: true,
               content() {
@@ -28518,7 +28518,7 @@ const b = 1;
               }
             },
             jlsg_jieying: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseDrawBegin1' },
               direct: true,
               unique: true,
@@ -28594,7 +28594,7 @@ const b = 1;
               },
             },
             jlsg_jinlong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               intro: {
                 content: 'expansion',
                 markcount: 'expansion',
@@ -28670,7 +28670,7 @@ const b = 1;
               },
             },
             jlsg_liegong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: 'chooseToUse',
               complexCard: true,
               locked: false,
@@ -28783,7 +28783,7 @@ const b = 1;
             jlsg_xingwu: {
               marktext: "舞",
               intro: { content: "mark" },
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "phaseBegin" },
               init(player) {
                 player.storage.jlsg_xingwu_mark = {};
@@ -28974,7 +28974,7 @@ const b = 1;
               },
             },
             jlsg_chenyu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: ['phaseJieshuBegin', 'damageEnd'],
               },
@@ -28998,7 +28998,7 @@ const b = 1;
               },
             },
             jlsg_tiangong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: 'phaseBefore',
                 player: ['enterGame', 'phaseBegin', 'phaseEnd'],
@@ -30017,7 +30017,7 @@ const b = 1;
               }
             },
             jlsg_linglong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: ['damageBegin3', 'loseHpBefore', 'loseMaxHpBefore', 'changeSkillsBefore'] },
               filter: function (event, player) {
                 if (event.name == 'damage') {
@@ -30136,7 +30136,7 @@ const b = 1;
               },
             },
             jlsg_bamen: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseUseBegin' },
               forced: true,
               async content(event, trigger, player) {
@@ -30163,7 +30163,7 @@ const b = 1;
               },
             },
             jlsg_gucheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init(player) { player.storage.jlsg_gucheng = [] },
               onremove: true,
               mod: {
@@ -30242,7 +30242,7 @@ const b = 1;
               },
             },
             jlsg_yingshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: "gameDrawAfter",
               },
@@ -30399,7 +30399,7 @@ const b = 1;
               init(player) {
                 player.storage.jlsg_langxi = [];
               },
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 global: "phaseBefore",
                 player: "enterGame",
@@ -30538,7 +30538,7 @@ const b = 1;
               },
             },
             jlsg_shenyin: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               priority: 1,
               trigger: {
                 global: "phaseBefore",
@@ -30708,7 +30708,7 @@ const b = 1;
               }
             },
             jlsg_chuyuan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               marktext: "储",
               intro: {
                 markcount: "expansion",
@@ -30806,7 +30806,7 @@ const b = 1;
               },
             },
             jlsg_dengji: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               intro: {
                 nocount: true,
                 content: "limited",
@@ -30890,7 +30890,7 @@ const b = 1;
               },
             },
             jlsg_jiquan: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: "phaseUse",
               usable: 1,
               filterTarget: lib.filter.notMe,
@@ -30965,7 +30965,7 @@ const b = 1;
               }
             },
             jlsg_renzheng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               chooseButton: {
@@ -31054,7 +31054,7 @@ const b = 1;
               },
             },
             jlsg_qifeng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               onremove: true,
               forced: true,
               trigger: { player: "dying" },
@@ -31079,7 +31079,7 @@ const b = 1;
               },
             },
             jlsg_lunce: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               logAudio(event, player, triggername, _, costResult) {
                 let type = costResult.cost_data.typeInfo,
                   list = ["下策", "中策", "上策"];
@@ -31939,7 +31939,7 @@ const b = 1;
               },
             },
             jlsg_qianyuan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init(player) {
                 player.storage.jlsg_qianyuan = {
                   damage: false,
@@ -32187,7 +32187,7 @@ const b = 1;
               },
             },
             jlsg_hualong: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "phaseZhunbeiBegin" },
               filter(event, player) {
                 if (!player.storage.jlsg_qianyuan) return false;
@@ -32297,7 +32297,7 @@ const b = 1;
               },
             },
             jlsg_zhuxing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               intro: {
                 content: "expansion",
                 markcount: "expansion",
@@ -32354,7 +32354,7 @@ const b = 1;
               group: "jlsg_zhuxing_begin",
               subSkill: {
                 begin: {
-                  audio: "ext:极略:2",
+                  audio: "ext:极略/audio/skill:2",
                   trigger: { global: "phaseBegin" },
                   filter(event, player) {
                     if (!event.player.countExpansions("jlsg_zhuxing")) return false;
@@ -32397,7 +32397,7 @@ const b = 1;
               },
             },
             jlsg_lingze: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init() {
                 //来自活动武将
                 game.broadcastAll(() => {
@@ -34321,7 +34321,7 @@ const b = 1;
               },
             },
             jlsg_hanshuang: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "damageBegin3" },
               filter: () => true,
               async cost(event, trigger, player) {
@@ -34416,7 +34416,7 @@ const b = 1;
               },
             },
             jlsg_liluan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: ["loseBefore", "drawBefore"] },
               usable: 1,
               filter(event, player) {
@@ -34860,7 +34860,7 @@ const b = 1;
           },
           skill: {
             jlsgsy_baonu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               skillAnimation: true,
               trigger: { player: 'changeHp' },
               forced: true,
@@ -34917,7 +34917,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_wushuang: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               group: ['jlsgsy_wushuang1', 'jlsgsy_wushuang2', 'jlsgsy_wushuang3'],
             },
             jlsgsy_wushuang1: {
@@ -34989,7 +34989,7 @@ const b = 1;
               }
             },
             jlsgsy_xiuluo: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { target: "useCardToTargeted" },
               filter: function (event, player) {
                 return event.targets && event.targets.length === 1
@@ -35014,7 +35014,7 @@ const b = 1;
               }
             },
             jlsgsy_shenwei: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               global: 'jlsgsy_shenwei_g',
             },
             jlsgsy_shenwei_g: {
@@ -35027,7 +35027,7 @@ const b = 1;
               },
             },
             jlsgsy_shenji: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               forced: true,
               mod: {
                 selectTarget: function (card, player, range) {
@@ -35045,7 +35045,7 @@ const b = 1;
               content: function () { },
             },
             jlsgsy_guiming: {
-              audio: "ext:极略:1", // audio: ['jlsgsy_guiming'],
+              audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_guiming'],
               trigger: { player: 'dying' },
               limited: true,
               skillAnimation: true,
@@ -35069,7 +35069,7 @@ const b = 1;
               }
             },
             jlsgsy_huangyin: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: ['loseAfter', 'loseAsyncAfter'] },
               frequent: true,
               filter(event, player) {
@@ -35111,7 +35111,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_mingzheng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               derivation: 'jlsgsy_shisha',
               trigger: { global: 'phaseDrawBegin' },
               frequent: true,
@@ -35136,7 +35136,7 @@ const b = 1;
               }
             },
             jlsgsy_shisha: {
-              audio: "ext:极略:1", // audio: ['jlsgsy_shisha'],
+              audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_shisha'],
               trigger: { player: 'useCardToPlayered' },
               forced: true,
               filter(event, player) {
@@ -35149,7 +35149,7 @@ const b = 1;
               }
             },
             jlsgsy_zuijiu: {
-              audio: "ext:极略:1", // audio: ['jlsgsy_zuijiu'],
+              audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_zuijiu'],
               enable: 'phaseUse',
               delay: 0,
               filter: function (event, player) {
@@ -35193,7 +35193,7 @@ const b = 1;
               },
             },
             jlsgsy_bolue: {
-              audio: "ext:极略:4",
+              audio: "ext:极略/audio/skill:4",
               trigger: { player: "phaseBegin" },
               forced: true,
               initList() {
@@ -35239,7 +35239,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_biantian: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'phaseJudgeBefore' },
               forced: true,
               filter: function (event, player) {
@@ -35252,7 +35252,7 @@ const b = 1;
               }
             },
             jlsgsy_tianyou: {
-              audio: "ext:极略:1", // audio: ['jlsgsy_tianyou'],
+              audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_tianyou'],
               trigger: { player: 'phaseJieshuBegin' },
               forced: true,
               filter(event, player) {
@@ -35286,7 +35286,7 @@ const b = 1;
               },
             },
             jlsgsy_renji: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               trigger: { player: 'damageEnd' },
               frequent: true,
               content: function () {
@@ -35306,7 +35306,7 @@ const b = 1;
               },
             },
             jlsgsy_zongyu: {
-              audio: "ext:极略:1", // audio: ['zhongyu'],
+              audio: "ext:极略/audio/skill:1", // audio: ['zhongyu'],
               forced: true,
               trigger: { player: 'useCardEnd' },
               filter: function (event, player) {
@@ -35320,7 +35320,7 @@ const b = 1;
               },
             },
             jlsgsy_lingnue: {
-              audio: "ext:极略:1", // audio: ['linnue'],
+              audio: "ext:极略/audio/skill:1", // audio: ['linnue'],
               trigger: { source: 'damageSource' },
               filter: function (event) {
                 return event.num >= 2;
@@ -35334,7 +35334,7 @@ const b = 1;
               },
             },
             jlsgsy_baozheng: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               forced: true,
               trigger: { global: 'phaseDrawAfter' },
               filter: function (event, player) {
@@ -35375,7 +35375,7 @@ const b = 1;
               }
             },
             jlsgsy_nishi: {
-              audio: "ext:极略:1", // audio: ['nishi'],
+              audio: "ext:极略/audio/skill:1", // audio: ['nishi'],
               forced: true,
               trigger: { player: 'damageEnd' },
               filter: function (event, player) {
@@ -35405,7 +35405,7 @@ const b = 1;
               }
             },
             jlsgsy_hengxing: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { source: 'damageBegin' },
               filter: function (event, player) {
                 return !player.isPhaseUsing();
@@ -35439,7 +35439,7 @@ const b = 1;
               }
             },
             jlsgsy_bujiao: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: { global: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
                 return event.player != player;
@@ -35466,7 +35466,7 @@ const b = 1;
               }
             },
             jlsgsy_taiping: {
-              audio: "ext:极略:1", // audio: ['taiping'],
+              audio: "ext:极略/audio/skill:1", // audio: ['taiping'],
               trigger: { player: 'phaseZhunbeiBegin' },
               filter: function (event, player) {
                 return game.filterPlayer().some(p => p.hasMark('jlsgsy_taiping'));
@@ -35513,7 +35513,7 @@ const b = 1;
               },
             },
             jlsgsy_yaohuo: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               enable: 'phaseUse',
               usable: 1,
               filterTarget: function (card, player, target) {
@@ -35655,7 +35655,7 @@ const b = 1;
               }
             },
             jlsgsy_sanzhi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               init(player) {
                 player.storage['jlsgsy_sanzhi'] = [];
               },
@@ -35704,7 +35704,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_dihui: {
-              audio: "ext:极略:2", // audio: ['dihui', 2],
+              audio: "ext:极略/audio/skill:2", // audio: ['dihui', 2],
               enable: 'phaseUse',
               usable: 1,
               unique: true,
@@ -35753,7 +35753,7 @@ const b = 1;
               },
             },
             jlsgsy_luansi: {
-              audio: "ext:极略:2", // audio: ['luansi', 2],
+              audio: "ext:极略/audio/skill:2", // audio: ['luansi', 2],
               enable: 'phaseUse',
               usable: 1,
               unique: true,
@@ -35799,7 +35799,7 @@ const b = 1;
               },
             },
             jlsgsy_huoxin: {
-              audio: "ext:极略:1", // audio: ['huoxin'],
+              audio: "ext:极略/audio/skill:1", // audio: ['huoxin'],
               trigger: { source: 'damageSource', player: 'damageEnd' },
               unique: true,
               filter: function (event, player, name) {
@@ -35878,7 +35878,7 @@ const b = 1;
               },
             },
             jlsgsy_kuangxi: {
-              audio: "ext:极略:2", // audio: ['kuangxi', 2],
+              audio: "ext:极略/audio/skill:2", // audio: ['kuangxi', 2],
               trigger: { player: 'useCardEnd' },
               filter: function (event, player) {
                 let targets = event.targets.slice().remove(player);
@@ -35920,7 +35920,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_fangu: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               trigger: {
                 player: "damageEnd",
               },
@@ -35942,7 +35942,7 @@ const b = 1;
               "_priority": 10000,
             },
             jlsgsy_canlue: {
-              audio: "ext:极略:1", // audio: ['jlsgsy_canlue'],
+              audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_canlue'],
               trigger: { source: 'gainEnd' },
               forced: true,
               filter: function (event, player) {
@@ -35972,7 +35972,7 @@ const b = 1;
               },
             },
             jlsgsy_chanxian: {
-              audio: "ext:极略:2", // audio: ['jlsgsy_chanxian', 2],
+              audio: "ext:极略/audio/skill:2", // audio: ['jlsgsy_chanxian', 2],
               enable: 'phaseUse',
               usable: 1,
               selectTarget: 2,
@@ -36063,7 +36063,7 @@ const b = 1;
               },
             },
             jlsgsy_luanzheng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'useCardToPlayer' },
               usable: 1,
               filter: function (event, player) {
@@ -36104,7 +36104,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_meihuo: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               enable: "phaseUse",
               usable: 1,
               filterCard: true,
@@ -36184,7 +36184,7 @@ const b = 1;
               }
             },
             jlsgsy_yaoyan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 target: "useCardToTarget",
               },
@@ -36206,7 +36206,7 @@ const b = 1;
               }
             },
             jlsgsy_miluan: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "damageEnd" },
               filter(event, player) {
                 return game.filterPlayer(p => p != player).some(p => p.countCards('h'));
@@ -36278,7 +36278,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_mojian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               forced: true,
               trigger: { player: ['phaseZhunbeiBegin', 'phaseJieshuBegin'] },
               filter(event, player) {
@@ -36297,7 +36297,7 @@ const b = 1;
               },
             },
             jlsgsy_zhuzai: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { source: 'damageBegin1', player: 'damageBegin1' },
               forced: true,
               filter(event, player) {
@@ -36323,7 +36323,7 @@ const b = 1;
               }
             },
             jlsgsy_duoji: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'die' },
               filter(event, player) {
                 return event.source == player;
@@ -36347,7 +36347,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_quanqing: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               init(player) {
                 player.storage.jlsgsy_quanqing = {
                   shown: [],
@@ -36520,7 +36520,7 @@ const b = 1;
               }
             },
             jlsgsy_raomeng: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseJudgeBegin' },
               forced: true,
               filter(event, player) {
@@ -36534,7 +36534,7 @@ const b = 1;
               },
             },
             jlsgsy_yongjie: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: "phaseJieshuBegin" },
               filter(event, player) {
                 let dealers = game.me.getAllHistory('damage').map(e => e.source)
@@ -36611,7 +36611,7 @@ const b = 1;
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_weiwu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'damageEnd' },
               frequent: true,
               content() {
@@ -36647,7 +36647,7 @@ const b = 1;
               },
             },
             jlsgsy_duzun: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: 'phaseBegin' },
               unique: true,
               init(player) {
@@ -36768,7 +36768,7 @@ const b = 1;
               },
             },
             jlsgsy_longbian: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { player: 'phaseBegin' },
               direct: true,
               countShaUsable(player) {
@@ -36879,13 +36879,13 @@ const b = 1;
             },
             //魔邹氏
             jlsgsy_baonuzoushi: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               animationStr: '既然如此，接下来的表演，将军可要看好了',
               inherit: "jlsgsy_baonu",
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_huoshi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "useCardToPlayered" },
               filter(event, player) {
                 if (event.player == player) return false;
@@ -36905,7 +36905,7 @@ const b = 1;
               },
             },
             jlsgsy_yinzi: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: ["gainAfter", "loseAsyncAfter", "recoverAfter"] },
               getIndex(event, player) {
                 if (event.name == "recover") return [event.player];
@@ -36934,7 +36934,7 @@ const b = 1;
               },
             },
             jlsgsy_mowu: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: { global: "useCardAfter" },
               filter(event, player) {
                 if (event.getParent("jlsgsy_mowu").name == "jlsgsy_mowu") return false;
@@ -36974,13 +36974,13 @@ const b = 1;
             },
             //魔孟获
             jlsgsy_baonumenghuo: {
-              audio: "ext:极略:1",
+              audio: "ext:极略/audio/skill:1",
               animationStr: '非要逼我，现出真身！',
               inherit: "jlsgsy_baonu",
               mode: ['identity', 'guozhan', 'boss', 'stone'],
             },
             jlsgsy_qiushou: {
-              audio: "ext:极略:2",
+              audio: "ext:极略/audio/skill:2",
               trigger: {
                 player: "useCardToPlayered",
                 target: "useCardToTargeted",
@@ -37034,7 +37034,7 @@ const b = 1;
               },
             },
             jlsgsy_moshou: {
-              audio: "ext:极略:3",
+              audio: "ext:极略/audio/skill:3",
               init(player) {
                 player.storage.jlsgsy_moshou = {
                   "1": 0,
@@ -38274,7 +38274,7 @@ const b = 1;
               }
             },
             jlsgqs_shuiyanqijun_skill: {
-              audio: 'ext:极略:1',
+              audio: 'ext:极略/audio/card:1',
               trigger: { player: 'phaseUseBegin' },
               hidden: true,
               forced: true,
