@@ -37857,6 +37857,8 @@ const b = 1;
                   },
                 },
                 tag: {
+                  respond: 1,
+                  respondSha: 1,
                   multitarget: 1,
                   multineg: 1,
                 },
