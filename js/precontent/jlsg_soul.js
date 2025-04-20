@@ -9549,7 +9549,37 @@ export default function () {
         init() {
           //来自活动武将
           game.broadcastAll(() => {
+            window.get = get;
             if (!get.bolskillTips) {
+              lib.init.sheet([
+                '.bol-dibeijing {',
+                'height: 100%;',
+                'width: 100%;',
+                'position: absolute;',
+                'left: 0;',
+                'top: 0;',
+                'z-index: 8;',
+                '}',
+              ].join(''));
+              lib.init.sheet([
+                '.bol-skilltip {',
+                'width: 20%;',
+                'min-height: 5%;',
+                'left: 50%;',
+                ' top: 50%;',
+                'font-size: 16px;',
+                'color: #ccad76;',
+                "font-family: 'shousha';",
+                'background-color: rgba(36, 29, 19, 0.85);',
+                'border: #523a24 3px solid;',
+                'border-radius: 10px;',
+                'position: absolute;',
+                'display: block;',
+                'padding: 8px;',
+                'transform: translate(-50%, -50%);',
+                'transition: none;',
+                '}',
+              ].join(''));
               get.bolskillTips = function (tipname, id) {
                 var dibeijing = ui.create.div('.bol-dibeijing', document.body);
                 dibeijing.style.zIndex = 16;
@@ -9577,35 +9607,6 @@ export default function () {
               '-webkit-filter:blur(5px);',
               'filter:blur(5px);',
               '}'
-            ].join(''));
-            lib.init.sheet([
-              '.bol-dibeijing {',
-              'height: 100%;',
-              'width: 100%;',
-              'position: absolute;',
-              'left: 0;',
-              'top: 0;',
-              'z-index: 8;',
-              '}',
-            ].join(''));
-            lib.init.sheet([
-              '.bol-skilltip {',
-              'width: 20%;',
-              'min-height: 5%;',
-              'left: 50%;',
-              ' top: 50%;',
-              'font-size: 16px;',
-              'color: #ccad76;',
-              "font-family: 'shousha';",
-              'background-color: rgba(36, 29, 19, 0.85);',
-              'border: #523a24 3px solid;',
-              'border-radius: 10px;',
-              'position: absolute;',
-              'display: block;',
-              'padding: 8px;',
-              'transform: translate(-50%, -50%);',
-              'transition: none;',
-              '}',
             ].join(''));
           });
         },
@@ -9697,13 +9698,6 @@ export default function () {
                   effectsList[i][0] = list[0] + get.translation(nature) + "伤害" + list[1];
                 }
               }
-              /*else if (str.includes("角色") && str.includes("|")) {
-                let [str1, str3] = str.split("(");
-                let [numList, str2] = str3.split(")");
-                let num = numList.split("|").map(i => Number(i)).randomGet();
-                next.set("num", num)
-                effectsList[i][0] = str1 + get.cnNumber(num) + str2;
-              }*/
               else if ((str.startsWith("获得") || str.startsWith("弃置")) && str.includes("|")) {
                 let [str1, str3] = str.split("(");
                 let [cardList, str2] = str3.split(")");
@@ -9712,7 +9706,7 @@ export default function () {
                 effectsList[i][0] = str1 + get.translation(cardName) + str2;
               }
               else if (str == "随机两个技能") {
-                let gains = lib.skill.jlsg_lingze.skills
+                let gains = lib.skill.jlsg_lingze.skills(trigger.player)
                   .filter(skill => lib.skill.jlsg_lingze.typeSkills[type].some(i => i == lib.translate[skill]))
                   .randomGets(2);
                 next.set("gainSkills", gains);
@@ -9721,10 +9715,12 @@ export default function () {
               }
               effectsList[i][1].content = next;
             };
+
             const translate = function (str1, str2) {//来自活动武将
               const id = Math.random().toString(36).slice(-8);
-              return "<a id='" + id + "' style='color:unset' href=\"javascript:get.bolskillTips('" + str2 + "','" + id + "');\">" + str1 + "</a>";
+              return "<a id='" + id + "' style='color:unset' href=\"javascript:get.bolskillTips('" + str2 + "','" + id + "');\">" + str1 + "※</a>";
             };
+
             const effectPrompt = effectsList.map((i, v) => {
               let str = '<div class="popup text" style="width:calc(100% - 10px);display:inline-block">选项' + get.cnNumber(v + 1, true) + "：" + i[0] + "</div>";
               if (i[1].content?.gainSkills) {
@@ -11299,7 +11295,8 @@ export default function () {
         },
         get typeSkills() {
           let list = {
-            damage: ['长驱', '电界', '横江', '无双', '龙胆', '习武', '酒诗',
+            damage: [
+              '长驱', '电界', '横江', '无双', '龙胆', '习武', '酒诗',
               '狂风', '纵欲', '慧觑', '止戈', '断粮', '引兵', '神速',
               '咆哮', '武圣', '权倾', '扫讨', '笔伐', '剑舞', '贿生',
               '悲歌', '缮甲', '献祭', '征南', '整毅', '蒺藜', '义从',
@@ -11326,8 +11323,10 @@ export default function () {
               '神愤', '舌剑', '埋伏', '烈弓', '烈医', '逐鹿', '知命',
               '摧锋', '陷嗣', '挑衅', '横行', '射戟', '戚乱', '龙咆',
               '朝凰', '酋首', '龙魂', '迷乱', '极武', '筹略', '米道',
-              '罪论', '布教', '独进', '战绝', '飞军'],
-            recover: ['甘露', '孤城', '芳馨', '礼让', '存嗣', '严整', '天辩',
+              '罪论', '布教', '独进', '战绝', '飞军'
+            ],
+            recover: [
+              '甘露', '孤城', '芳馨', '礼让', '存嗣', '严整', '天辩',
               '伏枥', '豹变', '法恩', '匡弼', '红颜', '大雾', '遗计',
               '蛮王', '兴学', '秉壹', '品第', '天姿', '姻盟', '绝勇',
               '御策', '诛暴', '羽化', '据守', '纵玄', '义谏', '谦逊',
@@ -11347,8 +11346,10 @@ export default function () {
               '自守', '无前', '迭嶂', '宴诛', '绝境', '淫恣', '英才',
               '举荐', '博略', '行殇', '怀异', '拜月', '重生', '权计',
               '矢北', '仙授', '结姻', '刀侍', '反骨', '渐营', '天香',
-              '雄略', '龙变', '元化', '枭姬', '单骑', '同心', '狂言'],
-            chaos: ['五禽', '烈弓', '冲阵', '凌虐', '募马', '残掠', '咆哮',
+              '雄略', '龙变', '元化', '枭姬', '单骑', '同心', '狂言'
+            ],
+            chaos: [
+              '五禽', '烈弓', '冲阵', '凌虐', '募马', '残掠', '咆哮',
               '勘误', '征南', '米道', '智愚', '凌弱', '震魂', '流离',
               '乱武', '刚直', '摧锋', '劝降', '伏诛', '刻死', '享乐',
               '掩杀', '慷忾', '品第', '天策', '搏战', '大雾', '剑舞',
@@ -11368,13 +11369,15 @@ export default function () {
               '机巧', '弓骑', '刀侍', '怒发', '魅惑', '狂骨', '风雅',
               '魔舞', '截军', '匡弼', '索魂', '千幻', '闪戏', '挥泪',
               '不屈', '无畏', '结姻', '罪论', '怀橘', '巧变', '淑贤',
-              '鏖战', '忧戎', '千骑', '湮灭', '狂言', '仙授', '纵玄'],
+              '鏖战', '忧戎', '千骑', '湮灭', '狂言', '仙授', '纵玄'
+            ],
           };
+          list.chaos.addArray(list.recover.concat(list.damage)).unique();
           delete this.typeSkills;
           this.typeSkills = list;
           return list;
         },
-        get skills() {
+        skills(player) {
           const skills = [];
           for (const packname in lib.characterPack) {
             if (![
@@ -11394,12 +11397,11 @@ export default function () {
                 const info = lib.skill[skill];
                 if (lib.filter.skillDisabled(skill)) continue;
                 if (info?.charlotte) continue;
+                if (player && player.hasSkill && info.ai && info.ai.combo && !player.hasSkill(info.ai.combo)) continue;
                 skills.add(skill);
               };
             };
           };
-          const list = game.filterPlayer(undefined, undefined, true).reduce((i, current) => i.addArray(current.getSkills(null, false, false)), []);
-          if (list.length) skills.removeArray(list);
           return skills;
         },
         createTempCard(name, suit, nature) {
