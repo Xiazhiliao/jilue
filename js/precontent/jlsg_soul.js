@@ -1034,22 +1034,22 @@ export default function () {
         check: function (card) {
           return 8 - get.value(card);
         },
-        derivation: ['jlsg_tongtian_wu', 'jlsg_tongtian_shu', 'jlsg_tongtian_wei', 'jlsg_tongtian_qun'],
+        derivation: ['zhiheng', 'guanxing', 'fankui', 'wansha'],
         content: function () {
           "step 0"
           var suits = cards.map(card => get.suit(card));
           let skills = [];
           if (suits.includes('spade')) {
-            skills.push('jlsg_tongtian_wei');
+            skills.push('fankui');
           }
           if (suits.includes('heart')) {
-            skills.push('jlsg_tongtian_shu');
+            skills.push('guanxing');
           }
           if (suits.includes('diamond')) {
-            skills.push('jlsg_tongtian_wu');
+            skills.push('zhiheng');
           }
           if (suits.includes('club')) {
-            skills.push('jlsg_tongtian_qun');
+            skills.push('wansha');
           }
           player.addSkills(skills);
           "step 1"
@@ -1072,75 +1072,6 @@ export default function () {
             }
           }
         },
-
-      },
-      jlsg_tongtian_wei: {
-        audio: "ext:极略/audio/skill:1",
-        mark: true,
-        marktext: "魏",
-        unique: true,
-        intro: {
-          content: get.skillInfoTranslation('fankui'),
-        },
-        inherit: 'fankui',
-        content: function () {
-          player.gainPlayerCard(get.prompt('fankui', trigger.source), trigger.source, get.buttonValue, 'he').set('logSkill', ['jlsg_tongtian_wei', trigger.source]);
-        },
-      },
-      jlsg_tongtian_wu: {
-        unique: true,
-        audio: "ext:极略/audio/skill:1",
-        mark: true,
-        marktext: "吴",
-        intro: {
-          content: get.skillInfoTranslation('zhiheng'),
-        },
-        inherit: 'zhiheng',
-      },
-      jlsg_tongtian_shu: {
-        audio: "ext:极略/audio/skill:1",
-        mark: true,
-        unique: true,
-        marktext: "蜀",
-        intro: {
-          content: get.skillInfoTranslation('guanxing'),
-        },
-        inherit: "guanxing",
-      },
-      jlsg_tongtian_qun: {
-        inherit: "wansha",
-        audio: "ext:极略/audio/skill:1",
-        mark: true,
-        unique: true,
-        marktext: "群",
-        intro: {
-          content: get.skillInfoTranslation('wansha'),
-        },
-        locked: true,
-        trigger: { global: 'dying' },
-        global: 'jlsg_tongtian_qun2',
-        priority: 15,
-        forced: true,
-        filter: function (event, player, name) {
-          return _status.currentPhase == player && event.player != player;
-        },
-        content: function () { }
-      },
-      jlsg_tongtian_qun2: {
-        mod: {
-          cardSavable: function (card, player) {
-            if (!_status.currentPhase) return;
-            if (_status.currentPhase.isAlive() && _status.currentPhase.hasSkill('jlsg_tongtian_qun') && _status.currentPhase != player) {
-              if (card.name == 'tao' && !player.isDying()) return false;
-            }
-          },
-          cardEnabled: function (card, player) {
-            if (!_status.currentPhase) return;
-            if (_status.currentPhase.isAlive() && _status.currentPhase.hasSkill('jlsg_tongtian_qun') && _status.currentPhase != player) {
-              if (card.name == 'tao' && !player.isDying()) return false;
-            }
-          }
-        }
       },
       jlsg_jieyan: {
         audio: "ext:极略/audio/skill:1",
@@ -11755,14 +11686,6 @@ export default function () {
       jlsg_yaozhi_use: '妖智',
       jlsg_xingyun: '星陨',
       jlsg_tongtian: '通天',
-      // jlsg_tongtian_shu: '观星',
-      // jlsg_tongtian_wei: '反馈',
-      // jlsg_tongtian_wu: '制衡',
-      // jlsg_tongtian_qun: '完杀',
-      // jlsg_tongtian_wei_info: "当你受到伤害后，你可以获得伤害来源的一张牌。",
-      // jlsg_tongtian_shu_info: "准备阶段，你可以观看牌堆顶的X张牌，并将其以任意顺序置于牌堆项或牌堆底。（X为存活角色数且至多为5）",
-      // jlsg_tongtian_qun_info: "锁定技，你的回合内，除你以外，不处于濒死状态的角色不能使用【桃】。",
-      // jlsg_tongtian_wu_info: "出牌阶段限一次，你可以弃置任意张牌，然后摸等量的牌。",
       jlsg_jilve: '极略',
       jlsg_jieyan: '劫焰',
       jlsg_jieyan_buff: "劫焰·摸牌",
