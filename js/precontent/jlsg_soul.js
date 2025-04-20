@@ -152,7 +152,6 @@ export default function () {
             if (target.isTurnedOver() && card.name == 'sha')
               return false;
           },
-
         },
       },
       jlsg_huju: {
@@ -201,13 +200,14 @@ export default function () {
       },
       jlsg_hujuStill: {
         audio: "ext:极略/audio/skill:true",
-        unique: true,
+        charlotte: true,
       },
       jlsg_hujuWake: {
         skillAnimation: true,
         audio: "ext:极略/audio/skill:true",
         inherit: 'jlsg_huju2',
         unique: true,
+        charlotte: true,
       },
       jlsg_hufu: {
         audio: "ext:极略/audio/skill:2",
@@ -541,7 +541,8 @@ export default function () {
       },
       jlsg_kuangfeng2: {
         unique: true,
-        trigger: { player: 'damageBegin' },
+        charlotte: true,
+        trigger: { player: 'damageBegin1' },
         mark: true,
         marktext: '风',
         intro: {
@@ -623,7 +624,7 @@ export default function () {
           remove: {
             trigger: { player: ['phaseBegin', 'dieBegin'] },
             forced: true,
-            unique: true,
+            charlotte: true,
             popup: false,
             silent: true,
             content: function () {
@@ -649,7 +650,7 @@ export default function () {
         },
         marktext: '雾',
         mark: true,
-        unique: true,
+        charlotte: true,
         forced: true,
         content: function () {
           trigger.cancel();
@@ -852,7 +853,6 @@ export default function () {
         audio: "ext:极略/audio/skill:2",
         forced: true,
         trigger: { player: 'phaseEnd' },
-        unique: true,
         content: function () {
           'step 0'
           player.loseMaxHp();
@@ -1013,7 +1013,6 @@ export default function () {
       jlsg_tongtian: {
         audio: "ext:极略/audio/skill:1",
         enable: 'phaseUse',
-        unique: true,
         skillAnimation: true,
         limited: true,
         position: 'he',
@@ -1542,8 +1541,6 @@ export default function () {
       jlsg_juejing: {
         audio: "ext:极略/audio/skill:1",
         forced: true,
-        charlotte: true,
-        unique: true,
         trigger: { player: 'showCharacterEnd' },
         delay: false,
         init: function (player) {
@@ -1817,7 +1814,7 @@ export default function () {
         subSkill: {
           mark: {
             forced: true,
-            unique: true,
+            charlotte: true,
             mark: true,
             marktext: '袭',
             intro: {
@@ -1972,7 +1969,6 @@ export default function () {
       },
       jlsg_weizhen: {
         audio: "ext:极略/audio/skill:1",
-        unique: true,
         trigger: { global: 'phaseDrawBegin2' },
         forced: true,
         filter: function (event, player) {
@@ -2009,6 +2005,7 @@ export default function () {
       },
       jlsg_weizhen2: {
         audio: 'jlsg_weizhen',
+        charlotte: true,
         trigger: { source: 'damageBegin1' },
         filter: function (event, player) {
           return event.player.countMark('jlsg_nizhan') >= 3;
@@ -2020,12 +2017,6 @@ export default function () {
       },
       jlsg_weizhen3: {
         audio: 'jlsg_weizhen',
-        // init: function (player, skill) {
-        //   player.addSkillBlocker(skill);
-        // },
-        // onremove: function (player, skill) {
-        //   player.removeSkillBlocker(skill);
-        // },
         charlotte: true,
         skillBlocker: function (skill, player) {
           return !lib.skill[skill].charlotte && !get.is.locked(skill, player) && player.countMark('jlsg_nizhan') >= 4;
@@ -2599,8 +2590,7 @@ export default function () {
           player.storage.jlsg_gongxin2 = [];
         }
       },
-      jlsg_tianqi_phase: {
-      },
+      jlsg_tianqi_phase: {},
       jlsg_tianqi: {
         // TODO: delete excessive audio clips
         // usable: 1,
@@ -3148,7 +3138,6 @@ export default function () {
         audio: "ext:极略/audio/skill:1",
         enable: 'phaseUse',
         skillAnimation: true,
-        unique: true,
         limited: true,
         animationColor: 'fire',
         init: function (player) {
@@ -3177,6 +3166,7 @@ export default function () {
         }
       },
       jlsg_liangyuan2: {
+        charlotte: true,
         mark: true,
         intro: {
           content: 'mark'
@@ -3188,7 +3178,7 @@ export default function () {
         },
         forced: true,
         content: function () {
-          player.insertPhase();
+          player.insertPhase(event.name);
         }
       },
       jlsg_tianzi: {
@@ -3625,7 +3615,6 @@ export default function () {
         audio: "ext:极略/audio/skill:1",
         trigger: { player: 'phaseBegin' },
         forced: true,
-        unique: true,
         content: function () {
           "step 0"
           if (!_status.characterlist) {
@@ -3823,6 +3812,7 @@ export default function () {
         }
       },
       jlsg_guiyuan_ai: {
+        charlotte: true,
         ai: {
           nokeep: true,
           skillTagFilter: function (player) {
@@ -3832,7 +3822,6 @@ export default function () {
       },
       jlsg_chongsheng: {
         audio: "ext:极略/audio/skill:1",
-        unique: true,
         limited: true,
         trigger: { global: 'dying' },
         check: function (event, player) {
@@ -3991,15 +3980,14 @@ export default function () {
         }
       },
       jlsg_old_danjing1: {
-        unique: true,
+        charlotte: true,
         audio: "ext:极略/audio/skill:true"
       },
       jlsg_old_danjing2: {
-        unique: true,
+        charlotte: true,
         audio: "ext:极略/audio/skill:true"
       },
       jlsg_old_zhonghun: {
-        unique: true,
         limited: true,
         audio: "ext:极略/audio/skill:2",
         trigger: { player: 'dieBegin' },
@@ -4147,14 +4135,13 @@ export default function () {
       },
       jlsg_qinyin1: {
         audio: "ext:极略/audio/skill:true",
-        unique: true,
+        charlotte: true,
       },
       jlsg_qinyin2: {
         audio: "ext:极略/audio/skill:true",
-        unique: true,
+        charlotte: true,
       },
       jlsg_yeyan: {
-        unique: true,
         marktext: "炎",
         mark: true,
         forceDie: true,
@@ -4452,7 +4439,6 @@ export default function () {
       },
       jlsg_guiqu: {
         audio: "ext:极略/audio/skill:2",
-        unique: true,
         enable: 'chooseToUse',
         getSkills(player) {
           return player.getSkills(null, false, false).filter(
@@ -4622,7 +4608,6 @@ export default function () {
         audio: "ext:极略/audio/skill:2",
         forced: true,
         charlotte: true,
-        unique: true,
         trigger: { player: 'showCharacterEnd' },
         delay: false,
         init: function (player) {
@@ -4730,7 +4715,6 @@ export default function () {
       },
       jlsg_zhonghun: {
         audio: "ext:极略/audio/skill:2",
-        unique: true,
         limited: true,
         enable: "phaseUse",
         skillAnimation: true,
@@ -4827,8 +4811,6 @@ export default function () {
         audio: "ext:极略/audio/skill:2",
         derivation: ['jlsg_jiyang', 'jlsg_jiyin', 'jlsg_xiangsheng'],
         forced: true,
-        charlotte: true,
-        unique: true,
         trigger: {
           player: ['showCharacterEnd', 'changeHp', 'gainMaxHpAfter', 'loseMaxHpAfter'],
         },
@@ -5164,7 +5146,6 @@ export default function () {
         audio: "ext:极略/audio/skill:2",
         forced: true,
         charlotte: true,
-        unique: true,
         delay: false,
         trigger: { player: 'showCharacterEnd' },
         init: function (player) {
@@ -5669,7 +5650,6 @@ export default function () {
         audio: "ext:极略/audio/skill:2",
         trigger: { player: 'phaseDrawBegin1' },
         direct: true,
-        unique: true,
         filter: function (event, player) {
           return !event.numFixed && game.filterPlayer(p => p != player && !p.countMark('jlsg_jieying')).length;
         },
@@ -7395,7 +7375,6 @@ export default function () {
           global: "gameDrawAfter",
         },
         forced: true,
-        unique: true,
         init(player) {
           player.storage.jlsg_yingshi = [];
         },
