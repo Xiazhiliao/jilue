@@ -47,13 +47,20 @@ export default function () {
       jlsgsoul_caoren: ['male', 'shen', 8, ['jlsg_bamen', 'jlsg_gucheng'], ['wei']],
       jlsgsoul_caopi: ['male', 'shen', 3, ['jlsg_chuyuan', 'jlsg_dengji'], ['wei']],
 
-      jlsgsoul_pangtong: ["male", "shen", 3, ["jlsg_qifeng", "jlsg_lunce"], ["name:庞|统"]],
+      jlsgsoul_pangtong: ["male", "shen", 3, ["jlsg_qifeng", "jlsg_lunce"], ["shu", "name:庞|统"]],
       jlsgsoul_sp_zhaoyun: ["male", "shen", 1, ["jlsg_qianyuan", "jlsg_hualong"], ["shu", "name:赵|云"]],
-      jlsgsoul_sp_sunshangxiang: ["female", "shen", 3, ["jlsg_zhuxing", "jlsg_lingze"], ["wu", "name:孙|尚香"]],
+      jlsgsoul_sp_sunshangxiang: ["female", "shen", 3, ["jlsg_zhuxing", "jlsg_lingze"], ["wu", "name:孙|null"]],
       jlsgsoul_caiwenji: ["female", "shen", 3, ["jlsg_hanshuang", "jlsg_liluan"], ["qun", "name:蔡|琰"]],
-
+      jlsgsoul_sp_guanyu: ["male", "shen", 4, ["jlsg_zhanyue", "jlsg_fengtian"], ["shu", "name:关|羽"]],
     },
     characterIntro: {},
+    characterTitle: {
+      jlsgsoul_pangtong: "凤唳九天",
+      jlsgsoul_sp_zhaoyun: "破渊追天",
+      jlsgsoul_sp_sunshangxiang: "星流霆击",
+      jlsgsoul_caiwenji: "霜弦哀世",
+      jlsgsoul_sp_guanyu: "青龙",
+    },
     skill: {
       jlsg_guixin: {
         audio: "ext:极略/audio/skill:1",
@@ -11521,6 +11528,239 @@ export default function () {
           }
         }
       },
+      jlsg_zhanyue: {
+        audio: "ext:极略/audio/skill:2",
+        trigger: { player: "useCardToPlayered" },
+        filter(event, player) {
+          if (event.targets.length > 1) return false;
+          if (event.card.name != "sha") return false;
+          const targetNext = event.targets[0].getNext(),
+            targetPrevious = event.targets[0].getPrevious();
+          return [targetNext, targetPrevious].filter(current => {
+            if (!current?.isIn()) return false;
+            return current != player;
+          }).length;
+        },
+        async cost(event, trigger, player) {
+          const [target] = trigger.targets;
+          const targetNext = target.getNext(),
+            targetPrevious = target.getPrevious();
+          event.result = await player.chooseTarget([1, 2], `###斩月###你可以指定${get.translation(target)}的上下家且不为你的其他角色也成为此【杀】的目标，然后令此【杀】无视防具、不计入次数限制，且造成的伤害改为目标角色一半的体力值（向下取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌`)
+            .set("filterTarget", (card, player, target) => get.event("targetsx").includes(target))
+            .set("ai", target => {
+              const event = get.event(),
+                player = get.player();
+              const card = get.event("cardx");
+              return get.effect(target, card, player, player);
+            })
+            .set("targetsx", [targetNext, targetPrevious].filter(current => {
+              if (!current?.isIn()) return false;
+              return current != player;
+            }))
+            .set("cardx", (function () {
+              if (!trigger.card.storage?.jlsg_zhanyue) {
+                if (!trigger.card.storage) trigger.card.storage = {};
+                trigger.card.storage.jlsg_zhanyue = true;
+              }
+              return trigger.card;
+            })())
+            .forResult();
+          delete trigger.card.storage.jlsg_zhanyue;
+        },
+        async content(event, trigger, player) {
+          const targets = event.targets.slice().sortBySeat();
+          game.log(targets, `成为了`, trigger.card, '的额外目标');
+          trigger.targets.addArray(targets);
+          if (!trigger.card.storage?.jlsg_zhanyue) {
+            if (!trigger.card.storage) trigger.card.storage = {};
+            trigger.card.storage.jlsg_zhanyue = true;
+          }
+          if (trigger.addCount !== false) {
+            trigger.addCount = false;
+            trigger.player.getStat().card.sha--;
+          }
+          player.when({ player: "useCardAfter" })
+            .filter(evt => evt.card == trigger.card)
+            .step(async function (event, trigger, player) {
+              const num = player.getHistory("sourceDamage", evt => {
+                return evt.card == trigger.card;
+              }).reduce((sum, evt) => sum + evt.num, 0);
+              if (num > 0) await player.draw(num);
+            });
+        },
+        group: "jlsg_zhanyue_damage",
+        subSkill: {
+          damage: {
+            sourceSkill: "jlsg_zhanyue",
+            sub: true,
+            audio: false,
+            trigger: { source: "damageBegin4" },
+            filter(event, player) {
+              if (!event.card) return false;
+              return event.card.name == "sha" && event.card.storage?.jlsg_zhanyue;
+            },
+            charlotte: true,
+            forced: true,
+            popup: false,
+            async content(event, trigger, player) {
+              const num = Math.floor(trigger.player.getHp() / 2);
+              if (num > 0) trigger.num = num;
+              else await trigger.num == 0;
+            },
+          },
+        },
+        ai: {
+          unequip: true,
+          unequip_ai: true,
+          skillTagFilter(player, tag, arg) {
+            return arg?.card?.storage?.jlsg_zhanyue;
+          },
+          effect: {
+            player(card, player, target) {
+              if (card.storage?.jlsg_zhanyue) return;
+              if (!target || target.hasSkillTag("filterDamage", null, {
+                player: player,
+                card: card,
+              })) return;
+              const num = Math.floor(target.getHp() / 2);
+              if (num > 0) return [1, Math.log(num) / 2, 1, -Math.log(num) / 2];
+            },
+          }
+        },
+      },
+      jlsg_fengtian: {
+        audio: "ext:极略/audio/skill:2",
+        trigger: { global: "phaseBegin" },
+        filter(event, player) {
+          return event.player != player && player.countDiscardableCards(player, "he");
+        },
+        async cost(event, trigger, player) {
+          event.result = await player.chooseToDiscard("he")
+            .set("prompt", get.prompt2("jlsg_fengtian", trigger.player))
+            .set("ai", card => {
+              const target = get.event("target"),
+                player = get.player(),
+                phaseList = get.event("phaseList");
+              let value = 3 - get.value(card, player);
+              if (!phaseList.length) value -= 3;
+              else value += Math.min(3, phaseList.length);
+              if (get.effect(target, get.autoViewAs({ name: "sha" }, []), player, player) > 0) value += 2;
+              if (card.name == "sha") value += target.getSkills(null, false).length / 2;
+              return value;
+            })
+            .set("target", trigger.player)
+            .set("phaseList", trigger.phaseList.filter(i => {
+              return ["phaseDraw", "phaseUse", "phaseDiscard"].includes(i)
+            }))
+            .set("logSkill", ["jlsg_fengtian", trigger.player])
+            .set("chooseonly", true)
+            .forResult();
+          if (event.result?.bool) {
+            event.result.targets = [trigger.player];
+            event.result.skill_popup = false;
+          }
+        },
+        async content(event, trigger, player) {
+          const { targets: [target], cards: [card] } = event;
+          await player.discard(card);
+          target.addTempSkill("jlsg_fengtian_effect");
+          target.storage.jlsg_fengtian_effect.players.add(player);
+          if (get.name(card) == "sha") target.addSkillBlocker("jlsg_fengtian_effect");
+          target.markSkill("jlsg_fengtian_effect");
+        },
+        group: "jlsg_fengtian_sha",
+        subSkill: {
+          sha: {
+            sourceSkill: "jlsg_fengtian",
+            sub: true,
+            trigger: { global: ["drawAfter", "useCard", "loseAfter", "loseAsyncAfter"] },
+            getIndex(event, player) {
+              if (["useCard", "draw"].includes(event.name)) return [event.player];
+              if (event.getl && typeof event.getl == "function") {
+                return game.filterPlayer(current => event.getl(current).cards2?.length).sortBySeat();
+              };
+              return [];
+            },
+            filter(event, player, name, target) {
+              if (!target?.storage?.jlsg_fengtian_effect?.players?.includes(player)) return false;
+              const record = target.storage.jlsg_fengtian_effect.record;
+              if (event.name == "useCard") return !record.useCard.includes(event.card.name);
+              else if (event.name == "draw") return !record.draw;
+              return event.type == "discard" && !record.discard;
+            },
+            forced: true,
+            logTarget(event, player, name, target) {
+              return [target];
+            },
+            async content(event, trigger, player) {
+              const { targets: [target] } = event;
+              switch (trigger.name) {
+                case "useCard":
+                  target.storage.jlsg_fengtian_effect.record.useCard.add(trigger.card.name);
+                  break;
+                case "draw":
+                  target.storage.jlsg_fengtian_effect.record.draw = true;
+                  break;
+                default:
+                  target.storage.jlsg_fengtian_effect.record.discard = true;
+                  break;
+              };
+              target.markSkill("jlsg_fengtian_effect");
+              const sha = get.autoViewAs({ name: "sha" }, []);
+              if (player.canUse(sha, target, false)) {
+                await player.useCard(sha, target);
+              }
+            },
+          },
+          effect: {
+            sourceSkill: "jlsg_fengtian",
+            sub: true,
+            audio: false,
+            init(player, skill) {
+              player.storage[skill] = {
+                players: [],
+                record: {
+                  draw: false,
+                  discard: false,
+                  useCard: [],
+                },
+              };
+            },
+            intro: {
+              noucount: true,
+              content(storage, player) {
+                const { players, record } = storage;
+                return `已被${get.translation(players)}封印<br>
+                  已使用牌：${record.useCard.length ? get.translation(record.useCard) : "无"}<br>
+                  摸牌：${record.draw ? "是" : "否"}<br>
+                  弃牌：${record.discard ? "是" : "否"}`
+              },
+            },
+            onremove(player, skill) {
+              player.clearMark(skill);
+              player.removeSkillBlocker(skill);
+            },
+            skillBlocker(skill) {
+              const info = get.info(skill);
+              return !info.charlotte && !info.persevereSkill;
+            },
+            trigger: { source: "damageSource" },
+            filter(event, player) {
+              return player.storage.jlsg_fengtian_effect.players.includes(event.player);
+            },
+            charlotte: true,
+            forced: true,
+            popup: false,
+            async content(event, trigger, player) {
+              player.storage.jlsg_fengtian_effect.players.remove(trigger.player);
+              player.markSkill("jlsg_fengtian_effect");
+              if (!player.storage.jlsg_fengtian_effect.players.length) {
+                player.removeSkill("jlsg_fengtian_effect");
+              }
+            },
+          },
+        },
+      },
     },
     translate: {
       jlsg_soul: "魂烈包",
@@ -11852,7 +12092,11 @@ export default function () {
       jlsg_hanshuang_info: "当任意角色受到伤害时，你可以令其摸X张牌并令此伤害+X，或令其弃置x张牌并令此伤害-X(X为此技能本轮对其发动的次数）。",
       jlsg_liluan: "离乱",
       jlsg_liluan_info: "每回合限一次，你可以将任意角色的弃置牌改为其以外的所有角色各随机弃置一张牌，或将任意角色的摸牌改为其以外的所有角色各摸一张牌。",
-
+      jlsgsoul_sp_guanyu: "SP神关羽",
+      jlsg_zhanyue: "斩月",
+      jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令其上下家且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向下取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
+      jlsg_fengtian: "封天",
+      jlsg_fengtian_info: "其他角色的回合开始时，你可以弃置一张牌，若如此做，该角色于本回合内首次摸牌、弃牌或使用每种牌名的牌后，你视为对其使用【杀】，若你弃置的牌为【杀】，你令其所有技能失效，上述效果持续至本回合结束或其对你造成伤害。",
     },
     dynamicTranslate: {
       jlsg_xiejia: function (player) {

@@ -5,34 +5,36 @@ export default function () {
     name: 'jlsg_sy',
     connect: true,
     character: {
-      jlsgsy_lvbu: ['male', 'shen', 8, ['jlsgsy_wushuang', 'mashu', 'jlsgsy_baonulvbu'], ['qun', 'boss', 'bossallowed']],
-      jlsgsy_lvbubaonu: ['male', 'shen', 4, ['jlsgsy_wushuang', 'mashu', 'jlsgsy_xiuluo', 'jlsgsy_shenwei', 'jlsgsy_shenji'], ['qun', 'hiddenboss', 'bossallowed']],
-      jlsgsy_dongzhuo: ['male', 'shen', 8, ['jlsgsy_zongyu', 'jlsgsy_lingnue', 'jlsgsy_baozheng', 'jlsgsy_baonudongzhuo'], ['qun', 'boss', 'bossallowed']],
-      jlsgsy_dongzhuobaonu: ['male', 'shen', 4, ['jlsgsy_zongyu', 'jlsgsy_lingnue', 'jlsgsy_baozheng', 'jlsgsy_nishi', 'jlsgsy_hengxing'], ['qun', 'hiddenboss', 'bossallowed']],
-      jlsgsy_zhangjiao: ['male', 'shen', 8, ['jlsgsy_bujiao', 'jlsgsy_taiping', 'jlsgsy_baonuzhangjiao'], ['qun', 'boss', 'bossallowed']],
-      jlsgsy_zhangjiaobaonu: ['male', 'shen', 4, ['jlsgsy_bujiao', 'jlsgsy_taiping', 'jlsgsy_yaohuo', 'jlsgsy_sanzhi'], ['qun', 'hiddenboss', 'bossallowed']],
-      jlsgsy_zhangrang: ['male', 'shen', 7, ['jlsgsy_chanxian', 'jlsgsy_baonuzhangrang'], ['qun', 'boss', 'bossallowed']],
-      jlsgsy_zhangrangbaonu: ['male', 'shen', 4, ['jlsgsy_chanxian', 'jlsgsy_luanzheng', 'jlsgsy_canlue'], ['qun', 'hiddenboss', 'bossallowed']],
-      jlsgsy_weiyan: ['male', 'shen', 8, ['jlsgsy_shiao', 'jlsgsy_baonuweiyan'], ['shu', 'boss', 'bossallowed']],
-      jlsgsy_weiyanbaonu: ['male', 'shen', 4, ['jlsgsy_shiao', 'jlsgsy_fangu', 'jlsgsy_kuangxi'], ['shu', 'hiddenboss', 'bossallowed']],
-      jlsgsy_sunhao: ['male', 'shen', 8, ['jlsgsy_mingzheng', 'jlsgsy_baonusunhao'], ['wu', 'boss', 'bossallowed']],
-      jlsgsy_sunhaobaonu: ['male', 'shen', 4, ['jlsgsy_shisha', 'jlsgsy_huangyin', 'jlsgsy_zuijiu', 'jlsgsy_guiming'], ['wu', 'hiddenboss', 'bossallowed']],
-      jlsgsy_caifuren: ['female', 'shen', 7, ['jlsgsy_dihui', 'jlsgsy_baonucaifuren'], ['qun', 'boss', 'bossallowed', 'name:蔡|null']],
-      jlsgsy_caifurenbaonu: ['female', 'shen', 4, ['jlsgsy_dihui', 'jlsgsy_luansi', 'jlsgsy_huoxin'], ['qun', 'hiddenboss', 'bossallowed', 'name:蔡|null']],
-      jlsgsy_simayi: ['male', 'shen', 7, ['jlsgsy_bolue', 'jlsgsy_baonusimayi'], ['jin', 'boss', 'bossallowed', 'name:司马|懿'], 'jin'],
-      jlsgsy_simayibaonu: ['male', 'shen', 4, ['jlsgsy_bolue', 'jlsgsy_renji', 'jlsgsy_biantian', 'jlsgsy_tianyou'], ['jin', 'hiddenboss', 'bossallowed', 'name:司马|懿'], 'jin'],
-      jlsgsy_diaochan: ['female', 'shen', 7, ['jlsgsy_meihuo', 'jlsgsy_baonudiaochan'], ['qun', 'boss', 'bossallowed', 'name:null|null']],
-      jlsgsy_diaochanbaonu: ['female', 'shen', 4, ['jlsgsy_meihuo', 'jlsgsy_yaoyan', 'jlsgsy_miluan'], ['qun', 'hiddenboss', 'bossallowed', 'name:null|null']],
-      jlsgsy_yuanshao: ['male', 'shen', 8, ['jlsgsy_mojian', 'jlsgsy_baonuyuanshao'], ['qun', 'boss', 'bossallowed']],
-      jlsgsy_yuanshaobaonu: ['male', 'shen', 4, ['jlsgsy_mojian', 'jlsgsy_zhuzai', 'jlsgsy_duoji'], ['qun', 'hiddenboss', 'bossallowed']],
-      jlsgsy_sunluban: ['female', 'shen', 7, ['jlsgsy_quanqing', 'jlsgsy_baonusunluban'], ['wu', 'boss', 'bossallowed']],
-      jlsgsy_sunlubanbaonu: ['female', 'shen', 4, ['jlsgsy_quanqing', 'jlsgsy_raomeng', 'jlsgsy_yongjie'], ['wu', 'hiddenboss', 'bossallowed']],
-      jlsgsy_caocao: ['male', 'shen', 8, ['jlsgsy_weiwu', 'jlsgsy_baonucaocao'], ['wei', 'boss', 'bossallowed']],
-      jlsgsy_caocaobaonu: ['male', 'shen', 4, ['jlsgsy_weiwu', 'jlsgsy_duzun', 'jlsgsy_longbian'], ['wei', 'hiddenboss', 'bossallowed']],
+      jlsgsy_lvbu: ["male", "shen", 8, ["jlsgsy_wushuang", "mashu", "jlsgsy_baonulvbu"], ["qun", "boss", "bossallowed"]],
+      jlsgsy_lvbubaonu: ["male", "shen", 4, ["jlsgsy_wushuang", "mashu", "jlsgsy_xiuluo", "jlsgsy_shenwei", "jlsgsy_shenji"], ["qun", "hiddenboss", "bossallowed"]],
+      jlsgsy_dongzhuo: ["male", "shen", 8, ["jlsgsy_zongyu", "jlsgsy_lingnue", "jlsgsy_baozheng", "jlsgsy_baonudongzhuo"], ["qun", "boss", "bossallowed"]],
+      jlsgsy_dongzhuobaonu: ["male", "shen", 4, ["jlsgsy_zongyu", "jlsgsy_lingnue", "jlsgsy_baozheng", "jlsgsy_nishi", "jlsgsy_hengxing"], ["qun", "hiddenboss", "bossallowed"]],
+      jlsgsy_zhangjiao: ["male", "shen", 8, ["jlsgsy_bujiao", "jlsgsy_taiping", "jlsgsy_baonuzhangjiao"], ["qun", "boss", "bossallowed"]],
+      jlsgsy_zhangjiaobaonu: ["male", "shen", 4, ["jlsgsy_bujiao", "jlsgsy_taiping", "jlsgsy_yaohuo", "jlsgsy_sanzhi"], ["qun", "hiddenboss", "bossallowed"]],
+      jlsgsy_zhangrang: ["male", "shen", 7, ["jlsgsy_chanxian", "jlsgsy_baonuzhangrang"], ["qun", "boss", "bossallowed"]],
+      jlsgsy_zhangrangbaonu: ["male", "shen", 4, ["jlsgsy_chanxian", "jlsgsy_luanzheng", "jlsgsy_canlue"], ["qun", "hiddenboss", "bossallowed"]],
+      jlsgsy_weiyan: ["male", "shen", 8, ["jlsgsy_shiao", "jlsgsy_baonuweiyan"], ["shu", "boss", "bossallowed"]],
+      jlsgsy_weiyanbaonu: ["male", "shen", 4, ["jlsgsy_shiao", "jlsgsy_fangu", "jlsgsy_kuangxi"], ["shu", "hiddenboss", "bossallowed"]],
+      jlsgsy_sunhao: ["male", "shen", 8, ["jlsgsy_mingzheng", "jlsgsy_baonusunhao"], ["wu", "boss", "bossallowed"]],
+      jlsgsy_sunhaobaonu: ["male", "shen", 4, ["jlsgsy_shisha", "jlsgsy_huangyin", "jlsgsy_zuijiu", "jlsgsy_guiming"], ["wu", "hiddenboss", "bossallowed"]],
+      jlsgsy_caifuren: ["female", "shen", 7, ["jlsgsy_dihui", "jlsgsy_baonucaifuren"], ["qun", "boss", "bossallowed", "name:蔡|null"]],
+      jlsgsy_caifurenbaonu: ["female", "shen", 4, ["jlsgsy_dihui", "jlsgsy_luansi", "jlsgsy_huoxin"], ["qun", "hiddenboss", "bossallowed", "name:蔡|null"]],
+      jlsgsy_simayi: ["male", "shen", 7, ["jlsgsy_bolue", "jlsgsy_baonusimayi"], ["jin", "boss", "bossallowed", "name:司马|懿"], "jin"],
+      jlsgsy_simayibaonu: ["male", "shen", 4, ["jlsgsy_bolue", "jlsgsy_renji", "jlsgsy_biantian", "jlsgsy_tianyou"], ["jin", "hiddenboss", "bossallowed", "name:司马|懿"], "jin"],
+      jlsgsy_diaochan: ["female", "shen", 7, ["jlsgsy_meihuo", "jlsgsy_baonudiaochan"], ["qun", "boss", "bossallowed", "name:null|null"]],
+      jlsgsy_diaochanbaonu: ["female", "shen", 4, ["jlsgsy_meihuo", "jlsgsy_yaoyan", "jlsgsy_miluan"], ["qun", "hiddenboss", "bossallowed", "name:null|null"]],
+      jlsgsy_yuanshao: ["male", "shen", 8, ["jlsgsy_mojian", "jlsgsy_baonuyuanshao"], ["qun", "boss", "bossallowed"]],
+      jlsgsy_yuanshaobaonu: ["male", "shen", 4, ["jlsgsy_mojian", "jlsgsy_zhuzai", "jlsgsy_duoji"], ["qun", "hiddenboss", "bossallowed"]],
+      jlsgsy_sunluban: ["female", "shen", 7, ["jlsgsy_quanqing", "jlsgsy_baonusunluban"], ["wu", "boss", "bossallowed"]],
+      jlsgsy_sunlubanbaonu: ["female", "shen", 4, ["jlsgsy_quanqing", "jlsgsy_raomeng", "jlsgsy_yongjie"], ["wu", "hiddenboss", "bossallowed"]],
+      jlsgsy_caocao: ["male", "shen", 8, ["jlsgsy_weiwu", "jlsgsy_baonucaocao"], ["wei", "boss", "bossallowed"]],
+      jlsgsy_caocaobaonu: ["male", "shen", 4, ["jlsgsy_weiwu", "jlsgsy_duzun", "jlsgsy_longbian"], ["wei", "hiddenboss", "bossallowed"]],
       jlsgsy_zoushi: ["female", "shen", 7, ["jlsgsy_huoshi", "jlsgsy_baonuzoushi"], ["qun", "boss", "bossallowed"]],
       jlsgsy_zoushibaonu: ["female", "shen", 3, ["jlsgsy_huoshi", "jlsgsy_yinzi", "jlsgsy_mowu"], ["qun", "hiddenboss", "bossallowed"]],
       jlsgsy_menghuo: ["male", "shen", 8, ["jlsgsy_qiushou", "jlsgsy_baonumenghuo"], ["shu", "boss", "bossallowed"]],
       jlsgsy_menghuobaonu: ["male", "shen", 3, ["jlsgsy_qiushou", "jlsgsy_moshou"], ["shu", "hiddenboss", "bossallowed"]],
+      jlsgsy_zhangchunhua: ["female", 3, "shen", ["jlsgsy_baonuzhangchunhua", "jlsgsy_diaoling"], ["wei", "boss", "bossallowed"]],
+      jlsgsy_zhangchunhuabaonu: ["female", 3, "shen", ["jlsgsy_diaoling", "jlsgsy_ejue", "jlsgsy_jianmie"], ["wei", "hiddenboss", "bossallowed"]],
     },
     skill: {
       jlsgsy_baonu: {
@@ -1825,7 +1827,6 @@ export default function () {
       jlsgsy_duzun: {
         audio: "ext:极略/audio/skill:2",
         trigger: { global: 'phaseBegin' },
-        unique: true,
         init(player) {
           player.storage.jlsgsy_duzun = new Map();
         },
@@ -2053,7 +2054,6 @@ export default function () {
           combo: 'jlsgsy_duzun',
         },
       },
-      //魔邹氏
       jlsgsy_baonuzoushi: {
         audio: "ext:极略/audio/skill:1",
         animationStr: '既然如此，接下来的表演，将军可要看好了',
@@ -2148,7 +2148,6 @@ export default function () {
           threaten: 0.9,
         },
       },
-      //魔孟获
       jlsgsy_baonumenghuo: {
         audio: "ext:极略/audio/skill:1",
         animationStr: '非要逼我，现出真身！',
@@ -2395,6 +2394,136 @@ export default function () {
           },
         },
       },
+      jlsgsy_baonuzhangchunhua: {
+        audio: "ext:极略/audio/skill:1",
+        animationStr: '',
+        inherit: "jlsgsy_baonu",
+        mode: ['identity', 'guozhan', 'boss', 'stone'],
+      },
+      jlsgsy_diaoling: {
+        audio: "ext:极略/audio/skill:2",
+        usable: 1,
+        trigger: { global: "loseBefore" },
+        filter(event, player) {
+          const evt = event.getParent("phaseDiscard");
+          if (evt?.player == event.player && evt?.name == "phaseDiscare") return false;
+          return event.player != player && event.player.isIn() && event.type == "discard"
+        },
+        async cost(event, trigger, player) {
+          event.result = await player.chooseBool(`###${get.prompt("jlsgsy_diaoling", trigger.player)}###令${get.translation(trigger.player)}将此次弃牌改为失去等量体力`)
+            .set("ai", (event, player) => {
+              const trigger = event.getTrigger();
+              const target = trigger.player,
+                cards = trigger.cards.filter(card => get.owner(card) == target);
+              return get.value(cards, target)
+                < get.effect(target, { name: "losehp" }, player, player) * cards.length / 2;
+            })
+            .forResult();
+          if (event.result?.bool) event.result.targets = [trigger.player];
+        },
+        async content(event, trigger, player) {
+          const { player: target } = trigger;
+          game.log(player, "取消了", target, "的弃牌");
+          const cards = trigger.cards.filter(i => get.owner(i) == target);
+          trigger.cards.removeArray(cards);
+          await target.loseHp(cards.length);
+        },
+      },
+      jlsgsy_ejue: {
+        audio: "ext:极略/audio/skill:2",
+        enable: "phaseUse",
+        trigger: { player: "damageEnd" },
+        filter(event, player) {
+          if (player.isPhaseUsing()) return !player.hasSkill("jlsgsy_ejue_used", null, false, false);
+          return event.num > 0;
+        },
+        prompt: "是否发动【扼绝】？",
+        prompt2: "摸两张牌并弃置其中一张，然后令所有其他角色弃置点数小于此牌的所有相同类型的牌，最后你从弃牌堆里随机获得每名角色以此法弃置的各一张牌。",
+        check(event, player) {
+          return true;
+        },
+        async content(event, trigger, player) {
+          if (!trigger) player.addTempSkill("jlsgsy_ejue_used", { player: "phaseUseAfter" });
+          const { result: draw } = await player.draw(2);
+          if (!draw?.length) return;
+          const { result: discard } = await player.chooseToDiscard("扼绝：弃置一张牌")
+            .set("filterCard", card => get.event("cardx").includes(card))
+            .set("ai", card => (8 - get.value(card)) * (14 - get.number(card)))
+            .set("cardx", draw)
+          const cardx = discard.cards[0];
+          const targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
+          player.line(targets);
+          for (const target of targets) {
+            const cards = target.getDiscardableCards(target, "he", card => {
+              if (get.type2(card, target) != get.type2(cardx, player)) return false;
+              return get.number(card, target) < get.number(cardx);
+            });
+            if (!cards.length) continue;
+            await target.discard(cards, "notBySelf");
+          };
+          const cardsList = targets.reduce((list, target) => {
+            const history = target.getHistory("lose", evt => evt.getParent(2) == event),
+              sum = list.slice().flat();
+            const cardsx = history.map(evt => evt.cards.filterInD("d")).flat().unique();
+            cardsx.removeArray(sum);
+            if (cardsx.length) list.push(cardsx);
+            return list;
+          }, []);
+          if (!cardsList.length) return;
+          const cards = cardsList.map(list => list.randomGet());
+          await player.gain(cards, "gain2");
+        },
+        subSkill: {
+          used: { charlotte: true, },
+        },
+        ai: {
+          order: 10,
+          result: {
+            player: 1,
+          },
+        },
+      },
+      jlsgsy_jianmie: {
+        audio: "ext:极略/audio/skill:2",
+        mod: {
+          aiOrder(player, card, num) {
+            if (get.name(card, player) == "sha" && card.hasNature()) return num - 5;
+          },
+        },
+        trigger: { player: "useCardBefore", },
+        filter(event, player) {
+          if (event.targets.some(target => target.countCards("h") >= player.countCards("h"))) return false;
+          return event.card.name == 'sha' && !event.card.hasNature();
+        },
+        forced: true,
+        async content(event, trigger, player) {
+          game.setNature(trigger.card, "fire");
+          trigger.addCount = false;
+          for (const target of trigger.targets) {
+            target.addTempSkill("jlsgsy_jianmie_dying");
+            target.markSkill("jlsgsy_jianmie_dying");
+          };
+        },
+        subSkill: {
+          dying: {
+            sourceSkill: "jlsgsy_jianmie",
+            sub: true,
+            intro: {
+              content(storage, player) {
+                return "已被死神标记"
+              },
+            },
+            trigger: { player: "dyingBegin" },
+            charlotte: true,
+            forced: true,
+            popup: false,
+            firstDo: true,
+            async content(event, trigger, player) {
+              await player.die(trigger);
+            },
+          },
+        },
+      },
     },
     translate: {
       jlsg_sy: 'SK三英',
@@ -2426,6 +2555,8 @@ export default function () {
       jlsgsy_zoushibaonu: "妖媚之殃",
       jlsgsy_menghuo: "南中魔兽",
       jlsgsy_menghuobaonu: "南中魔兽",
+      jlsgsy_zhangchunhua: "万魂归寂",
+      jlsgsy_zhangchunhuabaonu: "万魂归寂",
 
       jlsgsy_xiuluo: '修罗',
       jlsgsy_shenwei: '神威',
@@ -2568,8 +2699,14 @@ export default function () {
       jlsgsy_qiushou_info: "锁定技，当你使用非延时锦囊牌指定其他角色为目标后，或成为其他角色使用非延时锦囊牌的目标后，对方需打出一张【杀】，否则你对其造成1点伤害。",
       jlsgsy_moshou: "魔兽",
       jlsgsy_moshou_info: "变身技，锁定技，回合开始时，你随机获得一项未拥有的的效果并移除其余效果，然后摸X张牌（X为你获得当前效果的次数）：1.当你对其他角色造成伤害后，你令其随机弃置一张牌并翻面；2.令其他角色的非锁定技和装备技能失效直到其下个回合结束；3.你防止其他角色施加的除属性伤害外的负面效果。",
-
-
+      jlsgsy_baonuzhangchunhua: "暴怒",
+      jlsgsy_baonuzhangchunhua_info: "锁定技，当你的体力值降至4或更低时，你进入暴怒状态并立即开始你的回合。",
+      jlsgsy_diaoling: "凋零",
+      jlsgsy_diaoling_info: "每回合限一次，你可以将其他角色弃牌阶段外的弃置牌改为失去体力。",
+      jlsgsy_ejue: "扼绝",
+      jlsgsy_ejue_info: "变身技，出牌阶段限一次，或当你受到伤害后，你可以摸两张牌并弃置其中一张，然后令所有其他角色弃置点数小于此牌的所有相同类型的牌，若如此做，你从弃牌堆里随机获得每名角色以此法弃置的各一张牌。",
+      jlsgsy_jianmie: "翦灭",
+      jlsgsy_jianmie_info: "变身技，锁定技，你对手牌少于你的角色使用的普通【杀】改为火【杀】且不计入次数限制，这些角色于你的回合内跳过濒死状态。",
     },
     dynamicTranslate: {
       jlsgsy_bolue(player) {
