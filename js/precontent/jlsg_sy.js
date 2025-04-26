@@ -2406,7 +2406,7 @@ export default function () {
         trigger: { global: "loseBefore" },
         filter(event, player) {
           const evt = event.getParent("phaseDiscard");
-          if (evt?.player == event.player && evt?.name == "phaseDiscare") return false;
+          if (evt?.player == event.player && evt?.name == "phaseDiscard") return false;
           return event.player != player && event.player.isIn() && event.type == "discard"
         },
         async cost(event, trigger, player) {
@@ -2487,10 +2487,12 @@ export default function () {
         audio: "ext:极略/audio/skill:2",
         mod: {
           aiOrder(player, card, num) {
-            if (get.name(card, player) == "sha" && card.hasNature()) return num - 5;
+            if (get.name(card, player) == "sha") {
+              if (["card", "vcard"].includes(get.itemtype(card)) && !card.hasNature()) return num + 5;
+            }
           },
         },
-        trigger: { player: "useCardBefore", },
+        trigger: { player: "useCardBefore" },
         filter(event, player) {
           if (event.targets.some(target => target.countCards("h") >= player.countCards("h"))) return false;
           return event.card.name == 'sha' && !event.card.hasNature();
@@ -2510,7 +2512,7 @@ export default function () {
             sub: true,
             intro: {
               content(storage, player) {
-                return "已被死神标记"
+                return "已被牢大标记";
               },
             },
             trigger: { player: "dyingBegin" },
@@ -2519,7 +2521,8 @@ export default function () {
             popup: false,
             firstDo: true,
             async content(event, trigger, player) {
-              await player.die(trigger);
+              player.chat("孩子们，我坠机了")
+              await player.die(trigger.reason);
             },
           },
         },
