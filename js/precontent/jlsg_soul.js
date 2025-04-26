@@ -7905,6 +7905,7 @@ export default function () {
             for (let j = 0; j < skills2.length; j++) {
               if (player.hasSkill(skills2[j])) continue;
               else if (skills.includes(skills2[j])) continue;
+              if (lib.filter.skillDisabled(skills2[j])) continue;
               const info = lib.skill[skills2[j]];
               if (!info || (!info.trigger && !info.enable && !info.mod) || info.silent || info.hiddenSkill || (info.zhuSkill && !player.isZhu2())) continue;
               if (info.ai && (info.ai.combo && !player.hasSkill(info.ai.combo))) continue;
