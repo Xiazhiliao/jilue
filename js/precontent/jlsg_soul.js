@@ -9583,23 +9583,20 @@ export default function () {
               effectsList[i][1].content = copy[i][1].content;
               effectsList[i][1].effect = copy[i][1].effect;
             };
+            //手动添加“随机技能”选项
             if (!copy.some(i => i[0] == "随机两个技能") && Math.random() < 0.5) {
-              effectsList[2] = ["随机两个技能", {
-                content: async function (event, trigger, player) {
-                  await player.addSkills(event.gainSkills);
-                },
-                effect() { return 4; },
-              }];
-            }
-            else if (effectsList.some((i, v) => i[0] == "随机两个技能" && v != 2)) {
-              const num = effectsList.map(i => i[0]).indexOf("随机两个技能");
-              effectsList[num] = effectsList[2];
-              effectsList[2] = ["随机两个技能", {
-                content: async function (event, trigger, player) {
-                  await player.addSkills(event.gainSkills);
-                },
-                effect() { return 4; },
-              }];
+              const skills = lib.skill.jlsg_lingze.skills(trigger.player)
+                .filter(skill => {
+                  return lib.skill.jlsg_lingze.typeSkills["chaos"].some(i => i == lib.translate[skill]);
+                });
+              if (skills.length) {
+                effectsList[2] = ["随机两个技能", {
+                  content: async function (event, trigger, player) {
+                    await player.addSkills(event.gainSkills);
+                  },
+                  effect() { return 4; },
+                }];
+              }
             }
             for (let i = 0; i < effectsList.length; i++) {
               const [str, { content }] = effectsList[i];
@@ -10307,14 +10304,6 @@ export default function () {
                   return player.getUseValue(card1) + player.getUseValue(card2);
                 },
               }],
-              ["随机两个技能", {
-                content: async function (event, trigger, player) {
-                  await player.addSkills(event.gainSkills);
-                },
-                effect(player) {
-                  return 4;
-                },
-              }],
             ],
             recover: [
               ["令一名角色摸六张牌", {
@@ -10566,14 +10555,6 @@ export default function () {
                 effect(player, cardName) {
                   const card = get.autoViewAs({ name: cardName, isCard: true }, "unsure")
                   return player.getUseValue(card);
-                },
-              }],
-              ["随机两个技能", {
-                content: async function (event, trigger, player) {
-                  await player.addSkills(event.gainSkills);
-                },
-                effect(player) {
-                  return 4;
                 },
               }],
             ],
@@ -11058,14 +11039,6 @@ export default function () {
                 },
                 effect(player) {
                   return 5.5;
-                },
-              }],
-              ["随机两个技能", {
-                content: async function (event, trigger, player) {
-                  await player.addSkills(event.gainSkills);
-                },
-                effect(player) {
-                  return 4;
                 },
               }],
             ],
