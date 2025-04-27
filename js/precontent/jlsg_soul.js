@@ -11705,6 +11705,7 @@ export default function () {
           sha: {
             sourceSkill: "jlsg_fengtian",
             sub: true,
+            audio:"jlsg_fengtian",
             trigger: { global: ["drawAfter", "useCardAfter", "loseAfter", "loseAsyncAfter"] },
             getIndex(event, player) {
               if (["useCard", "draw"].includes(event.name)) return [event.player];

@@ -2393,7 +2393,7 @@ export default function () {
         },
       },
       jlsgsy_baonuzhangchunhua: {
-        animationStr: '',
+        animationStr: '冥河不渡，永坠无间',
         inherit: "jlsgsy_baonu",
         mode: ['identity', 'guozhan', 'boss', 'stone'],
       },
