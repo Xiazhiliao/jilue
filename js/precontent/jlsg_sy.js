@@ -66,6 +66,7 @@ export default function () {
             player.hp = 4;
           }
           var name1 = player.name1, name2 = player.name2;
+          game.resetSkills();
           if (name1.startsWith('jlsgsy_') && !name1.endsWith('baonu')) {
             player.logSkill('jlsgsy_baonu' + name1.substr(7));
             player.reinit(name1, name1 + 'baonu');
@@ -79,7 +80,6 @@ export default function () {
           while (_status.event.name != 'phaseLoop') {
             _status.event = _status.event.parent;
           }
-          game.resetSkills();
           _status.paused = false;
           _status.event.player = player;
           _status.event.step = 0;

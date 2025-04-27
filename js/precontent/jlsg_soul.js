@@ -11695,7 +11695,7 @@ export default function () {
         async content(event, trigger, player) {
           const { targets: [target], cards: [card] } = event;
           await player.discard(card);
-          target.addTempSkill("jlsg_fengtian_effect");
+          target.addTempSkill("jlsg_fengtian_effect", { global: ["phaseAfter", "phaseBefore"] });
           target.storage.jlsg_fengtian_effect.players.add(player);
           if (get.name(card) == "sha") target.addSkillBlocker("jlsg_fengtian_effect");
           target.markSkill("jlsg_fengtian_effect");
@@ -11705,7 +11705,7 @@ export default function () {
           sha: {
             sourceSkill: "jlsg_fengtian",
             sub: true,
-            audio:"jlsg_fengtian",
+            audio: "jlsg_fengtian",
             trigger: { global: ["drawAfter", "useCardAfter", "loseAfter", "loseAsyncAfter"] },
             getIndex(event, player) {
               if (["useCard", "draw"].includes(event.name)) return [event.player];
