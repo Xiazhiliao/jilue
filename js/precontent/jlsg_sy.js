@@ -34,7 +34,7 @@ export default function () {
       jlsgsy_menghuo: ["male", "shen", 8, ["jlsgsy_qiushou", "jlsgsy_baonumenghuo"], ["shu", "boss", "bossallowed"]],
       jlsgsy_menghuobaonu: ["male", "shen", 3, ["jlsgsy_qiushou", "jlsgsy_moshou"], ["shu", "hiddenboss", "bossallowed"]],
       jlsgsy_zhangchunhua: ["female", "shen", 3, ["jlsgsy_baonuzhangchunhua", "jlsgsy_diaoling"], ["wei", "boss", "bossallowed"]],
-      jlsgsy_zhangchunhuabaonu: ["female", "shen",3,  ["jlsgsy_diaoling", "jlsgsy_ejue", "jlsgsy_jianmie"], ["wei", "hiddenboss", "bossallowed"]],
+      jlsgsy_zhangchunhuabaonu: ["female", "shen", 3, ["jlsgsy_diaoling", "jlsgsy_ejue", "jlsgsy_jianmie"], ["wei", "hiddenboss", "bossallowed"]],
     },
     skill: {
       jlsgsy_baonu: {
@@ -2431,8 +2431,9 @@ export default function () {
         enable: "phaseUse",
         trigger: { player: "damageEnd" },
         filter(event, player) {
+          if (event.name == "damage") return event.num > 0;
           if (player.isPhaseUsing()) return !player.hasSkill("jlsgsy_ejue_used", null, false, false);
-          return event.num > 0;
+          return false;
         },
         prompt: "是否发动【扼绝】？",
         prompt2: "摸两张牌并弃置其中一张，然后令所有其他角色弃置点数小于此牌的所有相同类型的牌，最后你从弃牌堆里随机获得每名角色以此法弃置的各一张牌。",
@@ -2498,28 +2499,25 @@ export default function () {
         async content(event, trigger, player) {
           game.setNature(trigger.card, "fire");
           trigger.addCount = false;
-          for (const target of trigger.targets) {
-            target.addTempSkill("jlsgsy_jianmie_dying");
-            target.markSkill("jlsgsy_jianmie_dying");
-          };
         },
+        group: "jlsgsy_jianmie_dying",
         subSkill: {
           dying: {
             sourceSkill: "jlsgsy_jianmie",
             sub: true,
-            intro: {
-              content(storage, player) {
-                return "已被牢大标记";
-              },
+            trigger: { global: "dyingBegin" },
+            filter(event, player) {
+              if (event.player == player) return false;
+              const phase = event.getParent("phase");
+              return phase?.player == player && phase.name == "phase";
             },
-            trigger: { player: "dyingBegin" },
             charlotte: true,
             forced: true,
-            popup: false,
             firstDo: true,
+            logTarget: "player",
             async content(event, trigger, player) {
-              player.chat("孩子们，我坠机了")
-              await player.die(trigger.reason);
+              trigger.player.chat("孩子们，我坠机了")
+              await trigger.player.die(trigger.reason);
             },
           },
         },

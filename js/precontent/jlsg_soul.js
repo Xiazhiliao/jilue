@@ -11507,30 +11507,29 @@ export default function () {
         trigger: { player: "useCardToPlayered" },
         filter(event, player) {
           if (event.targets.length > 1) return false;
-          if (event.card.name != "sha") return false;
-          const targetNext = event.targets[0].getNext(),
-            targetPrevious = event.targets[0].getPrevious();
-          return [targetNext, targetPrevious].filter(current => {
-            if (!current?.isIn()) return false;
-            return current != player;
-          }).length;
+          return event.card.name == "sha";
         },
         async cost(event, trigger, player) {
           const [target] = trigger.targets;
-          const targetNext = target.getNext(),
-            targetPrevious = target.getPrevious();
-          event.result = await player.chooseTarget([1, 2], `###斩月###你可以指定${get.translation(target)}的上下家且不为你的其他角色也成为此【杀】的目标，然后令此【杀】无视防具、不计入次数限制，且造成的伤害改为目标角色一半的体力值（向下取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌`)
-            .set("filterTarget", (card, player, target) => get.event("targetsx").includes(target))
-            .set("ai", target => {
-              const event = get.event(),
-                player = get.player();
-              const card = get.event("cardx");
-              return get.effect(target, card, player, player);
-            })
-            .set("targetsx", [targetNext, targetPrevious].filter(current => {
-              if (!current?.isIn()) return false;
-              return current != player;
-            }))
+          const list = { next: [], previous: [] };
+          let next = target,
+            previous = target;
+          for (let i = 0; i < 2; i++) {
+            next = next.getNext();
+            previous = previous.getPrevious();
+            list.next.add(next);
+            list.previous.add(previous);
+          };
+          if (list.next[0] == player) list.next = [null, null];
+          if (list.previous[0] == player) list.previous = [null, null];
+          const targetsx = list.next.reverse().concat(list.previous);
+          let str = "";
+          if (targetsx.filter(i => i && i != player).unique().length) {
+            str = `可以指定1-2名与${get.translation(target)}相连且不为你的其他角色也成为此【杀】的目标，然后`;
+          }
+          str += "令此【杀】无视防具、不计入次数限制，且造成的伤害改为目标角色一半的体力值（向上取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌";
+          event.result = await player.chooseTarget([0, 2], `###${get.prompt("jlsg_zhanyue")}###${str}`)
+            .set("targetsx", targetsx)
             .set("cardx", (function () {
               if (!trigger.card.storage?.jlsg_zhanyue) {
                 if (!trigger.card.storage) trigger.card.storage = {};
@@ -11538,13 +11537,73 @@ export default function () {
               }
               return trigger.card;
             })())
+            .set("complexTarget", true)
+            .set("filterTarget", (card, player, target) => {
+              if (target == player) return false;
+              const list = get.event("targetsx")
+              if (!list.includes(target)) return false;
+              if (ui.selected.targets.length) {
+                return ui.selected.targets.some(current => {
+                  const curIndex = list.indexOf(current),
+                    tarIndex = list.indexOf(target);
+                  return Math.abs(curIndex - tarIndex) == 1;
+                })
+              }
+              return list.slice(1, 3).includes(target)
+            })
+            .set("ai", target => {
+              const event = get.event(),
+                player = get.player();
+              const card = get.event("cardx");
+              return get.effect(target, card, player, player);
+            })
+            .set("filterOk", () => {
+              const event = get.event(),
+                player = get.player(),
+                target = event.getTrigger().targets[0],
+                card = event.cardx;
+              if (_status.connectMode && !player.isAuto) return true;
+              else if (!_status.auto) return true;
+              return get.effect(target, card, player, player) > 0;
+            })
+            .set("custom", {
+              add: {},
+              replace: {
+                target(target) {
+                  const event = get.event();
+                  if (!event.isMine()) return;
+                  if (target.classList.contains("selectable") == false) return;
+                  if (target.classList.contains("selected")) {
+                    ui.selected.targets.remove(target);
+                    target.classList.remove("selected");
+                    if (_status.multitarget || event.complexSelect || event.complexTarget) {
+                      game.uncheck();
+                      game.check();
+                    }
+                  } else {
+                    target.classList.add("selected");
+                    ui.selected.targets.add(target);
+                  }
+                  game.check();
+                },
+              },
+            })
             .forResult();
+          if (event.result.bool) {
+            event.result.targets.unshift(target);
+            event.result.targets.sortBySeat(_status.currentPhase);
+          }
           delete trigger.card.storage.jlsg_zhanyue;
         },
         async content(event, trigger, player) {
-          const targets = event.targets.slice().sortBySeat();
-          game.log(targets, `成为了`, trigger.card, '的额外目标');
-          trigger.targets.addArray(targets);
+          const targets = event.targets
+            .slice()
+            .removeArray(trigger.targets)
+            .sortBySeat();
+          if (targets.length) {
+            game.log(targets, `成为了`, trigger.card, '的额外目标');
+            trigger.targets.addArray(targets);
+          }
           if (!trigger.card.storage?.jlsg_zhanyue) {
             if (!trigger.card.storage) trigger.card.storage = {};
             trigger.card.storage.jlsg_zhanyue = true;
@@ -11577,9 +11636,8 @@ export default function () {
             forced: true,
             popup: false,
             async content(event, trigger, player) {
-              const num = Math.floor(trigger.player.getHp() / 2);
+              const num = Math.ceil(trigger.player.getHp() / 2);
               if (num > 0) trigger.num = num;
-              else await trigger.num == 0;
             },
           },
         },
@@ -11596,7 +11654,7 @@ export default function () {
                 player: player,
                 card: card,
               })) return;
-              const num = Math.floor(target.getHp() / 2);
+              const num = Math.ceil(target.getHp() / 2);
               if (num > 0) return [1, Math.log(num) / 2, 1, -Math.log(num) / 2];
             },
           }
@@ -11647,7 +11705,7 @@ export default function () {
           sha: {
             sourceSkill: "jlsg_fengtian",
             sub: true,
-            trigger: { global: ["drawAfter", "useCard", "loseAfter", "loseAsyncAfter"] },
+            trigger: { global: ["drawAfter", "useCardAfter", "loseAfter", "loseAsyncAfter"] },
             getIndex(event, player) {
               if (["useCard", "draw"].includes(event.name)) return [event.player];
               if (event.getl && typeof event.getl == "function") {
@@ -11704,10 +11762,17 @@ export default function () {
               noucount: true,
               content(storage, player) {
                 const { players, record } = storage;
-                return `已被${get.translation(players)}封印<br>
+                let str = `已被${get.translation(players)}封印<br>
                   已使用牌：${record.useCard.length ? get.translation(record.useCard) : "无"}<br>
                   摸牌：${record.draw ? "是" : "否"}<br>
-                  弃牌：${record.discard ? "是" : "否"}`
+                  弃牌：${record.discard ? "是" : "否"}`;
+                if (player.storage.skill_blocker?.includes("jlsg_fengtian_effect")) {
+                  const list = player.getSkills(null, false, false).filter(function (i) {
+                    return lib.skill.jlsg_fengtian_effect.skillBlocker(i, player);
+                  });
+                  if (list.length) str += `<br>已失效技能：${get.translation(list)}`;
+                }
+                return str;
               },
             },
             onremove(player, skill) {
@@ -12068,7 +12133,7 @@ export default function () {
       jlsg_liluan_info: "每回合限一次，你可以将任意角色的弃置牌改为其以外的所有角色各随机弃置一张牌，或将任意角色的摸牌改为其以外的所有角色各摸一张牌。",
       jlsgsoul_sp_guanyu: "SP神关羽",
       jlsg_zhanyue: "斩月",
-      jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令其上下家且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向下取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
+      jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令1-2名与其相连且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向上取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
       jlsg_fengtian: "封天",
       jlsg_fengtian_info: "其他角色的回合开始时，你可以弃置一张牌，若如此做，该角色于本回合内首次摸牌、弃牌或使用每种牌名的牌后，你视为对其使用【杀】，若你弃置的牌为【杀】，你令其所有技能失效，上述效果持续至本回合结束或其对你造成伤害。",
     },
