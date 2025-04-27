@@ -2055,7 +2055,6 @@ export default function () {
         },
       },
       jlsgsy_baonuzoushi: {
-        audio: "ext:极略/audio/skill:1",
         animationStr: '既然如此，接下来的表演，将军可要看好了',
         inherit: "jlsgsy_baonu",
         mode: ['identity', 'guozhan', 'boss', 'stone'],
@@ -2149,7 +2148,6 @@ export default function () {
         },
       },
       jlsgsy_baonumenghuo: {
-        audio: "ext:极略/audio/skill:1",
         animationStr: '非要逼我，现出真身！',
         inherit: "jlsgsy_baonu",
         mode: ['identity', 'guozhan', 'boss', 'stone'],
@@ -2395,7 +2393,6 @@ export default function () {
         },
       },
       jlsgsy_baonuzhangchunhua: {
-        audio: "ext:极略/audio/skill:1",
         animationStr: '',
         inherit: "jlsgsy_baonu",
         mode: ['identity', 'guozhan', 'boss', 'stone'],
