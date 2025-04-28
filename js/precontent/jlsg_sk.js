@@ -10154,7 +10154,7 @@ export default function () {
             game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
           );
           skills = skills.filter(skill => {
-            if (lib.filter.skill(skill)) return false;
+            if (lib.filter.skillDisabled(skill)) return false;
             const info = lib.skill[skill];
             if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
             return true;
@@ -10805,21 +10805,18 @@ export default function () {
           player.draw();
           player.storage.jlsg_sanjue = player.storage.jlsg_sanjue || {};
           player.storage.jlsg_sanjue[trigger.card.name] = (player.storage.jlsg_sanjue[trigger.card.name] || 0) + 1;
-          var skills = new Set(
-            jlsg.characterList
-              .filter(c => get.character(c, 1) == 'wu')
-              .map(c => get.character(c)[3])
-              .flat()
-              .filter(s => {
-                if (lib.filter.skillDisabled(s)) return false;
-                return !get.info(s).charlotte;
-              })
-          );
+          var skills = jlsg.characterList
+            .filter(c => get.character(c, 1) == 'wu')
+            .map(c => get.character(c)[3])
+            .flat()
+            .filter(s => {
+              if (lib.filter.skillDisabled(s)) return false;
+              return !get.info(s).charlotte;
+            })
           skills.removeArray((
             game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
           ));
           skills = skills.filter(skill => {
-            if (lib.filter.skill(skill)) return false;
             const info = lib.skill[skill];
             if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
             return true;
@@ -11700,7 +11697,7 @@ export default function () {
           // TODO
           skills.removeArray(player.getSkills(null, false, false));
           skills = skills.filter(skill => {
-            if (lib.filter.skill(skill)) return false;
+            if (lib.filter.skillDisabled(skill)) return false;
             const info = lib.skill[skill];
             if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
             return true
@@ -12370,7 +12367,7 @@ export default function () {
                       game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
                     );
                     skills = skills.filter(skill => {
-                      if (lib.filter.skill(skill)) return false;
+                      if (lib.filter.skillDisabled(skill)) return false;
                       const info = lib.skill[skill];
                       if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
                       return true;
