@@ -11673,6 +11673,7 @@ export default function () {
               const target = get.event("target"),
                 player = get.player(),
                 phaseList = get.event("phaseList");
+              if (get.attitude(player, target) > 0) return 0;
               let value = 3 - get.value(card, player);
               if (!phaseList.length) value -= 3;
               else value += Math.min(3, phaseList.length);
@@ -12134,7 +12135,7 @@ export default function () {
       jlsg_liluan_info: "每回合限一次，你可以将任意角色的弃置牌改为其以外的所有角色各随机弃置一张牌，或将任意角色的摸牌改为其以外的所有角色各摸一张牌。",
       jlsgsoul_sp_guanyu: "SP神关羽",
       jlsg_zhanyue: "斩月",
-      jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令1-2名与其相连且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向上取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
+      jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令至多两名与其相连且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向上取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
       jlsg_fengtian: "封天",
       jlsg_fengtian_info: "其他角色的回合开始时，你可以弃置一张牌，若如此做，该角色于本回合内首次摸牌、弃牌或使用每种牌名的牌后，你视为对其使用【杀】，若你弃置的牌为【杀】，你令其所有技能失效，上述效果持续至本回合结束或其对你造成伤害。",
     },

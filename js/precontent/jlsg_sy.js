@@ -1104,18 +1104,33 @@ export default function () {
         },
         forced: true,
         priority: 100,
-        content: function () {
-          "step 0"
-          game.broadcastAll(ui.clear);
-          player.insertPhase("jlsgsy_fangu");
-          "step 1"
-          var evt = _status.event.getParent("phase");
-          if (evt) {
-            _status.event = evt;
-            _status.event.finish();
-            game.log(_status.currentPhase, "结束了回合");
+        async content(event, trigger, player) {
+          game.broadcastAll(ui.clear)
+          let evt = trigger.getParent(1, true);
+          while (evt?.name != "phaseLoop") {
+            if (evt) {
+              if (evt.name == "phase") {
+                evt.pushHandler("onPhase", (event, option) => {
+                  if (event.step != 13) {
+                    event.step = 13;
+                    game.broadcastAll(function (player) {
+                      player.classList.remove("glow_phase");
+                      if (_status.currentPhase) {
+                        game.log(_status.currentPhase, "结束了回合");
+                        delete _status.currentPhase;
+                      }
+                    }, event.player);
+                  }
+                });
+              }
+              evt.finish();
+              evt._triggered = null;
+              evt = evt.getParent(1, true);
+            }
+            else break;
           }
           _status.paused = false;
+          player.insertPhase(event.name);
         },
         "_priority": 10000,
       },
