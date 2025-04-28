@@ -45,7 +45,7 @@ style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline
 2025.04.27更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SP神关羽</div><br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="orangemm">万魂归寂</div><br>
-&ensp; 修复bug（灵泽、三绝、暴怒）<br>
+&ensp; 修复bug（灵泽、三绝、反骨、扶汉、才遇、枕戈）<br>
 &ensp; 优化（草船借箭、通天）<br>
 &ensp; 武将原画、语音归类<br>
 &ensp; 拆分extension.js文件<br>

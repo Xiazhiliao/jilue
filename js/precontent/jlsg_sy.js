@@ -2505,21 +2505,27 @@ export default function () {
             }
           },
         },
-        trigger: { player: "useCardBefore" },
+        trigger: { player: "useCard1" },
         filter(event, player) {
           if (event.targets.some(target => target.countCards("h") >= player.countCards("h"))) return false;
           return event.card.name == 'sha' && !event.card.hasNature();
         },
         forced: true,
         async content(event, trigger, player) {
+          const original = get.translation(trigger.card);
           game.setNature(trigger.card, "fire");
-          trigger.addCount = false;
+          game.log(player, "将", `#y${original}`, "改为", trigger.card);
+          if (trigger.addCount !== false) {
+            trigger.addCount = false;
+            trigger.player.getStat().card.sha--;
+          }
         },
         group: "jlsgsy_jianmie_dying",
         subSkill: {
           dying: {
             sourceSkill: "jlsgsy_jianmie",
             sub: true,
+            audio: "jlsgsy_jianmie",
             trigger: { global: "dyingBegin" },
             filter(event, player) {
               if (event.player == player) return false;
