@@ -900,7 +900,7 @@ export default function () {
           }
           else {
             await player.discard(player.getDiscardableCards(player, "h"));
-            await trigger.cancel();
+            trigger.cancel();
           }
         },
         ai: {
@@ -10985,9 +10985,8 @@ export default function () {
               return true;
             },
             get content() {
-              let content = lib.skill.guanshi_skill.content;
-              content = content.toString().replaceAll('guanshi_skill', 'jlsg_hanyong_guanshi');
-              if (content.startsWith("content")) content = "function" + content.slice(7);
+              let content = lib.skill.guanshi_skill.content.toString();
+              content = get.pureFunctionStr(content).replaceAll('guanshi_skill', 'jlsg_hanyong_guanshi');
               content = new Function("return " + content)();
               delete this.content;
               this.content = content;
@@ -15143,7 +15142,6 @@ export default function () {
       jlsg_yongji: '勇继',
       jlsg_yongjiBuff: '勇继',
       jlsg_wuzhi: '武志',
-      jlsg_wuzhi2: '武志',
       jlsg_yidu: '异度',
       jlsg_zhubao: '诛暴',
       jlsg_fenji: '奋激',

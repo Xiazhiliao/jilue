@@ -1105,29 +1105,22 @@ export default function () {
         forced: true,
         priority: 100,
         async content(event, trigger, player) {
-          game.broadcastAll(ui.clear)
-          let evt = trigger.getParent(1, true);
-          while (evt?.name != "phaseLoop") {
-            if (evt) {
-              if (evt.name == "phase") {
-                evt.pushHandler("onPhase", (event, option) => {
-                  if (event.step != 13) {
-                    event.step = 13;
-                    game.broadcastAll(function (player) {
-                      player.classList.remove("glow_phase");
-                      if (_status.currentPhase) {
-                        game.log(_status.currentPhase, "结束了回合");
-                        delete _status.currentPhase;
-                      }
-                    }, event.player);
-                  }
-                });
+          game.broadcastAll(ui.clear);
+          let evt = _status.event.getParent("phase", true);
+          if (evt) {
+            evt.pushHandler("onPhase", (event, option) => {
+              if (event.step < 10 || event.num < event.phaseList.length) {
+                //也不知道为啥能触发结束阶段的技能，还原就是了
+                if (!game.getGlobalHistory("everything", evt => {
+                  return evt.name == "phaseJieshu" && evt.player == event.player;
+                }).length && event.phaseList.some(i => i.startsWith("phaseJieshu"))) {
+                  event.player.phaseJieshu();
+                }
+                event.step = 10;
+                event.num = event.phaseList.length;
               }
-              evt.finish();
-              evt._triggered = null;
-              evt = evt.getParent(1, true);
-            }
-            else break;
+            });
+            _status.event = evt;
           }
           _status.paused = false;
           player.insertPhase(event.name);

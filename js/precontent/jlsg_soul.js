@@ -7090,8 +7090,8 @@ export default function () {
             if (!event.source || event.source == player) return false;
           }
           else if (event.name == 'changeSkills') {
-            if (!event.removeSkill.length) return false;
             if (event.getParent().name == 'jlsg_linglong') return false;
+            if (!event.removeSkill.length) return false;
           }
           else {
             if (event.getParent().player == player) return false;
@@ -7157,7 +7157,7 @@ export default function () {
           }
           await target.removeSkills(removeSkill);
           if (trigger.name != 'changeSkills') {
-            if (target == player) await trigger.cancel();
+            if (target == player) trigger.cancel();
             else trigger.player = target;
             return;
           }
