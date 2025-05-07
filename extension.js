@@ -1,8 +1,8 @@
 // game.import(name: "极略"
 import { lib, game, ui, get, ai, _status } from '../../noname.js';
-import {precontent} from './js/precontent/index.js';
-import {content} from './js/content.js';
-import {config} from './js/config.js';
+import { precontent } from './js/precontent/index.js';
+import { content } from './js/content.js';
+import { config } from './js/config.js';
 let extensionPackage = {
   name: "极略",
   connect: true,
@@ -34,7 +34,7 @@ onclick="if (lib.jlsg) lib.jlsg.showRepoElement(this)"></img>
     diskURL: "",
     forumURL: "",
     mirrorURL: "https://github.com/xiaoas/jilue",
-    version: "2.7.0427",
+    version: "2.7.0508",
     changelog: `
 <a onclick="if (jlsg) jlsg.showRepo()" style="cursor: pointer;text-decoration: underline;">
 Visit Repository</a><br>
@@ -42,6 +42,10 @@ Visit Repository</a><br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
 汇报bug点我</span><br>
+2025.05.08更新<br>
+&ensp; 修复bug（刚直、玲珑、武志、精策、扼绝）<br>
+&ensp; 优化技能（悍勇、反骨、魔兽）<br>
+<span style="font-size: large;">历史：</span><br>
 2025.04.27更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SP神关羽</div><br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="orangemm">万魂归寂</div><br>
@@ -49,7 +53,6 @@ style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline
 &ensp; 优化（草船借箭、通天）<br>
 &ensp; 武将原画、语音归类<br>
 &ensp; 拆分extension.js文件<br>
-<span style="font-size: large;">历史：</span><br>
 2025.04.18更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="woodmm">SK岑昏</div><br>
 &ensp; 修复bug（矫诏、矢北、星舞、逐星、兴汉）<br>
