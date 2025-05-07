@@ -1106,21 +1106,34 @@ export default function () {
         priority: 100,
         async content(event, trigger, player) {
           game.broadcastAll(ui.clear);
-          let evt = _status.event.getParent("phase", true);
-          if (evt) {
-            evt.pushHandler("onPhase", (event, option) => {
-              if (event.step < 10 || event.num < event.phaseList.length) {
-                //也不知道为啥能触发结束阶段的技能，还原就是了
-                if (!game.getGlobalHistory("everything", evt => {
-                  return evt.name == "phaseJieshu" && evt.player == event.player;
-                }).length && event.phaseList.some(i => i.startsWith("phaseJieshu"))) {
-                  event.player.phaseJieshu();
-                }
-                event.step = 10;
-                event.num = event.phaseList.length;
+          let evt = trigger.getParent(1, true);
+          while (evt?.name != "phaseLoop") {
+            if (evt) {
+              if (evt.name == "phase") {
+                evt.pushHandler("onPhase", (event, option) => {
+                  if (event.step != 13) {
+                    event.step = 13;
+                    game.broadcastAll(function (player) {
+                      player.classList.remove("glow_phase");
+                      if (_status.currentPhase) {
+                        game.log(_status.currentPhase, "结束了回合");
+                        delete _status.currentPhase;
+                      }
+                    }, event.player);
+                  }
+                });
               }
-            });
-            _status.event = evt;
+              evt.finish();
+              evt._triggered = null;
+              evt = evt.getParent(1, true);
+            }
+            else break;
+          }
+          //也不知道为啥能触发结束阶段的技能，还原就是了
+          //沟槽的，只触发结束阶段，而且能反复触发
+          evt = trigger.getParent("phase", true, true);
+          if (evt.phaseList.some(i => i.startsWith("phaseJieshu"))) {
+            await evt.player.phaseJieshu();
           }
           _status.paused = false;
           player.insertPhase(event.name);
@@ -2256,7 +2269,7 @@ export default function () {
           return [`ext:极略/audio/skill/jlsgsy_moshou${num}.mp3`];
         },
         async cost(event, trigger, player) {
-          let num = [1, 2, 3].remove(player.storage.jlsgsy_moshou).randomGet();
+          let num = [1, 2, 3].remove(player.storage.jlsgsy_moshou_record).randomGet();
           event.result = {
             bool: true,
             cost_data: { num },
@@ -2456,6 +2469,7 @@ export default function () {
             .set("filterCard", card => get.event("cardx").includes(card))
             .set("ai", card => (8 - get.value(card)) * (14 - get.number(card)))
             .set("cardx", draw)
+          if (!discard?.cards?.length) return;
           const cardx = discard.cards[0];
           const targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
           player.line(targets);
