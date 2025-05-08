@@ -11027,8 +11027,9 @@ export default function () {
                     for (const target of result.targets) {
                       const loseList = target.getSkills(null, false, false).removeArray(target.getStockSkills());
                       if (loseList.length) await target.removeSkills(loseList.randomGet());
-                      const addList = lib.skill.jlsg_lingze.skills;
+                      const addList = lib.skill.jlsg_lingze.skills(target);
                       const skills = addList.filter(skill => {
+                        if (loseList.includes(skill)) return false;
                         const info = lib.skill[skill];
                         if (info.ai?.combo) return target.hasSkill(info.ai?.combo, null, false, false);
                         return true;
