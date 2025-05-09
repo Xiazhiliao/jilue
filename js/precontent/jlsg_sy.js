@@ -2391,7 +2391,13 @@ export default function () {
               let key = lib.skill.jlsg_qianyuan.translate[trigger.name];
               const { str } = lib.skill.jlsg_qianyuan.getInfo(trigger, player, key);
               if (trigger.name == "changeSkills") trigger.removeSkill = [];
-              else if (trigger.name == "lose") trigger.cards = trigger.cards.filter(i => get.owner(i) != player);
+              else if (trigger.name == "lose") {
+                trigger.cards = trigger.cards.filter(card => {
+                  if (get.owner(card) == player) return false;
+                  return !["h", "e"].includes(get.position(card));
+                });
+                if (!trigger.cards.length) trigger.cancel();
+              }
               else trigger.cancel();
               game.log(player, "取消了", `#y${str}`);
             },
@@ -2425,14 +2431,21 @@ export default function () {
         filter(event, player) {
           const evt = event.getParent("phaseDiscard");
           if (evt?.player == event.player && evt?.name == "phaseDiscard") return false;
-          return event.player != player && event.player.isIn() && event.type == "discard"
+          if (event.player == player || !event.player.isIn() || event.type != "discard") return false;
+          return event.cards.some(card => {
+            if (get.owner(card) != event.player) return false;
+            return ["h", "e"].includes(get.position(card));
+          });
         },
         async cost(event, trigger, player) {
           event.result = await player.chooseBool(`###${get.prompt("jlsgsy_diaoling", trigger.player)}###令${get.translation(trigger.player)}将此次弃牌改为失去等量体力`)
             .set("ai", (event, player) => {
               const trigger = event.getTrigger();
               const target = trigger.player,
-                cards = trigger.cards.filter(card => get.owner(card) == target);
+                cards = trigger.cards.filter(card => {
+                  if (get.owner(card) != target) return false;
+                  return ["h", "e"].includes(get.position(card));
+                });
               return get.value(cards, target)
                 < get.effect(target, { name: "losehp" }, player, player) * cards.length / 2;
             })
@@ -2442,8 +2455,12 @@ export default function () {
         async content(event, trigger, player) {
           const { player: target } = trigger;
           game.log(player, "取消了", target, "的弃牌");
-          const cards = trigger.cards.filter(i => get.owner(i) == target);
+          const cards = trigger.cards.filter(card => {
+            if (get.owner(card) != target) return false;
+            return ["h", "e"].includes(get.position(card));
+          });
           trigger.cards.removeArray(cards);
+          if (!trigger.cards.length) trigger.cancel();
           await target.loseHp(cards.length);
         },
       },
