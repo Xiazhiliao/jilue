@@ -900,7 +900,7 @@ export default function () {
           }
           else {
             await player.discard(player.getDiscardableCards(player, "h"));
-            await trigger.cancel();
+            trigger.cancel();
           }
         },
         ai: {
@@ -5427,7 +5427,7 @@ export default function () {
             })
               .set('card', card)
               .set('ai', function (target) {
-                var now = _status.currentPhase.next;
+                var now = _status.currentPhase?.next;
                 for (var i = 0; i < 10; i++) {
                   if (get.attitude(player, now) < 0) return target == now;
                   else {
@@ -6448,7 +6448,8 @@ export default function () {
       jlsg_wuzhi: {
         audio: "ext:极略/audio/skill:1",
         forced: true,
-        trigger: { player: 'phaseDiscardEnd' },
+        priority: 2,
+        trigger: { player: 'phaseJieshuBegin' },
         filter: function (event, player) {
           let shaFulfilled = () => {
             var shaTemplate = { name: 'sha', isCard: true };
@@ -6489,7 +6490,7 @@ export default function () {
         },
         content: function () {
           var suits = trigger.getl(player).hs.map(card => get.suit(card));
-          var num = _status.currentPhase.countCards('h',
+          var num = _status.currentPhase?.countCards('h',
             (card) => suits.includes(get.suit(card))
           );
           player.draw(num);
@@ -6499,14 +6500,14 @@ export default function () {
           effect: {
             target: function (card, player, target, result2, islink) {
               if (_status.currentPhase == target) return;
-              if (card.name == 'guohe' || card.name == 'liuxinghuoyu') return 1 - 0.1 * _status.currentPhase.countCards('h');
+              if (card.name == 'guohe' || card.name == 'liuxinghuoyu') return 1 - 0.1 * _status.currentPhase?.countCards('h');
             }
           },
           noh: true,
           skillTagFilter: function (player, tag) {
             if (tag == 'noh') {
               if (_status.currentPhase == player) return false;
-              return _status.currentPhase.countCards('h') > 4;
+              return _status.currentPhase?.countCards('h') > 4;
             }
           }
         }
@@ -10154,7 +10155,7 @@ export default function () {
             game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
           );
           skills = skills.filter(skill => {
-            if (lib.filter.skill(skill)) return false;
+            if (lib.filter.skillDisabled(skill)) return false;
             const info = lib.skill[skill];
             if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
             return true;
@@ -10805,21 +10806,18 @@ export default function () {
           player.draw();
           player.storage.jlsg_sanjue = player.storage.jlsg_sanjue || {};
           player.storage.jlsg_sanjue[trigger.card.name] = (player.storage.jlsg_sanjue[trigger.card.name] || 0) + 1;
-          var skills = new Set(
-            jlsg.characterList
-              .filter(c => get.character(c, 1) == 'wu')
-              .map(c => get.character(c)[3])
-              .flat()
-              .filter(s => {
-                if (lib.filter.skillDisabled(s)) return false;
-                return !get.info(s).charlotte;
-              })
-          );
+          var skills = jlsg.characterList
+            .filter(c => get.character(c, 1) == 'wu')
+            .map(c => get.character(c)[3])
+            .flat()
+            .filter(s => {
+              if (lib.filter.skillDisabled(s)) return false;
+              return !get.info(s).charlotte;
+            })
           skills.removeArray((
             game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
           ));
           skills = skills.filter(skill => {
-            if (lib.filter.skill(skill)) return false;
             const info = lib.skill[skill];
             if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
             return true;
@@ -10988,9 +10986,8 @@ export default function () {
               return true;
             },
             get content() {
-              let content = lib.skill.guanshi_skill.content;
-              content = content.toString().replaceAll('guanshi_skill', 'jlsg_hanyong_guanshi');
-              if (content.startsWith("content")) content = "function" + content.slice(7);
+              let content = lib.skill.guanshi_skill.content.toString();
+              content = get.pureFunctionStr(content).replaceAll('guanshi_skill', 'jlsg_hanyong_guanshi');
               content = new Function("return " + content)();
               delete this.content;
               this.content = content;
@@ -11700,7 +11697,7 @@ export default function () {
           // TODO
           skills.removeArray(player.getSkills(null, false, false));
           skills = skills.filter(skill => {
-            if (lib.filter.skill(skill)) return false;
+            if (lib.filter.skillDisabled(skill)) return false;
             const info = lib.skill[skill];
             if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
             return true
@@ -12370,7 +12367,7 @@ export default function () {
                       game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), [])
                     );
                     skills = skills.filter(skill => {
-                      if (lib.filter.skill(skill)) return false;
+                      if (lib.filter.skillDisabled(skill)) return false;
                       const info = lib.skill[skill];
                       if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
                       return true;
@@ -14003,7 +14000,7 @@ export default function () {
           return [list2, list];
         },
         filter(event, player) {
-          if (!player.isPhaseUsing()) return false;
+          if (!player.isPhaseUsing(true)) return false;
           let checkList = lib.skill.jlsg_jingce.checkList(event)[1];
           return (checkList ?? []).filter(i => i).length;
         },
@@ -15146,7 +15143,6 @@ export default function () {
       jlsg_yongji: '勇继',
       jlsg_yongjiBuff: '勇继',
       jlsg_wuzhi: '武志',
-      jlsg_wuzhi2: '武志',
       jlsg_yidu: '异度',
       jlsg_zhubao: '诛暴',
       jlsg_fenji: '奋激',
@@ -15392,7 +15388,7 @@ export default function () {
       jlsg_zhubao_info: '你的回合内，当其他角色失去手牌后，你可以摸X张牌（X为你手牌中花色与这些牌相同的数量）。每回合对每名其他角色限触发一次。',
       // jlsg_zhubao_append: '<span style="font-family: yuanli">每次至多摸十张。</span>',
       jlsg_yongji_info: '锁定技，当你于出牌阶段使用【杀】造成伤害后，你摸X张牌（X为你已损失的体力值且至多为3），且本回合可额外使用一张【杀】。',
-      jlsg_wuzhi_info: '锁定技，弃牌阶段结束后，若你本回合内【杀】的使用次数未达到上限，你受到一点无来源伤害并从牌堆中获得一张【杀】',
+      jlsg_wuzhi_info: '锁定技，结束阶段，若你本回合内【杀】的使用次数未达到上限，你受到一点无来源伤害并从牌堆中获得一张【杀】',
       jlsg_wusheng_info: '你可以将一张红色牌当【杀】使用或打出。',
       jlsg_zhoufu_info: '其他角色的回合开始时，你可以弃置一张手牌，令其判定，若结果为黑桃，你令其所有非Charlotte技失效直到回合结束；若结果为梅花，其弃置两张牌。',
       jlsg_yingbing_info: '每回合限一次，当一名其他角色的黑色判定牌生效后，你可以视为对其使用一张【杀】。',

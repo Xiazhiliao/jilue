@@ -7090,8 +7090,8 @@ export default function () {
             if (!event.source || event.source == player) return false;
           }
           else if (event.name == 'changeSkills') {
-            if (!event.removeSkill.length) return false;
             if (event.getParent().name == 'jlsg_linglong') return false;
+            if (!event.removeSkill.length) return false;
           }
           else {
             if (event.getParent().player == player) return false;
@@ -7157,7 +7157,7 @@ export default function () {
           }
           await target.removeSkills(removeSkill);
           if (trigger.name != 'changeSkills') {
-            if (target == player) await trigger.cancel();
+            if (target == player) trigger.cancel();
             else trigger.player = target;
             return;
           }
@@ -9139,7 +9139,13 @@ export default function () {
           let key = lib.skill.jlsg_qianyuan.translate[trigger.name];
           const { num, nature, str } = lib.skill.jlsg_qianyuan.getInfo(trigger, player, key);
           if (trigger.name == "changeSkills") trigger.removeSkill = [];
-          else if (trigger.name == "lose") trigger.cards = trigger.cards.filter(i => get.owner(i) != player);
+          else if (trigger.name == "lose") {
+            trigger.cards = trigger.cards.filter(card => {
+              if (get.owner(card) == player) return false;
+              return !["h", "e"].includes(get.position(card));
+            });
+            if (!trigger.cards.length) trigger.cancel();
+          }
           else trigger.cancel();
           if (player.storage.jlsg_qianyuan[key] === true) {
             event.getParent().jlsg_qianyuan = true;
@@ -9203,8 +9209,14 @@ export default function () {
             str = "";
           if (key == "discard") {
             if (event) {
-              bool = event.type == "discard" && event.cards.some(i => get.owner(i) == player);
-              if (!num) num = event.cards.filter(i => get.owner(i) == player).length;
+              bool = event.type == "discard" && event.cards.some(card => {
+                if (get.owner(card) != event.player) return false;
+                return ["h", "e"].includes(get.position(card));
+              });
+              if (!num) num = event.cards.filter(card => {
+                if (get.owner(card) != event.player) return false;
+                return ["h", "e"].includes(get.position(card));
+              }).length;
             }
             str = `弃置${num}张牌`;
           } else if (key == "loseSkill") {
@@ -11027,8 +11039,9 @@ export default function () {
                     for (const target of result.targets) {
                       const loseList = target.getSkills(null, false, false).removeArray(target.getStockSkills());
                       if (loseList.length) await target.removeSkills(loseList.randomGet());
-                      const addList = lib.skill.jlsg_lingze.skills;
+                      const addList = lib.skill.jlsg_lingze.skills(target);
                       const skills = addList.filter(skill => {
+                        if (loseList.includes(skill)) return false;
                         const info = lib.skill[skill];
                         if (info.ai?.combo) return target.hasSkill(info.ai?.combo, null, false, false);
                         return true;
@@ -11461,12 +11474,22 @@ export default function () {
         trigger: { global: ["loseBefore", "drawBefore"] },
         usable: 1,
         filter(event, player) {
-          if (event.name == "lose") return event.type == "discard";
+          if (!event.player.isIn()) return false;
+          if (event.name == "lose") {
+            if (event.type != "discard") return false;
+            return event.cards.some(card => {
+              if (get.owner(card) != event.player) return false;
+              return ["h", "e"].includes(get.position(card));
+            });
+          }
           else return event.num > 0;
         },
         async cost(event, trigger, player) {
           const { player: target } = trigger,
-            num = trigger.name == "lose" ? trigger.cards.filter(card => get.owner(card) == target).length : trigger.num;
+            num = trigger.name == "lose" ? trigger.cards.filter(card => {
+              if (get.owner(card) == target) return false;
+              return !["h", "e"].includes(get.position(card));
+            }).length : trigger.num;
           const prompt = `${get.translation(target)}即将${trigger.name == "lose" ? "弃置" : "摸"}${get.cnNumber(num)}张牌，是否取消此操作改为其以外的角色各${trigger.name == "lose" ? "随机弃置" : "摸"}一张牌？`;
           event.result = await player.chooseBool()
             .set("prompt", get.prompt("jlsg_liluan", target))
@@ -11487,13 +11510,17 @@ export default function () {
           const { player: target } = trigger,
             targets = game.filterPlayer(current => current != target).sortBySeat(_status.currentPhase);
           if (trigger.name == "lose") {
-            trigger.cards = trigger.cards.filter(i => get.owner(i) != target);
+            game.log(player, "取消了", target, "的弃牌");
+            trigger.cards = trigger.cards.filter(card => {
+              if (get.owner(card) == target) return false;
+              return !["h", "e"].includes(get.position(card))
+            });
+            if (!trigger.cards.length) trigger.cancel();
             const lose_list = [];
             for (let current of targets) {
-              const cards = current.getDiscardableCards(current, "he")
+              const cards = current.getDiscardableCards(current, "he");
               if (cards.length) lose_list.add([current, cards.randomGets(1)]);
             };
-            game.log(player, "取消了", target, "的弃牌");
             await game.loseAsync({ lose_list }).setContent("discardMultiple");
           } else {
             trigger.cancel();
@@ -11673,6 +11700,7 @@ export default function () {
               const target = get.event("target"),
                 player = get.player(),
                 phaseList = get.event("phaseList");
+              if (get.attitude(player, target) > 0) return 0;
               let value = 3 - get.value(card, player);
               if (!phaseList.length) value -= 3;
               else value += Math.min(3, phaseList.length);
@@ -11777,7 +11805,7 @@ export default function () {
               },
             },
             onremove(player, skill) {
-              player.clearMark(skill);
+              delete player.storage[skill];
               player.removeSkillBlocker(skill);
             },
             skillBlocker(skill) {
@@ -12134,7 +12162,7 @@ export default function () {
       jlsg_liluan_info: "每回合限一次，你可以将任意角色的弃置牌改为其以外的所有角色各随机弃置一张牌，或将任意角色的摸牌改为其以外的所有角色各摸一张牌。",
       jlsgsoul_sp_guanyu: "SP神关羽",
       jlsg_zhanyue: "斩月",
-      jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令1-2名与其相连且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向上取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
+      jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令至多两名与其相连且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向上取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
       jlsg_fengtian: "封天",
       jlsg_fengtian_info: "其他角色的回合开始时，你可以弃置一张牌，若如此做，该角色于本回合内首次摸牌、弃牌或使用每种牌名的牌后，你视为对其使用【杀】，若你弃置的牌为【杀】，你令其所有技能失效，上述效果持续至本回合结束或其对你造成伤害。",
     },

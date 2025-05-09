@@ -1104,18 +1104,39 @@ export default function () {
         },
         forced: true,
         priority: 100,
-        content: function () {
-          "step 0"
+        async content(event, trigger, player) {
           game.broadcastAll(ui.clear);
-          player.insertPhase("jlsgsy_fangu");
-          "step 1"
-          var evt = _status.event.getParent("phase");
-          if (evt) {
-            _status.event = evt;
-            _status.event.finish();
-            game.log(_status.currentPhase, "结束了回合");
+          let evt = trigger.getParent(1, true);
+          while (evt?.name != "phaseLoop") {
+            if (evt) {
+              if (evt.name == "phase") {
+                evt.pushHandler("onPhase", (event, option) => {
+                  if (event.step != 13) {
+                    event.step = 13;
+                    game.broadcastAll(function (player) {
+                      player.classList.remove("glow_phase");
+                      if (_status.currentPhase) {
+                        game.log(_status.currentPhase, "结束了回合");
+                        delete _status.currentPhase;
+                      }
+                    }, event.player);
+                  }
+                });
+              }
+              evt.finish();
+              evt._triggered = null;
+              evt = evt.getParent(1, true);
+            }
+            else break;
+          }
+          //也不知道为啥能触发结束阶段的技能，还原就是了
+          //沟槽的，只触发结束阶段，而且能反复触发
+          evt = trigger.getParent("phase", true, true);
+          if (evt.phaseList.some(i => i.startsWith("phaseJieshu"))) {
+            await evt.player.phaseJieshu();
           }
           _status.paused = false;
+          player.insertPhase(event.name);
         },
         "_priority": 10000,
       },
@@ -2248,7 +2269,7 @@ export default function () {
           return [`ext:极略/audio/skill/jlsgsy_moshou${num}.mp3`];
         },
         async cost(event, trigger, player) {
-          let num = [1, 2, 3].remove(player.storage.jlsgsy_moshou).randomGet();
+          let num = [1, 2, 3].remove(player.storage.jlsgsy_moshou_record).randomGet();
           event.result = {
             bool: true,
             cost_data: { num },
@@ -2370,7 +2391,13 @@ export default function () {
               let key = lib.skill.jlsg_qianyuan.translate[trigger.name];
               const { str } = lib.skill.jlsg_qianyuan.getInfo(trigger, player, key);
               if (trigger.name == "changeSkills") trigger.removeSkill = [];
-              else if (trigger.name == "lose") trigger.cards = trigger.cards.filter(i => get.owner(i) != player);
+              else if (trigger.name == "lose") {
+                trigger.cards = trigger.cards.filter(card => {
+                  if (get.owner(card) == player) return false;
+                  return !["h", "e"].includes(get.position(card));
+                });
+                if (!trigger.cards.length) trigger.cancel();
+              }
               else trigger.cancel();
               game.log(player, "取消了", `#y${str}`);
             },
@@ -2404,14 +2431,21 @@ export default function () {
         filter(event, player) {
           const evt = event.getParent("phaseDiscard");
           if (evt?.player == event.player && evt?.name == "phaseDiscard") return false;
-          return event.player != player && event.player.isIn() && event.type == "discard"
+          if (event.player == player || !event.player.isIn() || event.type != "discard") return false;
+          return event.cards.some(card => {
+            if (get.owner(card) != event.player) return false;
+            return ["h", "e"].includes(get.position(card));
+          });
         },
         async cost(event, trigger, player) {
           event.result = await player.chooseBool(`###${get.prompt("jlsgsy_diaoling", trigger.player)}###令${get.translation(trigger.player)}将此次弃牌改为失去等量体力`)
             .set("ai", (event, player) => {
               const trigger = event.getTrigger();
               const target = trigger.player,
-                cards = trigger.cards.filter(card => get.owner(card) == target);
+                cards = trigger.cards.filter(card => {
+                  if (get.owner(card) != target) return false;
+                  return ["h", "e"].includes(get.position(card));
+                });
               return get.value(cards, target)
                 < get.effect(target, { name: "losehp" }, player, player) * cards.length / 2;
             })
@@ -2421,8 +2455,12 @@ export default function () {
         async content(event, trigger, player) {
           const { player: target } = trigger;
           game.log(player, "取消了", target, "的弃牌");
-          const cards = trigger.cards.filter(i => get.owner(i) == target);
+          const cards = trigger.cards.filter(card => {
+            if (get.owner(card) != target) return false;
+            return ["h", "e"].includes(get.position(card));
+          });
           trigger.cards.removeArray(cards);
+          if (!trigger.cards.length) trigger.cancel();
           await target.loseHp(cards.length);
         },
       },
@@ -2448,6 +2486,7 @@ export default function () {
             .set("filterCard", card => get.event("cardx").includes(card))
             .set("ai", card => (8 - get.value(card)) * (14 - get.number(card)))
             .set("cardx", draw)
+          if (!discard?.cards?.length) return;
           const cardx = discard.cards[0];
           const targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
           player.line(targets);
@@ -2490,21 +2529,27 @@ export default function () {
             }
           },
         },
-        trigger: { player: "useCardBefore" },
+        trigger: { player: "useCard1" },
         filter(event, player) {
           if (event.targets.some(target => target.countCards("h") >= player.countCards("h"))) return false;
           return event.card.name == 'sha' && !event.card.hasNature();
         },
         forced: true,
         async content(event, trigger, player) {
+          const original = get.translation(trigger.card);
           game.setNature(trigger.card, "fire");
-          trigger.addCount = false;
+          game.log(player, "将", `#y${original}`, "改为", trigger.card);
+          if (trigger.addCount !== false) {
+            trigger.addCount = false;
+            trigger.player.getStat().card.sha--;
+          }
         },
         group: "jlsgsy_jianmie_dying",
         subSkill: {
           dying: {
             sourceSkill: "jlsgsy_jianmie",
             sub: true,
+            audio: "jlsgsy_jianmie",
             trigger: { global: "dyingBegin" },
             filter(event, player) {
               if (event.player == player) return false;
