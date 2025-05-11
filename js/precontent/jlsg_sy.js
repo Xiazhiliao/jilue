@@ -1176,80 +1176,212 @@ export default function () {
         usable: 1,
         selectTarget: 2,
         multitarget: true,
+        complexTarget: true,
         filterTarget(card, player, target) {
           if (ui.selected.targets.length) {
-            var from = ui.selected.targets[0];
-            var js = from.getCards('j');
-            for (var i = 0; i < js.length; i++) {
-              if (target.canAddJudge(js[i])) return true;
-            }
+            const from = ui.selected.targets[0];
+            const js = from.getVCards('j');
+            for (let i of js) {
+              if (target.canAddJudge(i)) return true;
+            };
             if (target.isMin()) return false;
-            var es = from.getCards('e');
-            for (var i = 0; i < es.length; i++) {
-              if (target.isEmpty(get.subtype(es[i]))) return true;
+            const es = from.getVCards('e');
+            for (let i of es) {
+              if (target.isEmpty(get.subtype(i))) return true;
             }
-            return from.countCards('h') != 0;
+            return from.countCards('h') > 0;
           }
-          else {
-            return target.countCards('hej') > 0;
-          }
+          return target.countVCards('ej') > 0 || target.countCards('h') > 0;
         },
         targetprompt: ['被移走', '移动目标'],
-        content: function () {
-          "step 0"
-          player.choosePlayerCard('hej', true, function (button) {
-            var player = _status.event.player;
-            var targets0 = _status.event.targets0;
-            var targets1 = _status.event.targets1;
-            if (get.attitude(player, targets0) > 0 && get.attitude(player, targets1) < 0) {
-              if (get.position(button.link) == 'j') return 12;
-              if (get.value(button.link, targets0) < 0 && get.effect(targets1, button.link, player, targets1) > 0) return 10;
-              return 0;
-            }
-            else {
-              if (get.position(button.link) == 'j') return -10;
-              return get.value(button.link) * get.effect(targets1, button.link, player, targets1);
-            }
-          }, targets[0]).set('targets0', targets[0]).set('targets1', targets[1]).set('filterButton', function (button) {
-            var targets1 = _status.event.targets1;
-            if (get.position(button.link) == 'e') {
-              return targets1.isEmpty(get.subtype(button.link));
-            }
-            return true;
-          });
-          "step 1"
+        async content(event, trigger, player) {
+          const [from, to] = event.targets;
+          const { result } = await player.choosePlayerCard('hej', true, from)
+            .set('filterButton', function (button) {
+              const to = _status.event.to;
+              if (get.position(button.link) == 'e') {
+                return to.isEmpty(get.subtype(button.link));
+              }
+              return true;
+            })
+            .set("ai", function (button) {
+              const player = _status.event.player,
+                from = _status.event.from,
+                to = _status.event.to;
+              if (get.attitude(player, from) > 0 && get.attitude(player, to) < 0) {
+                if (get.position(button.link) == 'j') return 12;
+                if (get.value(button.link, from) < 0 && get.effect(to, button.link, player, to) > 0) return 10;
+                return 0;
+              }
+              else {
+                if (get.position(button.link) == 'j') return -10;
+                return get.value(button.link) * get.effect(to, button.link, player, to);
+              }
+            })
+            .set('from', from)
+            .set('to', to)
+            .setContent(lib.skill.jlsgsy_chanxian.choosePlayerCard);
           if (result.bool && result.links.length) {
-            var link = result.links[0];
-            if (get.position(link) == 'h') {
-              event.targets[1].gain(link, event.targets[0], 'giveAuto');
-              return;
+            const link = result.links[0];
+            if (get.position(link) != "h") {
+              if (from.getVCards("e").includes(link)) {
+                if (!link.cards?.length) from.removeVirtualEquip(link);
+                await to.equip(link);
+              } else if (from.getVCards("j").includes(link)) {
+                if (!link.cards?.length) from.removeVirtualJudge(link);
+                await to.addJudge(link, link?.cards);
+              }
+              if (link.cards?.length) from.$give(link.cards, to, false);
+              game.log(from, "的", link, "被移动给了", to);
+            } else {
+              await to.gain(link, from, "giveAuto");
             }
-            if (get.position(link) == 'e') {
-              event.targets[1].equip(link);
+            await game.delay();
+            const juedou = get.autoViewAs({ name: "juedou", isCard: true }, []);
+            if (from.canUse(juedou, to, false)) {
+              await from.useCard(juedou, to, "noai");
+              const damaged = game.getGlobalHistory("changeHp", evt => {
+                if (evt.parent?.name != "damage") return false;
+                return evt.parent.card?.name == "juedou" && evt.getParent(4) == event;
+              })
+                .map(evt => evt.player)
+                .flat()
+                .sortBySeat(_status.currentPhase);
+              for (let current of damaged) {
+                if (!current.countGainableCards(player, 'he')) continue;
+                await player.gainPlayerCard(current, true);
+              };
             }
-            else if (link.viewAs) {
-              event.targets[1].addJudge({ name: link.viewAs }, [link]);
-            }
-            else {
-              event.targets[1].addJudge(link);
-            }
-            event.targets[0].$give(link, event.targets[1], false);
-            game.log(event.targets[0], '的', link, '被移动给了', event.targets[1])
-            game.delay();
           }
-          "step 2"
-          event.juedou = event.targets[0].useCard(event.targets[1], { name: 'juedou', isCard: true }, 'noai');
-          "step 3"
-          let damaged = game.filterPlayer(p => p.getHistory('damage', e => {
-            return e.card === event.juedou.card;
-          }).length);
-          damaged.sortBySeat();
-          for (let p of damaged) {
-            if (!p.countGainableCards(player, 'he')) {
-              continue;
-            }
-            player.gainPlayerCard(p, true);
+        },
+        choosePlayerCard: function () {
+          "step 0";
+          if (!event.dialog) event.dialog = ui.create.dialog("hidden");
+          else if (!event.isMine()) {
+            event.dialog.style.display = "none";
           }
+          if (event.prompt) {
+            event.dialog.add(event.prompt);
+          } else {
+            event.dialog.add("选择" + get.translation(target) + "的一张牌");
+          }
+          if (event.prompt2) {
+            event.dialog.addText(event.prompt2);
+          }
+          let expand_length = 0;
+          const select = get.select(event.selectButton);
+          const directFilter = event.forced && typeof event.filterOk != "function" && typeof event.selectButton != "function" && event.filterButton == lib.filter.all;
+          let directh = !lib.config.unauto_choose && !event.isOnline() && select[0] == select[1] && (!event.complexSelect || select[1] === 1);
+
+          for (var i = 0; i < event.position.length; i++) {
+            if (event.position[i] == "h") {
+              var hs = target.getCards("h");
+              if (hs.length) {
+                expand_length += Math.ceil(hs.length / 6);
+                var title = event.dialog.add('<div class="text center" style="margin: 0px;">手牌区</div>');
+                title.style.margin = "0px";
+                title.style.padding = "0px";
+                hs.randomSort();
+                if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
+                  event.dialog.add(hs);
+                  directh = false;
+                } else {
+                  var shown = hs.filter(card => get.is.shownCard(card));
+                  if (shown.length) {
+                    var hidden = hs.filter(card => !shown.includes(card));
+                    var buttons = ui.create.div(".buttons", event.dialog.content);
+                    event.dialog.buttons = event.dialog.buttons.concat(ui.create.buttons(shown, "card", buttons));
+                    event.dialog.buttons = event.dialog.buttons.concat(ui.create.buttons(hidden, "blank", buttons));
+                    if (event.dialog.forcebutton !== false) event.dialog.forcebutton = true;
+                    if (event.dialog.buttons.length > 3) {
+                      event.dialog.classList.remove("forcebutton-auto");
+                    } else if (!event.dialog.noforcebutton) {
+                      event.dialog.classList.add("forcebutton-auto");
+                    }
+                    directh = false;
+                  } else {
+                    event.dialog.add([hs, "blank"]);
+                  }
+                }
+              }
+            } else if (event.position[i] == "e") {
+              var es = target.getVCards("e");
+              if (es.length) {
+                expand_length += Math.ceil(es.length / 6);
+                var title = event.dialog.add('<div class="text center" style="margin: 0px;">装备区</div>');
+                title.style.margin = "0px";
+                title.style.padding = "0px";
+                event.dialog.add([es, 'vcard']);
+                directh = false;
+              }
+            } else if (event.position[i] == "j") {
+              var js = target.getVCards("j");
+              if (js.length) {
+                expand_length += Math.ceil(js.length / 6);
+                var title = event.dialog.add('<div class="text center" style="margin: 0px;">判定区</div>');
+                title.style.margin = "0px";
+                title.style.padding = "0px";
+                var shown = js.filter(card => {
+                  var name = card.viewAs || card.name,
+                    info = lib.card[name];
+                  if (!info || !info.blankCard) return true;
+                  return false;
+                });
+                if (shown.length < js.length && !target.isUnderControl(true)) {
+                  var hidden = js.filter(card => !shown.includes(card));
+                  var buttons = ui.create.div(".buttons", event.dialog.content);
+                  event.dialog.buttons = event.dialog.buttons.concat(ui.create.buttons(shown, "card", buttons));
+                  event.dialog.buttons = event.dialog.buttons.concat(ui.create.buttons(hidden, "blank", buttons));
+                  if (event.dialog.forcebutton !== false) event.dialog.forcebutton = true;
+                  if (event.dialog.buttons.length > 3) {
+                    event.dialog.classList.remove("forcebutton-auto");
+                  } else if (!event.dialog.noforcebutton) {
+                    event.dialog.classList.add("forcebutton-auto");
+                  }
+                } else {
+                  event.dialog.add([js, 'vcard']);
+                }
+                directh = false;
+              }
+            }
+          }
+          if (event.dialog.buttons.length == 0) {
+            event.finish();
+            return;
+          }
+          else {
+            if (event.isMine()) {
+              if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
+                ui.click.cancel();
+                return;
+              }
+              event.dialog.open();
+              game.check();
+              game.pause();
+              if (expand_length > 2) {
+                ui.arena.classList.add("choose-player-card");
+                event.dialog.classList.add("fullheight");
+              }
+            } else if (event.isOnline()) {
+              event.send();
+            } else {
+              event.result = "ai";
+            }
+          }
+          "step 1";
+          if (event.result == "ai") {
+            game.check();
+            if ((ai.basic.chooseButton(event.ai) || forced) && (!event.filterOk || event.filterOk())) ui.click.ok();
+            else ui.click.cancel();
+          }
+          event.dialog.close();
+          if (event.result.links) {
+            event.result.cards = event.result.links.slice(0);
+          }
+          event.resume();
+          setTimeout(function () {
+            ui.arena.classList.remove("choose-player-card");
+          }, 500);
         },
         ai: {
           order: 8,
