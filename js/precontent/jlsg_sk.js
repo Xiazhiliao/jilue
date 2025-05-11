@@ -14310,7 +14310,7 @@ export default function () {
               case 6:
                 var { result: result2 } = await player.chooseTarget("###选择一名角色令其获得" + get.translation(cardx) + "###且可以对" + get.translation(trigger.player) + "使用一张“杀”")
                   .set("source", trigger.player)
-                  .set("cardx", cardx)
+                  .set("cardx", cardx[0])
                   .set("filterTarget", (card, player, target) => target != get.event("source"))
                   .set("ai", target => {
                     const sha = get.autoViewAs({ name: "sha", isCard: true }, []);
@@ -14324,7 +14324,7 @@ export default function () {
                 }
                 break;
               case 7:
-                await trigger.player.lose(cardx, ui.cardPile, 'insert');
+                await trigger.player.lose(cardx[0], ui.cardPile, 'insert');
                 game.log(player, '将', trigger.player, '的一张手牌置于牌堆顶');
                 await trigger.player.executeDelayCardEffect("shandian");
                 break;
