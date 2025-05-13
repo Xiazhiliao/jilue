@@ -5911,7 +5911,7 @@ export default function () {
             player.storage.jlsg_xingwu_mark[trigger.player.playerid]++;
           }
           const { result } = await player.chooseBool(`是否令${get.translation(trigger.player)}重新获得【星舞】的技能？`, () => Math.random() < 0.5);
-          if (result.bool) {
+          if (result?.bool) {
             let skills = trigger.player.storage.jlsg_xingwu_skill;
             if (!skills) return;
             await trigger.player.removeSkills(skills);

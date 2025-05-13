@@ -6757,9 +6757,6 @@ export default function () {
         filter: function (event, player) {
           return event.card && get.type(event.card, 'trick') == 'trick';
         },
-        logTarget: function (event, player) {
-          return player == event.player ? event.source : event.player;
-        },
         check: function (event, player) {
           _status.jlsg_yuhua_judging = true;
           if (player == event.player) {
