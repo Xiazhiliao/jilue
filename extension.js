@@ -3,6 +3,9 @@ import { lib, game, ui, get, ai, _status } from '../../noname.js';
 import { precontent } from './js/precontent/index.js';
 import { content } from './js/content.js';
 import { config } from './js/config.js';
+
+lib.init.css(lib.assetURL + 'extension/极略', 'extension');
+
 let extensionPackage = {
   name: "极略",
   connect: true,
