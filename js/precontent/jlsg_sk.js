@@ -14901,6 +14901,7 @@ export default function () {
         filter(event, player) {
           return event.player.countDiscardableCards(player, "h");
         },
+        logTarget: "player",
         prompt(event, player) {
           return get.prompt("jlsg_lianhua", event.player);
         },
