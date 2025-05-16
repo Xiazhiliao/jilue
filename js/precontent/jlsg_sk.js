@@ -22,7 +22,7 @@ export default function () {
           'jlsgsk_mayunlu', 'jlsgsk_zhongyao', 'jlsgsk_nanhualaoxian', 'jlsgsk_jiangwei', 'jlsgsk_huanghao',
           'jlsgsk_huaman', 'jlsgsk_pangtong', 'jlsgsk_lvdai', 'jlsgsk_wangyuanji', 'jlsgsk_zhangchangpu',
           "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan",
-          "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun"],
+          "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan"],
         jlsg_pojun: ['jlsgsk_zhuran', 'jlsgsk_yanliang', 'jlsgsk_chendao', 'jlsgsk_dingfeng', 'jlsgsk_dongzhuo',
           'jlsgsk_yujin', 'jlsgsk_panfeng', 'jlsgsk_jiangqin', 'jlsgsk_guanxing', 'jlsgsk_guansuo',
           'jlsgsk_baosanniang', 'jlsgsk_dongbai', 'jlsgsk_xushi', 'jlsgsk_caoxiu', 'jlsgsk_caojie'],
@@ -172,6 +172,7 @@ export default function () {
       jlsgsk_zhugedan: ["male", "wei", 5, ["jlsg_gongao", "jlsg_juyi", "jlsg_weizhong"], ["name:诸葛|诞"]],
       jlsgsk_yangwan: ["female", "shu", 3, ["jlsg_youyan", "jlsg_zhuihuan"], ["name:杨|null"]],
       jlsgsk_cenhun: ["male", "wu", 3, ["jlsg_jishe", "jlsg_lianhuo"], ["name:岑|昏"]],
+      jlsgsk_gexuan: ["male", "qun", 3, ["jlsg_lianhua", "jlsg_zhafu"], ["name:葛|玄"]],
     },
     characterIntro: {
       jlsgsk_kuaiyue: "蒯越（？－214年），字异度，襄阳中庐（今湖北襄阳西南）人。东汉末期人物，演义中为蒯良之弟。原本是荆州牧刘表的部下，曾经在刘表初上任时帮助刘表铲除荆州一带的宗贼（以宗族、乡里关系组成的武装集团）。刘表病逝后与刘琮一同投降曹操，后来官至光禄勋。",
@@ -14894,6 +14895,59 @@ export default function () {
           },
         },
       },
+      jlsg_lianhua: {
+        audio: "ext:极略/audio/skill:2",
+        trigger: { global: "phaseUseBegin" },
+        filter(event, player) {
+          return event.player.countDiscardableCards(player, "h");
+        },
+        prompt(event, player) {
+          return get.prompt("jlsg_lianhua", event.player);
+        },
+        check(event, player) {
+          return true;
+        },
+        async content(event, trigger, player) {
+          if (trigger.player != player) await player.viewHandcards(trigger.player);
+          const { result } = await player.discardPlayerCard(trigger.player, "h", [1, Infinity], "visible")
+            .set("ai", button => {
+              const card = button.link,
+                player = get.player(),
+                target = get.event("target");
+              if (get.attitude(player, target) > 0) {
+                if (target.hasUseTarget(card)) return 8 - get.value(card, target);
+                return 6 - get.value(card, target);
+              }
+              return target.getUseValue(card);
+            });
+          if (!result?.bool || !result?.links?.length) return;
+          let num = result.links.length + 1;
+          const cards = [];
+          while (num > 0) {
+            const card = lib.skill.jlsg_lingze.createTempCard(null);
+            if (card) cards.add(card);
+            num--;
+          };
+          if (cards.length) await trigger.player.gain(cards, "draw");
+        },
+      },
+      jlsg_zhafu: {
+        audio: "ext:极略/audio/skill:2",
+        trigger: {
+          global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "replaceEquipAfter"],
+        },
+        filter(event, player) {
+          if (event.name == "replaceEquip") return event.result?.cards?.some(i => i.classList.contains("jlsg_tempCard-glow"));
+          return event.getd().some(i => i.classList.contains("jlsg_tempCard-glow"));
+        },
+        check(event, player) {
+          return get.effect(player, { name: "draw" }, player, player) > 0;
+        },
+        frequent: true,
+        async content(event, trigger, player) {
+          await player.draw(1);
+        },
+      },
     },
     translate: {
       jlsg_sk: "SK武将",
@@ -15026,6 +15080,7 @@ export default function () {
       jlsgsk_zhugedan: "SK诸葛诞",
       jlsgsk_yangwan: "SK杨婉",
       jlsgsk_cenhun: "SK岑昏",
+      jlsgsk_gexuan: "SK葛玄",
 
       jlsg_hemeng: '和盟',
       jlsg_sujian: '素检',
@@ -15589,6 +15644,10 @@ export default function () {
       jlsg_jishe_info: "出牌阶段，你可以视为使用任意不能造成伤害或只能造成属性伤害的普通锦囊牌。以此法使用的牌结算后，若你于本阶段内发动此技能的次数大于你的体力上限，你减1点体力上限。",
       jlsg_lianhuo: "链祸",
       jlsg_lianhuo_info: "锁定技，当你成为任意角色使用基本牌或锦囊牌的目标后，你横置。当你横置时，你受到的火焰伤害+2。",
+      jlsg_lianhua: "炼化",
+      jlsg_lianhua_info: "任意角色的出牌阶段开始时，你可以观看其手牌并弃置至少一张，然后令其获得X张随机临时牌（X为以此法弃置的牌数＋1)。",
+      jlsg_zhafu: "札符",
+      jlsg_zhafu_info: "当临时牌进入弃牌堆后，你可以摸一张牌。",
     },
     dynamicTranslate: {
       jlsg_zhidi: function (player) {
