@@ -9529,15 +9529,6 @@ export default function () {
                 })
               };
             }
-            lib.init.sheet([
-              '.card.jlsg_xuyuan-glow:before{',
-              'opacity:0.2;',
-              'box-shadow:rgba(0,0,0,0.2) 0 0 0 1px,rgb(255,109,12) 0 0 5px,rgb(255,0,0) 0 0 10px;',
-              'background-color:red;',
-              '-webkit-filter:blur(5px);',
-              'filter:blur(5px);',
-              '}'
-            ].join(''));
           });
         },
         trigger: {
@@ -11309,7 +11300,7 @@ export default function () {
           return skills;
         },
         createTempCard(name, suit, nature) {
-          if (!name in lib.card && name !== null) return [];
+          if (!name in lib.card && name !== null) return;
           if (!name) name = lib.inpile.randomGet();
           if (!suit) suit = lib.suit.randomGet();
           if (name == "sha" && !nature && nature !== null && Math.random() > 0.5) nature = lib.card.sha.nature.randomGet();
@@ -11317,7 +11308,7 @@ export default function () {
           let card = game.createCard(name, suit, number, nature);
           game.broadcastAll(function (card) {
             card.destroyed = "discardPile";
-            card.classList.add("jlsg_xuyuan-glow");
+            card.classList.add("jlsg_tempCard-glow");
           }, card)
           return card;
         },
