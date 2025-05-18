@@ -172,7 +172,7 @@ export default function () {
       jlsgsk_zhugedan: ["male", "wei", 5, ["jlsg_gongao", "jlsg_juyi", "jlsg_weizhong"], ["name:诸葛|诞"]],
       jlsgsk_yangwan: ["female", "shu", 3, ["jlsg_youyan", "jlsg_zhuihuan"], ["name:杨|null"]],
       jlsgsk_cenhun: ["male", "wu", 3, ["jlsg_jishe", "jlsg_lianhuo"], ["name:岑|昏"]],
-      jlsgsk_gexuan: ["male", "qun", 3, ["jlsg_lianhua", "jlsg_zhafu"], ["name:葛|玄"]],
+      jlsgsk_gexuan: ["male", "wu", 3, ["jlsg_lianhua", "jlsg_zhafu"], ["name:葛|玄"]],
     },
     characterIntro: {
       jlsgsk_kuaiyue: "蒯越（？－214年），字异度，襄阳中庐（今湖北襄阳西南）人。东汉末期人物，演义中为蒯良之弟。原本是荆州牧刘表的部下，曾经在刘表初上任时帮助刘表铲除荆州一带的宗贼（以宗族、乡里关系组成的武装集团）。刘表病逝后与刘琮一同投降曹操，后来官至光禄勋。",
@@ -14925,7 +14925,7 @@ export default function () {
           let num = result.links.length + 1;
           const cards = [];
           while (num > 0) {
-            const card = lib.skill.jlsg_lingze.createTempCard(null);
+            const card = lib.skill.jlsg_lingze.createTempCard(null, null, null, null, true);
             if (card) cards.add(card);
             num--;
           };
