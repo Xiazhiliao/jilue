@@ -11303,7 +11303,7 @@ export default function () {
         * 创造一张临时牌（进入弃牌堆后销毁）
         * @param { string | null } [name] 要创造的牌名，若为null则随机
         * @param { string | undefind } [suit] 此牌的花色
-        * @param { string | null | undefind} [nature] 此牌为杀的情况下的元素，为null则无元素
+        * @param { string | null | undefind } [nature] 此牌为杀的情况下的元素，为null则无元素
         * @param { number | null } [number] 此牌的点数
         * @param { Boolean | undefined } [isInPile] 该牌是否是牌堆内已有的牌，会覆盖除name以外的参数
         * @returns { Card | undefind } 若牌名存在，则返回Card，否则为undefind
@@ -11351,7 +11351,7 @@ export default function () {
             PBTY = {};
           const list = Array.from(lib.card.list);
           for (const info of list) {
-            const name = info[2]
+            const name = info[2];
             const type = get.type2(name, false);
             if (!cardList[type]) cardList[type] = [];
             cardList[type].push(info);
