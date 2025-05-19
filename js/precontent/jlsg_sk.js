@@ -14938,8 +14938,8 @@ export default function () {
           global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "replaceEquipAfter"],
         },
         filter(event, player) {
-          if (event.name == "replaceEquip") return event.result?.cards?.some(i => i.classList.contains("jlsg_tempCard-glow"));
-          return event.getd().some(i => i.classList.contains("jlsg_tempCard-glow"));
+          if (event.name == "replaceEquip") return event.result?.cards?.some(i => i.classList.contains("jlsg_tempCard-glow") || i.hasGaintag("eternal_zuoyou_manjuan"));
+          return event.getd().some(i => i.classList.contains("jlsg_tempCard-glow") || i.hasGaintag("eternal_zuoyou_manjuan"));
         },
         check(event, player) {
           return get.effect(player, { name: "draw" }, player, player) > 0;
