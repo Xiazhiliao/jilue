@@ -2416,7 +2416,7 @@ export default function () {
             }
           }
         },
-        group: "jlsg_zhaxiang_directHit",
+        group: ["jlsg_zhaxiang_directHit"],
         subSkill: {
           directHit: {
             shaRelated: true,
@@ -5152,9 +5152,7 @@ export default function () {
         trigger: {
           global: ['useCardBefore', 'respondBefore'],
         },
-        // silent:true,
-        forced: true,
-        popup: false,
+        direct: true,
         firstDo: true,
         filter: function (event, player) {
           return event.skill && event.skill.startsWith('jlsg_zhonghou_');

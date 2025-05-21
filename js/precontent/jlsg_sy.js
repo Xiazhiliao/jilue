@@ -78,6 +78,8 @@ export default function () {
           player.update();
           ui.clear();
           while (_status.event.name != 'phaseLoop') {
+            _status.event.finish();
+            _status.event._triggered = null;
             _status.event = _status.event.parent;
           }
           _status.paused = false;
@@ -2676,7 +2678,7 @@ export default function () {
             trigger.player.getStat().card.sha--;
           }
         },
-        group: "jlsgsy_jianmie_dying",
+        group: ["jlsgsy_jianmie_dying"],
         subSkill: {
           dying: {
             sourceSkill: "jlsgsy_jianmie",

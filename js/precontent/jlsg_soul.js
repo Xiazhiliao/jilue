@@ -3242,7 +3242,7 @@ export default function () {
           player.storage.jlsg_lihun = target;
           target.insertPhase("jlsg_lihun");
         },
-        group: "jlsg_lihun_swapControl",
+        group: ["jlsg_lihun_swapControl"],
         subSkill: {
           swapControl: {
             trigger: {
@@ -4687,7 +4687,7 @@ export default function () {
           },
           threaten: 2
         },
-        group: "jlsg_zhonghun3",
+        group: ["jlsg_zhonghun3"],
       },
       jlsg_zhonghun3: {
         trigger: {
@@ -7838,7 +7838,7 @@ export default function () {
             game.asyncDelayx();
           }
         },
-        group: "jlsg_chuyuan_effect",
+        group: ["jlsg_chuyuan_effect"],
         subSkill: {
           effect: {
             mod: {
@@ -9429,7 +9429,7 @@ export default function () {
             trigger.all_excluded = true;
           }
         },
-        group: "jlsg_zhuxing_begin",
+        group: ["jlsg_zhuxing_begin"],
         subSkill: {
           begin: {
             audio: "ext:极略/audio/skill:2",
@@ -11695,7 +11695,7 @@ export default function () {
               if (num > 0) await player.draw(num);
             });
         },
-        group: "jlsg_zhanyue_damage",
+        group: ["jlsg_zhanyue_damage"],
         subSkill: {
           damage: {
             sourceSkill: "jlsg_zhanyue",
@@ -11775,7 +11775,7 @@ export default function () {
           if (get.name(card) == "sha") target.addSkillBlocker("jlsg_fengtian_effect");
           target.markSkill("jlsg_fengtian_effect");
         },
-        group: "jlsg_fengtian_sha",
+        group: ["jlsg_fengtian_sha"],
         subSkill: {
           sha: {
             sourceSkill: "jlsg_fengtian",

@@ -3442,7 +3442,7 @@ export default function () {
       jlsg_bozhan: {
         audio: "ext:极略/audio/skill:true",
         trigger: { player: 'shaMiss', target: 'shaMiss' },
-        forced: true,
+        direct: true,
         content: function () {
           trigger.target.chooseToUse('是否对' + get.translation(trigger.player) + '使用一张【杀】？', { name: 'sha' }, -1, trigger.player);
         }
@@ -6976,7 +6976,7 @@ export default function () {
             _status.event.skill = 'jlsg_zhengnan';
           });
         },
-        group: "jlsg_zhengnan2",
+        group: ["jlsg_zhengnan2"],
         ai: {
           result: {
             target: function (player, target) {
@@ -7066,7 +7066,7 @@ export default function () {
                 }
               }
             }
-            player.reinit(name, result.links[0]);
+            player.reinitCharacter(name, result.links[0]);
           }
         },
         ai: {
@@ -14734,7 +14734,7 @@ export default function () {
           player.storage.jlsg_zhuihuan[0] = [];
           player.markSkill("jlsg_zhuihuan");
         },
-        group: "jlsg_zhuihuan_record",
+        group: ["jlsg_zhuihuan_record"],
         subSkill: {
           record: {
             sourceSkill: "jlsg_youyan",
