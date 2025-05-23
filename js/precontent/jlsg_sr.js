@@ -33,6 +33,7 @@ export default function () {
 		},
 		characterIntro: {},
 		skill: {
+			//SR武将规则
 			_jlsgsr_choice: {
 				trigger: {
 					global: "gameStart",
@@ -192,7 +193,7 @@ export default function () {
 					}
 					return (3 - player.getExpansions('jlsg_yansha').length) && player.countCards('h') > 1;
 				},
-				async content(even, trigger, player) {
+				async content(event, trigger, player) {
 					trigger.num--;
 					const phase = trigger.getParent("phase");
 					player.when({ player: "phaseDiscardBegin" })
@@ -237,7 +238,7 @@ export default function () {
 							}
 							return 0;
 						},
-						async content(even, trigger, player) {
+						async content(event, trigger, player) {
 							const { result } = await player.chooseCardButton('掩杀', player.getExpansions('jlsg_yansha'), true);
 							if (result.bool && result.links?.length) {
 								await player.discard(result.links);
@@ -259,46 +260,45 @@ export default function () {
 				},
 				position: 'he',
 				filter: function (event, player) {
-					return player.num('he', { color: 'black' }) > 0 && !player.isLinked();
+					return player.countDiscardableCards(player, 'he', card => get.color(card) == "black") > 0 && !player.isLinked();
 				},
 				check: function (card) {
-					return 8 - ai.get.value(card)
+					return 8 - get.value(card);
 				},
-				prompt: '弃置一张黑色牌，令一名角色选择一项：回复一点体力或摸两张牌',
+				prompt: '横置并弃置一张黑色牌，令一名角色选择一项：回复一点体力或摸两张牌',
 				filterTarget: true,
-				content: function () {
-					'step 0'
-					player.link();
-					event.target = target;
-					if (target.hp == target.maxHp) {
-						target.draw(2);
-						event.finish();
+				async content(event, trigger, player) {
+					await player.link();
+					const target = event.targets[0];
+					if (target.isHealthy()) {
+						await target.draw(2);
 					}
 					else {
-						var controls = ['draw_card'];
-						if (target.hp < target.maxHp) {
-							controls.push('recover_hp');
+						const { result } = await target.chooseControl('draw_card', 'recover_hp')
+							.set("ai", function () {
+								const player = get.player();
+								if (player.hp == 1 && player.maxHp > 2) {
+									return 'recover_hp';
+								}
+								else if (player.hp == 2 && player.maxHp > 2 && player.countCards("h") > 1) {
+									return 'recover_hp';
+								}
+								else {
+									return 'draw_card';
+								}
+							});
+						switch (result.control) {
+							case 'recover_hp':
+								await target.recover(1);
+								break;
+							case 'draw_card':
+								await target.draw(2);
+								break;
 						}
-						target.chooseControl(controls).ai = function () {
-							if (target.hp == 1 && target.maxHp > 2) {
-								return 'recover_hp';
-							}
-							else if (target.hp == 2 && target.maxHp > 2 && target.num('h') > 1) {
-								return 'recover_hp';
-							}
-							else {
-								return 'draw_card';
-							}
-						}
-					}
-					"step 1"
-					event.control = result.control;
-					switch (event.control) {
-						case 'recover_hp': event.target.recover(); event.finish(); break;
-						case 'draw_card': event.target.draw(2); event.finish(); break;
 					}
 				},
 				ai: {
+					threaten: 1.5,
 					expose: 0.2,
 					order: 9,
 					result: {
@@ -310,461 +310,91 @@ export default function () {
 						target: function (player, target) {
 							if (jlsg.isWeak(target)) return 5;
 							return 2;
-						}
+						},
 					},
-					threaten: 1.5
-				}
+				},
 			},
 			jlsg_lingbo: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
-				trigger: { global: 'phaseBegin' },
-				direct: true,
+				trigger: { global: 'phaseZhunbeiBegin' },
 				filter: function (event, player) {
 					if (!player.isLinked()) return false;
-					var num = 0;
-					for (var i = 0; i < game.players.length; i++) {
-						num += game.players[i].num('ej');
-					}
-					return num > 0;
+					return game.hasPlayer(current => {
+						return current.countCards("je");
+					});
 				},
-				content: function () {
-					'step 0'
-					player.chooseTarget('###是否发动【凌波】？###将场上的一张牌置于牌堆顶', function (card, player, target) {
-						return target.num('ej') > 0;
+				async cost(event, trigger, player) {
+					event.result = await player.chooseTarget('###是否发动【凌波】？###将场上的一张牌置于牌堆顶', function (card, player, target) {
+						return target.countCards('ej') > 0;
 					}).set("ai", function (target) {
-						if (ai.get.attitude(player, target) > 0) return target.num('j');
-						if (ai.get.attitude(player, target) < 0) return target.num('e');
+						const player = get.player();
+						if (get.attitude(player, target) > 0) { return target.countCards('j'); }
+						else if (get.attitude(player, target) < 0) { return target.countCards('e'); }
 						return 0;
-					})
-					'step 1'
-					if (result.bool) {
-						player.logSkill('jlsg_lingbo');
-						if (player.isLinked()) player.link();
-						event.target = result.targets[0];
+					}).forResult();
+				},
+				async content(event, trigger, player) {
+					await player.link();
+					const { targets: [target] } = event;
+					const { result } = await player.choosePlayerCard('将目标的一张牌置于牌堆顶', target, 'ej', true);
+					if (!result.bool || !result.links?.length) return;
+					const { links: [card] } = result;
+					await target.lose(card, ui.cardPile, 'insert', 'visible');
+					target.$throw(card, 1000);
+					game.log(player, '将', card, '置于牌堆顶');
+					if (target == game.me) {
+						await game.delay(0.5);
 					}
-					else {
-						event.finish();
-					}
-					'step 2'
-					player.choosePlayerCard('将目标的一张牌置于牌堆顶', event.target, 'ej', true);
-					'step 3'
-					event.card = result.links[0];
-					if (!event.card) {
-						event.finish(); return;
-					}
-					event.target.lose(event.card, ui.cardPile, 'insert', 'visible');
-					event.target.$throw(1, 1000);
-					game.log(player, '将', event.card, '置于牌堆顶');
-					'step 4'
-					if (event.target == game.me) game.delay(0.5);
-					// if (event.card) {
-					//   event.card.fix();
-					//   ui.cardPile.insertBefore(event.card, ui.cardPile.firstChild);
-					// }
 				},
 				ai: {
 					effect: {
 						target: function (card) {
 							if (card.name == 'tiesuo') return 0.5;
-						}
-					}
-				}
+						},
+					},
+				},
 			},
 			jlsg_qingcheng: {
-				audio: "ext:极略/audio/skill:1",
+				audio: "ext:极略/audio/skill:2",
 				srlose: true,
 				enable: ['chooseToUse', 'chooseToRespond'],
+				filter(event, player) {
+					if (player.isLinked()) {
+						return event.filterCard(get.autoViewAs({ name: "shan" }, []), player, event);
+					}
+					return event.filterCard(get.autoViewAs({ name: "sha" }, []), player, event);
+				},
 				filterCard: function () { return false; },
 				selectCard: -1,
-				viewAs: { name: 'sha' },
-				viewAsFilter: function (player) {
-					return !player.isLinked();
+				viewAs(cards, player) {
+					if (player.isLinked()) {
+						return { name: "shan" };
+					};
+					return { name: "sha" };
 				},
-				prompt: '横置你的武将牌，视为打出一张杀',
+				prompt: '横置武将牌，视为使用/打出一张杀<br>重置武将牌，视为使用/打出一张闪',
 				check: () => 1,
-				onuse: function (result, player) {
-					player.link();
-				},
-				onrespond: function (result, player) {
-					if (!player.isLinked()) player.link();
+				async precontent(event, trigger, player) {
+					await player.link();
 				},
 				ai: {
-					skillTagFilter: function (player) {
-						return !player.isLinked();
-					},
 					respondSha: true,
-				},
-				group: ['jlsg_qingcheng2']
-			},
-			jlsg_qingcheng2: {
-				audio: "ext:极略/audio/skill:1",
-				enable: ['chooseToUse', 'chooseToRespond'],
-				filterCard: function () { return false; },
-				selectCard: -1,
-				viewAs: { name: 'shan' },
-				viewAsFilter: function (player) {
-					return player.isLinked();
-				},
-				prompt: '重置你的武将牌，视为打出一张闪',
-				check: () => 1,
-				onrespond: function (result, player) {
-					if (player.isLinked()) player.link(false);
-				},
-				onuse: function (result, player) {
-					return this.onrespond.apply(this, arguments);
-				},
-				ai: {
-					skillTagFilter: function (player) {
-						return player.isLinked();
-					},
 					respondShan: true,
-				}
+					skillTagFilter(player, tag) {
+						let filter;
+						switch (tag) {
+							case "respondSha":
+								filter = !player.isLinked()
+								break;
+							case "respondShan":
+								filter = player.isLinked();
+								break;
+						};
+						return filter;
+					},
+				},
 			},
-			// jlsg_lingbo: {
-			//   audio: "ext:极略/audio/skill:1",
-			//   srlose: true,
-			//   group: ['jlsg_lingbo1', 'jlsg_lingbo2'],
-			// },
-			// jlsg_lingbo1: {
-			//   trigger: {
-			//     global: "phaseEnd",
-			//   },
-			//   filter: function (event, player) {
-			//     return player.countCards('e') > 0 && event.player != player && player.isLinked();
-			//   },
-			//   check: function (event, player) {
-			//     return get.attitude(player, event.player) > 0;
-			//   },
-			//   content: function () {
-			//     'step 0'
-			//     player.chooseCard('e', 1, true).set('ai', function (card) {
-			//       var sub = get.subtype(card);
-			//       if (_status.event.player.isEmpty(sub)) return -10;
-			//       return get.unuseful(card);
-			//     });
-			//     'step 1'
-			//     if (result.bool) {
-			//       trigger.player.equip(result.cards[0]);
-			//       player.$give(result.cards, trigger.player);
-			//     }
-			//     'step 2'
-			//     if (player.isLinked()) player.link();
-			//   },
-			// },
-			// jlsg_lingbo2: {
-			//   trigger: {
-			//     global: "phaseBegin",
-			//   },
-			//   filter: function (event, player) {
-			//     var card = ui.selected.cards[0];
-			//     if (!card) return false;
-			//     if (get.position(card) == 'e' && !target.isEmpty(get.subtype(card))) return false;
-			//     return event.player != player && event.player.countCards('ej') > 0 && !player.isLinked();
-			//   },
-			//   check: function (event, player) {
-			//     return get.attitude(player, event.player) > 0;
-			//   },
-			//   content: function () {
-			//     "step 0"
-			//     var List = [];
-			//     List.push(trigger.player.getCards('ej'));
-			//     player.chooseButton(List, 1, true).set('ai', function (button) {
-			//       //if(get.attitude(player,trigger.player)<=0){
-			//       //if(get.type(button.link)=='equip')  return 10;
-			//       //return 0;
-			//       //}
-			//       //else if(get.attitude(player,trigger.player)>=3){
-			//       //if(get.type(button.link)=='delay')  return 10;
-			//       //return 0;
-			//       //}
-			//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('lebu') && get.type(button.link) == 'equip') return get.suit(card) == 'heart';
-			//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('bingliang') && get.type(button.link) == 'equip') return get.suit(card) == 'club';
-			//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('shandian') && get.type(button.link) == 'equip') return (get.suit(card) != 'spade' || (card.number < 2 || card.number > 9));
-			//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('lebu') && get.type(button.link) == 'equip') return get.suit(card) != 'heart';
-			//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('bingliang') && get.type(button.link) == 'equip') return get.suit(card) != 'club';
-			//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('shandian') && get.type(button.link) == 'equip') return (get.suit(card) == 'spade' && card.number >= 2 && card.number <= 9);
-			//       return 0;
-			//     });
-			//     "step 1"
-			//     if (result.bool) {
-			//       ui.cardPile.insertBefore(result.links[0], ui.cardPile.firstChild);
-			//     }
-			//     "step 2"
-			//     if (!player.isLinked()) player.link();
-			//   },
-			// },
-			// jlsg_liuyun: {
-			//   audio: "ext:极略/audio/skill:2",
-			//   srlose: true,
-			//   enable: 'phaseUse',
-			//   usable: 1,
-			//   filterCard: function (card) {
-			//     return get.color(card) == 'black';
-			//   },
-			//   position: 'he',
-			//   filter: function (event, player) {
-			//     return player.countCards('he', { color: 'black' }) > 0 && !player.isLinked();
-			//   },
-			//   check: function (card) {
-			//     return 8 - get.value(card)
-			//   },
-			//   prompt: '弃置一张黑色牌，令一名角色选择一项：恢复1点体力或摸两张牌',
-			//   filterTarget: true,
-			//   content: function () {
-			//     player.link();
-			//     target.chooseDrawRecover(2, true);
-			//   },
-			//   ai: {
-			//     expose: 0.2,
-			//     order: 9,
-			//     result: {
-			//       player: function (player) {
-			//         if (player.countCards('h', function (card) {
-			//           return get.color(card) == 'black';
-			//         }) > player.hp) return 1;
-			//         return -1;
-			//       },
-			//       target: function (player, target) {
-			//         var result = 2;
-			//         if (target.isTurnedOver()) result += 3;
-			//         if (target.hp == 1) result += 3;
-			//         return result;
-			//       }
-			//     },
-			//     threaten: 1.5
-			//   }
-			// },
-			// jlsg_qingcheng_zhu: {
-			//   srlose: true,
-			//   trigger: { global: "gameDrawEnd" },
-			//   forced: true,
-			//   content: function () {
-			//     if (player.hasSkill('jlsg_liuyun')) {
-			//       player.addSkill('jlsg_qingcheng_yin');
-			//       player.removeSkill('jlsg_qingcheng_zhu');
-			//     } else {
-			//       player.addSkill('jlsg_qingcheng_yang');
-			//       player.removeSkill('jlsg_qingcheng_zhu');
-			//     }
-			//   },
-			// },
-			// jlsg_qingcheng_yang: {
-			//   audio: "ext:极略/audio/skill:1",
-			//   group: ['jlsg_qingcheng_yang1', 'jlsg_qingcheng_yang2'],
-			// },
-			// jlsg_qingcheng_yang1: {
-			//   audio: "ext:极略/audio/skill:true",
-			//   enable: ['chooseToUse', 'chooseToRespond'],
-			//   filterCard: function () {
-			//     return false;
-			//   },
-			//   selectCard: -1,
-			//   viewAs: { name: 'sha' },
-			//   viewAsFilter: function (player) {
-			//     return !player.isLinked();
-			//   },
-			//   prompt: '横置你的武将牌，视为打出一张【杀】',
-			//   check: function () {
-			//     return 1
-			//   },
-			//   onuse: function (result, player) {
-			//     if (!player.isLinked()) player.link();
-			//   },
-			//   onrespond: function (result, player) {
-			//     if (!player.isLinked()) player.link();
-			//   },
-			//   ai: {
-			//     skillTagFilter: function (player) {
-			//       return !player.isLinked();
-			//     },
-			//     respondSha: true,
-			//     basic: {
-			//       useful: [5, 1],
-			//       value: [5, 1],
-			//     },
-			//     order: function () {
-			//       if (_status.event.player.hasSkillTag('presha', true, null, true)) return 10;
-			//       return 3;
-			//     },
-
-
-			//     result: {
-			//       target: function (player, target) {
-			//         if (player.hasSkill('jiu') && !target.getEquip('baiyin')) {
-			//           if (get.attitude(player, target) > 0) {
-			//             return -6;
-			//           } else {
-			//             return -3;
-			//           }
-			//         }
-			//         return -1.5;
-			//       },
-			//     },
-			//     tag: {
-			//       respond: 1,
-			//       respondShan: 1,
-			//       damage: function (card) {
-			//         if (card.nature == 'poison') return;
-			//         return 1;
-			//       },
-			//       natureDamage: function (card) {
-			//         if (card.nature) return 1;
-			//       },
-			//       fireDamage: function (card, nature) {
-			//         if (card.nature == 'fire') return 1;
-			//       },
-			//       thunderDamage: function (card, nature) {
-			//         if (card.nature == 'thunder') return 1;
-			//       },
-			//       poisonDamage: function (card, nature) {
-			//         if (card.nature == 'poison') return 1;
-			//       },
-			//     },
-
-			//   },
-
-			// },
-			// jlsg_qingcheng_yang2: {
-			//   audio: "ext:极略/audio/skill:true",
-			//   enable: ["chooseToUse", "chooseToRespond"],
-			//   filterCard: function () {
-			//     return false;
-			//   },
-			//   selectCard: -1,
-			//   viewAs: { name: 'shan' },
-			//   viewAsFilter: function (player) {
-			//     return player.isLinked();
-			//   },
-			//   prompt: '重置你的武将牌，视为打出一张【闪】',
-			//   check: function () {
-			//     return 1
-			//   },
-			//   onuse: function (result, player) {
-			//     if (player.isLinked()) player.link();
-			//   },
-			//   onrespond: function (result, player) {
-			//     if (player.isLinked()) player.link();
-			//   },
-			//   ai: {
-			//     skillTagFilter: function (player) {
-			//       return player.isLinked();
-			//     },
-			//     respondShan: true,
-			//     basic: {
-			//       useful: [7, 2],
-			//       value: [7, 2],
-			//     },
-			//   }
-			// },
-			// jlsg_qingcheng_yin: {
-			//   audio: "ext:极略/audio/skill:1",
-			//   group: ['jlsg_qingcheng_yin1', 'jlsg_qingcheng_yin2'],
-			// },
-			// jlsg_qingcheng_yin1: {
-			//   audio: "ext:极略/audio/skill:true",
-			//   enable: ['chooseToUse', 'chooseToRespond'],
-			//   filterCard: function () {
-			//     return false;
-			//   },
-			//   selectCard: -1,
-			//   viewAs: { name: 'sha' },
-			//   viewAsFilter: function (player) {
-			//     return player.isLinked();
-			//   },
-			//   prompt: '重置你的武将牌，视为打出一张【杀】',
-			//   check: function () {
-			//     return 1
-			//   },
-			//   onuse: function (result, player) {
-			//     if (player.isLinked()) player.link();
-			//   },
-			//   onrespond: function (result, player) {
-			//     if (player.isLinked()) player.link();
-			//   },
-			//   ai: {
-			//     skillTagFilter: function (player) {
-			//       return !player.isLinked();
-			//     },
-			//     respondSha: true,
-			//     basic: {
-			//       useful: [5, 1],
-			//       value: [5, 1],
-			//     },
-			//     order: function () {
-			//       if (_status.event.player.hasSkillTag('presha', true, null, true)) return 10;
-			//       return 3;
-			//     },
-
-
-			//     result: {
-			//       target: function (player, target) {
-			//         if (player.hasSkill('jiu') && !target.getEquip('baiyin')) {
-			//           if (get.attitude(player, target) > 0) {
-			//             return -6;
-			//           } else {
-			//             return -3;
-			//           }
-			//         }
-			//         return -1.5;
-			//       },
-			//     },
-			//     tag: {
-			//       respond: 1,
-			//       respondShan: 1,
-			//       damage: function (card) {
-			//         if (card.nature == 'poison') return;
-			//         return 1;
-			//       },
-			//       natureDamage: function (card) {
-			//         if (card.nature) return 1;
-			//       },
-			//       fireDamage: function (card, nature) {
-			//         if (card.nature == 'fire') return 1;
-			//       },
-			//       thunderDamage: function (card, nature) {
-			//         if (card.nature == 'thunder') return 1;
-			//       },
-			//       poisonDamage: function (card, nature) {
-			//         if (card.nature == 'poison') return 1;
-			//       },
-			//     },
-
-			//   },
-
-			// },
-			// jlsg_qingcheng_yin2: {
-			//   audio: "ext:极略/audio/skill:true",
-			//   enable: ["chooseToUse", "chooseToRespond"],
-			//   filterCard: function () {
-			//     return false;
-			//   },
-			//   selectCard: -1,
-			//   viewAs: { name: 'shan' },
-			//   viewAsFilter: function (player) {
-			//     return !player.isLinked();
-			//   },
-			//   prompt: '横置你的武将牌，视为打出一张【闪】',
-			//   check: function () {
-			//     return 1
-			//   },
-			//   onuse: function (result, player) {
-			//     if (!player.isLinked()) player.link();
-			//   },
-			//   onrespond: function (result, player) {
-			//     if (!player.isLinked()) player.link();
-			//   },
-			//   ai: {
-			//     skillTagFilter: function (player) {
-			//       return player.isLinked();
-			//     },
-			//     respondShan: true,
-			//     basic: {
-			//       useful: [7, 2],
-			//       value: [7, 2],
-			//     },
-			//   }
-			// },
 			jlsg_aozhan: {
 				audio: "ext:极略/audio/skill:true",
 				srlose: true,
@@ -5372,15 +5002,7 @@ export default function () {
 			jlsg_aozhan2: '鏖战',
 			jlsg_huxiao: '虎啸',
 			jlsg_huxiao2: '虎啸',
-			// jlsg_qingcheng_zhu: '倾城',
-			// jlsg_qingcheng_yin: "倾城",
-			// jlsg_qingcheng_yang: "倾城",
-			// jlsg_qingcheng_yin1: '倾城·杀',
-			// jlsg_qingcheng_yin2: "倾城·闪",
-			// jlsg_qingcheng_yang1: '倾城·杀',
-			// jlsg_qingcheng_yang2: '倾城·闪',
 			jlsg_qingcheng: '倾城',
-			jlsg_qingcheng2: '倾城',
 			jlsg_guicai: '鬼才',
 			jlsg_langgu: '狼顾',
 			jlsg_langgu2: '狼顾',
@@ -5479,11 +5101,7 @@ export default function () {
 			jlsg_zhonghou_info: '当你攻击范围内的一名角色需要使用或打出一张基本牌时，该角色可以向你请求之，你可以失去1点体力，视为该角色使用此牌；若你拒绝，则取消此次响应。（你的濒死阶段除外）',
 			jlsg_zhonghou_append: '<span style="font-family: yuanli">一名其他角色被你拒绝后，其本回合内不能再次发动忠候。你不能拒绝自己请求的忠候。</span>',
 			jlsg_liuyun_info: '出牌阶段限一次，你可以横置你的武将牌并弃置一张黑色牌，然后令一名角色选择一项：回复1点体力，或摸两张牌。',
-			// jlsg_lingbo_info: '当一名其他角色回合结束时，若你的武将牌横置时，你可以将一张自己装备区的牌移至该角色的合理区域；当一名其他角色回合开始时，若你的武将牌重置时，你可以选择该角色一张除手牌的牌，将此牌置入牌顶。',
-			jlsg_lingbo_info: '一名角色的回合开始阶段，你可以重置你的武将牌，然后将场上的一张牌置于牌堆顶。',
-			// jlsg_qingcheng_zhu_info: '游戏开始时，若你拥有技能［流云］：你可以重置你的武将牌，视为你使用或打出一张【杀】；你可以横置你的武将牌，视为你使用或打出一张【闪】；否则技能效果反之。',
-			// jlsg_qingcheng_yin_info: '你可以重置你的武将牌，视为你使用或打出一张【杀】；你可以横置你的武将牌，视为你使用或打出一张【闪】。',
-			// jlsg_qingcheng_yang_info: '你可以横置你的武将牌，视为你使用或打出一张【杀】；你可以重置你的武将牌，视为你使用或打出一张【闪】。',
+			jlsg_lingbo_info: '一名角色的准备阶段，你可以重置你的武将牌，然后将场上的一张牌置于牌堆顶。',
 			jlsg_qingcheng_info: '你可以横置你的武将牌，视为你使用或打出一张【杀】；你可以重置你的武将牌，视为你使用或打出一张【闪】。',
 			jlsg_aozhan_info: '每当你因【杀】或【决斗】造成或受到1点伤害后，你可将牌堆顶的一张牌置于你的武将牌上，称为「战」。出牌阶段限一次，你可以选择一项：1、将所有「战」收入手牌。2、弃置所有「战」，然后摸等量的牌。',
 			jlsg_huxiao_info: '出牌阶段，当你使用【杀】造成伤害时，若你的武将牌正面向上，你可以令此伤害+1并摸一张牌。若如此做，则此【杀】结算完毕后，将你的武将牌翻面并结束当前回合。',
