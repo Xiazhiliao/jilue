@@ -140,6 +140,15 @@ export default function () {
 								break;
 							}
 							const { result } = await player.chooseUseTarget('请选择无畏的目标', sha, "nodistance")
+								.set("filterTarget", (card, player, target) => {
+									if (!player.canUse(card, target, false)) { return false; }
+									const targets = player.getHistory("useCard", evt => {
+										const evtx = evt.getParent("jlsg_wuwei", true);
+										if (evtx?.getParent("phaseDraw", true) != trigger) { return false; }
+										return evt.targets?.length;
+									}).reduce((list, evt) => list.addArray(evt.targets), []);
+									return !targets.includes(target);
+								})
 								.set("ai", target => {
 									const player = get.player(),
 										sha = get.event("card");
@@ -231,8 +240,7 @@ export default function () {
 						async content(even, trigger, player) {
 							const { result } = await player.chooseCardButton('掩杀', player.getExpansions('jlsg_yansha'), true);
 							if (result.bool && result.links?.length) {
-								const cards = result.links;
-								await player.loseToDiscardpile(cards);
+								await player.discard(result.links);
 								if (trigger.player.countCards('he')) {
 									await player.gainPlayerCard(trigger.player, 2, 'he', true);
 								}
@@ -5465,7 +5473,7 @@ export default function () {
 			jlsg_old_dailao_info: '出牌阶段限一次，你可以令一名其他角色与你各摸一张牌或各弃置一张牌，然后你与其依次将武将牌翻面。',
 			jlsg_old_youdi_info: '若你的武将牌背面朝上，你可以将其翻面来视为你使用一张【闪】。每当你使用【闪】响应一名角色使用的【杀】时，你可以额外弃置任意数量的手牌，然后该角色弃置等量的牌。',
 			jlsg_old_ruya_info: '当你失去最后的手牌时，你可以翻面并将手牌补至你体力上限的张数。',
-			jlsg_wuwei_info: '摸牌阶段，你可以放弃摸牌，改为亮出牌堆顶的3张牌，其中每有一张基本牌，你便可视为对一名其他角色使用一张【杀】(每阶段对每名角色限一次)。然后将这些基本牌置入弃牌堆，其余收入手牌。',
+			jlsg_wuwei_info: '摸牌阶段，你可以放弃摸牌，改为亮出牌堆顶的3张牌，其中每有一张基本牌，你便可弃置之视为对一名其他角色使用一张【杀】(每阶段对每名角色限一次)。然后获得剩余牌。',
 			jlsg_yansha_info: '摸牌阶段，你可以少摸一张牌。若如此做，本回合弃牌阶段开始时，你可以将一张手牌置于武将牌上，称为「掩」。当一名其他角色使用【杀】选择目标后，你可以将一张「掩」置入弃牌堆，然后获得其两张牌。',
 			jlsg_yansha2_info: '一名其他角色使用【杀】选择目标后，你可以将一张「掩」置入弃牌堆，然后获得其两张牌。',
 			jlsg_zhonghou_info: '当你攻击范围内的一名角色需要使用或打出一张基本牌时，该角色可以向你请求之，你可以失去1点体力，视为该角色使用此牌；若你拒绝，则取消此次响应。（你的濒死阶段除外）',
