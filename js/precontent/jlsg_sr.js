@@ -356,7 +356,7 @@ export default function () {
 				},
 			},
 			jlsg_qingcheng: {
-				audio: "ext:极略/audio/skill:2",
+				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				enable: ['chooseToUse', 'chooseToRespond'],
 				filter(event, player) {
@@ -741,7 +741,7 @@ export default function () {
 			//   }
 			// },
 			jlsg_aozhan: {
-				audio: "ext:极略/audio/skill:true",
+				audio: "ext:极略/audio/skill:2",
 				srlose: true,
 				shaRelated: true,
 				marktext: '战',
@@ -776,7 +776,7 @@ export default function () {
 				group: ['jlsg_aozhan_use'],
 				subSkill: {
 					use: {
-						audio: "ext:极略/audio/skill:true",
+						audio: "jlsg_aozhan",
 						enable: 'phaseUse',
 						usable: 1,
 						filter: function (event, player) {
@@ -929,7 +929,7 @@ export default function () {
 				},
 			},
 			jlsg_langgu: {
-				audio: "ext:极略/audio/skill:2",
+				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				trigger: {
 					player: 'damageEnd',
@@ -942,7 +942,7 @@ export default function () {
 				},
 				check: function (event, player) {
 					const target = lib.skill.jlsg_langgu.logTarget(event, player);
-					if (target == player && !player.getVEquips("baiyin").length) { return false };
+					if (target == player && !player.getVEquips("baiyin").length) { return false; }
 					return get.effect(target, { name: "shunshou_copy2" }, player, player) > 0;
 				},
 				logTarget(event, player) {
@@ -980,7 +980,7 @@ export default function () {
 				enable: 'chooseToUse',
 				mark: true,
 				intro: {
-					content: 'limited'
+					content: 'limited',
 				},
 				limited: true,
 				skillAnimation: true,
@@ -1013,7 +1013,7 @@ export default function () {
 						if (player.hp > 0) return false;
 					},
 					result: {
-						player: 10
+						player: 10,
 					},
 				},
 			},
