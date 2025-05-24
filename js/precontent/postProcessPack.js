@@ -3,7 +3,7 @@ export default function (pack) {
   const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
   for (let name in pack.character) {
     if (!pack.character[name][4]) pack.character[name][4] = [];
-    if (!pack.character[name][4].some(j => j.startsWith("die:"))) pack.character[name][4].push(`die:ext:极略/audio/die/${name}.mp3`);
+    if (!pack.character[name][4].some(j => j.startsWith("die:"))) pack.character[name][4].add("die:ext:极略/audio/die:true");
     pack.character[name][4].push(`${(lib.device || lib.node) ? 'ext:' : 'db:extension-'}极略/image/character/${name}.jpg`);
     if (name in pack.translate && !name.startsWith('jlsgsy') && !name.startsWith('jlsgrm')) {
       let translate = pack.translate[name];

@@ -3238,48 +3238,62 @@ export default function () {
         },
         async content(event, trigger, player) {
           const target = event.targets[0];
-          target.addTempSkill('jlsg_lihun_buff', { player: 'phaseAfter' });
           player.storage.jlsg_lihun = target;
           target.insertPhase("jlsg_lihun");
         },
         group: ["jlsg_lihun_swapControl"],
         subSkill: {
           swapControl: {
-            trigger: {
-              global: ["phaseBeginStart", "phaseAfter", "dieEnd"],
-            },
+            audio: false,
+            trigger: { global: "phaseBeginStart" },
             filter(event, player) {
-              if (!player.storage.jlsg_lihun) return false;
-              return player.storage.jlsg_lihun == event.player;
+              if (player.storage?.jlsg_lihun != event.player) return false;
+              return player != event.player && !event.player._trueMe;
             },
+            charlotte: true,
+            forced: true,
+            popup: false,
+            async content(event, trigger, player) {
+              delete player.storage.jlsg_lihun;
+              trigger.player._trueMe = player;
+              game.addGlobalSkill("autoswap");
+              if (trigger.player == game.me) {
+                game.notMe = true;
+                if (!_status.auto) ui.click.auto();
+              }
+              trigger.player.addTempSkill('jlsg_lihun_buff', { player: 'phaseAfter' });
+            },
+          },
+          buff: {
+            sourceSkill: "jlsg_lihun",
+            trigger: {
+              player: ["phaseAfter"],
+              global: ["phaseBeforeStart", "dieAfter"],
+            },
+            lastDo: true,
             charlotte: true,
             forceDie: true,
             forced: true,
             popup: false,
-            content() {
-              if (
-                event.triggername == "phaseBeginStart"
-                && (!trigger.player._trueMe || trigger.player._trueMe != player)
-              ) {
-                trigger.player._trueMe = player;
-                game.addGlobalSkill("autoswap");
-                if (trigger.player == game.me) {
-                  game.notMe = true;
-                  if (!_status.auto) ui.click.auto();
+            filter(event, player) {
+              if (event.name == "die") {
+                if (event.player != player && event.player != player._trueMe) {
+                  return false;
                 }
               }
-              else {
-                if (trigger.player == game.me) {
-                  if (!game.notMe) game.swapPlayerAuto(trigger.player._trueMe);
-                  else delete game.notMe;
-                  //if (!_status.auto) ui.click.auto();
-                }
-                delete player.storage.jlsg_lihun;
-                delete trigger.player._trueMe;
-              }
+              return true
             },
-          },
-          buff: {
+            async content(event, trigger, player) {
+              player.removeSkill(event.name);
+            },
+            onremove(player) {
+              if (player == game.me) {
+                if (!game.notMe) game.swapPlayerAuto(player._trueMe);
+                else delete game.notMe;
+                if (_status.auto) ui.click.auto();
+              }
+              delete player._trueMe;
+            },
             mark: true,
             marktext: '离',
             intro: {
