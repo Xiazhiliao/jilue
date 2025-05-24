@@ -241,7 +241,7 @@ export default function () {
 						async content(event, trigger, player) {
 							const { result } = await player.chooseCardButton('掩杀', player.getExpansions('jlsg_yansha'), true);
 							if (result.bool && result.links?.length) {
-								await player.discard(result.links);
+								await player.loseToDiscardpile(result.links);
 								if (trigger.player.countCards('he')) {
 									await player.gainPlayerCard(trigger.player, 2, 'he', true);
 								}
@@ -395,6 +395,351 @@ export default function () {
 					},
 				},
 			},
+			//旧版技能
+			// jlsg_lingbo: {
+			//   audio: "ext:极略/audio/skill:1",
+			//   srlose: true,
+			//   group: ['jlsg_lingbo1', 'jlsg_lingbo2'],
+			// },
+			// jlsg_lingbo1: {
+			//   trigger: {
+			//     global: "phaseEnd",
+			//   },
+			//   filter: function (event, player) {
+			//     return player.countCards('e') > 0 && event.player != player && player.isLinked();
+			//   },
+			//   check: function (event, player) {
+			//     return get.attitude(player, event.player) > 0;
+			//   },
+			//   content: function () {
+			//     'step 0'
+			//     player.chooseCard('e', 1, true).set('ai', function (card) {
+			//       var sub = get.subtype(card);
+			//       if (_status.event.player.isEmpty(sub)) return -10;
+			//       return get.unuseful(card);
+			//     });
+			//     'step 1'
+			//     if (result.bool) {
+			//       trigger.player.equip(result.cards[0]);
+			//       player.$give(result.cards, trigger.player);
+			//     }
+			//     'step 2'
+			//     if (player.isLinked()) player.link();
+			//   },
+			// },
+			// jlsg_lingbo2: {
+			//   trigger: {
+			//     global: "phaseBegin",
+			//   },
+			//   filter: function (event, player) {
+			//     var card = ui.selected.cards[0];
+			//     if (!card) return false;
+			//     if (get.position(card) == 'e' && !target.isEmpty(get.subtype(card))) return false;
+			//     return event.player != player && event.player.countCards('ej') > 0 && !player.isLinked();
+			//   },
+			//   check: function (event, player) {
+			//     return get.attitude(player, event.player) > 0;
+			//   },
+			//   content: function () {
+			//     "step 0"
+			//     var List = [];
+			//     List.push(trigger.player.getCards('ej'));
+			//     player.chooseButton(List, 1, true).set('ai', function (button) {
+			//       //if(get.attitude(player,trigger.player)<=0){
+			//       //if(get.type(button.link)=='equip')  return 10;
+			//       //return 0;
+			//       //}
+			//       //else if(get.attitude(player,trigger.player)>=3){
+			//       //if(get.type(button.link)=='delay')  return 10;
+			//       //return 0;
+			//       //}
+			//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('lebu') && get.type(button.link) == 'equip') return get.suit(card) == 'heart';
+			//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('bingliang') && get.type(button.link) == 'equip') return get.suit(card) == 'club';
+			//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('shandian') && get.type(button.link) == 'equip') return (get.suit(card) != 'spade' || (card.number < 2 || card.number > 9));
+			//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('lebu') && get.type(button.link) == 'equip') return get.suit(card) != 'heart';
+			//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('bingliang') && get.type(button.link) == 'equip') return get.suit(card) != 'club';
+			//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('shandian') && get.type(button.link) == 'equip') return (get.suit(card) == 'spade' && card.number >= 2 && card.number <= 9);
+			//       return 0;
+			//     });
+			//     "step 1"
+			//     if (result.bool) {
+			//       ui.cardPile.insertBefore(result.links[0], ui.cardPile.firstChild);
+			//     }
+			//     "step 2"
+			//     if (!player.isLinked()) player.link();
+			//   },
+			// },
+			// jlsg_liuyun: {
+			//   audio: "ext:极略/audio/skill:2",
+			//   srlose: true,
+			//   enable: 'phaseUse',
+			//   usable: 1,
+			//   filterCard: function (card) {
+			//     return get.color(card) == 'black';
+			//   },
+			//   position: 'he',
+			//   filter: function (event, player) {
+			//     return player.countCards('he', { color: 'black' }) > 0 && !player.isLinked();
+			//   },
+			//   check: function (card) {
+			//     return 8 - get.value(card)
+			//   },
+			//   prompt: '弃置一张黑色牌，令一名角色选择一项：恢复1点体力或摸两张牌',
+			//   filterTarget: true,
+			//   content: function () {
+			//     player.link();
+			//     target.chooseDrawRecover(2, true);
+			//   },
+			//   ai: {
+			//     expose: 0.2,
+			//     order: 9,
+			//     result: {
+			//       player: function (player) {
+			//         if (player.countCards('h', function (card) {
+			//           return get.color(card) == 'black';
+			//         }) > player.hp) return 1;
+			//         return -1;
+			//       },
+			//       target: function (player, target) {
+			//         var result = 2;
+			//         if (target.isTurnedOver()) result += 3;
+			//         if (target.hp == 1) result += 3;
+			//         return result;
+			//       }
+			//     },
+			//     threaten: 1.5
+			//   }
+			// },
+			// jlsg_qingcheng_zhu: {
+			//   srlose: true,
+			//   trigger: { global: "gameDrawEnd" },
+			//   forced: true,
+			//   content: function () {
+			//     if (player.hasSkill('jlsg_liuyun')) {
+			//       player.addSkill('jlsg_qingcheng_yin');
+			//       player.removeSkill('jlsg_qingcheng_zhu');
+			//     } else {
+			//       player.addSkill('jlsg_qingcheng_yang');
+			//       player.removeSkill('jlsg_qingcheng_zhu');
+			//     }
+			//   },
+			// },
+			// jlsg_qingcheng_yang: {
+			//   audio: "ext:极略/audio/skill:1",
+			//   group: ['jlsg_qingcheng_yang1', 'jlsg_qingcheng_yang2'],
+			// },
+			// jlsg_qingcheng_yang1: {
+			//   audio: "ext:极略/audio/skill:true",
+			//   enable: ['chooseToUse', 'chooseToRespond'],
+			//   filterCard: function () {
+			//     return false;
+			//   },
+			//   selectCard: -1,
+			//   viewAs: { name: 'sha' },
+			//   viewAsFilter: function (player) {
+			//     return !player.isLinked();
+			//   },
+			//   prompt: '横置你的武将牌，视为打出一张【杀】',
+			//   check: function () {
+			//     return 1
+			//   },
+			//   onuse: function (result, player) {
+			//     if (!player.isLinked()) player.link();
+			//   },
+			//   onrespond: function (result, player) {
+			//     if (!player.isLinked()) player.link();
+			//   },
+			//   ai: {
+			//     skillTagFilter: function (player) {
+			//       return !player.isLinked();
+			//     },
+			//     respondSha: true,
+			//     basic: {
+			//       useful: [5, 1],
+			//       value: [5, 1],
+			//     },
+			//     order: function () {
+			//       if (_status.event.player.hasSkillTag('presha', true, null, true)) return 10;
+			//       return 3;
+			//     },
+
+
+			//     result: {
+			//       target: function (player, target) {
+			//         if (player.hasSkill('jiu') && !target.getEquip('baiyin')) {
+			//           if (get.attitude(player, target) > 0) {
+			//             return -6;
+			//           } else {
+			//             return -3;
+			//           }
+			//         }
+			//         return -1.5;
+			//       },
+			//     },
+			//     tag: {
+			//       respond: 1,
+			//       respondShan: 1,
+			//       damage: function (card) {
+			//         if (card.nature == 'poison') return;
+			//         return 1;
+			//       },
+			//       natureDamage: function (card) {
+			//         if (card.nature) return 1;
+			//       },
+			//       fireDamage: function (card, nature) {
+			//         if (card.nature == 'fire') return 1;
+			//       },
+			//       thunderDamage: function (card, nature) {
+			//         if (card.nature == 'thunder') return 1;
+			//       },
+			//       poisonDamage: function (card, nature) {
+			//         if (card.nature == 'poison') return 1;
+			//       },
+			//     },
+
+			//   },
+
+			// },
+			// jlsg_qingcheng_yang2: {
+			//   audio: "ext:极略/audio/skill:true",
+			//   enable: ["chooseToUse", "chooseToRespond"],
+			//   filterCard: function () {
+			//     return false;
+			//   },
+			//   selectCard: -1,
+			//   viewAs: { name: 'shan' },
+			//   viewAsFilter: function (player) {
+			//     return player.isLinked();
+			//   },
+			//   prompt: '重置你的武将牌，视为打出一张【闪】',
+			//   check: function () {
+			//     return 1
+			//   },
+			//   onuse: function (result, player) {
+			//     if (player.isLinked()) player.link();
+			//   },
+			//   onrespond: function (result, player) {
+			//     if (player.isLinked()) player.link();
+			//   },
+			//   ai: {
+			//     skillTagFilter: function (player) {
+			//       return player.isLinked();
+			//     },
+			//     respondShan: true,
+			//     basic: {
+			//       useful: [7, 2],
+			//       value: [7, 2],
+			//     },
+			//   }
+			// },
+			// jlsg_qingcheng_yin: {
+			//   audio: "ext:极略/audio/skill:1",
+			//   group: ['jlsg_qingcheng_yin1', 'jlsg_qingcheng_yin2'],
+			// },
+			// jlsg_qingcheng_yin1: {
+			//   audio: "ext:极略/audio/skill:true",
+			//   enable: ['chooseToUse', 'chooseToRespond'],
+			//   filterCard: function () {
+			//     return false;
+			//   },
+			//   selectCard: -1,
+			//   viewAs: { name: 'sha' },
+			//   viewAsFilter: function (player) {
+			//     return player.isLinked();
+			//   },
+			//   prompt: '重置你的武将牌，视为打出一张【杀】',
+			//   check: function () {
+			//     return 1
+			//   },
+			//   onuse: function (result, player) {
+			//     if (player.isLinked()) player.link();
+			//   },
+			//   onrespond: function (result, player) {
+			//     if (player.isLinked()) player.link();
+			//   },
+			//   ai: {
+			//     skillTagFilter: function (player) {
+			//       return !player.isLinked();
+			//     },
+			//     respondSha: true,
+			//     basic: {
+			//       useful: [5, 1],
+			//       value: [5, 1],
+			//     },
+			//     order: function () {
+			//       if (_status.event.player.hasSkillTag('presha', true, null, true)) return 10;
+			//       return 3;
+			//     },
+
+
+			//     result: {
+			//       target: function (player, target) {
+			//         if (player.hasSkill('jiu') && !target.getEquip('baiyin')) {
+			//           if (get.attitude(player, target) > 0) {
+			//             return -6;
+			//           } else {
+			//             return -3;
+			//           }
+			//         }
+			//         return -1.5;
+			//       },
+			//     },
+			//     tag: {
+			//       respond: 1,
+			//       respondShan: 1,
+			//       damage: function (card) {
+			//         if (card.nature == 'poison') return;
+			//         return 1;
+			//       },
+			//       natureDamage: function (card) {
+			//         if (card.nature) return 1;
+			//       },
+			//       fireDamage: function (card, nature) {
+			//         if (card.nature == 'fire') return 1;
+			//       },
+			//       thunderDamage: function (card, nature) {
+			//         if (card.nature == 'thunder') return 1;
+			//       },
+			//       poisonDamage: function (card, nature) {
+			//         if (card.nature == 'poison') return 1;
+			//       },
+			//     },
+
+			//   },
+
+			// },
+			// jlsg_qingcheng_yin2: {
+			//   audio: "ext:极略/audio/skill:true",
+			//   enable: ["chooseToUse", "chooseToRespond"],
+			//   filterCard: function () {
+			//     return false;
+			//   },
+			//   selectCard: -1,
+			//   viewAs: { name: 'shan' },
+			//   viewAsFilter: function (player) {
+			//     return !player.isLinked();
+			//   },
+			//   prompt: '横置你的武将牌，视为打出一张【闪】',
+			//   check: function () {
+			//     return 1
+			//   },
+			//   onuse: function (result, player) {
+			//     if (!player.isLinked()) player.link();
+			//   },
+			//   onrespond: function (result, player) {
+			//     if (!player.isLinked()) player.link();
+			//   },
+			//   ai: {
+			//     skillTagFilter: function (player) {
+			//       return player.isLinked();
+			//     },
+			//     respondShan: true,
+			//     basic: {
+			//       useful: [7, 2],
+			//       value: [7, 2],
+			//     },
+			//   }
+			// },
 			jlsg_aozhan: {
 				audio: "ext:极略/audio/skill:true",
 				srlose: true,
@@ -532,7 +877,7 @@ export default function () {
 				async content(event, trigger, player) {
 					let str = `${get.translation(trigger.player)}的${(trigger.judgestr || '')}判定为
 						${get.translation(trigger.player.judging[0])}，打出一张手牌代替之或亮出牌顶的一张牌代替之`;
-					const { result } = await player.chooseCard(str)
+					const { result } = await player.chooseCard(str, "h")
 						.set("filterCard", (card, player, event) => {
 							const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 							if (mod2 != "unchanged") return mod2;
@@ -590,14 +935,15 @@ export default function () {
 					player: 'damageEnd',
 					source: 'damageSource',
 				},
-				check: function (event, player) {
-					if (event.source == event.player && !player.getVEquips("baiyin").length) { return false };
-					return event.source && get.attitude(player, event.source) <= 0;
-				},
 				filter: function (event, player) {
 					const target = lib.skill.jlsg_langgu.logTarget(event, player);
 					if (!target?.isIn()) { return false; }
 					return target.countGainableCards(player, "he");
+				},
+				check: function (event, player) {
+					const target = lib.skill.jlsg_langgu.logTarget(event, player);
+					if (target == player && !player.getVEquips("baiyin").length) { return false };
+					return get.effect(target, { name: "shunshou_copy2" }, player, player) > 0;
 				},
 				logTarget(event, player) {
 					if (event.source == event.player) { return player; }
@@ -606,7 +952,7 @@ export default function () {
 				},
 				async content(event, trigger, player) {
 					const target = lib.skill.jlsg_langgu.logTarget(trigger, player);
-					await player.judge(function (card) {
+					const { result } = await player.judge(function (card) {
 						if (get.color(card, get.player()) == 'black') { return 2; }
 						return -2;
 					})
@@ -617,11 +963,12 @@ export default function () {
 				},
 				ai: {
 					expose: 0.2,
+					"maixie_defend": true,
 					effect: {
-						target: function (card, player, target) {
-							if (player.hasSkill('jueqing')) { return [1, -1.5]; }
-							if (get.tag(card, 'damage') && Math.random() < 0.5) {
-								if (get.attitude(target, player) < 0) { return [1, 0, 0, -1.5]; }
+						target(card, player, target) {
+							if (player.countCards("he") > 1 && get.tag(card, "damage")) {
+								if (player.hasSkillTag("jueqing", false, target)) return [1, -1.5];
+								if (get.attitude(target, player) < 0) return [1, 1];
 							}
 						},
 					},
