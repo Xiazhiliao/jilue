@@ -405,62 +405,74 @@ export default function () {
 					content: 'expansion',
 				},
 				onremove: function (player, skill) {
-					var cards = player.getExpansions(skill);
-					if (cards.length) player.loseToDiscardpile(cards);
+					const cards = player.getExpansions(skill);
+					if (cards.length) {
+						player.loseToDiscardpile(cards);
+					}
+				},
+				trigger: {
+					player: 'damageEnd',
+					source: 'damageSource',
+				},
+				filter: function (event, player) {
+					if (event.num <= 0) { return false; }
+					return (event.card?.name == 'sha' || event.card?.name == 'juedou');
 				},
 				frequent: true,
-				trigger: { player: 'damageEnd', source: 'damageSource' },
-				filter: function (event, player) {
-					if (event.num <= 0) return false;
-					return event.card && (event.card.name == 'sha' || event.card.name == 'juedou') && event.notLink();
+				check() {
+					return true;
 				},
-				content: function () {
-					var cards = get.cards(trigger.num);
-					player.addToExpansion(cards, 'gain2').gaintag.add(event.name);
+				async content(event, trigger, player) {
+					const cards = get.cards(trigger.num);
+					const next = player.addToExpansion(cards, 'gain2');
+					next.gaintag.add("jlsg_aozhan");
+					await next;
 				},
-				group: ['jlsg_aozhan2']
-			},
-			jlsg_aozhan2: {
-				audio: "ext:极略/audio/skill:true",
-				enable: 'phaseUse',
-				usable: 1,
-				filter: function (event, player) {
-					return player.getExpansions('jlsg_aozhan').length;
-				},
-				content: function () {
-					'step 0'
-					player.chooseControl('收入手牌', '置入弃牌堆')
-						.set("dialog", ['战', player.getExpansions('jlsg_aozhan')])
-						.set("ai", function (event, player) {
-							var value = 0, i;
-							var cards = player.getExpansions('jlsg_aozhan');
-							for (i = 0; i < cards.length; i++) {
-								value += get.value(cards[i]);
-								if (jlsg.isWeak(player) && get.tag(cards[i], 'save')) value += get.value(cards[i]);
+				group: ['jlsg_aozhan_use'],
+				subSkill: {
+					use: {
+						audio: "ext:极略/audio/skill:true",
+						enable: 'phaseUse',
+						usable: 1,
+						filter: function (event, player) {
+							return player.getExpansions('jlsg_aozhan').length;
+						},
+						async content(event, trigger, player) {
+							const { result } = await player.chooseControl('收入手牌', '置入弃牌堆')
+								.set("dialog", ['战', player.getExpansions('jlsg_aozhan')])
+								.set("ai", function (event, player) {
+									let value = 0, i;
+									const cards = player.getExpansions('jlsg_aozhan');
+									for (i = 0; i < cards.length; i++) {
+										value += get.value(cards[i]);
+										if (jlsg.isWeak(player) && get.tag(cards[i], 'save')) {
+											value += get.value(cards[i]);
+										}
+									};
+									value /= player.getExpansions('jlsg_aozhan').length;
+									if (value > 4) { return '收入手牌'; }
+									return '置入弃牌堆';
+								});
+							const cards = player.getExpansions('jlsg_aozhan');
+							if (result.control == '置入弃牌堆') {
+								await player.loseToDiscardpile(cards);
+								await player.draw(cards.length);
+							} else {
+								await player.gain(cards, 'log', 'gain2');
 							}
-							value /= player.getExpansions('jlsg_aozhan').length;
-							if (value > 4) return '收入手牌';
-							return '置入弃牌堆';
-						})
-					'step 1'
-					if (result.control == '置入弃牌堆') {
-						var cards = player.getExpansions('jlsg_aozhan');
-						player.discard(cards);
-						player.draw(cards.length);
-					} else {
-						player.gain(player.getExpansions('jlsg_aozhan'), 'log', 'gain2');
-					}
+						},
+						ai: {
+							order: 1,
+							result: {
+								player: function (player) {
+									if (player.getExpansions('jlsg_aozhan').length >= 2) { return 1; }
+									if (player.hp + player.countCards('h') <= 3) { return 0.5; }
+									return 0;
+								},
+							},
+						},
+					},
 				},
-				ai: {
-					order: 1,
-					result: {
-						player: function (player) {
-							if (player.getExpansions('jlsg_aozhan').length >= 2) return 1;
-							if (player.hp + player.countCards('h') <= 3) return 0.5;
-							return 0;
-						}
-					}
-				}
 			},
 			jlsg_huxiao: {
 				audio: "ext:极略/audio/skill:true",
@@ -468,84 +480,43 @@ export default function () {
 				shaRelated: true,
 				trigger: { source: 'damageBegin1' },
 				filter: function (event, player) {
-					return !player.isTurnedOver() && player.isPhaseUsing() && event.card && event.card.name == 'sha'; // && event.notLink();
+					return !player.isTurnedOver() && player.isPhaseUsing(true) && event.card?.name == 'sha';
 				},
-				priority: 10,
 				check: function (event, player) {
 					if (!event.player) return -1;
-					if (get.attitude(player, event.player) > 0) return false;
-					if (event.player.hasSkillTag('filterDamage')) return false;
+					if (get.attitude(player, event.player) > 0) { return false; }
+					if (event.player.hasSkillTag('filterDamage')) { return false; }
 					if (event.player.hasSkillTag('filterDamage', null, {
 						player: player,
 						card: event.card,
 					})) {
 						return -10;
 					}
-					var e2 = event.player.get('e', '2');
+					const e2 = event.player.getVEquips("equip2");
 					if (e2) {
-						if (e2.name == 'tengjia') {
-							if (event.nature == 'fire') return 10;
+						if (e2.some(card => card.name == 'tengjia')) {
+							if (game.hasNature(event, 'fire')) { return 10; }
 						}
 					}
-					if (event.player.hasSkill('kuangfeng2') && event.nature == 'fire') return 10;
-					//game.log(get.damageEffect(event.player,player,player,event.nature));
-					return get.damageEffect(event.player, player, player, event.nature);
+					if (event.player.hasSkill('kuangfeng2') && game.hasNature(event, 'fire')) return 10;
+					return get.damageEffect(event.player, player, player, get.nature(event));
 				},
-				content: function () {
+				async content(event, trigger, player) {
 					trigger.num++;
-					player.draw();
-					player.addTempSkill('jlsg_huxiao2', 'shaAfter');
-				}
-			},
-			jlsg_old_huxiao: {
-				audio: "ext:极略/audio/skill:true",
-				srlose: true,
-				trigger: { source: 'damageBegin1' },
-				filter: function (event, player) {
-					return !player.isTurnedOver() && player.isPhaseUsing() && event.card && event.card.name == 'sha';
-				},
-				priority: 10,
-				check: function (event, player) {
-					if (!event.player) return -1;
-					if (get.attitude(player, event.player) > 0) return false;
-					if (event.player.hasSkillTag('filterDamage', null, {
-						player: player,
-						card: event.card,
-					})) {
-						return -10;
-					}
-					var e2 = event.player.get('e', '2');
-					if (e2) {
-						if (e2.name == 'tengjia') {
-							if (event.nature == 'fire') return 10;
-						}
-					}
-					if (event.player.hasSkill('kuangfeng2') && event.nature == 'fire') return 10;
-					//game.log(get.damageEffect(event.player,player,player,event.nature));
-					return get.damageEffect(event.player, player, player, event.nature);
-				},
-				content: function () {
-					trigger.num++;
-					player.draw(3);
-					player.addTempSkill('jlsg_huxiao2', 'shaAfter');
-				}
-			},
-			jlsg_huxiao2: {
-				sourceSkill: "jlsg_huxiao",
-				audio: false,
-				trigger: { player: 'shaEnd' },
-				forced: true,
-				popup: false,
-				content: function () {
-					var evt = _status.event.getParent("phaseUse");
-					if (evt && evt.name == "phaseUse") {
-						evt.skipped = true;
-					}
-					var evt = _status.event.getParent("phase");
-					if (evt && evt.name == "phase") {
-						evt.finish();
-					}
-					player.turnOver();
+					await player.draw();
+					player.when({ player: "useCardAfter" })
+						.filter(evt => evt.card == trigger.card)
+						.step(async function (event, trigger, player) {
+							const evt = trigger.getParent("phaseUse", true);
+							if (evt?.name == "phaseUse") {
+								evt.skipped = true;
+							}
+							const evtx = trigger.getParent("phase", true);
+							if (evtx?.name == "phase") {
+								evtx.finish();
+							}
+							await player.turnOver();
+						});
 				}
 			},
 			jlsg_guicai: {
@@ -4996,12 +4967,8 @@ export default function () {
 			jlsg_ganglie: '刚烈',
 			jlsg_liuyun: '流云',
 			jlsg_lingbo: '凌波',
-			jlsg_lingbo1: "凌波·送牌",
-			jlsg_lingbo2: "凌波·弃牌",
 			jlsg_aozhan: '鏖战',
-			jlsg_aozhan2: '鏖战',
 			jlsg_huxiao: '虎啸',
-			jlsg_huxiao2: '虎啸',
 			jlsg_qingcheng: '倾城',
 			jlsg_guicai: '鬼才',
 			jlsg_langgu: '狼顾',
