@@ -101,6 +101,16 @@ export default function () {
 						}
 						player.removeSkill(result.control);
 						player.update();
+						game.broadcastAll(function (name, skill) {
+							if (lib.characterPack.jlsg_sr[name]) {
+								lib.characterPack.jlsg_sr[name].skills.remove(skill);
+								if (!_status.connectMode) {
+									if (lib.character[name]) {
+										lib.character[name].skills.remove(skill);
+									}
+								}
+							}
+						}, name, result.control)
 					};
 				},
 			},
