@@ -1206,79 +1206,63 @@ export default function () {
 				// filter: function (event, player) {
 				//   return player.countCards('h') != 1;
 				// },
-				filterCard: true,
-				selectCard: function () {
-					return Math.min(1, _status.event.player.countCards('h') - 1);
+				filterCard() {
+					return true;
 				},
-				check: function (event) {
-					var player = _status.event.player;
-					if (player.countCards('h') > player.maxHp) return false;
-					if (!player.hasSha()) return false;
-					return game.hasPlayer(function (current) {
-						return get.attitude(player, current) < 0 && player.canUse('sha', current);
-					});
+				selectCard: function () {
+					return get.select(Math.max(0, Math.min(1, _status.event.player.countCards('h') - 1)));
+				},
+				check: function (card) {
+					const player = get.player();
+					if (player.countCards('h') > player.maxHp) return 0;
+					if (get.name(card) != "sha") return 0;
+					return player.getUseValue(card, false);
 				},
 				discard: false,
 				lose: false,
 				prompt: "选择保留的手牌",
-				content: function () {
-					'step 0'
-					if (cards[0]) {
-						player.discard(player.getCards('h').remove(cards[0]));
-					} else if (player.countCards('h') == 0) {
-						player.draw();
+				async content(event, _, player) {
+					if (event.cards?.length) {
+						await player.discard(player.getCards('h').removeArray(event.cards));
+					} else if (!player.countCards('h')) {
+						await player.draw(1);
 					}
-					'step 1'
-					player.addSkill('jlsg_jiwu_buff1');
-					player.addSkill('jlsg_jiwu_buff2');
-					player.addTempSkill('jlsg_jiwu_buff3', 'phaseAfter');
-
+					player.addTempSkill('jlsg_jiwu_damage');
+					player.addTempSkill('jlsg_jiwu_buff');
 				},
 				mod: {
 					selectTarget: function (card, player, range) {
 						if (card.name != 'sha') return;
 						if (range[1] == -1) return;
-						if (player.countCards('e') != 0) {
+						if (player.countCards('e')) {
 							if (!card.cards || player.countCards('e', eCard => !card.cards.includes(eCard))) {
 								return;
 							}
 						}
 						range[1] += 2;
-					}
+					},
 				},
 				subSkill: {
-					buff1: {
+					damage: {
 						audio: "ext:极略/audio/skill:true",
-						trigger: { source: 'damageBegin' },
+						trigger: { source: 'damageBegin1' },
 						filter: function (event) {
-							return event.card && event.card.name == 'sha' && event.notLink();
+							return event.card?.name == 'sha';
 						},
 						forced: true,
-						content: function () {
+						charlotte: true,
+						async content(event, trigger, player) {
 							trigger.num++;
-						}
-					},
-					buff2: {
-						//audio:"ext:极略/audio/skill:true",
-						trigger: { player: 'useCardAfter', global: 'phaseAfter' },
-						priority: 2,
-						filter: function (event) {
-							if (event.name == 'useCard') return (event.card && (event.card.name == 'sha'));
-							return true;
-						},
-						forced: true,
-						popup: false,
-						content: function () {
-							player.removeSkill('jlsg_jiwu_buff1');
-							player.removeSkill('jlsg_jiwu_buff2');
+							player.removeSkill(event.name);
 						},
 					},
-					buff3: {
+					buff: {
+						charlotte: true,
 						mod: {
 							attackRangeBase: function (player, num) {
 								return Infinity;
 							},
-						}
+						},
 					}
 				},
 				ai: {
@@ -1287,19 +1271,19 @@ export default function () {
 					},
 					result: {
 						player: function (player, target) {
-							if (player.countCards('h') == 0) return 1;
-							if (player.hasSkill('jiu') || player.hasSkill('tianxianjiu')) return 3;
+							if (player.countCards('h') == 0) { return 1; }
+							if (player.hasSkill('jiu') || player.hasSkill('tianxianjiu')) { return 3; }
 							return 4 - player.countCards('h');
 						}
 					},
 					effect: {
 						target: function (card, player, target) {
 							if (get.subtype(card) == 'equip1') {
-								var num = 0;
-								for (var i = 0; i < game.players.length; i++) {
+								let num = 0;
+								for (let i = 0; i < game.players.length; i++) {
 									if (get.attitude(player, game.players[i]) < 0) {
 										num++;
-										if (num > 1) return [0, 0, 0, 0];
+										if (num > 1) { return [0, 0, 0, 0]; }
 									}
 								}
 							}
@@ -1310,88 +1294,114 @@ export default function () {
 			jlsg_sheji: {
 				audio: "ext:极略/audio/skill:true",
 				srlose: true,
-				trigger: { global: 'damageEnd' },
+				trigger: { global: 'damageSource' },
 				filter: function (event, player) {
 					return player.countDiscardableCards(player, 'he') &&
-						event.source && event.source.get('e', '1') &&
+						event.source && event.source.getEquips(1).length &&
 						event.source != player;
 				},
-				check: function (event, player) {
-					return get.attitude(player, event.source) <= 0;
+				async cost(event, trigger, player) {
+					let prompt = "弃置一张牌，然后",
+						cards = trigger.source.getEquips(1).filter(card => {
+							return lib.filter.canBeGained(card, player, trigger.source);
+						});
+					if (cards.length) prompt += "获得" + get.translation(trigger.source) + "装备区中的" + get.translation(cards);
+					else prompt += "无事发生";
+					event.result = await player
+						.chooseToDiscard("he", get.prompt("jlsg_sheji", trigger.source), prompt)
+						.set("ai", function (card) {
+							let eff = get.event("eff");
+							if (typeof eff === "number") return eff - get.value(card);
+							return 0;
+						})
+						.set(
+							"eff",
+							(function () {
+								let es = trigger.source.getEquips(1).filter(card => {
+									return lib.filter.canBeGained(card, player, trigger.source);
+								});
+								if (!es.length) return false;
+								if (get.attitude(player, trigger.source) > 0)
+									return (
+										-2 *
+										es.reduce((acc, card) => {
+											return acc + get.value(card, trigger.source);
+										}, 0)
+									);
+								return es.reduce((acc, card) => {
+									return acc + get.value(card, player);
+								}, 0);
+							})()
+						)
+						.forResult();
 				},
-				direct: true,
-				content: function () {
-					'step 0'
-					event.card = trigger.source.get('e', '1');
-					if (!event.card) {
-						event.finish(); return;
-					}
-					var prompt = `###是否发动【射戟】？###弃置一张牌获得${get.translation(trigger.source)}的${get.translation(event.card)}`;
-					var next = player.chooseToDiscard('he', prompt);
-					next.logSkill = ['jlsg_sheji', trigger.source];
-					next.set("ai", function (card) {
-						if (get.attitude(player, trigger.source) < 0) {
-							return 6 - get.value(card);
-						}
-						return 0;
+				logTarget: "source",
+				async content(event, trigger, player) {
+					const cards = trigger.source.getEquips(1).filter(card => {
+						return lib.filter.canBeGained(card, player, trigger.source);
 					});
-					'step 1'
-					if (result.bool) {
-						trigger.source.$give(event.card, player);
-						player.gain(event.card);
+					if (cards.length) {
+						await player.gain(cards, trigger.source, "give", "bySelf");
 					}
 				},
-				group: ['jlsg_sheji2', 'jlsg_sheji_wushuang'],
+				group: ['jlsg_sheji_sha', 'jlsg_sheji_wushuang'],
 				subSkill: {
+					sha: {
+						sub: true,
+						sourceSkill: "jlsg_sheji",
+						audio: "ext:极略/audio/skill/jlsg_sheji2.mp3",
+						enable: ['chooseToUse', 'chooseToRespond'],
+						filterCard(card, player, event) {
+							return get.type(card) == "equip";
+						},
+						viewAs: { name: 'sha' },
+						viewAsFilter: function (player) {
+							return player.countCards('he', { type: 'equip' }) != 0;
+						},
+						position: 'he',
+						prompt: '将一张装备牌当【杀】使用或打出',
+						check: function (card) {
+							if (get.subtype(card) == 'equip1') return 10 - get.value(card);
+							return 7 - get.equipValue(card);
+						},
+						mod: {
+							targetInRange: function (card) {
+								if (_status.event.skill == 'jlsg_sheji2') return true;
+							},
+						},
+						ai: {
+							order: function () {
+								return lib.card.sha.ai.order + 0.1;
+							},
+							respondSha: true,
+							skillTagFilter: function (player) {
+								if (!player.countCards('he')) return false;
+							},
+						},
+					},
 					wushuang: {
+						sub: true,
+						sourceSkill: "jlsg_sheji",
 						audio: false,
 						trigger: { player: 'useCardToPlayered' },
 						forced: true,
 						filter: function (event, player) {
-							return event.card.name == 'sha' && !event.getParent().directHit.includes(event.target) && event.parent.skill == 'jlsg_sheji2';
+							let skill = get.sourceSkillFor(event);
+							return event.card.name == 'sha' && !event.getParent().directHit.includes(event.target) && skill == 'jlsg_sheji';
 						},
 						logTarget: 'target',
-						content: function () {
-							var id = trigger.target.playerid;
-							var map = trigger.getParent().customArgs;
+						async content(event, trigger, player) {
+							let id = trigger.target.playerid;
+							let map = trigger.getParent().customArgs;
 							if (!map[id]) map[id] = {};
 							if (typeof map[id].shanRequired == 'number') {
 								map[id].shanRequired++;
 							} else {
 								map[id].shanRequired = 2;
 							}
-						}
-					}
-				}
-			},
-			jlsg_sheji2: {
-				audio: "ext:极略/audio/skill:true",
-				enable: ['chooseToUse', 'chooseToRespond'],
-				filterCard: { type: 'equip' },
-				viewAs: { name: 'sha' },
-				viewAsFilter: function (player) {
-					return player.countCards('he', { type: 'equip' }) != 0;
-				},
-				position: 'he',
-				prompt: '将一张装备牌当【杀】使用或打出',
-				check: function (card) {
-					if (get.subtype(card) == 'equip1') return 10 - get.value(card);
-					return 7 - get.equipValue(card);
-				},
-				mod: {
-					targetInRange: function (card) {
-						if (_status.event.skill == 'jlsg_sheji2') return true;
-					}
-				},
-				ai: {
-					order: function () {
-						return lib.card.sha.ai.order + 0.1;
+						},
 					},
-					respondSha: true,
-					skillTagFilter: function (player) {
-						if (!player.countCards('he')) return false;
-					}
-				}
+				},
 			},
 			jlsg_xingyi: {
 				audio: "ext:极略/audio/skill:1",
