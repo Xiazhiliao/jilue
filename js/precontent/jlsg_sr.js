@@ -1020,40 +1020,34 @@ export default function () {
 			jlsg_tianshang: {
 				audio: "ext:极略/audio/skill:true",
 				srlose: true,
-				unique: true,
 				trigger: { player: 'die' },
 				forceDie: true,
-				direct: true,
 				limited: true,
 				skillAnimation: true,
 				animationColor: 'thunder',
-				content: function () {
-					"step 0"
-					player.chooseTarget('是否发动【天殇】？', function (card, player, target) {
+				async cost(event, trigger, player) {
+					event.result = await player.chooseTarget('是否发动【天殇】？', function (card, player, target) {
 						return player != target;
-					}).ai = function (target) {
-						var num = get.attitude(player, target);
-						if (num > 0) {
-							if (target.isDamaged() && target.hasSkills(jlsg.ai.skill.need_maxhp)) return 5;
-							if (jlsg.isWeak(target)) return 3;
-							if (target.isDamaged()) return 2;
-							return 1;
-						}
-						return 0;
-					};
-					"step 1"
-					if (!result.bool) {
-						event.finish(); return;
-					}
-					player.line(target, 'green');
-					event.target = result.targets[0];
-					player.logSkill('jlsg_tianshang', event.target);
-					let skills = ['jlsg_huiqu', 'jlsg_old_yiji', 'jlsg_yiji']
-						.filter(s => player.hasSkill(s));
-					event.target.addSkills(skills);
-					"step 2"
-					event.target.gainMaxHp();
-					event.target.recover();
+					})
+						.set("ai", function (target) {
+							const player = get.player();
+							let num = get.attitude(player, target);
+							if (num > 0) {
+								if (target.isDamaged() && target.hasSkills(jlsg.ai.skill.need_maxhp)) { return 5; }
+								if (jlsg.isWeak(target)) { return 3; }
+								if (target.isDamaged()) { return 2; }
+								return 1;
+							}
+							return 0;
+						}).forResult();
+				},
+				async content(event, trigger, player) {
+					const { targets: [target] } = event,
+						skills = ['jlsg_huiqu', 'jlsg_old_yiji', 'jlsg_yiji']
+							.filter(s => player.hasSkill(s));
+					await target.addSkills(skills);
+					await target.gainMaxHp(1);
+					await target.recover(1);
 				},
 				ai: {
 					expose: 0.5,
@@ -1163,47 +1157,45 @@ export default function () {
 				filter: function (event, player) {
 					return player.countDiscardableCards(player, 'h');
 				},
-				direct: true,
-				content: function () {
-					'step 0'
-					var check = player.canMoveCard(true);
-					var next = player.chooseToDiscard('是否弃置一张手牌发动【慧觑】？');
-					next.set('ai', function (card) {
-						if (check) {
-							return 8 - get.value(card);
+				async cost(event, trigger, player) {
+					event.result = await player.chooseToDiscard('是否弃置一张手牌发动【慧觑】？')
+						.set('ai', function (card) {
+							if (get.event("check")) {
+								return 8 - get.value(card);
+							}
+							return 4 - get.value(card);
+						})
+						.set("check", player.canMoveCard(true))
+						.set("chooseonly", true)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await player.discard(event.cards);
+					const { result: judge } = await player.judge(card => {
+						if (get.color(card) == "red") {
+							if (get.player().canMoveCard(true)) { return 2; }
+							return 0;
 						}
-						return 4 - get.value(card);
-					});
-					next.logSkill = 'jlsg_huiqu';
-					'step 1'
-					if (result.bool) {
-						player.judge(function (card) {
-							if (get.color(card) == 'red') return (player.canMoveCard(true)) ? 1.5 : 0;
-							return 1;
-						});
-					} else {
-						event.finish();
-					}
-					'step 2'
-					if (result.color) {
-						event.result = result.color;
-						if (result.color == 'red') {
-							player.moveCard();
-							event.finish();
-						} else {
-							player.chooseTarget('选择一名目标对其造成1点伤害，然后摸一张牌。', true).ai = function (target) {
-								return get.damageEffect(target, player, player) + 2;
+						return 2;
+					})
+					if (judge.bool) {
+						if (judge.color == "red") {
+							await player.moveCard();
+						}
+						else {
+							const { result } = await player.chooseTarget('选择一名目标对其造成1点伤害，然后摸一张牌。', true)
+								.set("ai", function (target) {
+									const player = get.player();
+									return get.damageEffect(target, player, player) + 1;
+								})
+							if (result.bool && result.targets?.length) {
+								const { targets: [target] } = result;
+								player.line(target)
+								await target.damage(1, player);
+								await player.draw(1);
 							}
 						}
 					}
-					'step 3'
-					if (result.bool) {
-						player.line(result.targets[0]);
-						result.targets[0].damage(player);
-						player.draw();
-					}
-					// player.line2(result.targets);
-					// event.targets = result.targets;
 				},
 			},
 			jlsg_jiwu: {
