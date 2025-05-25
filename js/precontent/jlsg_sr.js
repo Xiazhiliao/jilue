@@ -232,6 +232,10 @@ export default function () {
 							return event.player != player && player.countExpansions('jlsg_yansha') > 0 && event.player.countCards('he') > 0;
 						},
 						logTarget: 'player',
+						prompt(event, player) {
+							return get.prompt("jlsg_yansha", event.player);
+						},
+						prompt2: "一名其他角色使用【杀】选择目标后，你可以将一张「掩」置入弃牌堆，然后获得其两张牌。",
 						check: function (event, player) {
 							if (event.player.countCards('he') > 1 && get.attitude(player, event.player) < 0) return 2;
 							if (get.attitude(player, event.target) > 0) {
@@ -1808,8 +1812,8 @@ export default function () {
 				},
 			},
 			jlsg_xianger2: {
-				sub:true,
-				sourceSkill:"jlsg_xianger",
+				sub: true,
+				sourceSkill: "jlsg_xianger",
 				audio: false,
 				init(player, skill) {
 					player.storage[skill] = [];
@@ -5252,7 +5256,6 @@ export default function () {
 			jlsgsr_shuangxiong: 'SR颜良文丑',
 			jlsg_wuwei: '无畏',
 			jlsg_yansha: '掩杀',
-			jlsg_yansha3: '掩杀',
 			zh_mark: '忠候',
 			jlsg_zhonghou: '忠侯',
 			jlsg_zhonghou_global: '忠侯',
@@ -5355,7 +5358,6 @@ export default function () {
 			jlsg_old_ruya_info: '当你失去最后的手牌时，你可以翻面并将手牌补至你体力上限的张数。',
 			jlsg_wuwei_info: '摸牌阶段，你可以放弃摸牌，改为亮出牌堆顶的3张牌，其中每有一张基本牌，你便可弃置之视为对一名其他角色使用一张【杀】(每阶段对每名角色限一次)。然后获得剩余牌。',
 			jlsg_yansha_info: '摸牌阶段，你可以少摸一张牌。若如此做，本回合弃牌阶段开始时，你可以将一张手牌置于武将牌上，称为「掩」。当一名其他角色使用【杀】选择目标后，你可以将一张「掩」置入弃牌堆，然后获得其两张牌。',
-			jlsg_yansha2_info: '一名其他角色使用【杀】选择目标后，你可以将一张「掩」置入弃牌堆，然后获得其两张牌。',
 			jlsg_zhonghou_info: '当你攻击范围内的一名角色需要使用或打出一张基本牌时，该角色可以向你请求之，你可以失去1点体力，视为该角色使用此牌；若你拒绝，则取消此次响应。（你的濒死阶段除外）',
 			jlsg_zhonghou_append: '<span style="font-family: yuanli">一名其他角色被你拒绝后，其本回合内不能再次发动忠候。你不能拒绝自己请求的忠候。</span>',
 			jlsg_liuyun_info: '出牌阶段限一次，你可以横置你的武将牌并弃置一张黑色牌，然后令一名角色选择一项：回复1点体力，或摸两张牌。',

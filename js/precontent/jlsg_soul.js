@@ -7846,7 +7846,7 @@ export default function () {
                 return 8 - get.value(card, player);
               })
             if (!bool) return;
-            await player.addToExpansion(player, cards, "giveAuto").set("gaintag", "jlsg_chuyuan");
+            await player.addToExpansion(player, cards, "giveAuto").set("gaintag", ["jlsg_chuyuan"]);
             player.markSkill("jlsg_chuyuan");
             player.update();
             game.asyncDelayx();
