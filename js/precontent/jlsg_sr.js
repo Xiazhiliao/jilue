@@ -1213,9 +1213,6 @@ export default function () {
 				srlose: true,
 				enable: 'phaseUse',
 				usable: 1,
-				// filter: function (event, player) {
-				//   return player.countCards('h') != 1;
-				// },
 				filterCard() {
 					return true;
 				},
@@ -1366,7 +1363,7 @@ export default function () {
 						},
 						viewAs: { name: 'sha' },
 						viewAsFilter: function (player) {
-							return player.countCards('he', { type: 'equip' }) != 0;
+							return player.countCards('he', card => get.type(card) == "equip") != 0;
 						},
 						position: 'he',
 						prompt: '将一张装备牌当【杀】使用或打出',
@@ -1376,7 +1373,7 @@ export default function () {
 						},
 						mod: {
 							targetInRange: function (card) {
-								if (_status.event.skill == 'jlsg_sheji2') return true;
+								if (_status.event.skill == 'jlsg_sheji_sha') return true;
 							},
 						},
 						ai: {
