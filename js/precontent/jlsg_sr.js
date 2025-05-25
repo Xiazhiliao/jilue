@@ -1415,17 +1415,22 @@ export default function () {
 				enable: 'phaseUse',
 				usable: 1,
 				srlose: true,
-				filterTarget: function (card, player, target) {
-					return target.countCards('h') > 0 && player != target;
+				filter(event, player) {
+					return game.hasPlayer(current => {
+						return current != player && current.countGainableCards(player, "h")
+					});
 				},
-				content: function () {
-					if (target.countCards('h') > 0) {
-						player.gainPlayerCard(target, true, 'h');
-					}
-					target.recover();
+				filterTarget: function (card, player, target) {
+					return target.countGainableCards(player, 'h') && player != target;
+				},
+				async content(event, trigger, player) {
+					const { targets: [target] } = event;
+					await player.gainPlayerCard(target, "h", true);
+					await target.recover(1);
 				},
 				ai: {
 					order: 2,
+					threaten: 2,
 					result: {
 						player: function (card, player, target) {
 							if (jlsg.needKongcheng(player, true)) return -1;
@@ -1440,23 +1445,21 @@ export default function () {
 							if (target.hp == jlsg.getBestHp(target)) return -0.1;
 							if (!target.isDamaged() && jlsg.hasLoseHandcardEffective(target)) return -1;
 							return 0;
-						}
+						},
 					},
-					threaten: 2
-				}
+				},
 			},
 			jlsg_guagu: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				trigger: { global: 'dying' },
-				priority: 6,
 				filter: function (event, player) {
-					return event.player.hp <= 0 && event.player.countCards('h') != 0;
+					return event.player.hp <= 0 && event.player.countDiscardableCards(player, 'h');
 				},
 				logTarget: 'player',
 				check: function (event, player) {
-					var att = get.attitude(player, event.player);
-					var num = event.player.countCards('h');
+					let att = get.attitude(player, event.player);
+					let num = event.player.countDiscardableCards(player, 'h');
 					if (att > 0 && event.player.hasSkillTag('nosave')) {
 						return false;
 					}
@@ -1468,53 +1471,47 @@ export default function () {
 					}
 					return [true, false].randomGet();
 				},
-				content: function () {
-					"step 0"
-					var cards = trigger.player.getCards('h');
-					event.bool = cards.length >= 2;
-					trigger.player.discard(cards);
-					trigger.player.recover();
-					"step 1"
-					if (event.bool) {
-						trigger.player.draw();
+				async content(event, trigger, player) {
+					const { result } = await player.discardPlayerCard(trigger.player, true, "h", trigger.player.countCards("h"));
+					await trigger.player.recover(1);
+					if (result.links?.length > 1) {
+						await trigger.player.draw(1);
 					}
 				},
 				ai: {
 					expose: 0.2,
 					threaten: 1.5,
-					// save:true,
-					// skillTagFilter:function(player,tag,target){
-					//   debugger;
-					//   return target.countCards('h');
-					// },
-				}
+				},
 			},
 			jlsg_wuqin: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				trigger: { player: 'phaseJieshuEnd' },
 				filter: function (event, player) {
-					return player.countCards('h', { type: 'basic' }) > 0;
+					return player.countDiscardableCards(player, 'h', card => get.type(card) == "basic");
 				},
-				direct: true,
-				content: function () {
-					'step 0'
-					player.chooseToDiscard('是否发动【五禽】？', function (card) {
-						return get.type(card) == 'basic';
-					}).ai = function (card) {
-						if (jlsg.needKongcheng(player) && player.countCards('h') == 1) return 10 - get.value(card);
-						return 5 - get.useful(card);
+				async cost(event, trigger, player) {
+					event.result = await player.chooseToDiscard(get.prompt("jlsg_wuqin"), card => get.type(card) == "basic")
+						.set("ai", card => {
+							const player = get.player();
+							if (jlsg.needKongcheng(player) && player.countCards('h') == 1) {
+								return 10 - get.value(card);
+							}
+							return 5 - get.useful(card);
+						})
+						.set("chooseonly", true)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await player.discard(event.cards);
+					await player.draw(2);
+					const phase = trigger.getParent("phase", true);
+					if (phase) {
+						phase.phaseList.splice(trigger.num + 1, 0, `phaseUse|${event.name}`);
 					}
-					'step 1'
-					if (!result.bool) {
-						event.finish();
-						return;
+					else {
+						await player.phaseUse();
 					}
-					player.logSkill("jlsg_wuqin");
-					player.draw(2);
-					player.getStat().card = {};
-					player.getStat().skill = {};
-					player.phaseUse();
 				}
 			},
 			jlsg_lijian: {
