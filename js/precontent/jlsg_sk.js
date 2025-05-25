@@ -13551,7 +13551,7 @@ export default function () {
           if (evt.name == "chooseToCompare") str += "拼点的牌";
           else str += `${(evt.name == "chooseToUse" ? "使用" : "打出")}的牌`
           if (evt.name != "chooseToCompare") {//使用|打出
-            player.storage.jlsg_tianbian ??= Object.entries(await game.createEvent("empty").setContent(function () { }));
+            player.storage.jlsg_tianbian ??= Object.entries(await game.createEvent("empty", false).setContent(function () { }));
             let args = Object.entries(evt),
               obj = {
                 prompt: str,
@@ -13560,8 +13560,6 @@ export default function () {
                 filterCard(card, player, event) {
                   return get.event("cards").includes(card);
                 },
-                filterTarget: () => false,
-                selectTarget: -1,
                 ai1(card) {
                   if (get.type(card) == "equip") return 0;
                   const evt = get.event().getParent(3),
