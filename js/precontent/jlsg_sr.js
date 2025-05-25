@@ -1517,145 +1517,94 @@ export default function () {
 			jlsg_lijian: {
 				audio: "ext:极略/audio/skill:2",
 				srlose: true,
-				enable: 'phaseUse',
-				usable: 1,
-				filter: function (event, player) {
-					return game.countPlayer(function (current) {
-						return current != player && current.hasSex('male');
-					}) > 1;
-				},
-				check: function (card) {
-					return 10 - get.value(card)
-				},
-				filterCard: true,
-				position: 'he',
-				filterTarget: function (card, player, target) {
-					if (player == target) return false;
-					if (!target.hasSex('male')) return false;
-					if (ui.selected.targets.length == 1) {
-						return target.canUse({ name: 'juedou' }, ui.selected.targets[0]);
-					}
-					return true;
-				},
-				targetprompt: ['先出杀', '后出杀'],
-				selectTarget: 2,
-				multitarget: true,
-				content: function () {
-					targets[1].useCard({
-						name: 'juedou',
-						isCard: true
-					}, 'nowuxie', targets[0], 'noai').animate = false;
-					game.delay(0.5);
-				},
-				ai: {
-					order: 8,
-					result: {
-						target: function (player, target) {
-							if (ui.selected.targets.length == 0) {
-								return -3;
-							} else {
-								return get.effect(target, { name: 'juedou' }, ui.selected.targets[0], target);
-							}
-						}
-					},
-					expose: 0.4,
-					threaten: 3,
-				}
+				inherit: "lijian",
 			},
 			jlsg_manwu: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				enable: 'phaseUse',
 				usable: 1,
-				filterTarget: function (card, player, target) {
-					if (!target.hasSex('male')) return false;
-					return target.countCards('h') && player != target;
+				filter(event, player) {
+					return game.hasPlayer(current => {
+						if (!current.hasSex("male") || current == player) { return false; }
+						return current.countCards("h");
+					})
 				},
-				content: function () {
-					event.card = target.get('h').randomGet();
-					player.showCards(event.card);
-					if (get.suit(event.card) == 'diamond') {
-						target.addJudge('lebu', event.card);
-						target.$give(event.card, target);
+				filterTarget: function (card, player, target) {
+					if (!target.hasSex("male") || target == player) { return false; }
+					return target.countCards("h");
+				},
+				async content(event, trigger, player) {
+					const { targets: [target] } = event;
+					const { result } = await player.choosePlayerCard(target, "h", true, "曼舞")
+						.set("prompt2", `请选择${get.translation(target)}要展示的一张手牌`)
+						.set("ai", button => {
+							const player = get.player(),
+								target = get.event("target");
+							if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
+								const card = button.link;
+								if (get.suit(card, target) == "diamond") {
+									return get.effect(target, get.autoViewAs({ name: "lebu", }, [card]), target, player);
+								}
+								return get.value(card, player);
+							}
+							return get.event().getRand();
+						});
+					if (!result?.bool || !result?.links?.length) { return; }
+					const card = result.links[0];
+					await player.showCards(card);
+					if (get.suit(card, target) == 'diamond') {
+						await target.addJudge('lebu', [card]);
 					} else {
-						player.gain(event.card, target, 'give').set('visible', true);
-						// target.$give(event.card, player);
+						await player.gain(card, target, 'give').set('visible', true);
 					}
 				},
 				ai: {
 					order: 9,
 					result: {
-						// player: function (card, player, target) {
-						// },
-						target: function (target, player) {
-							return get.effect(target, { name: 'lebu' }, player, target);
-						},
 						player: 1,
-					}
-				}
+						target: function (target, player) {
+							return get.effect(target, get.autoViewAs({ name: "lebu", }, "unsure"), target, target);
+						},
+					},
+				},
 			},
 			jlsg_baiyue: {
 				audio: "ext:极略/audio/skill:2",
 				srlose: true,
-				forced: true,
-				popup: false,
-				silent: true,
-				charlotte: true,
-				marktext: "拜",
-				intro: {
-					content: 'cards',
+				trigger: { player: "phaseJieshuBegin" },
+				filter(event, player) {
+					return game.hasPlayer2(current => {
+						if (current == player) { return false; }
+						return current.getHistory("lose")
+							.map(evt => evt.cards.filterInD("d"))
+							.flat()
+							.unique()
+							.length;
+					});
 				},
-				init: function (player) {
-					player.storage.jlsg_baiyue = [];
+				async cost(event, trigger, player) {
+					const cards = [];
+					game.countPlayer2(current => {
+						if (current == player) { return false; }
+						let cardsx = current.getHistory("lose")
+							.map(evt => evt.cards.filterInD("d"))
+							.flat()
+							.unique();
+						cards.addArray(cardsx);
+					})
+					const { result } = await player.chooseCardButton('是否发动【拜月】？', cards)
+						.set("ai", button => {
+							return get.value(button.link);
+						})
+					event.result = {
+						bool: result?.bool,
+						cards: result?.links || [],
+					};
 				},
-				trigger: { global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"] },
-				filter: function (event, player) {
-					if (_status.currentPhase != player) return false;
-					if (event.name == 'cardsDiscard') {
-						var evt = event.getParent();
-						if (evt.name != 'orderingDiscard') return false;
-						var evtx = (evt.relatedEvent || evt.getParent());
-						if (evtx.player == player) return false;
-						return game.hasGlobalHistory('cardMove', (e) => e.name == 'lose' && (e.relatedEvent || e.getParent()) == evtx && e.cards2.length > 0)
-
-					}
-					var cards = event.getd();
-					cards.removeArray(event.getd(player));
-					return cards.length;
+				async content(event, trigger, player) {
+					await player.gain(event.cards, "gain2");
 				},
-				content: function () {
-					var cards = trigger.getd();
-					cards.removeArray(trigger.getd(player));
-					player.markAuto("jlsg_baiyue", cards.filterInD('d'));
-					player.addTempSkill('jlsg_baiyue_phaseEnd');
-				},
-				subSkill: {
-					phaseEnd: {
-						audio: 'jlsg_baiyue',
-						onremove: function (player) {
-							player.storage.jlsg_baiyue = [];
-							player.unmarkSkill("jlsg_baiyue");
-						},
-						trigger: { player: 'phaseJieshuBegin' },
-						filter: function (event, player) {
-							return player.getStorage('jlsg_baiyue').filterInD('d').length;
-						},
-						direct: true,
-						content: function () {
-							'step 0'
-							player.chooseCardButton('是否发动【拜月】？', player.getStorage('jlsg_baiyue').filterInD('d')).ai = function (button) {
-								return get.value(button.link);
-							}
-							'step 1'
-							if (result.bool) {
-								player.logSkill('jlsg_baiyue');
-								player.unmarkAuto('jlsg_baiyue', [result.buttons[0].link]);
-								player.gain(result.buttons[0].link);
-								player.$gain(result.buttons[0].link);
-							}
-						},
-					}
-				}
 			},
 			// jlsg_baiyue: {
 			//   audio: "ext:极略/audio/skill:2",
