@@ -1909,23 +1909,20 @@ export default function () {
 				audio: "ext:极略/audio/skill:2",
 				srlose: true,
 				enable: 'chooseToUse',
-				discard: false,
-				prepare: function (cards, player) {
-					player.$give(cards, player);
-				},
 				filter: function (event, player) {
-					if (event.type == 'dying') {
-						return event.filterCard({ name: 'tao' }, player) && ((!player.hasJudge('lebu') && player.countCards('he', { suit: 'diamond' })) || (!player.hasJudge('bingliang') && player.countCards('he', { suit: 'club' })));
-					}
-					if (event.parent.name != 'phaseUse') return false;
-					if (!lib.filter.filterCard({ name: 'tao' }, player, event)) {
+					const tao = get.autoViewAs({ name: "tao" }, []);
+					if (!event.filterCard(tao, player, event)) {
 						return false;
 					}
-					return player.isDamaged() && ((!player.hasJudge('lebu') && player.countCards('he', { suit: 'diamond' })) || (!player.hasJudge('bingliang') && player.countCards('he', { suit: 'club' })));
+					return player.canAddJudge("bingliang") && player.countCards("h", card => get.suit(card) == "club")
+						|| player.canAddJudge("lebu") && player.countCards("h", card => get.suit(card) == "diamond");
 				},
+				viewAs: "tao",
 				position: 'he',
 				filterCard: function (card, player, target) {
-					return ((get.suit(card) == 'diamond' && !player.hasJudge('lebu')) || (get.suit(card) == 'club' && !player.hasJudge('bingliang')));
+					if (get.suit(card, player) == "club") { return player.canAddJudge("bingliang"); }
+					else if (get.suit(card, player) == "diamond") { return player.canAddJudge('lebu'); }
+					return false;
 				},
 				filterTarget: function (card, player, target) {
 					if (_status.event.type == 'dying') {
@@ -1937,13 +1934,20 @@ export default function () {
 				check: function (card) {
 					return 8 - get.value(card);
 				},
-				content: function () {
-					if (get.suit(cards[0]) == 'diamond') {
-						player.addJudge('lebu', cards[0]);
+				discard: false,
+				lose: false,
+				log: false,
+				async precontent(event, trigger, player) {
+					const card = event.result.cards[0];
+					event.result.cards = [];
+					await player.logSkill("jlsg_fangxin");
+					let name;
+					if (get.suit(card) == 'diamond') {
+						name = "lebu";
 					} else {
-						player.addJudge('bingliang', cards[0]);
+						name = "bingliang";
 					}
-					player.useCard({ name: 'tao' }, targets).delayx = false;
+					await player.addJudge(name, [card]);
 				},
 				ai: {
 					threaten: 1.5,
@@ -1951,10 +1955,12 @@ export default function () {
 					order: 9,
 					result: {
 						player: function (player) {
-							return get.effect(player, { name: 'lebu' }, player, player);
+							let lebu = get.autoViewAs({ name: "lebu" }, "unsure"),
+								bingliang = get.autoViewAs({ name: "bingliang" }, "unsure");
+							return Math.max(get.effect(player, lebu, player, player), get.effect(player, bingliang, player, player));
 						},
 						target: function (player, target) {
-							return get.effect(target, { name: 'tao' }, player, target);
+							return get.effect(target, get.autoViewAs({ name: "tao" }, []), player, player);
 						}
 					}
 				}
@@ -1965,7 +1971,7 @@ export default function () {
 				check: function (event, player) {
 					return get.attitude(player, event.player) > 0;
 				},
-				audio: "ext:极略/audio/skill:2",
+				audio: "jlsg_fangxin",
 				filter: function (event, player) {
 					if (event.type == 'dying') {
 						return event.filterCard({ name: 'tao' }, player) && ((!player.hasJudge('lebu') && player.countCards('he', { suit: 'diamond' })) || (!player.hasJudge('bingliang') && player.countCards('he', { suit: 'club' })));
@@ -2019,118 +2025,99 @@ export default function () {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				trigger: { player: 'phaseBegin' },
-				direct: true,
-				content: function () {
-					'step 0'
-					player.chooseTarget('细语：弃置一名角色的一张牌，然后该角色进行1个额外的出牌阶段', function (card, player, target) {
-						return target.countCards('he') > 0;
-					}).ai = function (target) {
-						if (target.countCards('h') >= 3) return get.attitude(_status.event.player, target);
-						if (target.countCards('h') < 2) return -get.attitude(_status.event.player, target);
-						return -get.attitude(_status.event.player, target);
-					}
-					'step 1'
-					if (result.bool) {
-						player.logSkill('jlsg_xiyu', result.targets);
-						event.targets = result.targets;
-						if (event.targets[0].num('he') > 0) {
-							player.discardPlayerCard('he', event.targets[0], true);
-						}
-						event.targets[0].phaseUse();
-						event.targets[0].getStat().card = {};
-						event.targets[0].getStat().skill = {};
-					}
-				}
+				async cost(event, trigger, player) {
+					event.result = await player.chooseTarget('细语：弃置一名角色的一张牌，然后该角色进行1个额外的出牌阶段', (card, player, target) => {
+						return target.countDiscardableCards(player, "he");
+					})
+						.set("ai", target => {
+							const player = get.player();
+							if (target.countCards('h') >= 3) { return get.attitude(player, target); }
+							else if (target.countCards('h') < 2) { return -get.attitude(player, target); }
+							return -get.attitude(player, target);
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const { targets: [target] } = event;
+					await player.discardPlayerCard('he', target, true);
+					await target.phaseUse();
+				},
 			},
 			jlsg_wanrou: {
 				audio: "ext:极略/audio/skill:1",
+				mod: {
+					aiUseful(player, card, num) {
+						if (get.suit(card) == "diamond") {
+							if (get.type(card) == "delay") { return 1; }
+							return 0;
+						}
+					},
+				},
 				srlose: true,
 				trigger: {
 					player: "loseAfter",
-					global: ["cardsDiscardAfter", "loseAsyncAfter", 'equipAfter'],
+					global: ["loseAsyncAfter", "cardsDiscardAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
 				},
-				direct: true,
-				filter: function (event, player) {
+				getCheck(event, player) {
 					if (event.name == 'cardsDiscard') { // judge
-						var evt = event.getParent();
-						if (!(evt.name == 'orderingDiscard' && evt.relatedEvent && evt.relatedEvent.player === player)) {
-							return false;
+						const evt = event.getParent();
+						if (!(evt.name == 'orderingDiscard' && evt.relatedEvent?.player === player)) {
+							return [];
 						}
-						var relatedEvent = evt.relatedEvent;
-						var loses = player.getHistory('lose', e => relatedEvent == (e.relatedEvent || e.getParent()));
-						loses = loses.map(e => {
-							e = e.getl(player);
-							if (!e) {
-								return [];
-							}
-							let cards = e.js || [];
-							if (e.hs) {
-								cards.addArray(e.hs.filter(c => get.suit(c, player) == 'diamond'));
-							}
-							if (e.es) {
-								cards.addArray(e.es.filter(c => get.suit(c, player) == 'diamond'));
-							}
-							return cards;
-						}).flat();
-						loses = event.getd().filter(c => loses.includes(c));
-						return loses.length;
-						// return event.getd().filter(c => c.original === 'j');
+						const relatedEvent = evt.relatedEvent;
+						let loses = player.getHistory('lose', evt => relatedEvent == (evt.relatedEvent || evt.getParent()))
+							.map(evt => {
+								const getl = evt.getl(player);
+								if (!getl) {
+									return [];
+								}
+								let cards = getl.js || [];
+								if (getl.cards2?.length) {
+									cards.addArray(getl.cards2.filter(card => get.suit(card, player) == 'diamond'));
+								}
+								return cards;
+							})
+							.flat();
+						loses = event.getd(player).filter(card => loses.includes(card));
+						return loses;
 					}
-					var cards = event.getd(player);
-					if (cards.some(c => get.suit(c, player) == 'diamond')) {
-						return true;
-					}
-					var evt = event.getl(player);
-					if (!evt || !evt.js) {
-						return false;
-					}
-					return evt.js.some(c => cards.includes(c));
+					const cards = event.getd(player, "js").concat(
+						event.getd(player, "cards2").filter(card => get.suit(card, player) == "diamond")
+					);
+					const getl = event.getl(player);
+					const loses = getl?.js.concat(
+						(getl?.cards || []).filter(card => get.suit(card, player) == "diamond")
+					);
+					return cards.filter(card => loses.includes(card));
 				},
-				content: function () {
-					'step 0'
-					if (trigger.name == 'cardsDiscard') {
-						var relatedEvent = trigger.getParent().relatedEvent;
-						var loses = player.getHistory('lose', e => relatedEvent == (e.relatedEvent || e.getParent()));
-						loses = loses.map(e => {
-							e = e.getl(player);
-							if (!e) {
-								return [];
-							}
-							let cards = e.js || [];
-							if (e.hs) {
-								cards.addArray(e.hs.filter(c => get.suit(c, player) == 'diamond'));
-							}
-							if (e.es) {
-								cards.addArray(e.es.filter(c => get.suit(c, player) == 'diamond'));
-							}
-							return cards;
-						}).flat();
-						loses = trigger.getd().filter(c => loses.includes(c));
-						event.count = loses.length;
-					} else {
-						var evt = trigger.getl(player);
-						if (!evt || !evt.js) {
-							event.count = trigger.getd(player).filter(c => get.suit(c, player) == 'diamond').length;
-						} else {
-							event.count = trigger.getd(player).filter(c => get.suit(c, player) == 'diamond' || evt.js.includes(c)).length;
-						}
-					}
-					'step 1'
-					--event.count;
-					player.chooseTarget(`###${get.prompt(event.name)}###令一名角色摸一张牌`).ai = function (target) {
-						return ai.get.attitude(player, target)
-					}
-					'step 2'
-					if (result.bool) {
-						player.logSkill('jlsg_wanrou', result.targets[0]);
-						result.targets[0].draw();
-						if (event.count) {
-							event.goto(1);
-						}
-					}
+				getIndex(event, player) {
+					const cards = lib.skill.jlsg_wanrou.getCheck(event, player);
+					return cards;
+				},
+				filter: function (event, player, name, card) {
+					return card;
+				},
+				async cost(event, trigger, player) {
+					event.result = await player.chooseTarget(`###${get.prompt("jlsg_wanrou")}###令一名角色摸一张牌`)
+						.set("ai", target => {
+							const player = get.player();
+							return get.effect(target, { name: "draw" }, player, player);
+						})
+						.forResult()
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].draw(1);
 				},
 				ai: {
-					threaten: 0.7
+					threaten: 0.7,
+					effect: {
+						player(card, player, target) {
+							if (get.suit(card) == "diamod" && get.type(card) != "delay") { return [1, 1] }
+						},
+						target(card, player, target) {
+							if (get.type(card) == "delay") { return [1, 1]; }
+						},
+					},
 				},
 			},
 			jlsg_zhouyan: {
@@ -5307,7 +5294,6 @@ export default function () {
 			jlsg_fangxin: '芳馨',
 			jlsg_xiyu: '细语',
 			jlsg_wanrou: '婉柔',
-			jlsg_wanrou2: '婉柔',
 			jlsg_zhouyan: '舟焰',
 			jlsg_zhaxiang: '诈降',
 			jlsg_shixue: '誓学',
