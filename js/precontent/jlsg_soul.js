@@ -11773,12 +11773,10 @@ export default function () {
             .set("phaseList", trigger.phaseList.filter(i => {
               return ["phaseDraw", "phaseUse", "phaseDiscard"].includes(i)
             }))
-            .set("logSkill", ["jlsg_fengtian", trigger.player])
             .set("chooseonly", true)
             .forResult();
           if (event.result?.bool) {
             event.result.targets = [trigger.player];
-            event.result.skill_popup = false;
           }
         },
         async content(event, trigger, player) {
