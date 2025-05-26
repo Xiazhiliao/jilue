@@ -3,6 +3,7 @@ import { lib, game, ui, get, ai, _status } from '../../noname.js';
 import { precontent } from './js/precontent/index.js';
 import { content } from './js/content.js';
 import { config } from './js/config.js';
+import { help } from './js/help.js';
 
 lib.init.css(lib.assetURL + 'extension/极略', 'extension');
 
@@ -13,16 +14,7 @@ let extensionPackage = {
   content: content,
   precontent: precontent,
   config: config,
-  help: {
-    "极略": `\
-本拓展基于民间极略的某魔改版，因为当时那位作者说“修复了所有的bug”<br>
-事实证明这种说法比较离谱<br>
-本拓展在QQ群中发布更新<br>
-无名杀极略拓展交流群 392224094<br>
-无名杀官方XVII 621316679<br>
-无名杀官方群Ⅱ 348943983<br>
-——xiaoas`
-  },
+  help: help,
   package: {
     character: {}, card: {}, skill: {},
     intro: `<div>\
@@ -33,7 +25,7 @@ onclick="if (lib.jlsg) lib.jlsg.showRepoElement(this)"></img>
 <a onclick="if (jlsg) jlsg.checkUpdate(this)" style="cursor: pointer;text-decoration: underline;font-weight: bold;">
 检查更新Beta<br></a>
 </div>`,
-    author: "可乐，赵云，青冢，萧墨(17岁)<br>维护：xiaoas",
+    author: "可乐，赵云，青冢，萧墨(17岁)，xiaoas<br>维护：流年",
     diskURL: "",
     forumURL: "",
     mirrorURL: "https://github.com/xiaoas/jilue",

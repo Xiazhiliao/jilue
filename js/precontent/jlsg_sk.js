@@ -14913,20 +14913,26 @@ export default function () {
                 player = get.player(),
                 target = get.event("target");
               if (get.attitude(player, target) > 0) {
-                if (target.hasUseTarget(card)) return 8 - get.value(card, target);
+                if (target.hasUseTarget(card)) {
+                  return 8 - get.value(card, target);
+                }
                 return 6 - get.value(card, target);
               }
               return target.getUseValue(card);
             });
-          if (!result?.bool || !result?.links?.length) return;
+          if (!result?.bool || !result?.links?.length) { return; }
           let num = result.links.length + 1;
           const cards = [];
           while (num > 0) {
             const card = lib.skill.jlsg_lingze.createTempCard(null, null, null, null, true);
-            if (card) cards.add(card);
+            if (card) {
+              cards.add(card);
+            }
             num--;
           };
-          if (cards.length) await trigger.player.gain(cards, "draw");
+          if (cards.length) {
+            await trigger.player.gain(cards, "draw");
+          }
         },
       },
       jlsg_zhafu: {
@@ -14935,8 +14941,14 @@ export default function () {
           global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "replaceEquipAfter"],
         },
         filter(event, player) {
-          if (event.name == "replaceEquip") return event.result?.cards?.some(i => i.classList.contains("jlsg_tempCard-glow") || i.hasGaintag("eternal_zuoyou_manjuan"));
-          return event.getd().some(i => i.classList.contains("jlsg_tempCard-glow") || i.hasGaintag("eternal_zuoyou_manjuan"));
+          let cards;
+          if (event.name == "replaceEquip") {
+            cards = event.result?.cards || [];
+          }
+          else {
+            cards = event.getd();
+          }
+          return cards.some(i => i.classList.contains("jlsg_tempCard-glow") || i.hasGaintag("eternal_zuoyou_manjuan"));
         },
         check(event, player) {
           return get.effect(player, { name: "draw" }, player, player) > 0;
@@ -15641,6 +15653,8 @@ export default function () {
       jlsg_lianhuo_info: "锁定技，当你成为任意角色使用基本牌或锦囊牌的目标后，你横置。当你横置时，你受到的火焰伤害+2。",
       jlsg_lianhua: "炼化",
       jlsg_lianhua_info: "任意角色的出牌阶段开始时，你可以观看其手牌并弃置至少一张，然后令其获得X张随机临时牌（X为以此法弃置的牌数＋1)。",
+      jlsg_lianhua_append: '<span style="font-family: yuanli">以此技能创造的临时牌为当前牌堆内的复制牌</span>',
+
       jlsg_zhafu: "札符",
       jlsg_zhafu_info: "当临时牌进入弃牌堆后，你可以摸一张牌。",
     },
