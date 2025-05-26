@@ -2211,18 +2211,22 @@ export default function () {
 					return player != target;
 				},
 				check: function (card) {
-						return player.canUse('sha', current) && current.inRangeOf(player) && player.hasCard('sha', 'h') && player.hasCard(function (cardx) {
-							return get.effect(current, cardx, player, player) > 0 && cardx.name == 'sha';
-						}, 'h');
-					})) {
+					const player = get.player();
+					if (
 						player.countCards('h', 'sha') > player.getCardUsable('sha', true) ||
 						player.countCards('h', 'sha') && !player.getUseValue("sha")
 					) {
 						if (card.name == 'sha') {
 							const sha = get.autoViewAs({ name: "sha", nature: "fire" }, []);
+							for (let i = 0; i < game.players.length; i++) {
+								if (player == game.players[i]) { continue; }
+								const target = game.players[i];
 								let effect = get.effect(target, sha, player, player);
+								if (effect > 0) { return 7 - get.value(card); }
+							};
 						}
 					} else {
+						if (player.needsToDiscard() || player.countCards('h') > 4) { return 6 - get.value(card); }
 					}
 					return 0;
 				},
@@ -2253,19 +2257,24 @@ export default function () {
 						await target.gain(cards, "gain2");
 						if (cards[0].name == "sha") {
 							const sha = get.autoViewAs({ name: "sha", nature: "fire" }, []);
+							if (player.canUse(sha, target, false)) {
 								await player.useCard(sha, target, false).set("directHit", [target]);
 							}
 						}
+					} else {
+						await target.discard(cards);
+						target.$throw(cards, 1000);
 					}
 				},
 				ai: {
 					order: 6,
 					fireattack: true,
 					result: {
+						player: 0.5,
 						target: function (target, player) {
 							if (!ui.selected.cards.length) return 0;
 							if (ui.selected.cards[0].name == 'sha') {
-								var effect = get.effect(target, {
+								let effect = get.effect(target, {
 									name: 'sha',
 									nature: 'fire'
 								}, player, player);
@@ -2277,15 +2286,6 @@ export default function () {
 							} else {
 								return 1;
 							}
-				},
-				subSkill: {
-					directHit: {
-						shaRelated: true,
-						trigger: { player: 'useCard1' },
-						firstDo: true,
-						silent: true,
-						filter: function (event, player) {
-							return event.parent.name == 'jlsg_zhaxiang';
 						},
 					},
 				},
@@ -2337,244 +2337,83 @@ export default function () {
 				srlose: true,
 				trigger: { player: 'shaBegin' },
 				frequent: true,
-				content: function () {
-					player.draw(2);
-					player.addTempSkill('jlsg_shixue2', 'shaAfter');
-				}
-			},
-			jlsg_shixue2: {
-				sourceSkill: "jlsg_shixue",
-				trigger: { player: 'shaMiss' },
-				forced: true,
-				popup: false,
-				content: function () {
-					player.chooseToDiscard(2, true, "he");
-				}
+				async content(event, trigger, player) {
+					await player.draw(2);
+					player.addTempSkill('jlsg_shixue_miss', 'shaAfter');
+				},
+				subSkill: {
+					miss: {
+						sourceSkill: "jlsg_shixue",
+						trigger: { player: 'shaMiss' },
+						charlotte: true,
+						forced: true,
+						popup: false,
+						async content(event, trigger, player) {
+							await player.chooseToDiscard(2, true, "he");
+							player.removeSkill(event.name);
+						},
+					},
+				},
 			},
 			jlsg_guoshi: {
 				audio: "ext:极略/audio/skill:2",
 				srlose: true,
 				trigger: { global: 'phaseJieshuBegin' },
-				filter: function (event, player) {
+				filter() {
 					return lib.skill.jlsg_guoshi.getCards().length > 0;
 				},
-				direct: true,
-				content: function () {
-					'step 0'
-					var att = get.attitude(player, trigger.player);
-					player.chooseCardButton(get.prompt('jlsg_guoshi', trigger.player), lib.skill.jlsg_guoshi.getCards()).ai = function (button) {
-						if (att > 0) return get.value(button.link, trigger.player);
-						return -get.value(button.link, trigger.player);
-					}
-					'step 1'
-					if (result.bool) {
-						player.logSkill('jlsg_guoshi', trigger.player);
-						trigger.player.gain(result.buttons[0].link);
-						trigger.player.$gain(result.buttons[0].link);
-					}
+				async cost(event, trigger, player) {
+					const cards = lib.skill.jlsg_guoshi.getCards();
+					const { result } = await player.chooseCardButton(get.prompt('jlsg_guoshi', trigger.player), cards)
+						.set("prompt2", "令其获得一张牌")
+						.set("target", trigger.player)
+						.set("ai", function (button) {
+							const player = get.player(),
+								target = get.event("target")
+							if (get.attitude(player, target) > 0) {
+								return get.value(button.link, target);
+							}
+							return -get.value(button.link, target);
+						});
+					event.result = {
+						bool: result?.bool,
+						targets: [trigger.player],
+						cards: result?.links || [],
+					};
+				},
+				async content(event, trigger, player) {
+					await trigger.player.gain(event.cards, "gain2");
 					if (trigger.player.ai.shown > player.ai.shown) {
 						player.addExpose(0.2);
 					}
-					'step 2'
-					trigger.player.storage.jlsg_guoshi = [];
 				},
 				getCards() {
-					let cards = game.getGlobalHistory('cardMove').filter(
-						e => {
-							if (e.type == 'discard') {
-								return true;
-							}
-							if (e.name != 'cardsDiscard') {
-								return false;
-							}
-							let evt = e.getParent().relatedEvent;
-							return evt && evt.name == 'judge';
-						}
-					).map(e => e.getd()).flat();
+					let cards = game.getGlobalHistory('cardMove', evt => {
+						if (evt.type == "discard") { return true }
+						else if (evt.name != "cardsDiscard") { return false; }
+						let evtx = evt.getParent()?.relatedEvent;
+						return evtx?.name == "judge";
+					}).map(evt => evt.getd()).flat();
 					return [...new Set(cards)].filterInD('d');
 				},
-				group: ['jlsg_guoshi2'],
-				ai: {
-					expose: 0.2
-				}
-			},
-			jlsg_guoshi2: {
-				audio: "jlsg_guoshi",
-				trigger: { global: 'phaseZhunbeiBegin' },
-				prompt: '是否发动【国士】观看牌顶的牌？',
-				frequent: true,
-				content: function () {
-					player.chooseToGuanxing(2);
-				},
-				contentBackup: function () {
-					"step 0"
-					if (player.isUnderControl()) {
-						game.modeSwapPlayer(player);
-					}
-					var cards = get.cards(2);
-					event.cards = cards;
-					var switchToAuto = function () {
-						_status.imchoosing = false;
-						if (event.dialog) event.dialog.close();
-						if (event.control) event.control.close();
-						var top = [];
-						var judges = event.player.node.judges.childNodes;
-						var stopped = false;
-						if (get.attitude(player, event.player) > 0) {
-							for (var i = 0; i < judges.length; i++) {
-								var judge = get.judge(judges[i]);
-								cards.sort(function (a, b) {
-									return judge(b) - judge(a);
-								});
-								if (judge(cards[0]) < 0) {
-									stopped = true;
-									break;
-								} else {
-									top.unshift(cards.shift());
-								}
-							}
-						}
-						var bottom;
-						if (!stopped) {
-							cards.sort(function (a, b) {
-								return get.value(b, player) - get.value(a, player);
-							});
-							while (cards.length) {
-								if (get.value(cards[0], player) <= 5) break;
-								top.unshift(cards.shift());
-							}
-						}
-						bottom = cards;
-						for (var i = 0; i < top.length; i++) {
-							ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-						}
-						for (i = 0; i < bottom.length; i++) {
-							ui.cardPile.appendChild(bottom[i]);
-						}
-						player.popup(get.cnNumber(top.length) + '上' + get.cnNumber(bottom.length) + '下');
-						game.log(player, '将' + get.cnNumber(top.length) + '张牌置于牌堆顶');
-						game.delay(2);
-					}
-					var chooseButton = function (online, player, cards) {
-						var event = _status.event;
-						player = player || event.player;
-						cards = cards || event.cards;
-						event.top = [];
-						event.bottom = [];
-						event.status = true;
-						event.dialog = ui.create.dialog('按顺序选择置于牌堆顶的牌（先选择的在上）', cards);
-						event.switchToAuto = function () {
-							event._result = 'ai';
-							event.dialog.close();
-							event.control.close();
-							_status.imchoosing = false;
+				group: ['jlsg_guoshi_guanxing'],
+				subSkill: {
+					guanxing: {
+						audio: "jlsg_guoshi",
+						trigger: { global: 'phaseZhunbeiBegin' },
+						prompt: '是否发动【国士】观看牌顶的牌？',
+						frequent: true,
+						check() {
+							return true;
 						},
-							event.control = ui.create.control('ok', 'pileTop', 'pileBottom', function (link) {
-								var event = _status.event;
-								if (link == 'ok') {
-									if (online) {
-										event._result = {
-											top: [],
-											bottom: []
-										}
-										for (var i = 0; i < event.top.length; i++) {
-											event._result.top.push(event.top[i].link);
-										}
-										for (var i = 0; i < event.bottom.length; i++) {
-											event._result.bottom.push(event.bottom[i].link);
-										}
-									} else {
-										var i;
-										for (i = 0; i < event.top.length; i++) {
-											ui.cardPile.insertBefore(event.top[i].link, ui.cardPile.firstChild);
-										}
-										for (i = 0; i < event.bottom.length; i++) {
-											ui.cardPile.appendChild(event.bottom[i].link);
-										}
-										for (i = 0; i < event.dialog.buttons.length; i++) {
-											if (event.dialog.buttons[i].classList.contains('glow') == false &&
-												event.dialog.buttons[i].classList.contains('target') == false)
-												ui.cardPile.appendChild(event.dialog.buttons[i].link);
-										}
-										player.popup(get.cnNumber(event.top.length) + '上' + get.cnNumber(event.cards.length - event.top.length) + '下');
-										game.log(player, '将' + get.cnNumber(event.top.length) + '张牌置于牌堆顶');
-									}
-									event.dialog.close();
-									event.control.close();
-									game.resume();
-									_status.imchoosing = false;
-								} else if (link == 'pileTop') {
-									event.status = true;
-									event.dialog.content.childNodes[0].innerHTML = '按顺序选择置于牌堆顶的牌';
-								} else {
-									event.status = false;
-									event.dialog.content.childNodes[0].innerHTML = '按顺序选择置于牌堆底的牌';
-								}
-							});
-						for (var i = 0; i < event.dialog.buttons.length; i++) {
-							event.dialog.buttons[i].classList.add('selectable');
-						}
-						event.custom.replace.button = function (link) {
-							var event = _status.event;
-							if (link.classList.contains('target')) {
-								link.classList.remove('target');
-								event.top.remove(link);
-							} else if (link.classList.contains('glow')) {
-								link.classList.remove('glow');
-								event.bottom.remove(link);
-							} else if (event.status) {
-								link.classList.add('target');
-								event.top.unshift(link);
-							} else {
-								link.classList.add('glow');
-								event.bottom.push(link);
-							}
-						}
-						event.custom.replace.window = function () {
-							for (var i = 0; i < _status.event.dialog.buttons.length; i++) {
-								_status.event.dialog.buttons[i].classList.remove('target');
-								_status.event.dialog.buttons[i].classList.remove('glow');
-								_status.event.top.length = 0;
-								_status.event.bottom.length = 0;
-							}
-						}
-						game.pause();
-						game.countChoose();
-					}
-					event.switchToAuto = switchToAuto;
-					if (event.isMine()) {
-						chooseButton();
-						event.finish();
-					} else if (event.isOnline()) {
-						event.player.send(chooseButton, true, event.player, event.cards);
-						event.player.wait();
-						game.pause();
-					} else {
-						event.switchToAuto();
-						event.finish();
-					}
-					"step 1"
-					if (event.result == 'ai' || !event.result) {
-						event.switchToAuto();
-					} else {
-						var top = event.result.top || [];
-						var bottom = event.result.bottom || [];
-						for (var i = 0; i < top.length; i++) {
-							ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-						}
-						for (i = 0; i < bottom.length; i++) {
-							ui.cardPile.appendChild(bottom[i]);
-						}
-						for (i = 0; i < event.cards.length; i++) {
-							if (!top.contains(event.cards[i]) && !bottom.contains(event.cards[i])) {
-								ui.cardPile.appendChild(event.cards[i]);
-							}
-						}
-						player.popup(get.cnNumber(top.length) + '上' + get.cnNumber(event.cards.length - top.length) + '下');
-						game.log(player, '将' + get.cnNumber(top.length) + '张牌置于牌堆顶');
-						game.delay(2);
-					}
-				}
+						async content(event, trigger, player) {
+							await player.chooseToGuanxing(2).set("prompt", "国士：点击或拖动将牌移动到牌堆顶或牌堆底")
+						},
+					},
+				},
+				ai: {
+					expose: 0.2,
+				},
 			},
 			jlsg_yingcai: {
 				audio: "ext:极略/audio/skill:true",
@@ -5291,7 +5130,6 @@ export default function () {
 			jlsg_zhaxiang: '诈降',
 			jlsg_shixue: '誓学',
 			jlsg_guoshi: '国士',
-			jlsg_guoshi2: '国士',
 			jlsg_yingcai: '英才',
 			jlsg_weibao: '伪报',
 			jlsg_choulve: '筹略',
@@ -5385,7 +5223,7 @@ export default function () {
 			jlsg_zhaxiang_info: '出牌阶段，你可以将一张手牌扣置，然后令一名其它角色选择一项：交给你一张牌并弃置你扣置的牌；或展示你扣置的牌并获得之。若你扣置的牌为【杀】，则视为你对其使用一张火属性的【杀】（不计入出牌阶段的使用限制且不可被响应）。',
 			jlsg_old_zhaxiang_info: '出牌阶段限一次，你可以指定一名其它角色，视为该角色对你使用一张【杀】，然后你摸两张牌并视为对其使用一张【杀】（你的此【杀】无视防具）。',
 			jlsg_shixue_info: '当你使用【杀】指定目标后，你可以摸两张牌；若如此做，当此【杀】被【闪】响应后，你须弃置两张牌。',
-			jlsg_guoshi_info: '任一角色的回合开始阶段开始时，你可以观看牌堆顶的两张牌，然后可将其中任意张牌置于牌堆底。一名角色的回合结束阶段开始时，你可以令其获得本回合因弃置或判定进入弃牌堆的一张牌。',
+			jlsg_guoshi_info: '任一角色的准备阶段开始时，你可以观看牌堆顶的两张牌，然后可将其中任意张牌置于牌堆底。一名角色的回合结束阶段开始时，你可以令其获得本回合因弃置或判定进入弃牌堆的一张牌。',
 			jlsg_yingcai_info: '摸牌阶段，你可以放弃摸牌，改为展示牌堆顶的一张牌，你重复此流程直到你展示出第3种花色的牌时，将这张牌置入弃牌堆，然后获得其余的牌。',
 			jlsg_old_yingcai_info: '摸牌阶段，你可以放弃摸牌，改为展示牌堆顶的一张牌，你重复此流程直到你展示出第三种花色的牌时，将这张牌置入弃牌堆，然后获得其余的牌。',
 			jlsg_weibao_info: '出牌阶段限一次，你可以将一张手牌置于牌堆顶，然后令一名其他角色选择一种花色后摸一张牌并展示之，若此牌与所选花色不同，你对其造成一点伤害。',
