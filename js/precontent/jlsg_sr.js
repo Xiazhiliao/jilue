@@ -2125,136 +2125,136 @@ export default function () {
 				srlose: true,
 				usable: 1,
 				enable: 'phaseUse',
-				filterTarget: function (card, player, target) {
-					return player != target;
+				filterTarget(card, player, target) {
+					return true;
 				},
-				direct: true,
-				init: function (player) {
-					player.storage.isjlsg_zhouyan = false;
-					player.storage.jlsg_zhouyanDamage = false;
-				},
-				content: function () {
-					'step 0'
-					player.logSkill('jlsg_zhouyan');
-					player.storage.isjlsg_zhouyan = true;
-					target.draw();
-					player.useCard({ name: 'huogong' }, target);
-					'step 1'
-					if (player.storage.jlsg_zhouyanDamage && target.isAlive()) {
-						player.storage.jlsg_zhouyanDamage = false;
-						player.chooseBool('是否继续发动【舟焰】？').ai = function () {
-							return get.attitude(player, target) < 0;
+				prompt: "舟焰：令一名角色摸一张牌，然后你视为对其使用一张【火攻】",
+				async content(event, trigger, player) {
+					const { targets: [target] } = event,
+						huogong = get.autoViewAs({ name: "huogong" }, []);
+					let next;
+					while (true) {
+						await target.draw(1);
+						if (player.canUse(huogong, target)) {
+							next = player.useCard(huogong, target);
+							await next;
 						}
-					} else {
-						player.storage.isjlsg_zhouyan = false;
-						player.storage.jlsg_zhouyanDamage = false;
-						event.finish();
-					}
-					'step 2'
-					if (result.bool) {
-						event.goto(0);
-					}
-					player.storage.isjlsg_zhouyan = false;
-					player.storage.jlsg_zhouyanDamage = false;
+						let check = player.getHistory("sourceDamage", evt => {
+							if (evt.card?.name != "huogong") { return false; }
+							return evt.getParent("useCard") == next;
+						}).length > 0;
+						if (!check || !target.isIn()) { break; }
+						const { result } = await player.chooseBool(`是否继续对${get.translation(target)}发动【舟焰】？`)
+							.set("ai", (event, player) => {
+								const { targets: [target] } = event;
+								let att = Math.sign(get.attitude(player, target));
+								return att * lib.skill.jlsg_zhouyan.ai.result.target(player, target) > 0;
+							})
+						if (!result.bool) { break; }
+						else {
+							await player.logSkill(event.name, [target]);
+						}
+					};
 				},
 				group: ['jlsg_zhouyan_damage'],
 				subSkill: {
 					damage: {
-						trigger: { source: 'damageEnd' },
-						forced: true,
-						popup: false,
+						audio: "jlsg_zhouyan",
+						trigger: { source: 'damageSource' },
 						filter: function (event, player) {
-							return event.card && event.card.name == 'huogong';
+							return event.card?.name == 'huogong';
 						},
-						content: function () {
-							player.draw();
-							if (player.storage.isjlsg_zhouyan) {
-								player.storage.isjlsg_zhouyan = false;
-								player.storage.jlsg_zhouyanDamage = true;
-							}
-						}
-					}
+						prompt(event, player) {
+							return get.prompt("jlsg_zhouyan");
+						},
+						prompt2: "你可以摸一张牌",
+						check(event, player) {
+							return get.effect(player, { name: "draw" }, player, player) > 0;
+						},
+						async content(event, trigger, player) {
+							await player.draw(1);
+						},
+					},
 				},
 				ai: {
 					order: 4,
-					player: 0,
 					fireattack: true,
-					target: function (player, target) {
-						if (player == target) return 1;
-						if (!lib.card.huogong) return 0;
-						var result = lib.card.huogong.ai.result.target;
-
-						if ((player.countCards('h') > 2 || target.hp <= 2) && !target.hasSkill('huogong2') && get.damageEffect(target, player, player, 'fire') > 0 && result(player, target) < 0) return -2;
-						if (get.attitude(player, target) > 0) return 0.9;
-						if (target.countCards('h') == 0) return 1;
-						return 0.5;
-					}
-				}
+					result: {
+						player: 0,
+						target: function (player, target) {
+							if (player == target) return 1;
+							if (!lib.card.huogong) return 0;
+							let result = lib.card.huogong.ai.result.target;
+							if (
+								(player.countCards('h') > 2 || target.hp <= 2) &&
+								!target.hasSkill('huogong2') &&
+								get.damageEffect(target, player, player, 'fire') > 0 &&
+								result(player, target) < 0
+							) {
+								return -2;
+							}
+							if (get.attitude(player, target) > 0) { return 0.9; }
+							if (target.countCards('h') == 0) { return 1; }
+							return 0.5;
+						},
+					},
+				},
 			},
 			jlsg_zhaxiang: {
 				audio: "ext:极略/audio/skill:true",
 				srlose: true,
 				enable: 'phaseUse',
-				filterCard: true,
-				discard: false,
+				filterCard(card, player, event) {
+					return true;
+				},
 				filterTarget: function (card, target, player) {
 					return player != target;
 				},
-				complexCard: true,
-				prepare: function (cards, player, targets) {
-					player.$give(cards.length, targets[0]);
-				},
 				check: function (card) {
-					var player = _status.event.player;
-					if (player.countCards('h', 'sha') > player.getCardUsable('sha') || !game.hasPlayer(function (current) {
 						return player.canUse('sha', current) && current.inRangeOf(player) && player.hasCard('sha', 'h') && player.hasCard(function (cardx) {
 							return get.effect(current, cardx, player, player) > 0 && cardx.name == 'sha';
 						}, 'h');
 					})) {
+						player.countCards('h', 'sha') > player.getCardUsable('sha', true) ||
+						player.countCards('h', 'sha') && !player.getUseValue("sha")
+					) {
 						if (card.name == 'sha') {
-							for (var i = 0; i < game.players.length; i++) {
-								if (player == game.players[i]) continue;
-								var target = game.players[i];
-								var effect = get.effect(target, {
-									name: 'sha',
-									nature: 'fire'
-								}, player, player);
-								if (effect > 0) return 7 - get.value(card);
-							}
+							const sha = get.autoViewAs({ name: "sha", nature: "fire" }, []);
+								let effect = get.effect(target, sha, player, player);
 						}
 					} else {
-						if (player.needsToDiscard() || player.countCards('h') > 4) return 6 - get.value(card);
 					}
 					return 0;
 				},
-				content: function () {
-					'step 0'
-					event.cards1 = cards[0];
-					event.target = target;
-					var cardx = ui.create.card();
-					cardx.name = '诈降牌';
-					cardx.classList.add('infohidden');
-					cardx.classList.add('infoflip');
-					player.showCards(cardx, '诈降');
-					var random = Math.random();
-					var att = get.attitude(event.target, player);
-					event.target.chooseCard('交给' + get.translation(player) + '一张牌，或展示并获得此牌。').ai = function (card) {
-						if (['sha', 'jiu', 'tao'].includes(card.name)) return -1;
-						var effect = get.attitude(player, event.target) > 0 ?
-							0 : get.damageEffect(event.target, player, event.target, 'fire');
-						return -effect - get.value(card, event.target) + (get.attitude(event.target, player) / 5 * get.value(card, player)) - 2;
-					}
-					'step 1'
-					if (result.bool) {
-						player.gain(result.cards[0]);
-						event.target.$give(result.cards[0], player);
-						event.target.discard(event.cards1);
-					} else {
-						event.target.showCards(event.cards1);
-						event.target.gain(event.cards1);
-						event.target.$gain2(event.cards1);
-						if (event.cards1.name == 'sha') {
-							player.useCard({ name: 'sha', nature: 'fire' }, event.target, false);
+				lose: true,
+				discard: false,
+				async content(event, trigger, player) {
+					const { cards, targets: [target] } = event;
+					await game.cardsGotoOrdering(cards);
+					game.broadcastAll(function (player) {
+						const cardx = ui.create.card();
+						cardx.name = '诈降牌';
+						cardx.classList.add('infohidden');
+						cardx.classList.add('infoflip');
+						player.showCards(cardx, '诈降');
+					}, player);
+					const { result } = await target.chooseToGive(player, '交给' + get.translation(player) + '一张牌，或展示并获得诈降牌。')
+						.set("ai", card => {
+							const player = get.player(),
+								target = get.event("target");
+							const att = get.attitude(player, target);
+							if (['sha', 'jiu', 'tao'].includes(card.name)) { return -1; }
+							let effect = att > 0 ?
+								0 : get.damageEffect(player, target, player, 'fire');
+							return -effect - get.value(card, player) + (att / 5 * get.value(card, player)) - 2;
+						});
+					if (!result?.bool || !result?.cards?.length) {
+						await target.showCards(cards);
+						await target.gain(cards, "gain2");
+						if (cards[0].name == "sha") {
+							const sha = get.autoViewAs({ name: "sha", nature: "fire" }, []);
+								await player.useCard(sha, target, false).set("directHit", [target]);
+							}
 						}
 					}
 				},
@@ -2269,7 +2269,7 @@ export default function () {
 									name: 'sha',
 									nature: 'fire'
 								}, player, player);
-								if (target.mayHaveShan()) effect *= 1.2;
+								if (target.mayHaveShan()) { effect *= 1.2; }
 								if (effect > 0) {
 									return (get.attitude(player, target) > 0 ? 1 : -1) * effect
 								}
@@ -2277,11 +2277,7 @@ export default function () {
 							} else {
 								return 1;
 							}
-							return 0;
-						}
-					}
 				},
-				group: ["jlsg_zhaxiang_directHit"],
 				subSkill: {
 					directHit: {
 						shaRelated: true,
@@ -2291,10 +2287,7 @@ export default function () {
 						filter: function (event, player) {
 							return event.parent.name == 'jlsg_zhaxiang';
 						},
-						content: function () {
-							trigger.directHit.addArray(game.players);
-						},
-					}
+					},
 				},
 			},
 			jlsg_old_zhaxiang: {
