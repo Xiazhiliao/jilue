@@ -2085,8 +2085,8 @@ export default function () {
 						event.getd(player, "cards2").filter(card => get.suit(card, player) == "diamond")
 					);
 					const getl = event.getl(player);
-					const loses = getl?.js.concat(
-						(getl?.cards || []).filter(card => get.suit(card, player) == "diamond")
+					const loses = (getl?.js || []).concat(
+						(getl?.cards2 || []).filter(card => get.suit(card, player) == "diamond")
 					);
 					return cards.filter(card => loses.includes(card));
 				},
