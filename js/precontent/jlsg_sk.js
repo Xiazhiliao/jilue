@@ -12772,7 +12772,9 @@ export default function () {
           jlsg.characterList.remove(name);
           recruit.storage.jlsg_xinghan_recruit = player;
           recruit.addSkill('jlsg_xinghan_recruit');
-          recruit.draw(2)._triggered = null;
+          const draw=recruit.draw(2);
+          draw._triggered = null;
+          await draw;
           game.log(player, '招募了', recruit);
           player.storage.jlsg_xinghan_location = !player.storage.jlsg_xinghan_location;
           recruit._trueMe = player;

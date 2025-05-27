@@ -5486,42 +5486,91 @@ export default function () {
         },
         filter(event, player, triggername, target) {
           const name = event.name == "loseAsync" ? "lose" : event.name;
-          const filterx = !player.hasHistory("useSkill", evt => {
-            if (evt.skill != "jlsg_wangyue") return false;
-            return evt.event._result.cost_data?.name == name;
-          });
-          if (!filterx) return false;
-          if (name == 'lose') return event.type == 'discard';
-          else if (name == 'loseHp') return game.hasPlayer(current => current.isDamaged());
-          else return game.hasPlayer(current => current != target);
+          if (player.hasStorage("jlsg_wangyue_used", name)) {
+            return false;
+          } else if (!game.hasPlayer(current => current != target)) {
+            return false;
+          }
+          if (name == 'lose') {
+            return event.type == 'discard';
+          } else if (name == 'loseHp') {
+            return game.hasPlayer(current => current.isDamaged());
+          }
+          return true;
         },
         async cost(event, trigger, player) {
-          let prompt = `望月:令一名角色`;
+          let prompt = `望月:令一名角色`,
+            num = trigger.num;
           const name = trigger.name == "loseAsync" ? "lose" : trigger.name;
-          if (name == 'lose') prompt += `摸${trigger.getl(event.indexedData).cards2.length}张牌`;
-          else if (name == 'loseHp') prompt += `回复${trigger.num}点体力`;
-          else prompt += `加${trigger.num}点体力上限`;
+          if (name == 'lose') {
+            num = trigger.getl(event.indexedData).cards2.length;
+            prompt += `摸${num}张牌`;
+          } else if (name == 'loseHp') {
+            prompt += `回复${trigger.num}点体力`;
+          } else {
+            prompt += `加${trigger.num}点体力上限`;
+          }
           event.result = await player.chooseTarget(prompt)
-            .set("filterTarget", (_, player, target) => target != _status.event.source)
+            .set("filterTarget", (_, player, target) => target != get.event("source"))
             .set("ai", (target) => {
               const player = get.player(),
                 name = get.event("key");
-              if (name == "lose") return get.effect(target, { name: "draw" }, player, player);
-              else if (name == "loseHp") return get.recoverEffect(target, player, player);
-              else return get.attitude(player, target);
+              if (name == "lose") {
+                return get.effect(target, { name: "draw" }, player, player);
+              } else if (name == "loseHp") {
+                return get.recoverEffect(target, player, player);
+              }
+              return get.attitude(player, target);
             })
             .set("key", name)
             .set("source", event.indexedData)
             .forResult();
-          event.result.cost_data = { name };
+          if (event.result?.bool) {
+            event.result.cost_data = { name, num };
+          }
         },
         async content(event, trigger, player) {
-          let target = event.targets[0];
-          if (target.ai.shown > player.ai.shown) player.addExpose(0.2);
-          let name = event.cost_data?.name;
-          if (name == 'lose') await target.draw(trigger.num, player);
-          else if (name == 'loseHp') await target.recover(trigger.num, player);
-          else await target.gainMaxHp(trigger.num);
+          const { targets: [target], cost_data: { name, num } } = event;
+          player.addTempSkill("jlsg_wangyue_used");
+          player.storage.jlsg_wangyue_used.add(name);
+          player.markSkill("jlsg_wangyue_used");
+          if (target.ai.shown > player.ai.shown) {
+            player.addExpose(0.2);
+          }
+          if (name == 'lose') {
+            await target.draw(num, player);
+          } else if (name == 'loseHp') {
+            await target.recover(num, player);
+          } else {
+            await target.gainMaxHp(num);
+          }
+        },
+        subSkill: {
+          used: {
+            charlotte: true,
+            init(player, skill) {
+              player.storage[skill] = [];
+            },
+            onremove: true,
+            mark: true,
+            intro: {
+              content(storage, player) {
+                let str = "本回合已因：",
+                  reasons = [];
+                for (let name of storage) {
+                  if (name == "lose") {
+                    reasons.add("弃牌");
+                  } else if (name == "loseHp") {
+                    reasons.add("失去体力");
+                  } else {
+                    reasons.add("失去体力上限")
+                  }
+                };
+                str += reasons.join("、") + "发动";
+                return str;
+              },
+            },
+          },
         },
       },
       jlsg_luoyan: {
