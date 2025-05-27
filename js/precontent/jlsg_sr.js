@@ -2754,57 +2754,44 @@ export default function () {
 				}
 			},
 			jlsg_jiexi: {
-				audio: "ext:极略/audio/skill:true",
+				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				usable: 1,
 				enable: 'phaseUse',
 				filter(event, player) {
 					return game.hasPlayer(current => player.canCompare(current));
+				},
 				filterTarget: function (card, target, player) {
 					return player.canCompare(target);
 				},
-					return false
-				},
-				selectCard: -1,
 				prompt: '你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢',
-				content() {
-					'step 0'
-					player.chooseToCompare(target);
-					'step 1'
-					if (result.tie) {
-						return;
-					}
-					if (!result.bool) {
-						event.finish();
-						return;
-					}
-					if (lib.filter.targetEnabled2({ name: 'guohe' }, player, target)) {
-						player.useCard({ name: 'guohe' }, target);
-					}
-					'step 2'
-					if (!player.canCompare(target)) {
-						event.finish();
-						return;
-					}
-					player.chooseBool(`是否再次${get.translation(target)}对发动〖劫袭〗?`, Math.random() < 0.6 && get.attitude(player, target) < -0.2 && target.countCards('he') >= 2);
-					'step 3'
-					if (result.bool) {
-						event.goto(0);
-					}
+				async content(event, trigger, player) {
+					const { targets: [target] } = event,
+						guohe = get.autoViewAs({ name: "guohe" }, []);
+					while (player.canCompare(target)) {
+						const { result: compare } = await player.chooseToCompare(target);
+						if (compare?.bool) {
+							if (player.canUse(guohe, target)) {
+								await player.useCard(guohe, target);
+							}
+							const { result } = await player.chooseBool(`是否再次${get.translation(target)}对发动〖劫袭〗?`)
+								.set("ai", (event, player) => {
+									const { targets: [target] } = event;
+									let att = Math.sign(get.attitude(player, target));
+									return att * lib.skill.jlsg_jiexi.ai.result.target(player, target) > 0;
+								});
 							if (!result?.bool) { break; }
 						}
+						else { break; }
+					};
 				},
 				ai: {
-					basic: {
-						order: 9,
-						value: 5,
-					},
+					order: 9,
 					result: {
-						target: function (player, target) {
-							var att = get.attitude(player, target);
+						target(player, target) {
+							const att = get.attitude(player, target);
 							const nh = target.countCards('h');
 							if (att > 0) {
-								var js = target.getCards('j');
 								const js = target.getCards('j');
 								if (js.length) {
 									const jj = js[0].viewAs ? { name: js[0].viewAs } : js[0];
@@ -2819,10 +2806,6 @@ export default function () {
 									return 0;
 								}
 							}
-							var es = target.getCards('e');
-							var noe = (es.length == 0 || target.hasSkillTag('noe'));
-							var noe2 = (es.length == 1 && es[0].name == 'baiyin' && target.isDamaged());
-							var noh = (nh == 0 || target.hasSkillTag('noh'));
 							const es = target.getCards('e');
 							const noe = (es.length == 0 || target.hasSkillTag('noe'));
 							const noe2 = (es.length == 1 && es[0].name == 'baiyin' && target.isDamaged());
@@ -2838,20 +2821,16 @@ export default function () {
 				audio: "ext:极略/audio/skill:2",
 				srlose: true,
 				enable: 'phaseUse',
-				filterTarget: function (card, target, player) {
-				filter: function (event, player) {
+				filter(event, player) {
 					return !player.isTurnedOver();
 				},
 				filterTarget: function (card, target, player) {
 					return player != target && target.countGainableCards(player, 'he') > 0;
+				},
 				selectTarget: [1, 2],
 				multitarget: true,
 				multiline: true,
-				content: function () {
-					player.turnOver();
-					for (var i = 0; i < targets.length; i++) {
-						player.gainPlayerCard('hej', targets[i]);
-					}
+				async content(event, trigger, player) {
 					await player.turnOver();
 					for (let target of event.targets.sortBySeat()) {
 						await player.gainPlayerCard(target, "hej");
@@ -2860,8 +2839,6 @@ export default function () {
 				mod: {
 					targetEnabled: function (card, player, target, now) {
 						if (target.isTurnedOver()) {
-							if (card.name == 'sha' || card.name == 'juedou') return false;
-						}
 							if (card.name == 'sha' || card.name == 'juedou') { return false; }
 						},
 					},
