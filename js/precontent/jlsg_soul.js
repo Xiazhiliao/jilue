@@ -5479,9 +5479,11 @@ export default function () {
         },
         getIndex(event, player) {
           const name = event.name == "loseAsync" ? "lose" : event.name;
-          if (name == "lose") return game.filterPlayer(current => {
-            return event.getl(current) && event.getl(current).cards2.length;
-          }).sortBySeat(_status.currentPhase);
+          if (name == "lose") {
+            return game.filterPlayer(current => {
+              return event.getl(current) && event.getl(current).cards2.length;
+            }).sortBySeat(_status.currentPhase);
+          }
           return [event.player];
         },
         filter(event, player, triggername, target) {
