@@ -2871,29 +2871,33 @@ export default function () {
 					if (!player.isTurnedOver()) return false;
 					return true;
 				},
-				direct: true,
-				content: function () {
-					"step 0"
-					player.chooseTarget(get.prompt('jlsg_huailing'), function (card, player, target) {
-						var evt = _status.event.getTrigger().getParent();
-						return evt.targets.includes(target) && !evt.excluded.includes(target) && player != target;
-					}).ai = function (target) {
-						return get.attitude(player, target) > 0;
-					};
-					"step 1"
-					if (result.bool) {
-						player.logSkill('jlsg_huailing', result.targets);
-						player.turnOver();
-						trigger.getParent().excluded.addArray(result.targets);
-						game.delay();
-					}
+				async cost(event, trigger, player) {
+					event.result = await player.chooseTarget(
+						get.prompt('jlsg_huailing'),
+						`翻面并令${get.translation(trigger.card)}对一名角色无效`,
+						function (card, player, target) {
+							const evt = _status.event.getTrigger().getParent();
+							return evt.targets.includes(target) && !evt.excluded.includes(target) && player != target;
+						}
+					)
+						.set("ai", target => {
+							const player = get.player(),
+								card = get.event().getTrigger().card;
+							return get.effect(target, card, player, player) < 0;
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await player.turnOver();
+					trigger.getParent().excluded.addArray(event.targets);
+					await game.delayx();
 				},
 				mod: {
 					targetEnabled: function (card, player, target, now) {
 						if (target.isTurnedOver()) {
-							if (card.name == 'juedou' || card.name == 'guohe') return false;
+							if (card.name == 'juedou' || card.name == 'guohe') { return false; }
 						}
-					}
+					},
 				},
 				ai: {
 					threaten: 1.5,
@@ -2901,55 +2905,62 @@ export default function () {
 			},
 			jlsg_dailao: {
 				audio: "ext:极略/audio/skill:2",
-				usable: 1,
 				srlose: true,
 				enable: 'phaseUse',
-				filterTarget: function (cards, target, player) {
+				usable: 1,
+				filter(event, player) {
+					return game.hasPlayer(current => current != player);
+				},
+				filterTarget(cards, target, player) {
 					return player != target;
 				},
-				content: function () {
-					'step 0'
-					player.turnOver();
-					target.turnOver();
+				async content(event, trigger, player) {
+					const { targets: [target] } = event;
+					await player.turnOver();
+					await target.turnOver();
 					if (target.ai.shown > player.ai.shown) {
 						player.addExpose(0.1);
 					}
-					'step 1'
-					target.chooseToDiscard('he').set('prompt2', `或点「取消」，令你与${get.translation(player)}各摸一张牌`).set('ai',
-						function (card) {
-							var unusefulness = get.unuseful(card);
-							var att = get.attitude(target, player);
+					const { result } = await target.chooseToDiscard('he')
+						.set('prompt2', `或点「取消」，令你与${get.translation(player)}各摸一张牌`)
+						.set('ai', card => {
+							const target = get.player(),
+								player = get.source("source");
+							let unusefulness = get.unuseful(card);
+							const att = get.attitude(target, player);
 							if (-2 < att && att < 2) return -1;
 							if (!player.hasSkill('jlsg_ruya')) {
-								if (att > 0) return unusefulness;
-								return unusefulness + get.effect(player, { name: 'guohe' }, player, target) / 2;
+								if (att > 0) { return unusefulness; }
+								return unusefulness + (get.effect(player, { name: 'guohe_copy2' }, player, target) / 2);
 							}
-							if (att < 0 || player.countDiscardableCards(player, 'h') != player.countCards('h')) return -1;
+							if (att < 0 || player.countDiscardableCards(player, 'h') != player.countCards('h')) {
+								return -1;
+							}
 							if (player.isTurnedOver() && player.countCards('h') == 1) {
 								unusefulness += 8;
 							}
 							return unusefulness;
-						});
-					'step 2'
+						})
+						.set("source", player);
 					if (result.bool) {
 						target.addExpose(0.1);
-						player.chooseToDiscard('he', true);
+						await player.chooseToDiscard('he', true);
 					} else {
-						game.asyncDraw([player, target]);
+						await game.asyncDraw([player, target]);
 					}
 				},
 				ai: {
 					order: 9,
 					result: {
-						player: function (player) {
+						player(player) {
 							return player.isTurnedOver() ? 5 : -3.5;
 						},
-						target: function (player, target) {
-							if (target.hasSkillTag('noturn')) return 0;
+						target(player, target) {
+							if (target.hasSkillTag('noturn')) { return 0; }
 							return target.isTurnedOver() ? 5 : -3.5;
-						}
-					}
-				}
+						},
+					},
+				},
 			},
 			jlsg_old_dailao: {
 				audio: "ext:极略/audio/skill:2",
@@ -3085,77 +3096,96 @@ export default function () {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				enable: ['chooseToUse', 'chooseToRespond'],
-				filterCard: function () {
+				filterCard(card, player, event) {
 					return false;
 				},
 				selectCard: -1,
 				viewAs: { name: 'shan' },
-				viewAsFilter: function (player) {
+				viewAsFilter(player) {
 					return player.isTurnedOver();
 				},
-				prompt: '可以将你的武将牌正面朝上，视为打出一张【闪】',
-				check: function () {
+				prompt: '你可以将武将牌翻至正面朝上，视为使用或打出一张【闪】',
+				check() {
 					return true;
 				},
-				onuse: function (result, player) {
-					player.turnOver(false);
-				},
-				onrespond: function (result, player) {
-					player.turnOver(false);
+				log: false,
+				async precontent(event, trigger, player) {
+					await player.logSkill("jlsg_youdi");
+					await player.turnOver();
 				},
 				ai: {
+					respondShan: true,
 					skillTagFilter: function (player) {
 						return player.isTurnedOver();
 					},
-					respondShan: true,
 				},
-				group: 'jlsg_youdi2'
-			},
-			jlsg_youdi2: {
-				trigger: { global: 'shaMiss' },
-				filter: function (event, player) {
-					return event.target == player;
+				group: 'jlsg_youdi_shaMiss',
+				subSkill: {
+					shaMiss: {
+						audio: "jlsg_youdi",
+						trigger: { global: 'shaMiss' },
+						filter(event, player) {
+							return event.target == player;
+						},
+						async cost(event, trigger, player) {
+							event.result = await player.chooseToDiscard('是否发动【诱敌】？', [1, trigger.player.countCards('he')], 'he')
+								.set("ai", card => {
+									const target = get.event("target");
+									if (get.attitude(player, target) <= 0) {
+										return 4 - get.value(card);
+									}
+									return false;
+								})
+								.set("target", trigger.player)
+								.set("chooseonly", true);
+							if (event.result?.bool) {
+								event.result.targets = [trigger.player];
+							}
+						},
+						async content(event, trigger, player) {
+							await player.discard(event.cards);
+							await trigger.player.chooseToDiscard(event.cards.length, 'he', true);
+						},
+					},
 				},
-				direct: true,
-				content: function () {
-					'step 0'
-					player.chooseToDiscard('是否发动【诱敌】？', [1, trigger.player.countCards('he')], 'he').ai = function (card) {
-						if (get.attitude(player, trigger.player) <= 0) return 4 - get.value(card);
-						return false;
-					}
-					'step 1'
-					if (result.bool) {
-						player.logSkill('jlsg_youdi', trigger.player);
-						trigger.player.chooseToDiscard(result.cards.length, 'he', true);
-					}
-				}
 			},
 			jlsg_ruya: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
-				trigger: { player: 'loseEnd' },
-				frequent: true,
-				filter: function (event, player) {
-					if (player.countCards('h')) return false;
-					for (var i = 0; i < event.cards.length; i++) {
-						if (event.cards[i].original == 'h') return true;
-					}
-					return false;
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
-				content: function () {
-					player.turnOver();
-					player.draw(player.maxHp - player.countCards('h'));
+				filter: function (event, player) {
+					if (player.countCards("h")) { return false; }
+					const evt = event.getl(player);
+					return evt?.player == player && evt?.hs?.length > 0;
+				},
+				frequent: true,
+				check(event, player) {
+					return get.effect(player, { name: "draw" }, player, player) * player.maxHp - 2 > 0;
+				},
+				async content(event, trigger, player) {
+					await player.turnOver();
+					await player.drawTo(player.maxHp);
 				},
 				ai: {
 					threaten: 0.8,
-					effect: {
-						target: function (card, player, target) {
-							if (target.countCards('h') == 1 && card.name == 'guohe') return 0.5;
-							if (target.isTurnedOver() && target.countCards('h') == 1 && (card.name == 'guohe' || card.name == 'shunshou')) return -10;
+					noh: true,
+					skillTagFilter(player, tag) {
+						if (tag == "noh") {
+							if (player.countCards("h") != 1) return false;
 						}
 					},
-					noh: true,
-				}
+					effect: {
+						player_use(card, player, target) {
+							if (player.countCards("h") === 1) return [1, 0.8];
+						},
+						target(card, player, target) {
+							if (get.tag(card, "loseCard") && target.countCards("h") === 1) return 0.5;
+						},
+					},
+				},
 			},
 			jlsg_quanheng: {
 				srlose: true,
@@ -5145,7 +5175,6 @@ export default function () {
 			jlsg_huailing: '怀铃',
 			jlsg_dailao: '待劳',
 			jlsg_youdi: '诱敌',
-			jlsg_youdi2: '诱敌',
 			jlsg_ruya: '儒雅',
 			jlsg_quanheng: '权衡',
 			jlsg_xionglve: '雄略',
