@@ -1490,8 +1490,8 @@ export default function () {
 			jlsg_wuqin: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
-				trigger: { player: 'phaseJieshuEnd' },
-				filter: function (event, player) {
+				trigger: { player: 'phaseZhunbeiEnd' },
+				filter(event, player) {
 					return player.countDiscardableCards(player, 'h', card => get.type(card) == "basic");
 				},
 				async cost(event, trigger, player) {
@@ -1511,7 +1511,7 @@ export default function () {
 					await player.draw(2);
 					const phase = trigger.getParent("phase", true);
 					if (phase) {
-						phase.phaseList.splice(trigger.num + 1, 0, `phaseUse|${event.name}`);
+						phase.phaseList.splice(phase.num + 1, 0, `phaseUse|${event.name}`);
 					}
 					else {
 						await player.phaseUse();
