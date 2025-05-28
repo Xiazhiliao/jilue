@@ -3580,7 +3580,7 @@ export default function () {
 					event.result = await player.chooseTarget(get.prompt2("jlsg_fuzheng"), [1, 2], function (card, player, target) {
 						return player != target && target.group == 'wu';
 					})
-						.set("ai", target=> {
+						.set("ai", target => {
 							const player = get.player();
 							const att = get.attitude(player, target);
 							if (target.countCards('h')) return att;
@@ -3606,116 +3606,117 @@ export default function () {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				trigger: { global: ['loseAfter', 'loseAsyncAfter', 'cardsDiscardAfter'] },
-				filter: function (event, player) {
-					var criterion0 = event.getd().some(card => card.name == 'shan' && get.position(card, true) == 'd');
-
-					var criterion1 = player.countCards('he', card => card.name != "shan") != 0;
-					// console.log(criterion0, criterion1, event.cards.map(card => card.name));
-					return criterion0 && criterion1;
-				},
-				direct: true,
-				content: function () {
-					'step 0'
-					event.cards = trigger.getd().filter(card => get.position(card) == 'd' && card.name == 'shan');
-					// console.log(event.cards);
-					// console.log(_status.currentPhase);
-					'step 1'
-					event.card = event.cards.shift();
-					player.chooseToDiscard('是否发动【救主】替换弃牌堆中的' + get.translation(event.card) + '?', 'he',
-						card => card.name != 'shan')
-						.ai = function (card) {
-							if (player.num('h', { name: 'shan' }) >= 2) return false;
-							return 6 - ai.get.value(card);
-						}
-					'step 2'
-					if (result.bool) {
-						player.logSkill('jlsg_jiuzhu');
-						player.gain(event.card, 'gain2');
-						if (_status.currentPhase != player) {
-							player.chooseBool('是否对' + get.translation(_status.currentPhase) + '使用一张无视防具的杀？').ai = function () {
-								return get.attitude(player, _status.currentPhase) < 0;
+				getIndex(event, player) {
+					if (event.name == "cardsDiscard") {
+						let evt = event.getParent();
+						if (evt.name == "orderingDiscard" && evt.relatedEvent) {
+							evt = evt.relatedEvent;
+							if (
+								!["useCard", "respond"].includes(evt.name) ||
+								get.is.convertedCard(evt.card)
+							) {
+								return [];
 							}
-						} else {
-							event.finish();
 						}
-					} else {
-						event.finish();
 					}
-					'step 3'
-					if (result.bool) {
-						player.addTempSkill('unequip', 'shaAfter');
-						player.useCard({ name: 'sha' }, _status.currentPhase, false);
+					return event.getd().filterInD("d");
+				},
+				filter: function (event, player, name, card) {
+					if (!player.countCards('he', card => card.name != "shan")) { return false; }
+					return get.position(card) == "d" && card?.name == "shan";
+				},
+				async cost(event, trigger, player) {
+					const card = event.indexedData;
+					event.result = await player.chooseToDiscard(
+						`是否发动【救主】替换弃牌堆中的${get.translation(card)}?`,
+						'he',
+						card => card.name != 'shan',
+					)
+						.set("ai", card => {
+							if (player.countCards('h', 'shan') >= 2) { return false; }
+							return 6 - ai.get.value(card);
+						})
+						.set("chooseonly", true)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const { indexedData: card1, cards: [card2] } = event;
+					await player.discard(card2);
+					await player.gain(card1, "gain2");
+					if (_status.currentPhase && _status.currentPhase != player) {
+						const sha = get.autoViewAs({ name: "sha", storage: { jlsg_jiuzhu: true } }, []);
+						const { result } = await player.chooseBool(`是否对${get.translation(_status.currentPhase)}使用一张无视防具的杀？`)
+							.set("card", sha)
+							.set("ai", (event, player) => {
+								const card = get.event("card");
+								return get.effect(_status.current, card, player, player) > 0;
+							});
+						if (result.bool) {
+							await player.useCard(sha, _status.currentPhase, false);
+						}
 					}
-					"step 4"
-					if (event.cards.length) event.goto(1);
-				}
+				},
+				ai: {
+					unequip: true,
+					unequip_ai: true,
+					skillTagFilter(player, tag, arg) {
+						return arg?.card?.storage?.jlsg_jiuzhu == true && arg?.card?.name == "sha";
+					},
+				},
 			},
 			jlsg_tuwei: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				trigger: { global: 'cardsDiscardAfter' },
-				filter: function (event, player) {
-					var cards = event.getd().filterInD('d').filter(c => c.name == 'sha');
-					if (!cards.length) {
-						return false;
-					}
-					var evt = event.getParent();
+				filter(event, player) {
+					let evt = event.getParent();
 					if (evt.name != 'orderingDiscard' || !evt.relatedEvent) {
 						return false;
 					}
 					evt = evt.relatedEvent;
-					if (evt.name != 'useCard') {
-						return false;
-					}
+					if (evt.name != 'useCard') { return false; }
 					if (evt.player != player && !evt.targets.includes(player)) return false;
-					var criterion0 = evt.card.name == "sha" && evt.card.isCard
-						&& (evt.cards.length == 1 && evt.cards[0].name === 'sha')
-						&& cards.includes(evt.cards[0]);
-					var criterion1 = player.countCards('h', card => get.tag(card, 'damage')) != 0;
+					const criterion0 = evt.card.name == "sha" && !get.is.convertedCard(evt.card),
+						criterion1 = player.countDiscardableCards(player, 'he', card => get.tag(card, 'damage')) > 0;
 					return criterion0 && criterion1;
 				},
-				direct: true,
-				content: function () {
-					'step 0'
-					let evt = trigger.getParent().relatedEvent;
-					let targets = evt.targets.slice().add(evt.player);
-					player.chooseCardTarget({
-						filterCard: function (card) {
+				async cost(event, trigger, player) {
+					const evt = trigger.getParent().relatedEvent;
+					const targets = evt.targets.slice().concat([evt.player]).unique();
+					event.result = await player.chooseCardTarget({
+						filterCard(card) {
 							return get.tag(card, 'damage');
 						},
-						filterTarget: function (card, player, target) {
-							return _status.event.targets.includes(target) && target.countDiscardableCards(player, 'he') != 0;
+						filterTarget(card, player, target) {
+							return get.event("targets").includes(target) && target.countDiscardableCards(player, 'he');
 						},
 						selectTarget: [1, 2],
-						ai1: function (card) {
+						ai1(card) {
 							return 6 - get.value(card);
 						},
-						ai2: function (target) {
-							return -get.attitude(_status.event.player, target);
+						ai2(target) {
+							const player = get.player();
+							return get.effect(target, { name: "guohe_copy2" }, player, player);
 						},
 						prompt: get.prompt2('jlsg_tuwei'),
-					}).set('targets', targets);
-					'step 1'
-					if (result.bool) {
-						player.discard(result.cards);
-						player.logSkill('jlsg_tuwei', result.targets);
-						event.targets = result.targets;
-						if (result.targets.length == 1) {
-							player.discardPlayerCard(event.targets[0], 'he', [1, 2], true);
-						} else {
-							player.discardPlayerCard(event.targets[0], 'he', true);
-						}
+					})
+						.set("targets", targets)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const { targets, cards } = event;
+					await player.discard(cards);
+					if (targets.length == 1) {
+						await player.discardPlayerCard(targets[0], true, [1, 2], "he");
 					} else {
-						event.finish();
-					}
-					'step 2'
-					if (event.targets.length == 2) {
-						player.discardPlayerCard(targets[1], 'he', true);
+						for (const target of targets) {
+							await player.discardPlayerCard(target, true, "he");
+						};
 					}
 				},
 				ai: {
-					expose: 0.2
-				}
+					expose: 0.2,
+				},
 			},
 			// jlsg_xujin: {
 			//     audio: "ext:极略/audio/skill:1",
@@ -5085,7 +5086,6 @@ export default function () {
 			jlsg_jianxiong: '奸雄',
 			jlsg_jianxiong2: '奸雄',
 			jlsg_jiuzhu: '救主',
-			jlsg_jiuzhu2: '救主',
 			jlsg_tuwei: '突围',
 			jlsg_xujin: '蓄劲',
 			jlsg_xujin2: '蓄劲',
@@ -5183,7 +5183,7 @@ export default function () {
 			jlsg_old_zhishi_info: '出牌阶段限一次，你可以指定一名有手牌的其他角色，你选择其中一项执行：1.你展示一张【杀】令其弃置一张【杀】，若其执行，你与其恢复1点体力，否则你对其造成1点伤害；2.你展示一张【闪】令其弃置一张【闪】，若其执行，你与其恢复1点体力，否则你对其造成1点伤害。',
 			jlsg_jianxiong_info: '主公技。每当其他魏势力受到不为你的一次伤害后，该角色可以弃置一张手牌，然后令你获得对其造成伤害的牌。',
 			jlsg_jiuzhu_info: '每当一张非转化的【闪】进入弃牌堆时，你可以用一张不为【闪】的牌替换之。若此时不是你的回合，你可以视为对当前回合角色使用一张无视防具的【杀】。',
-			jlsg_tuwei_info: '每当一张非转化的【杀】进入弃牌堆时，若你是此【杀】的目标或使用者，你可以弃置一张能造成伤害的牌，然后弃置此牌目标或使用者的共计两张牌。',
+			jlsg_tuwei_info: '每当一张非转化的【杀】进入弃牌堆时，若你是此【杀】的目标或使用者，你可以弃置一张伤害牌，然后弃置此牌目标或使用者的共计两张牌。',
 			// jlsg_xujin_info: '摸牌阶段，你可以放弃摸牌，改为展示牌堆顶的5张牌，并令一名角色获得其中1种花色的所有牌，再将其余的牌置入弃牌堆。若如此做，你本回合的攻击范围和可以使用的【杀】数量与以此法被获得的牌的数量相同。',
 			jlsg_xujin_info: '摸牌阶段开始时，你展示牌堆顶的五张牌，然后，你可以放弃摸牌并将其中一种花色的牌交给一名角色，令你本回合的攻击范围和可以使用的【杀】数量与以此法被获得的牌的数量相同。否则你将展示的牌置入弃牌堆。',
 			jlsg_paoxiao_info: '出牌阶段，当你使用【杀】对目标角色造成一次伤害并结算完毕后，你可以摸一张牌，然后选择一项：使用一张无视距离的【杀】，或令该角色弃置你的一张牌。',
