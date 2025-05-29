@@ -2925,7 +2925,7 @@ export default function () {
 						.set('prompt2', `或点「取消」，令你与${get.translation(player)}各摸一张牌`)
 						.set('ai', card => {
 							const target = get.player(),
-								player = get.source("source");
+								player = get.event("source");
 							let unusefulness = get.unuseful(card);
 							const att = get.attitude(target, player);
 							if (-2 < att && att < 2) return -1;
