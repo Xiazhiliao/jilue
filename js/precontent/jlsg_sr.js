@@ -3791,105 +3791,108 @@ export default function () {
 				trigger: { player: "phaseDrawBegin1", },
 				forced: true,
 				locked: false,
-				content: function () {
-					"step 0"
-					event.cards = get.cards(5);
-					game.cardsGotoOrdering(event.cards);
-					player.showCards(event.cards, '蓄劲');
-					"step 1"
-					var split = { spade: [], heart: [], club: [], diamond: [] };
-					for (const card of event.cards) { // split the four suits
-						let suit = get.suit(card);
+				async content(event, trigger, player) {
+					const cards = get.cards(5);
+					await game.cardsGotoOrdering(cards);
+					await player.showCards(cards, '蓄劲');
+					const split = {};
+					for (const card of cards) { // split the four suits
+						let suit = get.suit(card, false);
+						if (!split[suit]) split[suit] = [];
 						split[suit].push(card);
-					}
+					};
 					var controlList = [];
 					for (const suit in split) {
 						if (split[suit].length)
 							controlList.push(lib.translate[suit]);
-					}
-					var next = player.chooseControl([...controlList, "取消"])
-						.set('dialog', ['是否发动【蓄劲】？选择一种花色的牌交给一名角色。', event.cards])
+					};
+					const { result: { control: suit } } = await player.chooseControl(controlList, "cancel2")
+						.set('dialog', ['是否发动【蓄劲】？选择一种花色的牌交给一名角色。', cards])
 						.set('split', split)
 						.set('ai', function () {
-							var splitValue = {};
-							for (const suit in _status.event.split) {
+							const splitValue = {};
+							for (const suit in get.event("split")) {
 								splitValue[suit] = split[suit].reduce((v, b) => v + get.value(b, player), 0);
 							}
 							if (Object.keys(splitValue).some(suit => splitValue[suit] > 10)) {
 								let suit = Object.keys(splitValue).reduce((a, b) => splitValue[a] > splitValue[b] ? a : b);
 								return lib.translate[suit];
 							} else {
-								return "取消";
+								return "cancel2";
 							}
 						});
-					event._split = split;
-					"step 2"
-					if (result.control == "取消") {
-						event.finish();
+					if (!suit || suit == "cancel2") {
+						return;
 					} else {
 						trigger.changeToZero();
-						for (const suit in event._split) {
-							if (lib.translate[suit] == result.control)
-								event.cards = event._split[suit];
+						let gain = [];
+						for (const suitx in split) {
+							if (lib.translate[suitx] == suit)
+								gain = split[suitx];
 						}
-						player.storage.jlsg_xujin2 = event.cards.length;
-						player.addTempSkill('jlsg_xujin2', 'phaseAfter');
-						player.chooseTarget('选择获得卡牌的目标', true).ai = function (target) {
-							if (player == target) return 10;
-							return get.attitude(player, target);
+						const { result } = await player.chooseTarget('选择获得卡牌的目标', true)
+							.set("ai,", target => {
+								const player = get.player();
+								return get.attitude(player, target) * get.value(get.event("cards"));
+							})
+							.set("cards", gain);
+						if (!result?.bool || !result?.targets?.length) { return; }
+						const { targets: [target] } = result;
+						const { cards: gainCards } = await target.gain(gain, "gain2");
+						let num = gainCards.length;
+						if (num > 0) {
+							player.storage.jlsg_xujin_effect = num;
+							player.addTempSkill("jlsg_xujin_effect");
+							player.markSkill("jlsg_xujin_effect");
 						}
+						await game.delay();
 					}
-
-					"step 3"
-					if (event.cards.length) {
-						result.targets[0].gain(event.cards, 'gain');
-					}
-					// for (var i = 0; i < cards.length; i++) {
-					//   ui.discardPile.appendChild(cards[i]);
-					// }
-					game.delay();
+				},
+				subSkill: {
+					effect: {
+						onremove: true,
+						mark: true,
+						intro: {
+							content: function (storage, player) {
+								return '出杀次数+' + storage + ',攻击距离为' + storage
+							}
+						},
+						mod: {
+							cardUsable(card, player, num) {
+								if (card.name == 'sha') return num + player.storage.jlsg_xujin_effect - 1;
+							},
+							attackRangeBase(player) {
+								return player.storage.jlsg_xujin_effect;
+							},
+						},
+					},
 				},
 				ai: {
-					threaten: 1.2
-				}
-			},
-			jlsg_xujin2: {
-				mark: true,
-				intro: {
-					content: function (storage, player) {
-						return '出杀次数+' + storage + ',攻击距离为' + storage
-					}
-				},
-				mod: {
-					cardUsable: function (card, player, num) {
-						if (card.name == 'sha') return num + player.storage.jlsg_xujin2 - 1;
-					},
-					attackRangeBase: function (player) {
-						return player.storage.jlsg_xujin2;
-					},
+					threaten: 1.2,
 				},
 			},
 			jlsg_paoxiao: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				shaRelated: true,
-				trigger: { source: 'damageAfter' },
-				filter: function (event, player) {
-					return event.card && event.card.name == 'sha';
+				trigger: { source: 'damageSource' },
+				filter(event, player) {
+					return event.card?.name == 'sha';
 				},
-				check: function (event, player) {
+				check(event, player) {
 					return get.attitude(player, event.player) <= 0 && event.notLink();
 				},
-				priority: 5,
-				content: function () {
-					'step 0'
-					player.draw();
-					player.chooseToUse({ name: 'sha' }, function (card, target, player) {
-						return player.canUse({ name: 'sha' }, target, false);
-					});
-					'step 1'
-					if (!result.bool) {
-						trigger.player.discardPlayerCard(player, 'he', true);
+				async content(event, trigger, player) {
+					await player.draw(1);
+					const { result } = await player.chooseToUse()
+						.set("filterCard", (card, player, event) => {
+							return get.name(card, player) == "sha";
+						})
+						.set("filterTarget", (card, player, target) => {
+							return player.canUse(get.autoViewAs({ name: "sha" }, "unsure"), player);
+						});
+					if (!result?.bool) {
+						await trigger.player.discardPlayerCard(player, 'he', true);
 					}
 				},
 			},
@@ -5088,7 +5091,6 @@ export default function () {
 			jlsg_jiuzhu: '救主',
 			jlsg_tuwei: '突围',
 			jlsg_xujin: '蓄劲',
-			jlsg_xujin2: '蓄劲',
 			jlsg_paoxiao: '咆哮',
 			jlsg_benxi: '奔袭',
 			jlsg_yaozhan: '邀战',
