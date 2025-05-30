@@ -2924,27 +2924,27 @@ export default function () {
 					const { result } = await player.chooseToDiscard('he')
 						.set('prompt2', `或点「取消」，令你与${get.translation(target)}各摸一张牌`)
 						.set('ai', card => {
-							const target = get.player(),
-								player = get.event("source");
+							const player = get.player(),
+								target = get.event("target");
 							let unusefulness = get.unuseful(card);
-							const att = get.attitude(target, player);
+							const att = get.attitude(player, target);
 							if (-2 < att && att < 2) return -1;
 							if (!player.hasSkill('jlsg_ruya')) {
 								if (att > 0) { return unusefulness; }
-								return unusefulness + (get.effect(player, { name: 'guohe_copy2' }, player, target) / 2);
+								return unusefulness + (get.effect(target, { name: 'guohe_copy2' }, player, player) / 2);
 							}
-							if (att < 0 || player.countDiscardableCards(player, 'h') != player.countCards('h')) {
+							if (att < 0 || target.countDiscardableCards(player, 'h') != target.countCards('h')) {
 								return -1;
 							}
-							if (player.isTurnedOver() && player.countCards('h') == 1) {
+							if (target.isTurnedOver() && target.countCards('h') == 1) {
 								unusefulness += 8;
 							}
 							return unusefulness;
 						})
-						.set("source", player);
+						.set("target", target);
 					if (result.bool) {
 						target.addExpose(0.1);
-						await player.chooseToDiscard('he', true);
+						await target.chooseToDiscard('he', true);
 					} else {
 						await game.asyncDraw([player, target]);
 					}

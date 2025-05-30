@@ -15033,8 +15033,7 @@ export default function () {
             choice = -choice + losehp > 0;
           } else {
             str += `令${get.translation(trigger.card)}无法被响应，然后令${get.translation(trigger.player)}获得此牌并恢复1点体力`;
-            let eff = trigger.player.getUseValue(trigger.card) * Math.sign(get.attitude(player, trigger.player))
-              + (trigger.player.isDamaged() ? get.recoverEffect(trigger.player, player, player) : -2);
+            let eff = trigger.player.isDamaged() ? get.recoverEffect(trigger.player, player, player) : -2;
             choice = choice + eff > 0;
           }
           const { result } = await player.chooseBool(str)
@@ -15154,12 +15153,13 @@ export default function () {
           event.result = await player.chooseTarget(get.prompt("jlsg_caiyuan"))
             .set("prompt2", `摸两张牌，然后将${get.translation(trigger.card)}的目标转移给一名其他角色`)
             .set("filterTarget", (_, player, target) => target != player)
-            .set("drawEff", get.effect(player, { name: "draw" }, player, player))
+            .set("otherEff", get.effect(player, { name: "draw" }, player, player) - get.effect(player, trigger.card, trigger.player, player))
             .set("ai", target => {
               const trigger = get.event().getParent().getTrigger(),
                 player = get.player(),
-                draw = get.event("draw");
-              return get.effect(target, trigger.card, trigger.player, player) + draw;
+                otherEff = get.event("otherEff"),
+                eff = get.effect(target, trigger.card, trigger.player, player);
+              return eff + otherEff;
             })
             .forResult();
         },
