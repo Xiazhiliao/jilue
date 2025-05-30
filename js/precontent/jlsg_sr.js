@@ -2921,8 +2921,8 @@ export default function () {
 					if (target.ai.shown > player.ai.shown) {
 						player.addExpose(0.1);
 					}
-					const { result } = await target.chooseToDiscard('he')
-						.set('prompt2', `或点「取消」，令你与${get.translation(player)}各摸一张牌`)
+					const { result } = await player.chooseToDiscard('he')
+						.set('prompt2', `或点「取消」，令你与${get.translation(target)}各摸一张牌`)
 						.set('ai', card => {
 							const target = get.player(),
 								player = get.event("source");
@@ -5224,7 +5224,7 @@ export default function () {
 			jlsg_old_youxia_info: '出牌阶段限一次，你可以将你的武将牌翻面，然后从1至2名其他角色的区域各弃置一张牌；锁定技，若你的武将牌背面朝上，你不能成为【杀】和【兵粮寸断】的目标。',
 
 			jlsg_huailing_info: '若你的武将牌背面朝上，其他角色使用一张锦囊牌指定大于一个目标时，你可以令一名其他角色不受到该牌的效果，然后你将武将牌正面朝上；锁定技，若你的武将牌背面朝上，你不能成为【决斗】和【过河拆桥】的目标。',
-			jlsg_dailao_info: '出牌阶段限一次，你可以令一名其他角色与你将武将牌翻面，然后其选择一项：与你各摸一张牌；或与你各弃置一张牌。',
+			jlsg_dailao_info: '出牌阶段限一次，你可以令一名其他角色与你将武将牌翻面，然后你选择与其各摸一张牌或各弃置一张牌。',
 			jlsg_youdi_info: '若你的武将牌背面朝上，你可以将其翻面来视为你使用一张【闪】。每当你使用【闪】响应一名角色使用的【杀】时，你可以弃置至多X张牌，然后该角色弃置等量的牌（X为该角色的牌数）。',
 			jlsg_ruya_info: '当你失去最后的手牌时，你可以翻面并将手牌补至你体力上限的张数。',
 			jlsg_quanheng_info: '出牌阶段限一次，你可以将至少一张手牌当【无中生有】或【杀】使用，若你以此法使用的牌被【无懈可击】或【闪】响应时，你摸等量的牌。',

@@ -6768,13 +6768,21 @@ export default function () {
       },
       jlsg_yuhua: {
         audio: "ext:极略/audio/skill:2",
-        trigger: { source: 'damageBegin2', player: 'damageBegin4' },
+        mod: {
+          maxHandcard: function (player, num) {
+            if (player.storage.jlsg_yuhua) {
+              return num - player.storage.jlsg_yuhua;
+            }
+          }
+        },
         intro: {
           content: '已发动过#次',
         },
+        trigger: { source: 'damageBegin2', player: 'damageBegin4' },
         filter: function (event, player) {
           return event.card && get.type(event.card, 'trick') == 'trick';
         },
+        locked:false,
         check: function (event, player) {
           _status.jlsg_yuhua_judging = true;
           if (player == event.player) {
@@ -6793,13 +6801,6 @@ export default function () {
           player.storage.jlsg_yuhua = player.storage.jlsg_yuhua || 0;
           ++player.storage.jlsg_yuhua;
           player.markSkill('jlsg_yuhua');
-        },
-        mod: {
-          maxHandcard: function (player, num) {
-            if (player.storage.jlsg_yuhua) {
-              return num - player.storage.jlsg_yuhua;
-            }
-          }
         },
         ai: {
           notrick: true,
