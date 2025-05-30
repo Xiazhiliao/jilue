@@ -3376,20 +3376,20 @@ export default function () {
         locked: true,
         direct: true,
         async content(event, trigger, player) {
-          const cards = Array.from(ui.cardPile.childNodes)
-            .filter(c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name))
-            .concat(game.filterPlayer()
-              .map(p => p.getCards('h', c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name)))
-              .flat())
-            .filter(card => {
-              if (trigger?.filterCard) {
-                let filter = trigger.filterCard;
-                if (typeof filter == "function") return filter(card, player, trigger);
-                else if (typeof filter == "boolean") return filter;
-              }
-              return player.canUse(card, player, false, trigger);
-            });
           while (player.isDying()) {
+            const cards = Array.from(ui.cardPile.childNodes)
+              .filter(c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name))
+              .concat(game.filterPlayer()
+                .map(p => p.getCards('h', c => player.canSaveCard(c, player)))
+                .flat())
+              .filter(card => {
+                if (trigger?.filterCard) {
+                  let filter = trigger.filterCard;
+                  if (typeof filter == "function") return filter(card, player, trigger);
+                  else if (typeof filter == "boolean") return filter;
+                }
+                return player.canUse(card, player, false, trigger);
+              });
             await player.logSkill(event.name);
             const card = cards.randomRemove();
             if (!card) break;

@@ -6782,7 +6782,7 @@ export default function () {
         filter: function (event, player) {
           return event.card && get.type(event.card, 'trick') == 'trick';
         },
-        locked:false,
+        locked: false,
         check: function (event, player) {
           _status.jlsg_yuhua_judging = true;
           if (player == event.player) {
@@ -15013,7 +15013,7 @@ export default function () {
               targetsList = targetsx;
             }
           };
-          if (change && !player.hasStorage("jlsg_ciwei_used", "change")) return "change";
+          if (change && event.player != player && !player.hasStorage("jlsg_ciwei_used", "change")) return "change";
           else if (!change && !player.hasStorage("jlsg_ciwei_used", "unchange")) return "unchange";
           return false;
         },
