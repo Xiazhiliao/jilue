@@ -6,35 +6,51 @@ export default function () {
     connect: true,
     characterSort: {
       jlsg_sk: {
-        jlsg_tiangang: ['jlsgsk_xuyou', 'jlsgsk_dengzhi', 'jlsgsk_dongyun', 'jlsgsk_kuaiyue', 'jlsgsk_yuji',
+        jlsg_tiangang: [
+          'jlsgsk_xuyou', 'jlsgsk_dengzhi', 'jlsgsk_dongyun', 'jlsgsk_kuaiyue', 'jlsgsk_yuji',
           'jlsgsk_panshu', 'jlsgsk_zhangrang', 'jlsgsk_xinxianying', 'jlsgsk_wuxian', 'jlsgsk_jushou',
           'jlsgsk_wenyang', 'jlsgsk_zhugezhan', 'jlsgsk_sunru', 'jlsgsk_liuyan', 'jlsgsk_guohuanghou',
           'jlsgsk_zhaoxiang', 'jlsgsk_lvfan', 'jlsgsk_hetaihou', 'jlsgsk_zhangyi', 'jlsgsk_caochun',
           'jlsgsk_shamoke', 'jlsgsk_lingcao', 'jlsgsk_zhaoyan', 'jlsgsk_beimihu', 'jlsgsk_wutugu',
-          'jlsgsk_caoying'],
-        jlsg_disha: ['jlsgsk_sunce', 'jlsgsk_caoren', 'jlsgsk_gongsunzan', 'jlsgsk_huaxiong', 'jlsgsk_zumao',
+          'jlsgsk_caoying',
+        ],
+        jlsg_disha: [
+          'jlsgsk_sunce', 'jlsgsk_caoren', 'jlsgsk_gongsunzan', 'jlsgsk_huaxiong', 'jlsgsk_zumao',
           'jlsgsk_miheng', 'jlsgsk_zhangbu', 'jlsgsk_guonvwang', 'jlsgsk_quancong', 'jlsgsk_mateng',
           'jlsgsk_zhoufei', 'jlsgsk_liuchen', 'jlsgsk_xiahoushi', 'jlsgsk_yanyan', 'jlsgsk_panzhang',
-          'jlsgsk_gongsunyuan', 'jlsgsk_chenqun'],
-        jlsg_renjie: ['jlsgsk_wangping', 'jlsgsk_buzhi', 'jlsgsk_maliang', 'jlsgsk_sunqian', 'jlsgsk_dongxi',
+          'jlsgsk_gongsunyuan', 'jlsgsk_chenqun',
+        ],
+        jlsg_renjie: [
+          'jlsgsk_wangping', 'jlsgsk_buzhi', 'jlsgsk_maliang', 'jlsgsk_sunqian', 'jlsgsk_dongxi',
           'jlsgsk_luzhi', 'jlsgsk_mifuren', 'jlsgsk_xizhicai', 'jlsgsk_zhangliang', 'jlsgsk_caorui',
           'jlsgsk_sunxiu', 'jlsgsk_sundeng', 'jlsgsk_zhuzhi', 'jlsgsk_wanglang', 'jlsgsk_sunliang',
           'jlsgsk_mayunlu', 'jlsgsk_zhongyao', 'jlsgsk_nanhualaoxian', 'jlsgsk_jiangwei', 'jlsgsk_huanghao',
           'jlsgsk_huaman', 'jlsgsk_pangtong', 'jlsgsk_lvdai', 'jlsgsk_wangyuanji', 'jlsgsk_zhangchangpu',
           "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan",
-          "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan"],
-        jlsg_pojun: ['jlsgsk_zhuran', 'jlsgsk_yanliang', 'jlsgsk_chendao', 'jlsgsk_dingfeng', 'jlsgsk_dongzhuo',
+          "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan",
+          "jlsgsk_yanghuiyu",
+        ],
+        jlsg_pojun: [
+          'jlsgsk_zhuran', 'jlsgsk_yanliang', 'jlsgsk_chendao', 'jlsgsk_dingfeng', 'jlsgsk_dongzhuo',
           'jlsgsk_yujin', 'jlsgsk_panfeng', 'jlsgsk_jiangqin', 'jlsgsk_guanxing', 'jlsgsk_guansuo',
-          'jlsgsk_baosanniang', 'jlsgsk_dongbai', 'jlsgsk_xushi', 'jlsgsk_caoxiu', 'jlsgsk_caojie'],
-        jlsg_yinyang: ['jlsgsk_zuoci', 'jlsgsk_guanlu', 'jlsgsk_wangyi', 'jlsgsk_zhanglu', 'jlsgsk_kongrong',
+          'jlsgsk_baosanniang', 'jlsgsk_dongbai', 'jlsgsk_xushi', 'jlsgsk_caoxiu', 'jlsgsk_caojie',
+        ],
+        jlsg_yinyang: [
+          'jlsgsk_zuoci', 'jlsgsk_guanlu', 'jlsgsk_wangyi', 'jlsgsk_zhanglu', 'jlsgsk_kongrong',
           'jlsgsk_zhoucang', 'jlsgsk_zhoutai', 'jlsgsk_lvlingqi', 'jlsgsk_lukang', 'jlsgsk_luji',
-          'jlsgsk_xianglang', 'jlsgsk_zoushi', 'jlsgsk_zhugeguo'],
-        jlsg_tanlang: ['jlsgsk_zhangxiu', 'jlsgsk_zhugejin', 'jlsgsk_liyan', 'jlsgsk_jiping', 'jlsgsk_sunhao',
+          'jlsgsk_xianglang', 'jlsgsk_zoushi', 'jlsgsk_zhugeguo',
+        ],
+        jlsg_tanlang: [
+          'jlsgsk_zhangxiu', 'jlsgsk_zhugejin', 'jlsgsk_liyan', 'jlsgsk_jiping', 'jlsgsk_sunhao',
           'jlsgsk_yangxiu', 'jlsgsk_simazhao', 'jlsgsk_simashi', 'jlsgsk_zhangning', 'jlsgsk_feiyi',
-          'jlsgsk_wuyi',],
-        jlsg_jiangxing: ['jlsgsk_sunluyu', 'jlsgsk_chengyu', 'jlsgsk_mizhu', 'jlsgsk_zhangren', 'jlsgsk_zangba',
-          'jlsgsk_hejin', 'jlsgsk_zhangbao', 'jlsgsk_bianfuren', 'jlsgsk_heqi', 'jlsgsk_tianfeng'],
-        jlsg_sp: ['jlsgsk_guanyu', 'jlsgsk_huangyueying', 'jlsgsk_machao', 'jlsgsk_caiwenji', 'jlsgsk_wanniangongzhu'],
+          'jlsgsk_wuyi',
+        ],
+        jlsg_jiangxing: [
+          'jlsgsk_sunluyu', 'jlsgsk_chengyu', 'jlsgsk_mizhu', 'jlsgsk_zhangren', 'jlsgsk_zangba',
+          'jlsgsk_hejin', 'jlsgsk_zhangbao', 'jlsgsk_bianfuren', 'jlsgsk_heqi', 'jlsgsk_tianfeng',
+        ],
+        jlsg_sp: ['jlsgsk_guanyu', 'jlsgsk_huangyueying', 'jlsgsk_machao', 'jlsgsk_caiwenji', 'jlsgsk_wanniangongzhu',
+        ],
       },
     },
     character: {
@@ -173,6 +189,7 @@ export default function () {
       jlsgsk_yangwan: ["female", "shu", 3, ["jlsg_youyan", "jlsg_zhuihuan"], ["name:杨|null"]],
       jlsgsk_cenhun: ["male", "wu", 3, ["jlsg_jishe", "jlsg_lianhuo"], ["name:岑|昏"]],
       jlsgsk_gexuan: ["male", "wu", 3, ["jlsg_lianhua", "jlsg_zhafu"], ["name:葛|玄"]],
+      jlsgsk_yanghuiyu: ["female", "qun", 3, ["jlsg_ciwei", "jlsg_caiyuan"], ["name:羊|徽瑜"]],
     },
     characterIntro: {
       jlsgsk_kuaiyue: "蒯越（？－214年），字异度，襄阳中庐（今湖北襄阳西南）人。东汉末期人物，演义中为蒯良之弟。原本是荆州牧刘表的部下，曾经在刘表初上任时帮助刘表铲除荆州一带的宗贼（以宗族、乡里关系组成的武装集团）。刘表病逝后与刘琮一同投降曹操，后来官至光禄勋。",
@@ -12772,7 +12789,7 @@ export default function () {
           jlsg.characterList.remove(name);
           recruit.storage.jlsg_xinghan_recruit = player;
           recruit.addSkill('jlsg_xinghan_recruit');
-          const draw=recruit.draw(2);
+          const draw = recruit.draw(2);
           draw._triggered = null;
           await draw;
           game.log(player, '招募了', recruit);
@@ -14960,6 +14977,211 @@ export default function () {
           await player.draw(1);
         },
       },
+      jlsg_ciwei: {
+        audio: "ext:极略/audio/skill:2",
+        trigger: {
+          global: "useCardToTargeted",
+        },
+        filter(event, player) {
+          if (
+            player.hasStorage("jlsg_ciwei_used", "change") &&
+            player.hasStorage("jlsg_ciwei_used", "unchange") ||
+            !["basic", "trick"].includes(get.type(event.card)) ||
+            event.parent.targets.length > event.parent.triggeredTargets4.length
+          ) {
+            return false;
+          }
+          let change = false;
+          const history = (player.storage.jlsg_ciwei_record || [])
+            .filter(evt => evt.card == event.card);
+          let targetsList;
+          for (let evt of history) {
+            const { targets = [], excluded = [] } = evt;
+            const targetsx = targets.slice().removeArray(excluded);
+            if (!targetsList) {
+              targetsList = targetsx;
+              continue;
+            }
+            if (
+              !targetsList.every(target => targetsx.includes(target)) ||
+              !targetsx.every(target => targetsList.includes(target))
+            ) {
+              change = true;
+              break;
+            } else {
+              targetsList = targetsx;
+            }
+          };
+          if (change && !player.hasStorage("jlsg_ciwei_used", "change")) return "change";
+          else if (!change && !player.hasStorage("jlsg_ciwei_used", "unchange")) return "unchange";
+          return false;
+        },
+        async cost(event, trigger, player) {
+          const key = lib.skill.jlsg_ciwei.filter(trigger, player),
+            { targets = [], excluded = [] } = trigger.parent;
+          const targetsx = targets.slice().removeArray(excluded);
+          let str = `###${get.prompt("jlsg_ciwei", trigger.player)}###`,
+            choice = (function () {
+              return targetsx.reduce((eff, target) => {
+                return eff + get.effect(target, trigger.card, trigger.player, player);
+              }, 0) / targetsx.length;
+            })();
+          if (key == "change") {
+            str += `令${get.translation(trigger.card)}无效并令${get.translation(trigger.player)}失去1点体力`;
+            let losehp = get.effect(trigger.player, { name: "losehp" }, player, player);
+            choice = -choice + losehp > 0;
+          } else {
+            str += `令${get.translation(trigger.card)}无法被响应，然后令${get.translation(trigger.player)}获得此牌并恢复1点体力`;
+            let eff = trigger.player.getUseValue(trigger.card) * Math.sign(get.attitude(player, trigger.player))
+              + (trigger.player.isDamaged() ? get.recoverEffect(trigger.player, player, player) : -2);
+            choice = choice + eff > 0;
+          }
+          const { result } = await player.chooseBool(str)
+            .set("choice", choice)
+          event.result = result;
+          if (result?.bool) {
+            event.result.cost_data = { key };
+            event.result.targets = [trigger.player];
+          }
+        },
+        async content(event, trigger, player) {
+          const key = event.cost_data.key;
+          player.addTempSkill("jlsg_ciwei_used");
+          player.storage.jlsg_ciwei_used.add(key);
+          player.markSkill("jlsg_ciwei_used");
+          if (key == "change") {
+            game.log(player, "令", trigger.card, "无效");
+            trigger.parent.excluded.addArray(game.players);
+            await trigger.player.loseHp(1);
+          } else {
+            game.log(player, "令", trigger.card, "无法响应");
+            trigger.parent.directHit = game.players;
+            const cards = (trigger.card?.cards || []).filterInD("od");
+            if (cards.length) {
+              await trigger.player.gain(cards, "gain2");
+            }
+            await trigger.player.recover(1);
+          }
+        },
+        group: ["jlsg_ciwei_record"],
+        subSkill: {
+          record: {
+            audio: false,
+            init(player, skill) {
+              player.storage[skill] = [];
+            },
+            onremove: true,
+            trigger: {
+              global: [
+                "useCardBefore", "useCardBegin",
+                "useCard0", "useCard1",
+                "yingbian", "useCard2",
+                "useCard", "useCardToPlayer",
+                "useCardToTarget", "useCardToPlayered",
+                "useCardToTargeted", "useCardAfter"
+              ],
+            },
+            charlotte: true,
+            firstDo: true,
+            forced: true,
+            popup: false,
+            filter(event, player, name) {
+              if (
+                player.hasStorage("jlsg_ciwei_used", "change") &&
+                player.hasStorage("jlsg_ciwei_used", "unchange") ||
+                !["basic", "trick"].includes(get.type(event.card))
+              ) {
+                return false;
+              }
+              if (name == "useCardAfter") {
+                if (player.storage.jlsg_ciwei_record?.some(evt => evt.card == event.card)) return true;
+              }
+              return true;
+            },
+            async content(event, trigger, player) {
+              if (event.triggername != "useCardAfter") {
+                const evt = event.triggername.startsWith("useCardTo") ? trigger.parent : trigger;
+                const { targets = [], excluded = [] } = evt;
+                player.storage[event.name].push({
+                  name: event.triggername,
+                  card: trigger.card,
+                  targets: targets.slice(),
+                  excluded: excluded.slice(),
+                });
+              } else {
+                player.storage[event.name] = player.storage[event.name]
+                  .filter(evt => evt.card != trigger.card);
+              }
+            },
+          },
+          used: {
+            init(player, skill) {
+              player.storage[skill] = [];
+            },
+            onremove: true,
+            mark: true,
+            intro: {
+              content(storage) {
+                let str = "本回合已因"
+                let list = []
+                if (storage.includes("change")) list.add("变化");
+                if (storage.includes("unchange")) list.add("不变");
+                return `本回合已触发：${list.join("、")}`;
+              },
+            },
+          },
+        },
+        ai: {
+          expose: 0.2,
+        },
+      },
+      jlsg_caiyuan: {
+        audio: "ext:极略/audio/skill:2",
+        trigger: {
+          target: "useCardToTarget",
+        },
+        filter(event, player) {
+          if (
+            !["basic", "trick"].includes(get.type(event.card)) ||
+            get.color(event.card, event.player) == "black"
+          ) {
+            return false;
+          }
+          return event.getParent().targets.length == 1;
+        },
+        async cost(event, trigger, player) {
+          event.result = await player.chooseTarget(get.prompt("jlsg_caiyuan"))
+            .set("prompt2", `摸两张牌，然后将${get.translation(trigger.card)}的目标转移给一名其他角色`)
+            .set("filterTarget", (_, player, target) => target != player)
+            .set("drawEff", get.effect(player, { name: "draw" }, player, player))
+            .set("ai", target => {
+              const trigger = get.event().getParent().getTrigger(),
+                player = get.player(),
+                draw = get.event("draw");
+              return get.effect(target, trigger.card, trigger.player, player) + draw;
+            })
+            .forResult();
+        },
+        async content(event, trigger, player) {
+          const { targets } = event;
+          await player.draw(2);
+          trigger.getParent().targets = targets;
+        },
+        ai: {
+          expose: 0.2,
+          effect: {
+            target(card, player, target) {
+              if (
+                !["basic", "trick"].includes(get.type(card)) ||
+                get.color(card, player) == "black"
+              ) {
+                return;
+              }
+              return [0.5, 2, 0.5, 0];
+            },
+          },
+        },
+      },
     },
     translate: {
       jlsg_sk: "SK武将",
@@ -15108,6 +15330,7 @@ export default function () {
       jlsgsk_yangwan: "SK杨婉",
       jlsgsk_cenhun: "SK岑昏",
       jlsgsk_gexuan: "SK葛玄",
+      jlsgsk_yanghuiyu: "SK羊徽瑜",
 
       jlsg_hemeng: '和盟',
       jlsg_sujian: '素检',
@@ -15656,9 +15879,12 @@ export default function () {
       jlsg_lianhua: "炼化",
       jlsg_lianhua_info: "任意角色的出牌阶段开始时，你可以观看其手牌并弃置至少一张，然后令其获得X张随机临时牌（X为以此法弃置的牌数＋1)。",
       jlsg_lianhua_append: '<span style="font-family: yuanli">以此技能创造的临时牌为当前牌堆内的复制牌</span>',
-
       jlsg_zhafu: "札符",
       jlsg_zhafu_info: "当临时牌进入弃牌堆后，你可以摸一张牌。",
+      jlsg_ciwei: "慈威",
+      jlsg_ciwei_info: "每回合限一次，当其他角色使用基本牌或非延时锦囊牌指定目标后，若此牌的目标发生过改变，你可以令此牌无效，然后令使用者失去1点体力；每回合限一次，当任意角色使用基本牌或非延时锦囊牌指定目标后，若此牌的目标未发生过改变，你可以令此牌不能被响应，然后令使用者获得此牌并回复1点体力。",
+      jlsg_caiyuan: "才媛",
+      jlsg_caiyuan_info: "当你成为基本牌或非延时锦囊牌的唯一目标时，若此牌不为黑色，你可以摸两张牌，然后将目标转移给另一名角色。",
     },
     dynamicTranslate: {
       jlsg_zhidi: function (player) {
