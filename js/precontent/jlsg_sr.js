@@ -3649,7 +3649,7 @@ export default function () {
 							.set("card", sha)
 							.set("ai", (event, player) => {
 								const card = get.event("card");
-								return get.effect(_status.current, card, player, player) > 0;
+								return get.effect(_status.currentPhase, card, player, player) > 0;
 							});
 						if (result.bool) {
 							await player.useCard(sha, _status.currentPhase, false);
