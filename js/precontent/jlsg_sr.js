@@ -3987,144 +3987,132 @@ export default function () {
 				enable: 'phaseUse',
 				usable: 1,
 				marktext: '酒',
-				filterCard: function (card) {
-					return get.color(card) == 'black';
-				},
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards('h', { color: 'black' }) > 0;
 				},
-				check: function (card) {
+				filterCard(card) {
+					return get.color(card) == 'black';
+				},
+				check(card) {
 					return 6 - get.value(card)
 				},
 				discard: false,
-				prepare: function (cards, player) {
+				prepare(cards, player) {
 					player.$give(1, player);
 				},
-				content: function () {
-					player.addToExpansion(cards).gaintag.add(event.name);
+				async content(event, trigger, player) {
+					const next = player.addToExpansion(event.cards);
+					next.gaintag.add(event.name);
+					await next
 				},
 				intro: {
 					content: 'expansion',
 					markcount: 'expansion',
 				},
-				onremove: function (player, skill) {
-					var cards = player.getExpansions(skill);
-					if (cards.length) player.loseToDiscardpile(cards);
+				onremove(player, skill) {
+					const cards = player.getExpansions(skill);
+					if (cards.length) {
+						player.loseToDiscardpile(cards);
+					}
 				},
-				group: 'jlsg_wenjiu2',
+				group: 'jlsg_wenjiu_sha',
+				subSkill: {
+					sha: {
+						audio: "ext:极略/audio/skill/jlsg_wenjiu21.mp3",
+						trigger: { player: 'shaBegin' },
+						filter(event, player) {
+							return player.countExpansions('jlsg_wenjiu');
+						},
+						check(event, player) {
+							return get.attitude(player, event.target) < 0;
+						},
+						async content(event, trigger, player) {
+							const { result } = await player.chooseCardButton('请弃置一张「酒」，该伤害+1点', true, player.getExpansions('jlsg_wenjiu'))
+								.set("ai", function (button) {
+									if (get.attitude(player, trigger.target) < 0) return 1;
+									return 0;
+								});
+							if (result.bool) {
+								await player.loseToDiscardpile(result.links);
+								trigger.baseDamage++;
+								player.when({ player: ["shaMiss", "useCardAfter"] })
+									.filter(evt => evt.card == trigger.card)
+									.step(async (event, trigger, player) => {
+										if (trigger.name != "useCard") {
+											await player.draw(1);
+										}
+									});
+							}
+						},
+					},
+				},
 				ai: {
 					order: 10,
 					result: {
 						player: function (player) {
 							return 2 - player.getExpansions('jlsg_wenjiu').length;
-						}
-					}
-				}
-			},
-			jlsg_wenjiu2: {
-				audio: "ext:极略/audio/skill:1",
-				trigger: { player: 'shaBegin' },
-				filter: function (event, player) {
-					return player.getExpansions('jlsg_wenjiu').length;
+						},
+					},
 				},
-				check: function (event, player) {
-					return get.attitude(player, event.target) < 0;
-				},
-				content: function () {
-					'step 0'
-					player.chooseCardButton('请弃置一张「酒」，该伤害+1点', true, player.getExpansions('jlsg_wenjiu')).ai = function (button) {
-						if (get.attitude(player, trigger.target) < 0) return 1;
-						return 0;
-					}
-					'step 1'
-					if (result.bool) {
-						player.lose(result.links);
-						player.$throw(result.links);
-						player.addTempSkill('jlsg_wenjiu3', 'shaAfter');
-						player.addTempSkill('jlsg_wenjiu4', 'shaAfter');
-
-					}
-				}
-			},
-			jlsg_wenjiu3: {
-				trigger: { source: 'damageBegin' },
-				filter: function (event) {
-					return event.card && event.card.name == 'sha' && event.notLink();
-				},
-				forced: true,
-				popup: false,
-				content: function () {
-					trigger.num++;
-				}
-			},
-			jlsg_wenjiu4: {
-				trigger: { player: 'shaMiss' },
-				priority: -1,
-				forced: true,
-				popup: false,
-				content: function () {
-					player.draw();
-				}
 			},
 			jlsg_shuixi: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				trigger: { player: 'phaseZhunbeiBegin' },
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards('h') > 0
 				},
-				direct: true,
-				content: function () {
-					'step 0'
-					player.chooseCardTarget({
-						filterTarget: function (card, player, target) {
+				async cost(event, trigger, player) {
+					event.result = await player.chooseCardTarget({
+						filterCard: true,
+						filterTarget(card, player, target) {
 							return target != player;
 						},
-						filterCard: true,
-						ai1: function (card) {
+						ai1(card) {
 							return get.value(card);
 						},
-						ai2: function (target) {
+						ai2(target) {
 							return -get.attitude(player, target);
 						},
-						prompt: '水袭：展示一张手牌并选择一名其他角色'
-					});
-					'step 1'
-					if (result.bool) {
-						event.target = result.targets[0];
-						event.card = result.cards[0];
-						player.logSkill('jlsg_shuixi', event.target);
-						player.showCards(event.card);
-						event.target.chooseToDiscard({ suit: get.suit(event.card) }).ai = function (card) {
-							if (event.target.hasSkillTag('maihp') && (event.target.hp > 2 || event.target.hasCard('tao', 'h'))) return -1;
+						prompt: '水袭：展示一张手牌并选择一名其他角色',
+					}).forResult();
+				},
+				async content(event, trigger, player) {
+					const { targets: [target], cards: [card] } = event;
+					player.showCards(card, "水袭");
+					const suit = get.suit(card, player);
+					const { result } = await target.chooseToDiscard(`请弃置一张${get.translation(suit)}牌，否则失去1点体力`)
+						.set("suit", suit)
+						.set("filterCard", (card, player) => get.suit(card, player) == get.event("suit"))
+						.set("ai", card => {
+							const player = get.player();
+							if (player.hasSkillTag('maihp') && (player.hp > 2 || player.hasCard('tao', 'h'))) {
+								return -1;
+							}
 							return 7.9 - get.value(card);
-						}
-					} else {
-						event.finish();
+						});
+					if (!result?.bool) {
+						await target.loseHp();
+						player.addTempSkill('jlsg_shuixi_ban', 'phaseAfter');
 					}
-					'step 2'
-					if (result.bool) {
-						event.finish()
-					} else {
-						event.target.loseHp();
-						player.addTempSkill('jlsg_shuixi2', 'phaseAfter');
-					}
+				},
+				subSkill: {
+					ban: {
+						charlotte: true,
+						mark: true,
+						intro: {
+							content: '水袭失败,不能使用【杀】',
+						},
+						mod: {
+							cardEnabled(card, player) {
+								if (get.name(card, player) == 'sha') { return false; }
+							},
+						},
+					},
 				},
 				ai: {
-					expose: 0.4
-				}
-			},
-			jlsg_shuixi2: {
-				mark: true,
-				intro: {
-					content: '水袭失败,不能使用【杀】'
+					expose: 0.4,
 				},
-				mod: {
-					cardEnabled: function (card) {
-						if (card.name == 'sha')
-							return false
-					}
-				}
 			},
 			jlsg_sanfen: {
 				audio: "ext:极略/audio/skill:1",
@@ -5100,11 +5088,7 @@ export default function () {
 			jlsg_benxi: '奔袭',
 			jlsg_yaozhan: '邀战',
 			jlsg_wenjiu: '温酒',
-			jlsg_wenjiu2: '温酒',
-			jlsg_wenjiu3: '温酒',
-			jlsg_wenjiu4: '温酒',
 			jlsg_shuixi: '水袭',
-			jlsg_shuixi2: '水袭',
 			jlsg_sanfen: '三分',
 			jlsg_guanxing: '观星',
 			jlsg_weiwo: '帷幄',
