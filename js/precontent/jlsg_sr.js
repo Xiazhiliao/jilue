@@ -1012,7 +1012,8 @@ export default function () {
 					const targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
 					player.line(targets);
 					for (const target of targets) {
-						await target.chooseToGive('选择一张手牌交给' + get.translation(player), true, "h");
+						if (!target?.isIn()) { continue; }
+						await target.chooseToGive('选择一张手牌交给' + get.translation(player), player, true, "h");
 					};
 					player.insertPhase("jlsg_zhuizun");
 				},
