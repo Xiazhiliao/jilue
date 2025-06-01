@@ -3898,84 +3898,88 @@ export default function () {
 				},
 			},
 			jlsg_benxi: {
-				shaRelated: true,
 				audio: "ext:极略/audio/skill:1",
+				shaRelated: true,
 				srlose: true,
 				trigger: { player: 'shaBegin' },
 				forced: true,
-				content: function () {
-					"step 0"
-					trigger.target.chooseToDiscard('请弃置一张装备牌，否则不能使用闪抵消此杀', 'he', function (card) {
-						return get.type(card) == 'equip';
-					}).ai = function (card) {
-						var num = trigger.target.countCards('h', 'shan');
-						if (num == 0) return 0;
-						return 8 - get.value(card);
-					}
-					"step 1"
+				logTarget: "target",
+				async content(event, trigger, player) {
+					const { result } = await trigger.target.chooseToDiscard('请弃置一张装备牌，否则不能使用闪抵消此杀', 'he')
+						.set("filterCard", (card, player) => get.type(card) == "equip")
+						.set("ai", card => {
+							const player = get.player();
+							const num = player.countCards('h', card => {
+								return player.canRespond(get.event().getParent("useCard"), card);
+							});
+							if (num == 0) return 0;
+							return 8 - get.value(card);
+						})
 					if (!result.bool) {
 						trigger.directHit = true;
 					}
 				},
 				mod: {
-					globalFrom: function (from, to, distance) {
+					globalFrom(from, to, distance) {
 						return distance - 1;
-					}
-				}
+					},
+				},
 			},
 			jlsg_yaozhan: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
 				enable: 'phaseUse',
 				usable: 1,
-				filterTarget: function (card, player, target) {
-					return player != target && target.countCards('h') > 0;
+				filter(event, player) {
+					return game.hasPlayer(current => player.canCompare(current));
 				},
-				filter: function (event, player) {
-					return player.countCards('h') > 0;
+				filterTarget(card, player, target) {
+					return player.canCompare(target);
 				},
-				content: function () {
-					"step 0"
-					player.chooseToCompare(target);
-					"step 1"
+				async content(event, trigger, player) {
+					const { targets: [target] } = event;
+					const { result } = await player.chooseToCompare(target);
 					if (result.bool) {
-						player.draw('nodelay');
-						player.useCard({ name: 'sha' }, target, false);
+						await player.draw('nodelay');
+						const sha = get.autoViewAs({ name: "sha" }, []);
+						if (player.canUse(sha, target, false)) {
+							await player.useCard(sha, target, false);
+						}
 					} else {
-						target.chooseToUse({ name: 'sha' }, player);
+						await target.chooseToUse((card, player) => get.name(card, player) == "sha", player);
 					}
 				},
 				ai: {
-					order: function (name, player) {
-						var cards = player.get('h');
+					threaten: 1.3,
+					order(name, player) {
+						const cards = player.getCards('h');
 						if (player.countCards('h', 'sha') == 0) {
 							return 1;
 						}
-						for (var i = 0; i < cards.length; i++) {
-							if (cards[i].name != 'sha' && cards[i].number > 11 && get.value(cards[i]) < 7) {
+						for (const card of cards) {
+							if (card.name != 'sha' && card.number > 11 && get.value(card) < 7) {
 								return 9;
 							}
 						}
 						return lib.card.sha.ai.order - 1;
 					},
 					result: {
-						player: function (player) {
+						player(player) {
 							if (player.countCards('h', 'sha') > 0) return 0.6;
-							var num = player.countCards('h');
+							const num = player.countCards('h');
 							if (num > player.hp) return 0;
 							if (num == 1) return -2;
 							if (num == 2) return -1;
 							return -0.7;
 						},
-						target: function (player, target) {
-							var num = target.countCards('h');
+						target(player, target) {
+							const num = target.countCards('h');
 							if (num == 1) return -1;
 							if (num == 2) return -0.7;
 							return -0.5
 						},
 					},
-					threaten: 1.3
-				}
+				},
 			},
 			jlsg_wenjiu: {
 				audio: "ext:极略/audio/skill:1",
