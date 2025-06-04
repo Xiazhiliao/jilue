@@ -3802,7 +3802,7 @@ export default function () {
 						if (!split[suit]) split[suit] = [];
 						split[suit].push(card);
 					};
-					var controlList = [];
+					const controlList = [];
 					for (const suit in split) {
 						if (split[suit].length)
 							controlList.push(lib.translate[suit]);
@@ -3888,9 +3888,6 @@ export default function () {
 					const { result } = await player.chooseToUse()
 						.set("filterCard", (card, player, event) => {
 							return get.name(card, player) == "sha";
-						})
-						.set("filterTarget", (card, player, target) => {
-							return player.canUse(get.autoViewAs({ name: "sha" }, "unsure"), player);
 						});
 					if (!result?.bool) {
 						await trigger.player.discardPlayerCard(player, 'he', true);
@@ -3984,9 +3981,19 @@ export default function () {
 			jlsg_wenjiu: {
 				audio: "ext:极略/audio/skill:1",
 				srlose: true,
+				marktext: '酒',
+				intro: {
+					content: 'expansion',
+					markcount: 'expansion',
+				},
+				onremove(player, skill) {
+					const cards = player.getExpansions(skill);
+					if (cards.length) {
+						player.loseToDiscardpile(cards);
+					}
+				},
 				enable: 'phaseUse',
 				usable: 1,
-				marktext: '酒',
 				filter(event, player) {
 					return player.countCards('h', { color: 'black' }) > 0;
 				},
@@ -4003,17 +4010,7 @@ export default function () {
 				async content(event, trigger, player) {
 					const next = player.addToExpansion(event.cards);
 					next.gaintag.add(event.name);
-					await next
-				},
-				intro: {
-					content: 'expansion',
-					markcount: 'expansion',
-				},
-				onremove(player, skill) {
-					const cards = player.getExpansions(skill);
-					if (cards.length) {
-						player.loseToDiscardpile(cards);
-					}
+					await next;
 				},
 				group: 'jlsg_wenjiu_sha',
 				subSkill: {
@@ -4081,7 +4078,7 @@ export default function () {
 					const { targets: [target], cards: [card] } = event;
 					player.showCards(card, "水袭");
 					const suit = get.suit(card, player);
-					const { result } = await target.chooseToDiscard(`请弃置一张${get.translation(suit)}牌，否则失去1点体力`)
+					const { result } = await target.chooseToDiscard(`请弃置一张${get.translation(suit + "2")}牌，否则失去1点体力`)
 						.set("suit", suit)
 						.set("filterCard", (card, player) => get.suit(card, player) == get.event("suit"))
 						.set("ai", card => {
