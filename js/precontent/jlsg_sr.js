@@ -3301,7 +3301,7 @@ export default function () {
 						const card = result.links[0];
 						await player.gain(card, "gain2");
 						cards.remove(card);
-						if (event.cards.length) {
+						if (cards.length) {
 							const next = player.addToExpansion(cards)
 							next.gaintag.add(event.name);
 							await next;
