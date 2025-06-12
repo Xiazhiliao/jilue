@@ -11,6 +11,7 @@ export default function () {
       jlsgsk_spwq_lvbu: ["male", 'qun', 4, ["jlsg_spwq_wushuang"], []],
       jlsgsk_smdq_diaochan: ["female", "qun", 3, ["jlsg_smdq_lijian", "jlsg_smdq_biyue"], []],
       jlsgsk_gygs_sunce: ["male", "wu", 4, ["jlsg_gygs_angyang", "jlsg_gygs_weifeng"], ["name:孙|策"]],
+      jlsgsk_lffw_huangyueying: ["female", "shu", 3, ["jlsg_lffw_lingxin", "jlsg_lffw_jiqiao"], ["name:黄|null"]],
     },
     characterTitle: {
       jlsgsk_jdjg_sunshangxiang: '绝代巾帼',
@@ -19,6 +20,7 @@ export default function () {
       jlsgsk_spwq_lvbu: '杀破万千',
       jlsgsk_smdq_diaochan: "水墨丹青",
       jlsgsk_gygs_sunce: "冠勇盖世",
+      jlsgsk_lffw_huangyueying: "鸾飞凤舞",
     },
     skill: {
       jlsg_jieyin: {
@@ -556,7 +558,6 @@ export default function () {
           },
         },
       },
-      //貂蝉（水墨丹青）
       jlsg_smdq_lijian: {
         audio: "ext:极略/audio/skill:2",
         multitarget: true,
@@ -821,6 +822,89 @@ export default function () {
           }
         },
       },
+      jlsg_lffw_lingxin: {
+        audio: "ext:极略/audio/skill:2",
+        mod: {
+          ignoredHandcard(card, player) {
+            if (card.hasGaintag("jlsg_lffw_lingxin")) {
+              return true;
+            }
+          },
+          cardDiscardable(card, player, name) {
+            if (name == "phaseDiscard" && card.hasGaintag("jlsg_lffw_lingxin")) {
+              return false;
+            }
+          },
+          cardUsable(card, player, num) {
+            if (card?.cards?.some(cardx => cardx.hasGaintag("jlsg_lffw_lingxin"))) {
+              return Infinity;
+            }
+          },
+        },
+        trigger: {
+          player: "useCard",
+        },
+        filter(event, player) {
+          return get.type2(event.card) == "trick";
+        },
+        locked: false,
+        prompt: "是否发动【灵心】？",
+        prompt2: "摸一张牌并从牌堆中获得一张基本牌，以此法获得的基本牌不计入手牌上限，且无次使用数限制",
+        check(event, player) {
+          return get.effect(player, { name: "draw" }, player, player) > 0
+        },
+        async content(event, trigger, player) {
+          const { result } = await player.draw(1);
+          if (get.type(result[0]) == "basic") {
+            player.addGaintag(result, "jlsg_lffw_lingxin");
+          }
+          const card = get.cardPile2(card => get.type(card) == "basic");
+          if (card) {
+            const next = player.gain(card, "draw");
+            next.gaintag.add("jlsg_lffw_lingxin");
+            await next;
+          }
+        },
+        ai: {
+          threaten: 1.4,
+          noautowuxie: true,
+        },
+      },
+      jlsg_lffw_jiqiao: {
+        audio: "ext:极略/audio/skill:2",
+        mod: {
+          targetInRange(card, player, target, now) {
+            if (get.type2(card) == "trick") return true;
+          },
+        },
+        trigger: {
+          player: ["useCard2", "phaseDrawBegin2"],
+        },
+        filter(event, player) {
+          if (event.name != "useCard") {
+            return !event.numFixed && event.num > 0;
+          }
+          return get.type2(event.card) == "trick";
+        },
+        forced: true,
+        async content(event, trigger, player) {
+          if (trigger.name == "useCard") {
+            trigger.directHit.addArray(game.filterPlayer(current => current != player));
+          } else {
+            const cards = Array.from(ui.cardPile.childNodes)
+              .filter(card => get.type(card) == "trick")
+              .reduce((cards, card) => {
+                if (!cards.some(i => i.name == card.name)) {
+                  cards.add(card);
+                }
+                return cards;
+              }, []);
+            if (cards.length) {
+              await player.gain(cards, "draw2", "log");
+            }
+          }
+        },
+      },
     },
     translate: {
       jlsg_skpf: '极略皮肤',
@@ -837,6 +921,9 @@ export default function () {
       jlsgsk_smdq_diaochan_ab: "貂蝉",
       jlsgsk_gygs_sunce: "SPF孙策",
       jlsgsk_gygs_sunce_ab: "孙策",
+      jlsgsk_lffw_huangyueying: "SPF黄月英",
+      jlsgsk_lffw_huangyueying_ab: "黄月英",
+
 
       jlsg_jieyin: '结姻',
       jlsg_jieyin_info: '出牌阶段限一次，你可以弃置一张牌并选择一名其他角色，你与该角色中未受伤的角色摸两张牌，已受伤的角色回复1点体力，若没有角色以此法摸牌，此技能视为未发动过。',
@@ -859,6 +946,10 @@ export default function () {
       jlsg_gygs_angyang_info: "当你使用【杀】或【决斗】仅指定一名其他角色为目标后，或成为其他角色使用这些牌的目标后，你可以获得其一张手牌，若如此做，此牌结算后，若其有手牌，你视为对其使用另一种牌。",
       jlsg_gygs_weifeng: "威风",
       jlsg_gygs_weifeng_info: "其他角色的准备阶段，你可以与该角色拼点：若你赢，你摸两张牌并视为对其使用一张不计入次数的【杀】；否则，你可以令其摸两张牌并视为对你使用一张不计入次数的【杀】。",
+      jlsg_lffw_lingxin: "灵心",
+      jlsg_lffw_lingxin_info: "当你使用锦囊牌时，你可以摸一张牌并从牌堆获得一张基本牌，你以此法获得的基本牌不计入手牌上限，且无使用次数限制。",
+      jlsg_lffw_jiqiao: "奇巧",
+      jlsg_lffw_jiqiao_info: "锁定技，你使用锦囊牌无距离限制，不能被其他角色响应。摸牌阶段，你额外从牌堆获得不同牌名的非延时锦囊牌各一张。",
     },
 
     dynamicTranslate: {},

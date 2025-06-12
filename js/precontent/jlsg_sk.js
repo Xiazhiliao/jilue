@@ -190,6 +190,7 @@ export default function () {
       jlsgsk_cenhun: ["male", "wu", 3, ["jlsg_jishe", "jlsg_lianhuo"], ["name:岑|昏"]],
       jlsgsk_gexuan: ["male", "wu", 3, ["jlsg_lianhua", "jlsg_zhafu"], ["name:葛|玄"]],
       jlsgsk_yanghuiyu: ["female", "qun", 3, ["jlsg_ciwei", "jlsg_caiyuan"], ["name:羊|徽瑜"]],
+      jlsgsk_tadun: ["male", "qun", 6, ["jlsg_luanzhan"], ["name:null|null"]],
     },
     characterIntro: {
       jlsgsk_kuaiyue: "蒯越（？－214年），字异度，襄阳中庐（今湖北襄阳西南）人。东汉末期人物，演义中为蒯良之弟。原本是荆州牧刘表的部下，曾经在刘表初上任时帮助刘表铲除荆州一带的宗贼（以宗族、乡里关系组成的武装集团）。刘表病逝后与刘琮一同投降曹操，后来官至光禄勋。",
@@ -15184,6 +15185,72 @@ export default function () {
           },
         },
       },
+      jlsg_luanzhan: {
+        audio: "ext:极略/audio/skill:2",
+        trigger: { global: "useCardAfter" },
+        usable: 1,
+        filter(event, player) {
+          if (event.card.name !== "sha" && get.type(event.card) != "trick") {
+            return false;
+          }
+          const [suit, number, name, nature] = get.cardInfo(event.card);
+          const card = get.autoViewAs({ suit, number, name, nature }, []),
+            targets = [player, event.player]
+              .unique()
+              .filter(p => p.isIn());
+          return targets.some(current => lib.skill.jlsg_luanzhan.canUse(card, player, current));
+        },
+        async cost(event, trigger, player) {
+          const [suit, number, name, nature] = get.cardInfo(trigger.card);
+          const card = get.autoViewAs({ suit, number, name, nature }, []),
+            targets = [player, trigger.player]
+              .unique()
+              .filter(p => p.isIn())
+              .sortBySeat(_status.currentPhase);
+          event.result = await player.chooseBool()
+            .set("prompt", get.prompt("jlsg_luanzhan"))
+            .set("prompt2", `对${get.translation(targets)}使用一张${get.translation(card)}然后摸两张牌`)
+            .set("ai", (event, player) => {
+              const card = get.event("card"),
+                targets = get.event("targets");
+              const useEff = targets.reduce((sum, current) => sum + get.effect(current, card, player, player), 0),
+                drawEff = get.effect(player, { name: "draw" }, player, player) * 1.5;
+              return useEff + drawEff > 0;
+            })
+            .set("card", card)
+            .set("targets", targets)
+            .forResult();
+          if (event.result?.bool) {
+            event.result.cost_data = {
+              targets,
+              card,
+            };
+          }
+        },
+        async content(event, trigger, player) {
+          let { cost_data: { targets, card } } = event;
+          targets = targets.filter(current => current.isIn() && lib.skill.jlsg_luanzhan.canUse(card, player, current));
+          if (targets.length) {
+            await player.useCard(card, targets);
+          }
+          await player.draw(2);
+        },
+        canUse(card, player, target) {
+          const info = get.info(card);
+          if (info.multicheck && !info.multicheck(card, this)) return false;
+          if (!lib.filter.cardEnabled(card, player)) return false;
+          if (!info.singleCard || ui.selected.targets.length == 0) {
+            var mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+            if (mod != "unchanged") return mod;
+            var mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+            if (mod != "unchanged") return mod;
+          }
+          //const filter = info.modTarget;
+          //if (typeof filter == "boolean") return filter;
+          //if (typeof filter == "function") return Boolean(filter(card, player, target));
+          return true;
+        },
+      },
     },
     translate: {
       jlsg_sk: "SK武将",
@@ -15333,6 +15400,7 @@ export default function () {
       jlsgsk_cenhun: "SK岑昏",
       jlsgsk_gexuan: "SK葛玄",
       jlsgsk_yanghuiyu: "SK羊徽瑜",
+      jlsgsk_tadun: "SK蹋顿",
 
       jlsg_hemeng: '和盟',
       jlsg_sujian: '素检',
@@ -15887,6 +15955,8 @@ export default function () {
       jlsg_ciwei_info: "每回合限一次，当其他角色使用基本牌或非延时锦囊牌指定目标后，若此牌的目标发生过改变，你可以令此牌无效，然后令使用者失去1点体力；每回合限一次，当任意角色使用基本牌或非延时锦囊牌指定目标后，若此牌的目标未发生过改变，你可以令此牌不能被响应，然后令使用者获得此牌并回复1点体力。",
       jlsg_caiyuan: "才媛",
       jlsg_caiyuan_info: "当你成为基本牌或非延时锦囊牌的唯一目标时，若此牌不为黑色，你可以摸两张牌，然后将目标转移给另一名角色。",
+      jlsg_luanzhan: "乱战",
+      jlsg_luanzhan_info: "每回合限一次，当任意角色使用【杀】或非延时锦囊牌后，你可以视为对你和该角色使用一张相同的牌，然后摸两张牌。",
     },
     dynamicTranslate: {
       jlsg_zhidi: function (player) {
