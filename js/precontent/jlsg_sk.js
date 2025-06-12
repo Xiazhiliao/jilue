@@ -15198,6 +15198,9 @@ export default function () {
             targets = [player, event.player]
               .unique()
               .filter(p => p.isIn());
+          if (name != "sha") {
+            return targets.some(current => player.canUse(card, current, false));
+          }
           return targets.some(current => lib.skill.jlsg_luanzhan.canUse(card, player, current));
         },
         async cost(event, trigger, player) {
@@ -15229,7 +15232,14 @@ export default function () {
         },
         async content(event, trigger, player) {
           let { cost_data: { targets, card } } = event;
-          targets = targets.filter(current => current.isIn() && lib.skill.jlsg_luanzhan.canUse(card, player, current));
+          targets = targets.filter(current => {
+            if (!current.isIn()) return false;
+            if (card.name != "sha") {
+              return player.canUse(card, current, false);
+            }
+            return lib.skill.jlsg_luanzhan.canUse(card, player, current)
+          }
+          );
           if (targets.length) {
             await player.useCard(card, targets);
           }
