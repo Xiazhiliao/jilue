@@ -3378,7 +3378,7 @@ export default function () {
         async content(event, trigger, player) {
           while (player.isDying()) {
             const cards = Array.from(ui.cardPile.childNodes)
-              .filter(c => ['tao', 'jiu', 'jlsgqs_mei'].includes(c.name))
+              .filter(c => player.canSaveCard(c, player))
               .concat(game.filterPlayer()
                 .map(p => p.getCards('h', c => player.canSaveCard(c, player)))
                 .flat())
@@ -3393,13 +3393,7 @@ export default function () {
             await player.logSkill(event.name);
             const card = cards.randomRemove();
             if (!card) break;
-            const next = player.useCard(card, player);
-            const owner = get.owner(card);
-            if (owner && owner != player) {
-              next.throw = false;
-              owner.$throw(card);
-            }
-            await next;
+            await player.useCard(card, player);
           }
         }
       },
