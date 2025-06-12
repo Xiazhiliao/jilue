@@ -90,37 +90,22 @@ const b = 1;
     }
     if (originalName && lib.character[originalName]) {
       if (!lib.characterReplace[originalName]) {
-        // console.log(originalName);
         lib.characterReplace[originalName] = [originalName, name];
       } else {
         lib.characterReplace[originalName].push(name);
       }
     }
   };
-  /*var suppressDieAudio = function (name) {
-    var cfile = lib.character[name];
-    if (cfile) {
-      if (cfile[4] === undefined) {
-        cfile[4] = ['die_audio'];
-      } else {
-        cfile[4].add('die_audio');
-      }
-    }
-  };*/
   for (var i of Object.keys(lib.characterPack['jlsg_sr'])) {
     trivialSolveCharacterReplace(i);
-    //suppressDieAudio(i);
   }
   for (var i of Object.keys(lib.characterPack['jlsg_sk'])) {
     trivialSolveCharacterReplace(i);
-    //suppressDieAudio(i);
   }
   for (var i of Object.keys(lib.characterPack['jlsg_soul'])) {
     trivialSolveCharacterReplace(i, 'shen_');
-    //suppressDieAudio(i);
   }
   for (var i of Object.keys(lib.characterPack['jlsg_sy'])) {
-    //suppressDieAudio(i);
     if (!lib.config.forbidai_user.includes(i))
       lib.config.forbidai.remove(i);
   }
