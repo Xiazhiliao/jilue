@@ -948,7 +948,7 @@ export default function () {
       jlsg_gygs_weifeng_info: "其他角色的准备阶段，你可以与该角色拼点：若你赢，你摸两张牌并视为对其使用一张不计入次数的【杀】；否则，你可以令其摸两张牌并视为对你使用一张不计入次数的【杀】。",
       jlsg_lffw_lingxin: "灵心",
       jlsg_lffw_lingxin_info: "当你使用锦囊牌时，你可以摸一张牌并从牌堆获得一张基本牌，你以此法获得的基本牌不计入手牌上限，且无使用次数限制。",
-      jlsg_lffw_jiqiao: "奇巧",
+      jlsg_lffw_jiqiao: "机巧",
       jlsg_lffw_jiqiao_info: "锁定技，你使用锦囊牌无距离限制，不能被其他角色响应。摸牌阶段，你额外从牌堆获得不同牌名的非延时锦囊牌各一张。",
     },
 
