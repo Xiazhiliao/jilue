@@ -166,7 +166,7 @@ export default function () {
       jlsgsk_lingcao: ['male', 'wu', 4, ['jlsg_dujin'], ["name:凌|操"]],
       jlsgsk_zhaoyan: ['female', 'wu', 3, ['jlsg_sanjue'], ["name:赵|null"]],
       jlsgsk_beimihu: ['female', 'qun', 3, ['jlsg_canshi', 'jlsg_xianji'], ['name:卑弥|呼']],
-      jlsgsk_wutugu: ['male', 'qun', 6, ['jlsg_hanyong'], ["name:兀|突骨"]],
+      jlsgsk_wutugu: ['male', 'qun', 6, ['jlsg_hanyong'], ["name:null|null"]],
       jlsgsk_caoying: ['female', 'wei', 4, ['jlsg_lingruo', 'jlsg_fujian'], ["name:曹|null"]],
       jlsgsk_mayunlu: ['female', 'shu', 4, ['mashu', 'jlsg_fengyin', 'jlsg_rongzhuang'], ["name:马|null"]],
       jlsgsk_zhongyao: ['male', 'wei', 3, ['jlsg_huomo', 'jlsg_dingguan'], ["name:钟|繇"]],
@@ -15051,7 +15051,8 @@ export default function () {
           player.markSkill("jlsg_ciwei_used");
           if (key == "change") {
             game.log(player, "令", trigger.card, "无效");
-            trigger.parent.excluded.addArray(game.players);
+            trigger.parent.targets = [];
+            trigger.parent.all_excluded = true;
             await trigger.player.loseHp(1);
           } else {
             game.log(player, "令", trigger.card, "无法响应");
