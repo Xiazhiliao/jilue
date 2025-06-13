@@ -79,6 +79,7 @@ export default function () {
 							continue;
 						}
 						const skills = lib.skill._jlsgsr_choice.createList(name);
+						if (!skills.length) continue;
 						let str = "";
 						for (const skill of skills) {
 							str += '<div class="text" style="width:90%;display:inline-block">' +

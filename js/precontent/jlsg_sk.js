@@ -14808,7 +14808,7 @@ export default function () {
         chooseButton: {
           dialog(event, player) {
             const list = event.jlsg_jishe.map(name => ["锦囊", "", name]);
-            return ui.create.dialog("极奢", [event.jlsg_jishe, "vcard"]);
+            return ui.create.dialog("极奢", [list, "vcard"]);
           },
           check(button) {
             const player = get.player(),
@@ -14825,12 +14825,13 @@ export default function () {
               viewAs: get.autoViewAs({ name: links[0][2], isCard: true }, []),
               async precontent(event, trigger, player) {
                 player.addTempSkill("jlsg_jishe_used", { player: "phaseUseAfter" });
-                player.storage.jlsg_jishe_used++;
-                player.markSkill("jlsg_jishe_used");
+                player.addMark("jlsg_jishe_used", 1, false);
                 player.when({ player: "useCardAfter" })
                   .filter(evt => evt.skill == "jlsg_jishe_backup")
                   .step(async function (event, trigger, player) {
-                    if (player.storage.jlsg_jishe_used > player.maxHp) await player.loseMaxHp(1);
+                    if (player.countMark("jlsg_jishe_used") > player.maxHp) {
+                      await player.loseMaxHp(1);
+                    }
                   });
               },
             };
@@ -14845,17 +14846,12 @@ export default function () {
           used: {
             sub: true,
             sourceSkill: "jlsg_jishe",
-            init(player, skill) {
-              player.storage[skill] = 0;
-            },
             onremove: true,
             charlotte: true,
             mark: true,
             marktext: "奢",
             intro: {
-              markcount(storage) {
-                return storage;
-              },
+              markcount: "mark",
               content(storage) {
                 return `本阶段已发动${storage}次`;
               }
@@ -14865,14 +14861,14 @@ export default function () {
         ai: {
           fireAttack: true,
           order(item, player) {
-            return 2 * player.maxHp - (player.storage.jlsg_jishe_used || 0);
+            return 2 * player.maxHp - player.countMark("jlsg_jishe_used");
           },
           result: {
             player(player) {
               const event = get.event();
               if (event.jlsg_jishe?.length) {
                 const cards = event.jlsg_jishe.map(name => get.autoViewAs({ name }, []));
-                return Number(cards.some(card => (get.value(card) + player.maxHp * 3 - 16 - (player.storage.jlsg_jishe_used || 0) > 0)));
+                return Number(cards.some(card => (get.value(card) + player.maxHp * 3 - 16 - player.countMark("jlsg_jishe_used") > 0)));
               }
               return 0;
             },
@@ -16007,7 +16003,7 @@ export default function () {
       },
 
       jlsg_guanxu: function (player) {
-        if (!"jlsg_guanxu" in player.storage || typeof player.storage.jlsg_guanxu != "number") return "任意角色的回合开始时，你可以观看其手牌，然后你可以。。。";
+        if (!("jlsg_guanxu" in player.storage) || typeof player.storage.jlsg_guanxu != "number") return "任意角色的回合开始时，你可以观看其手牌，然后你可以。。。";
         let map = new Map([
           [0, "获得其中至多X张牌（X为其体力）。"],
           [1, "弃置其中一张牌，令其加1点体力上限并回复1点体力。"],
