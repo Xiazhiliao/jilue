@@ -854,10 +854,7 @@ export default function () {
           return get.effect(player, { name: "draw" }, player, player) > 0
         },
         async content(event, trigger, player) {
-          const { result } = await player.draw(1);
-          if (get.type(result[0]) == "basic") {
-            player.addGaintag(result, "jlsg_lffw_lingxin");
-          }
+          await player.draw(1);
           const card = get.cardPile2(card => get.type(card) == "basic");
           if (card) {
             const next = player.gain(card, "draw");
