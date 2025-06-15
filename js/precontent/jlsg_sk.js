@@ -7891,7 +7891,7 @@ export default function () {
           }
         },
         ai: {
-          order: 1,
+          order: 0.5,
           respondShan: true,
           respondSha: true,
           skillTagFilter: function (player, tag, arg) {
@@ -7928,17 +7928,17 @@ export default function () {
           global: 'loseAsyncAfter',
         },
         forced: true,
-        filter: function (event, player) {
-          if (!event.getg || !event.getg(player)) return false;
-          return event.getg(player).length > 1;
+        filter(event, player) {
+          if (!event.getg?.(player)) return false;
+          const cards = event.getg(player)
+          return get.itemtype(cards) == "cards" && cards.length > 1;
         },
         async content(event, trigger, player) {
-          const cards = trigger.getg(player);
+          const cards = trigger.getg(player).slice();
           const { result: chooseCard } = await player.chooseCard('鱼忧：选择一张牌保留', true)
             .set("filterCard", (card, player) => get.event("cardx").includes(card))
             .set("ai", card => get.useful(card, get.player()))
             .set("cardx", cards);
-          let cards2 = cards.slice()
           if (chooseCard.bool) {
             cards.remove(chooseCard.cards[0]);
             await player.discard(cards);
