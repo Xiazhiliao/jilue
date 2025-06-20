@@ -1,40 +1,15 @@
 // game.import(name: "极略"
-import { lib, game, ui, get, ai, _status } from '../../noname.js';
-import { precontent } from './js/precontent/index.js';
-import { prepare } from './js/prepare.js';
-import { content } from './js/content.js';
-import { arenaReady } from './js/arenaReady.js';
-import { config } from './js/config.js';
-import { help } from './js/help.js';
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+import { content } from "./main/content.js";
+import { precontent } from "./main/precontent.js";
+import { config } from "./main/config.js";
+import { help } from "./main/help.js";
+import { basic } from "./main/basic.js";
+import { extensionDefaultPackage } from "./main/main.js";
 
-lib.init.css(lib.assetURL + 'extension/极略', 'extension');
+lib.init.css(lib.assetURL + "extension/极略", "extension");
 
-let extensionPackage = {
-  name: "极略",
-  connect: true,
-  editable: false,
-  precontent: precontent,
-  prepare: prepare,
-  content: content,
-  arenaReady: arenaReady,
-  config: config,
-  help: help,
-  package: {
-    character: {}, card: {}, skill: {},
-    intro: `<div>\
-<img src="${lib.assetURL}extension/极略/image/other/logo.webp" alt="极略三国"\
-style="width:100%;max-width:492px;display:block;margin:auto;"\
-onclick="if (lib.jlsg) lib.jlsg.showRepoElement(this)"></img>
-<ul><li>极略全部武将·附带七杀卡包+极略三英武将，不需要请记得关闭。<li>帮助中查看更多内容</ul>
-<a onclick="if (jlsg) jlsg.checkUpdate(this)" style="cursor: pointer;text-decoration: underline;font-weight: bold;">
-检查更新Beta<br></a>
-</div>`,
-    author: "可乐，赵云，青冢，萧墨(17岁)，xiaoas<br>维护：流年",
-    diskURL: "",
-    forumURL: "",
-    mirrorURL: "https://github.com/Xiazhiliao/jilue",
-    version: "2.7.0526",
-    changelog: `
+let changelog = `
 <a onclick="if (jlsg) jlsg.showRepo()" style="cursor: pointer;text-decoration: underline;">
 Visit Repository</a><br>
 群：702142668<br>
@@ -61,9 +36,24 @@ style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline
 &ensp; 优化（草船借箭、通天）<br>
 &ensp; 武将原画、语音归类<br>
 &ensp; 拆分extension.js文件<br>
-`,
-  },
-  files: {},
-};
-export let type = 'extension';
-export default extensionPackage;
+`;
+
+export let type = "extension";
+export default async function () {
+	const extensionInfo = await lib.init.promises.json(`${basic.extensionDirectoryPath}info.json`);
+	let extension = {
+		name: extensionInfo.name,
+		editable: false,
+		content: content,
+		precontent: precontent,
+		config: await basic.resolve(config),
+		help: await basic.resolve(help),
+		package: await basic.resolve(extensionDefaultPackage),
+		files: { character: [], card: [], skill: [], audio: [] },
+	};
+	Object.keys(extensionInfo)
+		.filter(key => key != "name")
+		.forEach(key => (extension.package[key] = extensionInfo[key]));
+	extension.package.changelog = changelog;
+	return extension;
+}

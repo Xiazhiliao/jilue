@@ -1,8 +1,9 @@
 {
-    "name": "极略",
-    "intro": "<div><img src=\"extension/极略/logo.webp\" alt=\"极略三国\"style=\"width:100%;text-align:center;font-size:larger;font-family: 'STXinwei','xinwei';\"onclick=\"if (lib.jlsg) lib.jlsg.showRepoElement(this)\"></img>\n<ul><li>极略全部武将·附带七杀卡包+极略三英武将，不需要请记得关闭。<li>帮助中查看更多内容</ul>\n<a onclick=\"if (jlsg) jlsg.checkUpdate(this)\" style=\"cursor: pointer;text-decoration: underline;font-weight: bold;\">\n检查更新Beta<br></a>\n</div>",
-    "author": "可乐，赵云，青冢，萧墨(17岁)<br>维护：xiaoas",
-    "diskURL": "",
-    "forumURL": "",
-    "version": "2.7.0430"
+	"name": "极略",
+	"intro": "<div><img src=\"extension/极略/image/other/logo.webp\" alt=\"极略三国\"style=\"width:100%;text-align:center;font-size:larger;font-family: 'STXinwei','xinwei';\"onclick=\"if (lib.jlsg) lib.jlsg.showRepoElement(this)\"></img>\n<ul><li>极略全部武将·附带七杀卡包+极略三英武将，不需要请记得关闭。<li>帮助中查看更多内容</ul>\n<a onclick=\"if (jlsg) jlsg.checkUpdate(this)\" style=\"cursor: pointer;text-decoration: underline;font-weight: bold;\">\n检查更新Beta<br></a>\n</div>",
+	"author": "可乐，赵云，青冢，萧墨(17岁)，xiaoas<br>维护：流年",
+	"diskURL": "",
+	"forumURL": "",
+	"mirrorURL": "https://github.com/Xiazhiliao/jilue",
+	"version": "2.7.0620"
 }
