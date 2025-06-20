@@ -1,6 +1,7 @@
-import { lib, game, ui, get, ai, _status } from '../../../noname.js'
-export let help = {
-  "极略": `本拓展基于民间极略的某魔改版，因为当时那位作者说“修复了所有的bug”<br>
+import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+
+export const help = {
+	极略: `本拓展基于民间极略的某魔改版，因为当时那位作者说“修复了所有的bug”<br>
 事实证明这种说法比较离谱<br>
 本拓展在QQ群中发布更新<br>
 无名杀极略拓展交流群 392224094<br>
