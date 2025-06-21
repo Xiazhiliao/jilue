@@ -1438,7 +1438,6 @@ export default {
 			async content(event, trigger, player) {
 				game.log(event.targets, "成为了", trigger.card, "额外目标");
 				trigger.targets.addArray(event.targets);
-				}
 			},
 			ai: {
 				threaten: 3,

@@ -28,38 +28,36 @@ for (let character in config) {
 			pack[character] = replaceInfo.info;
 		} else if (i == "translate") {
 			for (let j in replaceInfo.translate) {
-				pack.translate = replaceInfo.translate[j];
+				pack.translate[j] = replaceInfo.translate[j];
 			}
 		} else if (i == "skill") {
 			for (let j in replaceInfo.skill) {
-				pack.skill = replaceInfo.skill[j];
+				pack.skill[j] = replaceInfo.skill[j];
 			}
 		}
 	}
 }
 if (lib.device || lib.node) {
 	for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
-		for (let name in pack) {
-			const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
-			for (let name in pack.character) {
-				//初始化第五格
-				if (!pack.character[name][4]) pack.character[name][4] = [];
-				//原画
-				pack.character[name][4].push(`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/image/character/${name}.jpg`);
-				//阵亡语音
-				if (!pack.character[name][4].some(j => j.startsWith("die:"))) {
-					pack.character[name][4].add("die:ext:极略/audio/die:true");
+		const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
+		for (let name in pack.character) {
+			//初始化第五格
+			if (!pack.character[name][4]) pack.character[name][4] = [];
+			//原画
+			pack.character[name][4].push(`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/image/character/${name}.jpg`);
+			//阵亡语音
+			if (!pack.character[name][4].some(j => j.startsWith("die:"))) {
+				pack.character[name][4].add("die:ext:极略/audio/die:true");
+			}
+			//前缀
+			if (name in pack.translate && !name.startsWith("jlsgsy") && !name.startsWith("jlsgrm")) {
+				let translate = pack.translate[name];
+				if (!(name + "_ab" in pack.translate)) {
+					pack.translate[name + "_ab"] = "极略" + translate;
 				}
-				//前缀
-				if (name in pack.translate && !name.startsWith("jlsgsy") && !name.startsWith("jlsgrm")) {
-					let translate = pack.translate[name];
-					if (!(name + "_ab" in pack.translate)) {
-						pack.translate[name + "_ab"] = "极略" + translate;
-					}
-					let prefix = prefixList.find(prefix => translate.startsWith(prefix));
-					if (prefix) {
-						pack.translate[name + "_prefix"] = "极略" + prefix;
-					}
+				let prefix = prefixList.find(prefix => translate.startsWith(prefix));
+				if (prefix) {
+					pack.translate[name + "_prefix"] = "极略" + prefix;
 				}
 			}
 		}
