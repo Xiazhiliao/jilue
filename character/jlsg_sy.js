@@ -52,6 +52,7 @@ export default {
 					player.removeSkill(skill);
 					return;
 				}
+				player.addSkill(skill + "2");
 			},
 			filter(event, player) {
 				let nameList = get.nameList(player);
@@ -108,7 +109,29 @@ export default {
 				_status.paused = false;
 				player.insertPhase(event.name);
 			},
-			group: ["jlsgsy_baonu2"],
+		},
+		jlsgsy_baonu2: {
+			trigger: {
+				global: "gameDrawBegin",
+				player: "phaseDrawBegin2",
+			},
+			filter(event, player) {
+				if (get.mode() != "boss") {
+					return false;
+				}
+				return !event.numFixed;
+			},
+			forced: true,
+			popup: false,
+			priority: 100,
+			async content(event, trigger, player) {
+				if (event.name == "phaseDraw") {
+					trigger.num += 2;
+				} else {
+					let cards = get.cards(2);
+					player.directgain(cards, false);
+				}
+			},
 		},
 		jlsgsy_baonulvbu: {
 			inherit: "jlsgsy_baonu",
@@ -624,18 +647,6 @@ export default {
 			animationStr: "统统杀光",
 			mode: ["identity", "guozhan", "boss", "stone"],
 		},
-		jlsgsy_baonu2: {
-			trigger: { global: "gameDrawBegin" },
-			forced: true,
-			popup: false,
-			priority: 100,
-			content: function () {
-				if (game.bossinfo) {
-					game.bossinfo.loopType = 2;
-				}
-				player.draw(4, false);
-			},
-		},
 		jlsgsy_bujiao: {
 			audio: "ext:极略/audio/skill:1",
 			trigger: { global: "phaseZhunbeiBegin" },
@@ -946,12 +957,12 @@ export default {
 			},
 		},
 		jlsgsy_luansi: {
-			audio: "ext:极略/audio/skill:2", // audio: ['luansi', 2],
+			audio: "ext:极略/audio/skill:2",
 			enable: "phaseUse",
 			usable: 1,
 			unique: true,
 			filterTarget: function (card, player, target) {
-				if (player == target || !target.countCards("h")) return false;
+				if (!target.countCards("h")) return false;
 				if (ui.selected.targets.length) {
 					return !target.hasSkillTag("noCompareTarget");
 				} else {
@@ -959,82 +970,82 @@ export default {
 				}
 			},
 			filter: function (event, player) {
-				return game.countPlayer(p => p != player && p.countCards("h")) >= 2;
+				return game.countPlayer(p => p.countCards("h")) >= 2;
 			},
 			multitarget: true,
 			targetprompt: ["发起拼点", "被拼点"],
 			selectTarget: 2,
-			prompt: "选择两名拼点目标",
-			content: function () {
-				"step 0";
-				targets[0].line(targets[1], "green");
-				targets[0].chooseToCompare(targets[1]);
-				("step 1");
-				if (result.bool) {
-					targets[0].useCard({ name: "juedou" }, targets[1]);
-					if (targets[1].isAlive()) player.discardPlayerCard(targets[1], "he", 2, true);
-				} else {
-					targets[1].useCard({ name: "juedou" }, targets[0]);
-					if (targets[0].isAlive()) player.discardPlayerCard(targets[0], "he", 2, true);
+			prompt: "乱嗣：选择两名拼点目标,然后你弃置没赢的角色的两张牌。若拼点赢的角色不是你，你摸两张牌",
+			async content(event, trigger, player) {
+				const [target1, target2] = event.targets;
+				target1.line(target2, "green");
+				const { result } = await target1.chooseToCompare(target2);
+				const lose = [];
+				if (result.winner) lose.add(result.winner == target1 ? target2 : target1);
+				else if (result.tie) lose.addArray(event.targets);
+				for (const target of lose) {
+					if (target.isIn() && target.countDiscardableCards(player, "he")) {
+						await player.discardPlayerCard(target, "he", true, 2);
+					}
 				}
+				if (!result.winner || result.winner != player) await player.draw(2);
 			},
 			ai: {
 				order: 8,
 				result: {
 					target: function (player, target) {
 						if (game.players.length <= 2) return 0;
-						if (target.num("he") < 1) return 0;
+						if (target.countCards("he") < 1) return 0;
 						var att = ai.get.attitude(player, target);
-						if (att < 0) return -target.num("he");
+						if (att < 0) return -target.countCards("he");
 					},
 				},
 			},
 		},
 		jlsgsy_huoxin: {
-			audio: "ext:极略/audio/skill:1", // audio: ['huoxin'],
-			trigger: { source: "damageSource", player: "damageEnd" },
-			unique: true,
+			audio: "ext:极略/audio/skill:1",
+			trigger: { player: "damageBegin4" },
 			filter: function (event, player, name) {
-				if (name == "damageSource") {
-					return event.player && event.player != player && event.player.isAlive();
-				} else {
-					return event.source && event.source != player;
-				}
+				if (event.num < 1) return false;
+				return event.source && event.source.isIn();
 			},
-			check: function (event, player) {
-				var target = event.player == player ? event.source : event.player;
-				var att = get.attitude(player, target);
-				return att < 0 || (att < 1 && target.countGainableCards(player, "e"));
-			},
-			logTarget: function (event, player) {
-				if (event.player == player) return event.source;
-				return event.player;
-			},
-			content: function () {
-				"step 0";
-				event.target = trigger.player == player ? trigger.source : trigger.player;
-				if (!event.target.countCards("e")) {
-					event.target.loseHp();
-					event.finish();
-					return;
-				}
-				event.target.chooseCard(`交给${get.translation(player)}一张装备区内的牌或者失去一点体力`, "e", function (card) {
-					return get.type(card) == "equip";
-				}).ai = function (card, cards2) {
-					if (event.target.hp == event.target.maxHp) {
-						return 6 - get.value(card);
-					} else if (event.target.hp == 1) {
-						return 12 - get.value(card);
-					} else {
-						return 7 - get.value(card);
-					}
-				};
-				("step 1");
+			forced: true,
+			unique: true,
+			logTarget: "source",
+			async content(event, trigger, player) {
+				const { result } = await trigger.source.chooseBool(`###${get.translation(player)}对你发动了祸心###是否令${get.translation(player)}获得你区域里的各一张牌？否则其防止此次伤害且你失去一点体力`).set("ai", (event, source) => {
+					const player = event.player;
+					const losehp = get.effect(source, { name: "losehp" }, player, source),
+						damage = get.damageEffect(player, source, source, event.getTrigger().nature),
+						gain = get.effect(source, { name: "shunshou_copy" }, player, source);
+					return gain + damage > losehp;
+				});
 				if (result.bool) {
-					player.gain(result.cards[0], event.target);
-					event.target.$give(result.cards[0], player);
+					let position = "";
+					for (let i of "hej") {
+						if (trigger.source.countGainableCards(player, i)) position += i;
+					}
+					if (position.length > 0) {
+						await player
+							.gainPlayerCard(trigger.source, position, position.length, "祸心：获得每个区域各一张牌")
+							.set("filterButton", button => {
+								const player = get.player(),
+									target = get.event("target");
+								if (!lib.filter.canBeGained(button.link, player, target)) return false;
+								if (ui.selected.buttons?.length) {
+									const cards = ui.selected.buttons.map(i => i.link);
+									for (const card of cards) {
+										if (get.position(card) == get.position(button.link)) return false;
+									}
+								}
+								return true;
+							})
+							.set("target", trigger.source);
+					}
 				} else {
-					event.target.loseHp();
+					game.log(player, "防止了伤害");
+					trigger.cancel();
+					await trigger.source.loseHp(1);
 				}
 			},
 			ai: {
@@ -2793,8 +2804,8 @@ export default {
 		jlsgsy_yaohuo_info: "出牌阶段限一次，你可以指定一名其他角色并选择一项：1、弃置其手牌数的牌并获得其所有手牌；2、弃置其技能数的牌并取走其所有技能直到其回合开始或阵亡。",
 		jlsgsy_baonuzhangjiao_info: "锁定技，当你体力降至4或者更少时，你变身为暴怒张角并立即开始你的回合",
 		jlsgsy_dihui_info: "出牌阶段限一次，你可令一名角色对另一名体力更少角色造成1点伤害，若造成伤害的角色不是你，你回复一点体力。",
-		jlsgsy_luansi_info: "出牌阶段限一次，你可以令两名其他角色拼点，视为拼点赢的角色对没赢的角色使用一张【决斗】，然后你弃置拼点没赢的角色两张牌",
-		jlsgsy_huoxin_info: "你对其他角色造成伤害，或受到其他角色造成的伤害后，你可令该角色交给你一张装备区内的装备牌 ，或者失去一点体力。",
+		jlsgsy_luansi_info: "变身技，出牌阶段限一次，你可以令两名角色拼点，然后你弃置没赢的角色两张牌；若拼点赢的角色不为你，你摸两张牌。",
+		jlsgsy_huoxin_info: "变身技，锁定技，当你受到伤害时，除非伤害来源令你获得其区域里的牌各一张，否则你防止此伤害，其失去1点体力。",
 		jlsgsy_baonucaifuren_info: "锁定技，当你体力降至4或者更少时，你变身为暴怒蔡夫人并立即开始你的回合",
 		jlsgsy_shiao_info: "回合开始阶段开始时，你可以视为对手牌数少于你的一名其他角色使用一张【杀】；回合结束阶段开始时你可以视为对手牌数大于你的一名其他角色使用一张【杀】",
 		jlsgsy_kuangxi_info: "你使用锦囊牌后，可以视为对此牌的目标使用【杀】。若你以此法没有造成伤害，你失去1点体力。",

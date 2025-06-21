@@ -1,10 +1,42 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
+import { config } from "../main/config.js";
+import { oldCharacter } from "./oldCharacter/index.js";
 import jlsg_sk from "./jlsg_sk.js";
 import jlsg_sr from "./jlsg_sr.js";
 import jlsg_soul from "./jlsg_soul.js";
 import jlsg_sy from "./jlsg_sy.js";
 import jlsg_skpf from "./jlsg_skpf.js";
 
+const packList = [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf];
+//技能替换
+for (let character in config) {
+	let info = character.split("_");
+	let prefix = info[0];
+	if (!["jlsgsk", "jlsgsr", "jlsgsoul", "jlsgsy"].includes(prefix)) {
+		continue;
+	}
+	const configx = lib.config[`extension_极略_${character}`];
+	if (!configx || configx == "false") {
+		continue;
+	}
+	const packName = prefix.includes("jlsgsk_skpf") ? "jlsg_skpf" : prefix.slice(0, 4) + "_" + prefix.slice(4);
+	const replaceInfo = oldCharacter[packName]?.[character]?.[configx],
+		pack = packList.find(i => i.name == packName);
+	if (!replaceInfo) continue;
+	for (let i in replaceInfo) {
+		if (i == "info") {
+			pack[character] = replaceInfo.info;
+		} else if (i == "translate") {
+			for (let j in replaceInfo.translate) {
+				pack.translate = replaceInfo.translate[j];
+			}
+		} else if (i == "skill") {
+			for (let j in replaceInfo.skill) {
+				pack.skill = replaceInfo.skill[j];
+			}
+		}
+	}
+}
 if (lib.device || lib.node) {
 	for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
 		for (let name in pack) {
@@ -51,7 +83,7 @@ if (!_status.postReconnect.extErdai_skill) {
 		{},
 	];
 }
-for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
+for (let pack of packList) {
 	for (let key in pack.skill) {
 		_status.postReconnect.extErdai_skill[1][key] = pack.skill[key];
 		if (pack.translate[key]) _status.postReconnect.extErdai_skill[2][key] = pack.translate[key];

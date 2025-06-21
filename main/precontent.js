@@ -68,48 +68,60 @@ export async function precontent(config, originalPack) {
 				return span.outerHTML;
 			},
 		});
-	}
-	if (!_status.postReconnect.jlsg_namePrefix) {
-		_status.postReconnect.jlsg_namePrefix = [
-			function () {
-				lib.namePrefix.set("极略SK神", {
-					getSpan(prefix, name) {
-						return `${get.prefixSpan("极略SK", name)}${get.prefixSpan("神", name)}`;
-					},
-				});
-				lib.namePrefix.set("极略SP神", {
-					getSpan(prefix, name) {
-						return `${get.prefixSpan("极略SP", name)}${get.prefixSpan("神", name)}`;
-					},
-				});
-				lib.namePrefix.set("极略SR", {
-					getSpan: () => {
-						return `<span style="writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)" data-nature="keymm">SR</span>`;
-					},
-				});
-				lib.namePrefix.set("极略SK", {
-					getSpan: () => {
-						return `<span style="color:#fbefef;writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)" data-nature="firemm">SK</span>`;
-					},
-				});
-				lib.namePrefix.set("极略SP", {
-					getSpan: () => {
-						return `<span style="writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)">SP</span>`;
-					},
-				});
-				lib.namePrefix.set("极略★SK", {
-					getSpan(prefix, name) {
-						return `${get.prefixSpan("★SP", name)}${get.prefixSpan("极略SK", name)}`;
-					},
-				});
-			},
-			[],
-		];
+		lib.arenaReady.push(function () {
+			const characterPack = lib.characterPack["jlsg_sy"];
+			for (const name in characterPack) {
+				if (!name.startsWith("jlsgsy_")) continue;
+				characterPack[name].group = "jlsgsy";
+				if (config) lib.character[name].group = "jlsgsy";
+				const title = lib.translate[name],
+					baonu = name.endsWith("baonu") ? true : false;
+				const info = baonu ? name.slice(7, -5) : name.slice(7);
+				if (baonu) {
+					let num = 4;
+					let filter = `锁定技，当你的体力值降至${num}或更低时，`;
+					let eff1 = `重置武将牌并弃置判定区内所有牌，`;
+					let eff2 = `你进入暴怒状态，${num == 6 ? eff1 : ""}然后立即执行一个额外回合。`;
+					let str = filter + eff2;
+					game.broadcastAll(
+						function (name, str) {
+							let skill = "jlsgsy_baonu" + name;
+							if (lib.skill[skill]) lib.translate[skill + "_info"] = str;
+						},
+						info,
+						str
+					);
+				}
+				let num2 = 3;
+				if (get.mode() == "boss") {
+					num2 = 4;
+				}
+				characterPack[name].hp = baonu ? num2 : characterPack[name].hp;
+				characterPack[name].maxHp = baonu ? num2 : characterPack[name].maxHp;
+				if (get.mode() != "boss") {
+					if (!title) continue;
+					else {
+						lib.characterTitle[name] = title;
+						let translation = get.rawName(info);
+						lib.translate[name] = "SY" + (baonu ? "暴怒" : "") + translation;
+						lib.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
+						lib.translate[name + "_prefix"] = baonu ? "极略SY暴怒" : "极略SY";
+						if (name == "jlsgsy_sunhaobaonu") {
+							characterPack[name].skills.remove("jlsgsy_shisha");
+							characterPack[name].skills.unshift("jlsgsy_mingzheng");
+						}
+						//AI禁选
+						if (!baonu) {
+							characterPack[name].isAiForbidden = true;
+						}
+					}
+				}
+			}
+		});
 	}
 
 	// jlsg library
 	lib.arenaReady.push(function () {
-		console.log("hasSkills");
 		lib.element.player.hasSkills = function (skills) {
 			var skill = skills.split("|");
 			for (var i = 0; i < skill.length; i++) {
@@ -1407,6 +1419,72 @@ export async function precontent(config, originalPack) {
 				name,
 			];
 		}
+	}
+	if (!_status.postReconnect.jlsg_namePrefix) {
+		_status.postReconnect.jlsg_namePrefix = [
+			function () {
+				lib.namePrefix.set("极略SK神", {
+					getSpan(prefix, name) {
+						return `${get.prefixSpan("极略SK", name)}${get.prefixSpan("神", name)}`;
+					},
+				});
+				lib.namePrefix.set("极略SP神", {
+					getSpan(prefix, name) {
+						return `${get.prefixSpan("极略SP", name)}${get.prefixSpan("神", name)}`;
+					},
+				});
+				lib.namePrefix.set("极略SR", {
+					getSpan: () => {
+						return `<span style="writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)" data-nature="keymm">SR</span>`;
+					},
+				});
+				lib.namePrefix.set("极略SK", {
+					getSpan: () => {
+						return `<span style="color:#fbefef;writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)" data-nature="firemm">SK</span>`;
+					},
+				});
+				lib.namePrefix.set("极略SP", {
+					getSpan: () => {
+						return `<span style="writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)">SP</span>`;
+					},
+				});
+				lib.namePrefix.set("极略★SK", {
+					getSpan(prefix, name) {
+						return `${get.prefixSpan("★SP", name)}${get.prefixSpan("极略SK", name)}`;
+					},
+				});
+				if (lib.config?.extension_极略_syRefactor) {
+					game.addGroup("jlsgsy", "魔", "极略三英", { color: "#8B4A51" });
+					lib.namePrefix.set("极略SY", {
+						getSpan: () => {
+							const span = document.createElement("span"),
+								style = span.style;
+							style.color = "#8B4A51";
+							style.writingMode = style.webkitWritingMode = "horizontal-tb";
+							style.fontFamily = "MotoyaLMaru";
+							style.transform = "scaleY(0.85)";
+							span.dataset.nature = "keymm";
+							span.innerHTML = "SY";
+							return span.outerHTML;
+						},
+					});
+					lib.namePrefix.set("极略SY暴怒", {
+						getSpan: () => {
+							const span = document.createElement("span"),
+								style = span.style;
+							style.color = "#B22222";
+							style.writingMode = style.webkitWritingMode = "horizontal-tb";
+							style.fontFamily = "MotoyaLMaru";
+							style.transform = "scaleY(0.85)";
+							span.dataset.nature = "orangemm";
+							span.innerHTML = "SY";
+							return span.outerHTML;
+						},
+					});
+				}
+			},
+			[],
+		];
 	}
 
 	let name = jlsg_qs.name;

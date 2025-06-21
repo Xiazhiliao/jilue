@@ -1,7 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 export async function content(config, pack) {
 	console.time(_status.extension);
-	console.log("content")
 	//版本检测 and 更新公告
 	if (pack.changelog) {
 		var testCode = `\
@@ -88,7 +87,7 @@ const b = 1;
 			}
 		};
 	for (let packName of ["jlsg_sr", "jlsg_sk", "jlsg_soul", "jlsg_skpf", "jlsg_sy"]) {
-		const characterPack = (_status.connectMode ? lib.configOL.characterPack : lib.characterPack)[packName];
+		const characterPack = lib.characterPack[packName];
 		if (packName != "jlsg_sy") {
 			for (let name of Object.keys(characterPack)) {
 				trivialSolveCharacterReplace(name);
