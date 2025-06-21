@@ -134,7 +134,7 @@ export default {
 		},
 	},
 	jlsgsk_wanniangongzhu: {
-		1: {
+		xiaoas: {
 			skill: {
 				jlsg_xinghan: {
 					audio: "ext:极略/audio/skill:2",
