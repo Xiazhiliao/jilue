@@ -1422,25 +1422,22 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { global: "useCardToPlayer" },
 			usable: 1,
-			filter: function (event, player) {
-				return event.targets.length == 1 && event.player != player && ["basic", "trick"].includes(get.type(event.card)) && game.filterPlayer(p => !event.targets.includes(p)).length;
+			filter(event, player) {
+				return event.targets.length == 1 && event.player != player && ["basic", "trick"].includes(get.type(event.card)) && game.countPlayer(p => !event.targets.includes(p));
 			},
-			direct: true,
-			content: function () {
-				"step 0";
-				player
-					.chooseTarget(get.prompt2(event.name), function (card, player, target) {
-						return !trigger.targets.includes(target);
-					})
-					.set("ai", function (target) {
-						return get.effect(target, _status.event.card, _status.event.user, _status.event.player);
-					})
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseTarget(get.prompt("jlsgsy_luanzheng"), `每回合限一，你可以为${get.translation(trigger.card)}额外指定一个目标`)
+					.set("filterTarget", (_, player, target) => !get.event("targetsx").includes(target))
+					.set("ai", target => get.effect(target, get.event("card"), get.event("user"), player))
+					.set("targetsx", trigger.targets)
 					.set("card", trigger.card)
-					.set("user", trigger.player);
-				("step 1");
-				if (result.bool) {
-					player.logSkill(event.name, result.targets);
-					trigger.targets.addArray(result.targets);
+					.set("user", trigger.player)
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				game.log(event.targets, "成为了", trigger.card, "额外目标");
+				trigger.targets.addArray(event.targets);
 				}
 			},
 			ai: {
