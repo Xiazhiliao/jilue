@@ -31,7 +31,7 @@ export default {
 		jlsgsy_zoushibaonu: ["female", "shen", 3, ["jlsgsy_huoshi", "jlsgsy_yinzi", "jlsgsy_mowu"], ["qun", "hiddenboss", "bossallowed"]],
 		jlsgsy_menghuo: ["male", "shen", 8, ["jlsgsy_qiushou", "jlsgsy_baonumenghuo"], ["shu", "boss", "bossallowed"]],
 		jlsgsy_menghuobaonu: ["male", "shen", 3, ["jlsgsy_qiushou", "jlsgsy_moshou"], ["shu", "hiddenboss", "bossallowed"]],
-		jlsgsy_zhangchunhua: ["female", "shen", 3, ["jlsgsy_baonuzhangchunhua", "jlsgsy_diaoling"], ["wei", "boss", "bossallowed"]],
+		jlsgsy_zhangchunhua: ["female", "shen", 7, ["jlsgsy_baonuzhangchunhua", "jlsgsy_diaoling"], ["wei", "boss", "bossallowed"]],
 		jlsgsy_zhangchunhuabaonu: ["female", "shen", 3, ["jlsgsy_diaoling", "jlsgsy_ejue", "jlsgsy_jianmie"], ["wei", "hiddenboss", "bossallowed"]],
 	},
 	skill: {
@@ -1053,30 +1053,12 @@ export default {
 			},
 		},
 		jlsgsy_shiao: {
-			audio: ["ext:极略/audio/skill/jlsgsy_shiao2.mp3", "ext:极略/audio/skill:true"],
+			audio: "ext:极略/audio/skill:true",
 			trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
+			filter: (event, player) => player.hasUseTarget("sha", false),
 			direct: true,
-			filter: function (event, player) {
-				return game.hasPlayer(function (current) {
-					if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
-					if (event.name == "phaseZhunbei") return current.countCards("h") < player.countCards("h");
-					return current.countCards("h") > player.countCards("h");
-				});
-			},
 			async content(event, trigger, player) {
-				await player
-					.chooseUseTarget(
-						game.filterPlayer(function (current) {
-							if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
-							if (event.name == "phaseZhunbei") return current.countCards("h") < player.countCards("h");
-							return current.countCards("h") > player.countCards("h");
-						}),
-						`###是否发动【恃傲】？###视为对一名手牌${trigger.name == "phaseZhunbei" ? "小于" : "大于"}你的角色使用一张【杀】`,
-						get.autoViewAs({ name: "sha" }, []),
-						false,
-						"nodistance"
-					)
-					.set("logSkill", "jlsgsy_shiao");
+				player.chooseUseTarget("###是否发动【恃傲】？###视为使用一张【杀】", { name: "sha" }, false, "nodistance").set("logSkill", "jlsgsy_shiao");
 			},
 		},
 		jlsgsy_kuangxi: {
@@ -2803,7 +2785,7 @@ export default {
 		jlsgsy_luansi_info: "变身技，出牌阶段限一次，你可以令两名角色拼点，然后你弃置没赢的角色两张牌；若拼点赢的角色不为你，你摸两张牌。",
 		jlsgsy_huoxin_info: "变身技，锁定技，当你受到伤害时，除非伤害来源令你获得其区域里的牌各一张，否则你防止此伤害，其失去1点体力。",
 		jlsgsy_baonucaifuren_info: "锁定技，当你体力降至4或者更少时，你变身为暴怒蔡夫人并立即开始你的回合",
-		jlsgsy_shiao_info: "回合开始阶段开始时，你可以视为对手牌数少于你的一名其他角色使用一张【杀】；回合结束阶段开始时你可以视为对手牌数大于你的一名其他角色使用一张【杀】",
+		jlsgsy_shiao_info: "准备/结束阶段，你可以视为使用一张【杀】。",
 		jlsgsy_kuangxi_info: "你使用锦囊牌后，可以视为对此牌的目标使用【杀】。若你以此法没有造成伤害，你失去1点体力。",
 		jlsgsy_baonuweiyan_info: "锁定技，当你体力降至4或者更少时，你变身为暴怒魏延并立即开始你的回合",
 		jlsgsy_fangu_info: "锁定技，当你受到伤害后，结束当前回合，你执行一个额外回合",

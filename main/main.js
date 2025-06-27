@@ -11,11 +11,10 @@ let character = {
 	card = {
 		connect: true,
 	};
-
 export let extensionDefaultPackage = async function () {
 	return {
-		character: await basic.resolve(character),
-		skill: await basic.resolve(skill),
-		card: await basic.resolve(card),
+		character,
+		skill,
+		card,
 	};
 };

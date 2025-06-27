@@ -175,7 +175,7 @@ export default {
 				await player.draw(4);
 				if (trigger.player == player) {
 					await player.loseMaxHp(1);
-					await layer.removeSkills("jlsg_huju");
+					await player.removeSkills("jlsg_huju");
 					await player.addSkills(lib.skill[event.name].derivation);
 				}
 			},
