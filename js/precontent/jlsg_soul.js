@@ -52,6 +52,7 @@ export default function () {
       jlsgsoul_sp_sunshangxiang: ["female", "shen", 3, ["jlsg_zhuxing", "jlsg_lingze"], ["wu", "name:孙|null"]],
       jlsgsoul_caiwenji: ["female", "shen", 3, ["jlsg_hanshuang", "jlsg_liluan"], ["qun", "name:蔡|琰"]],
       jlsgsoul_sp_guanyu: ["male", "shen", 4, ["jlsg_zhanyue", "jlsg_fengtian"], ["shu", "name:关|羽"]],
+      jlsgsoul_zhoutai: ["male", "shen", 10, ["jlsg_zhanhun"], ["wu", "name:周|泰"]],
     },
     characterIntro: {},
     characterTitle: {
@@ -60,6 +61,7 @@ export default function () {
       jlsgsoul_sp_sunshangxiang: "星流霆击",
       jlsgsoul_caiwenji: "霜弦哀世",
       jlsgsoul_sp_guanyu: "青龙",
+      jlsgsoul_zhoutai: "百战不灭",
     },
     skill: {
       jlsg_guixin: {
@@ -11249,82 +11251,9 @@ export default function () {
         },
         get typeSkills() {
           let list = {
-            damage: [
-              '长驱', '电界', '横江', '无双', '龙胆', '习武', '酒诗',
-              '狂风', '纵欲', '慧觑', '止戈', '断粮', '引兵', '神速',
-              '咆哮', '武圣', '权倾', '扫讨', '笔伐', '剑舞', '贿生',
-              '悲歌', '缮甲', '献祭', '征南', '整毅', '蒺藜', '义从',
-              '扰梦', '虎痴', '啖睛', '诈降', '谱毁', '无畏', '焚营',
-              '伏诛', '严教', '授计', '溃诛', '祸世', '鸩毒', '湮灭',
-              '母仪', '反间', '千幻', '神戟', '琴音', '顺世', '铁骑',
-              '尚义', '猛进', '主宰', '惴恐', '逆施', '奔袭', '夙隐',
-              '诋毁', '鱼忧', '索魂', '八门', '三治', '残掠', '仇决',
-              '国色', '鬼门', '极弓', '蛮裔', '震魂', '劫焰', '刚烈',
-              '卸甲', '调度', '拒战', '观虚', '木牛', '寝情', '暴政',
-              '突围', '轻袭', '薮影', '眩惑', '神威', '缔盟', '鸡肋',
-              '魔兽', '傲才', '沉鱼', '魔舞', '魅心', '送丧', '落雷',
-              '狂傲', '纵情', '解烦', '温酒', '踏破', '凤吟', '虎啸',
-              '司敌', '搏战', '忠勇', '求援', '屯田', '逐寇', '曼舞',
-              '过论', '忠魂', '蚕食', '勇继', '国士', '画策', '游侠',
-              '贺春', '炼体', '狂斧', '戟舞', '献州', '奋威', '伏射',
-              '虚猩', '活墨', '天启', '朝臣', '颂词', '驱虎', '狼顾',
-              '灭计', '谦冲', '蓄劲', '魔箭', '奇袭', '恃傲', '制敌',
-              '死谏', '弓骑', '乱嗣', '强袭', '凌波', '星舞', '专擅',
-              '乱武', '旋风', '修罗', '三绝', '绝策', '决裂', '咒缚',
-              '激诏', '攻心', '延粮', '谗陷', '集军', '折节', '火计',
-              '醉酒', '截军', '妖惑', '待劳', '掠阵', '乱政', '凌怒',
-              '祸水', '忧戎', '悍勇', '落雁', '素检', '藏书', '永劫',
-              '神愤', '舌剑', '埋伏', '烈弓', '烈医', '逐鹿', '知命',
-              '摧锋', '陷嗣', '挑衅', '横行', '射戟', '戚乱', '龙咆',
-              '朝凰', '酋首', '龙魂', '迷乱', '极武', '筹略', '米道',
-              '罪论', '布教', '独进', '战绝', '飞军'
-            ],
-            recover: [
-              '甘露', '孤城', '芳馨', '礼让', '存嗣', '严整', '天辩',
-              '伏枥', '豹变', '法恩', '匡弼', '红颜', '大雾', '遗计',
-              '蛮王', '兴学', '秉壹', '品第', '天姿', '姻盟', '绝勇',
-              '御策', '诛暴', '羽化', '据守', '纵玄', '义谏', '谦逊',
-              '温良', '明政', '矫诏', '威风', '才遇', '倾国', '娇媚',
-              '无言', '五禽', '帷幕', '锦织', '鏖战', '放权', '狂暴',
-              '闭月', '凤仪', '经纶', '连营', '七星', '乘风', '隐世',
-              '天命', '溃围', '全政', '智迟', '极略', '贤士', '招降',
-              '闪戏', '强识', '衍息', '仁德', '恭慎', '怀璧', '奇才',
-              '勘误', '享乐', '帷幄', '困奋', '空城', '储元', '仁心',
-              '权略', '淑贤', '雅士', '直言', '良缘', '游龙', '捧日',
-              '归命', '昭心', '资国', '尚俭', '闺秀', '归心', '断念',
-              '奋激', '涅槃', '武志', '省身', '武继', '忍忌', '落英',
-              '扶汉', '祸心', '涉猎', '好施', '制衡', '父志', '普渡',
-              '缓兵', '誓仇', '八阵', '忘隙', '昂扬', '陈情', '密诏',
-              '明策', '才捷', '衡势', '掣政', '狡慧', '追尊', '倾城',
-              '虎踞', '雅虑', '儒宗', '刚直', '激词', '伏间', '鼓舌',
-              '自守', '无前', '迭嶂', '宴诛', '绝境', '淫恣', '英才',
-              '举荐', '博略', '行殇', '怀异', '拜月', '重生', '权计',
-              '矢北', '仙授', '结姻', '刀侍', '反骨', '渐营', '天香',
-              '雄略', '龙变', '元化', '枭姬', '单骑', '同心', '狂言'
-            ],
-            chaos: [
-              '五禽', '烈弓', '冲阵', '凌虐', '募马', '残掠', '咆哮',
-              '勘误', '征南', '米道', '智愚', '凌弱', '震魂', '流离',
-              '乱武', '刚直', '摧锋', '劝降', '伏诛', '刻死', '享乐',
-              '掩杀', '慷忾', '品第', '天策', '搏战', '大雾', '剑舞',
-              '缓兵', '太平', '折节', '箜篌', '逆战', '掣政', '温良',
-              '当先', '焚城', '帷幕', '天妒', '神戟', '国色', '追击',
-              '制合', '八门', '炼体', '雷魂', '七星', '三分', '攻心',
-              '蒺藜', '空城', '观虚', '火计', '激词', '变天', '骄矜',
-              '恩怨', '雷祭', '洞察', '魔箭', '恃傲', '烈医', '虎缚',
-              '严整', '饵敌', '固政', '忧恤', '威震', '闭月', '飞军',
-              '蓄劲', '追忆', '龙吟', '隐世', '衡势', '凤吟', '断粮',
-              '娇媚', '绝境', '专擅', '承志', '伏枥', '伏间', '酒诗',
-              '连环', '才鉴', '乱政', '素检', '流云', '离间', '御象',
-              '战绝', '暴政', '狂暴', '勇烈', '蛮王', '落英', '涅槃',
-              '雅虑', '狂傲', '司敌', '峻刑', '回春', '挑衅', '惠敛',
-              '狂袭', '倾城', '横江', '曼舞', '商道', '神愤', '君望',
-              '天辩', '悍勇', '顺世', '鱼忧', '贤士', '滔乱', '雄异',
-              '机巧', '弓骑', '刀侍', '怒发', '魅惑', '狂骨', '风雅',
-              '魔舞', '截军', '匡弼', '索魂', '千幻', '闪戏', '挥泪',
-              '不屈', '无畏', '结姻', '罪论', '怀橘', '巧变', '淑贤',
-              '鏖战', '忧戎', '千骑', '湮灭', '狂言', '仙授', '纵玄'
-            ],
+            damage: ['长驱', '电界', '横江', '无双', '龙胆', '习武', '酒诗', '狂风', '纵欲', '慧觑', '止戈', '断粮', '引兵', '神速', '咆哮', '武圣', '权倾', '扫讨', '笔伐', '剑舞', '贿生', '悲歌', '缮甲', '献祭', '征南', '整毅', '蒺藜', '义从', '扰梦', '虎痴', '啖睛', '诈降', '谱毁', '无畏', '焚营', '伏诛', '严教', '授计', '溃诛', '祸世', '鸩毒', '湮灭', '母仪', '反间', '千幻', '神戟', '琴音', '顺世', '铁骑', '尚义', '猛进', '主宰', '惴恐', '逆施', '奔袭', '夙隐', '诋毁', '鱼忧', '索魂', '八门', '三治', '残掠', '仇决', '国色', '鬼门', '极弓', '蛮裔', '震魂', '劫焰', '刚烈', '卸甲', '调度', '拒战', '观虚', '木牛', '寝情', '暴政', '突围', '轻袭', '薮影', '眩惑', '神威', '缔盟', '鸡肋', '魔兽', '傲才', '沉鱼', '魔舞', '魅心', '送丧', '落雷', '狂傲', '纵情', '解烦', '温酒', '踏破', '凤吟', '虎啸', '司敌', '搏战', '忠勇', '求援', '屯田', '逐寇', '曼舞', '过论', '忠魂', '蚕食', '勇继', '国士', '画策', '游侠', '贺春', '炼体', '狂斧', '戟舞', '献州', '奋威', '伏射', '虚猩', '活墨', '天启', '朝臣', '颂词', '驱虎', '狼顾', '灭计', '谦冲', '蓄劲', '魔箭', '奇袭', '恃傲', '制敌', '死谏', '弓骑', '乱嗣', '强袭', '凌波', '星舞', '专擅', '乱武', '旋风', '修罗', '三绝', '绝策', '决裂', '咒缚', '激诏', '攻心', '延粮', '谗陷', '集军', '折节', '火计', '醉酒', '截军', '妖惑', '待劳', '掠阵', '乱政', '凌怒', '祸水', '忧戎', '悍勇', '落雁', '素检', '藏书', '永劫', '神愤', '舌剑', '埋伏', '烈弓', '烈医', '逐鹿', '知命', '摧锋', '陷嗣', '挑衅', '横行', '射戟', '戚乱', '龙咆', '朝凰', '酋首', '龙魂', '迷乱', '极武', '筹略', '米道', '罪论', '布教', '独进', '战绝', '飞军'],
+            recover: ['甘露', '孤城', '芳馨', '礼让', '存嗣', '严整', '天辩', '伏枥', '豹变', '法恩', '匡弼', '红颜', '大雾', '遗计', '蛮王', '兴学', '秉壹', '品第', '天姿', '姻盟', '绝勇', '御策', '诛暴', '羽化', '据守', '纵玄', '义谏', '谦逊', '温良', '明政', '矫诏', '威风', '才遇', '倾国', '娇媚', '无言', '五禽', '帷幕', '锦织', '鏖战', '放权', '狂暴', '闭月', '凤仪', '经纶', '连营', '七星', '乘风', '隐世', '天命', '溃围', '全政', '智迟', '极略', '贤士', '招降', '闪戏', '强识', '衍息', '仁德', '恭慎', '怀璧', '奇才', '勘误', '享乐', '帷幄', '困奋', '空城', '储元', '仁心', '权略', '淑贤', '雅士', '直言', '良缘', '游龙', '捧日', '归命', '昭心', '资国', '尚俭', '闺秀', '归心', '断念', '奋激', '涅槃', '武志', '省身', '武继', '忍忌', '落英', '扶汉', '祸心', '涉猎', '好施', '制衡', '父志', '普渡', '缓兵', '誓仇', '八阵', '忘隙', '昂扬', '陈情', '密诏', '明策', '才捷', '衡势', '掣政', '狡慧', '追尊', '倾城', '虎踞', '雅虑', '儒宗', '刚直', '激词', '伏间', '鼓舌', '自守', '无前', '迭嶂', '宴诛', '绝境', '淫恣', '英才', '举荐', '博略', '行殇', '怀异', '拜月', '重生', '权计', '矢北', '仙授', '结姻', '刀侍', '反骨', '渐营', '天香', '雄略', '龙变', '元化', '枭姬', '单骑', '同心', '狂言'],
+            chaos: ['五禽', '烈弓', '冲阵', '凌虐', '募马', '残掠', '咆哮', '勘误', '征南', '米道', '智愚', '凌弱', '震魂', '流离', '乱武', '刚直', '摧锋', '劝降', '伏诛', '刻死', '享乐', '掩杀', '慷忾', '品第', '天策', '搏战', '大雾', '剑舞', '缓兵', '太平', '折节', '箜篌', '逆战', '掣政', '温良', '当先', '焚城', '帷幕', '天妒', '神戟', '国色', '追击', '制合', '八门', '炼体', '雷魂', '七星', '三分', '攻心', '蒺藜', '空城', '观虚', '火计', '激词', '变天', '骄矜', '恩怨', '雷祭', '洞察', '魔箭', '恃傲', '烈医', '虎缚', '严整', '饵敌', '固政', '忧恤', '威震', '闭月', '飞军', '蓄劲', '追忆', '龙吟', '隐世', '衡势', '凤吟', '断粮', '娇媚', '绝境', '专擅', '承志', '伏枥', '伏间', '酒诗', '连环', '才鉴', '乱政', '素检', '流云', '离间', '御象', '战绝', '暴政', '狂暴', '勇烈', '蛮王', '落英', '涅槃', '雅虑', '狂傲', '司敌', '峻刑', '回春', '挑衅', '惠敛', '狂袭', '倾城', '横江', '曼舞', '商道', '神愤', '君望', '天辩', '悍勇', '顺世', '鱼忧', '贤士', '滔乱', '雄异', '机巧', '弓骑', '刀侍', '怒发', '魅惑', '狂骨', '风雅', '魔舞', '截军', '匡弼', '索魂', '千幻', '闪戏', '挥泪', '不屈', '无畏', '结姻', '罪论', '怀橘', '巧变', '淑贤', '鏖战', '忧戎', '千骑', '湮灭', '狂言', '仙授', '纵玄'],
           };
           list.chaos.addArray(list.recover.concat(list.damage)).unique();
           delete this.typeSkills;
@@ -11933,6 +11862,125 @@ export default function () {
           },
         },
       },
+      jlsg_zhanhun: {
+        audio: "ext:极略/audio/skill:2",
+        trigger: {
+          player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore"],
+        },
+        filter(event, player) {
+          let key = lib.skill.jlsg_qianyuan.translate[event.name];
+          let bool = lib.skill.jlsg_qianyuan.getInfo(event, player, key).bool;
+          if (!bool) return false;
+          if (key == "damage") {
+            if (!event.source && event.source == player) return false;
+          } else if (["loseHp", "loseMaxHp", "loseSkill", "link", "turnOver"].includes(key)) {
+            if (key == "loseSkill" && !event.removeSkill.length) return false;
+            if (event.getParent().player && event.getParent().player == player) return false;
+            if (!event.getParent().player) return false;
+          } else if (key == "discard") {
+            let discarder = event.discarder || event.getParent().player;
+            if (discarder && discarder == player) return false;
+            if (!discarder) return false;
+          }
+          return true;
+        },
+        forced: true,
+        async content(event, trigger, player) {
+          let key = lib.skill.jlsg_qianyuan.translate[trigger.name];
+          const { str } = lib.skill.jlsg_qianyuan.getInfo(trigger, player, key);
+          if (trigger.name == "changeSkills") trigger.removeSkill = [];
+          else if (trigger.name == "lose") {
+            trigger.cards = trigger.cards.filter(card => {
+              if (get.owner(card) == player) return false;
+              return !["h", "e"].includes(get.position(card));
+            });
+            if (!trigger.cards.length) trigger.cancel();
+          } else trigger.cancel();
+          game.log(player, "取消了", `#y${str}`);
+          player.addTempSkill("jlsg_zhanhun_used");
+          player.storage.jlsg_zhanhun_used ??= 0;
+          player.storage.jlsg_zhanhun_used++;
+          player.markSkill("player.storage.jlsg_zhanhun_used");
+          const num = (player.storage.jlsg_zhanhun_used || 1) - 1;
+          if (num > 0) {
+            await player.loseHp(num);
+          }
+          const { result } = await player.draw(2);
+          if (!result?.some(card => ["black", "red"].includes(get.color(card)))) {
+            return;
+          }
+          else if (result?.length != 2) {
+            return;
+          }
+          let suits = result.map(card => get.color(card)).sort(),
+            nature = null;
+          if (suits[0] == "black") {
+            if (suits[1] == "black") {
+              nature = "thunder";
+            }
+          } else {
+            nature = "fire";
+          }
+          const sha = get.autoViewAs({ name: "sha", nature }, []);
+          if (player.hasUseTarget(sha)) {
+            await player.chooseUseTarget(sha);
+          }
+        },
+        group: "jlsg_zhanhun_sha",
+        subSkill: {
+          used: {
+            charlotte: true,
+            onremove: true,
+            mark: "战",
+            intro: {
+              name: "战魂",
+              content: "本回合已发动#次",
+            },
+          },
+          sha: {
+            audio: "ext:极略/audio/skill:2",
+            trigger: {
+              player: "damageBegin2",
+            },
+            filter(event, player) {
+              if (event.player == player) {
+                return false;
+              }
+              return event.card?.name == "sha" && event.player.hp >= player.hp;
+            },
+            forced: true,
+            async content(event, trigger, player) {
+              await player.recover(1);
+            },
+            ai: {
+              player(card, player, target) {
+                if (player == target) return;
+                else if (card?.name != "sha") return;
+                else if (player.isHealthy()) return;
+                return [1, 2];
+              },
+            },
+          },
+        },
+        ai: {
+          maixie: true,
+          maixie_defend: true,
+          effect: {
+            target(card, player, target) {
+              if (player == target) return;
+              let num = (player.storage.jlsg_zhanhun_used || 1) - 1;
+              num += target.hasUseTarget("sha") ? 2 : 0;
+              if (card.name == "tiesuo") return [1, 0, 0, -num];
+              if (card.name == "guohe") return [1, 0, 0, -num];
+              if (get.tag(card, "damage")) return [1, 0, 0, -num];
+              if (get.name(card) == "guohe") return [1, 0, 0, -num];
+              if (get.name(card) == "tiesuo" && !target.isLinked()) return [1, 0, 0, -num];
+            },
+          },
+        },
+
+
+      },
     },
     translate: {
       jlsg_soul: "魂烈包",
@@ -11981,6 +12029,7 @@ export default function () {
       jlsgsoul_sp_zhaoyun: "SP神赵云",
       jlsgsoul_sp_sunshangxiang: "SP神孙尚香",
       jlsgsoul_caiwenji: "SK神蔡文姬",
+      jlsgsoul_zhoutai: "SK神周泰",
 
       jlsg_yinyang_s: '阴阳',
       jlsg_yinyang_s_info: '锁定技，若你的体力：多于已损失体力，你拥有〖极阳〗；少于已损失体力，你拥有〖极阴〗；等于已损失体力，你拥有〖相生〗。',
@@ -12269,6 +12318,8 @@ export default function () {
       jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令至多两名与其相连且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向上取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
       jlsg_fengtian: "封天",
       jlsg_fengtian_info: "其他角色的回合开始时，你可以弃置一张牌，若如此做，该角色于本回合内首次摸牌、弃牌或使用每种牌名的牌后，你视为对其使用【杀】，若你弃置的牌为【杀】，你令其所有技能失效，上述效果持续至本回合结束或其对你造成伤害。",
+      jlsg_zhanhun: "战魂",
+      jlsg_zhanhun_info: "锁定技，当你受到其他角色施加的负面效果前，你将此负面效果改为失去X点体力并摸两张牌（X为你本回合再次发动此技能的次数），然后若这两张牌的颜色为红黑/红红/黑黑，你可以视为使用【杀】/火【杀】/雷【杀】。当你使用【杀】对体力不小于你的其他角色造成伤害时，你回复1点体力。",
     },
     dynamicTranslate: {
       jlsg_xiejia: function (player) {
