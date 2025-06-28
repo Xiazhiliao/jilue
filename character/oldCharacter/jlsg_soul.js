@@ -854,7 +854,7 @@ export default {
 				jlsg_huju2: "虎踞",
 				jlsg_huju_info: "锁定技，其他角色的回合开始时，你摸一张牌。你的回合开始时，若你的手牌数为最多（或之一），你选择一项：1、失去一点体力；2、减一点体力上限，失去〖虎踞〗，并获得技能〖制衡〗和〖虎缚〗。",
 			},
-			info: ["male", "shen", 5, ["jlsg_huju"], ["wu"]],
+			info: ["male", "shen", 4, ["jlsg_huju"], ["wu"]],
 		},
 	},
 	jlsgsoul_simayi: {

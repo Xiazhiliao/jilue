@@ -4,7 +4,7 @@ export default {
 	connect: true,
 	character: {
 		jlsgsoul_caocao: ["male", "shen", 3, ["jlsg_guixin", "jlsg_feiying"], ["wei"]],
-		jlsgsoul_sunquan: ["male", "shen", 4, ["jlsg_huju"], ["wu"]],
+		jlsgsoul_sunquan: ["male", "shen", 5, ["jlsg_huju"], ["wu"]],
 		jlsgsoul_jiaxu: ["male", "shen", 3, ["jlsg_yanmie", "jlsg_shunshi"], ["wei"]],
 		jlsgsoul_liubei: ["male", "shen", 4, ["jlsg_junwang", "jlsg_jizhao"], ["shu"]],
 		jlsgsoul_zhugeliang: ["male", "shen", 3, ["jlsg_qixing", "jlsg_kuangfeng", "jlsg_dawu"], ["shu", "name:诸葛|亮"]],
@@ -189,7 +189,7 @@ export default {
 			filter: (event, player) => game.hasPlayer(current => current != player && current.countCards("e")),
 			filterTarget: (card, player, target) => target != player && target.countCards("e"),
 			async content(event, trigger, player) {
-				var num = target.countCards("e");
+				var num = event.target.countCards("e");
 				await event.target.chooseToDiscard(`${get.translation(player)}对你发动“虎缚”，请弃置${num}张牌`, true, [num, num], "he");
 			},
 			ai: {
