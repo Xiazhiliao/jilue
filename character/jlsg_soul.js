@@ -13107,7 +13107,7 @@ export default {
 				let bool = lib.skill.jlsg_qianyuan.getInfo(event, player, key).bool;
 				if (!bool) return false;
 				if (key == "damage") {
-					if (!event.source && event.source == player) return false;
+					if (!event.source || event.source == player) return false;
 				} else if (["loseHp", "loseMaxHp", "loseSkill", "link", "turnOver"].includes(key)) {
 					if (key == "loseSkill" && !event.removeSkill.length) return false;
 					if (event.getParent().player && event.getParent().player == player) return false;
@@ -13156,8 +13156,8 @@ export default {
 					nature = "fire";
 				}
 				const sha = get.autoViewAs({ name: "sha", nature }, []);
-				if (player.hasUseTarget(sha)) {
-					await player.chooseUseTarget(sha);
+				if (player.hasUseTarget(sha, false)) {
+					await player.chooseUseTarget(sha, "nodistance");
 				}
 			},
 			group: "jlsg_zhanhun_sha",
@@ -13202,13 +13202,13 @@ export default {
 				effect: {
 					target(card, player, target) {
 						if (player == target) return;
-						let num = (player.storage.jlsg_zhanhun_used || 1) - 1;
-						num += target.hasUseTarget("sha") ? 2 : 0;
-						if (card.name == "tiesuo") return [1, 0, 0, -num];
-						if (card.name == "guohe") return [1, 0, 0, -num];
-						if (get.tag(card, "damage")) return [1, 0, 0, -num];
-						if (get.name(card) == "guohe") return [1, 0, 0, -num];
-						if (get.name(card) == "tiesuo" && !target.isLinked()) return [1, 0, 0, -num];
+						let num = -(player.storage.jlsg_zhanhun_used || 1) + 1;
+						num += target.hasUseTarget("sha") ? 3 : 1;
+						if (card.name == "tiesuo") return [1, 0, 0, num];
+						if (card.name == "guohe") return [1, 0, 0, num];
+						if (get.tag(card, "damage")) return [1, 0, 0, num];
+						if (get.name(card) == "guohe") return [1, 0, 0, num];
+						if (get.name(card) == "tiesuo" && !target.isLinked()) return [1, 0, 0, num];
 					},
 				},
 			},
@@ -13535,7 +13535,7 @@ export default {
 		jlsg_fengtian: "封天",
 		jlsg_fengtian_info: "其他角色的回合开始时，你可以弃置一张牌，若如此做，该角色于本回合内首次摸牌、弃牌或使用每种牌名的牌后，你视为对其使用【杀】，若你弃置的牌为【杀】，你令其所有技能失效，上述效果持续至本回合结束或其对你造成伤害。",
 		jlsg_zhanhun: "战魂",
-		jlsg_zhanhun_info: "锁定技，当你受到其他角色施加的负面效果前，你将此负面效果改为失去X点体力并摸两张牌（X为你本回合再次发动此技能的次数），然后若这两张牌的颜色为红黑/红红/黑黑，你可以视为使用【杀】/火【杀】/雷【杀】。当你使用【杀】对体力不小于你的其他角色造成伤害时，你回复1点体力。",
+		jlsg_zhanhun_info: "锁定技，当你受到其他角色施加的负面效果前，你将此负面效果改为失去X点体力并摸两张牌（X为你本回合再次发动此技能的次数），然后若这两张牌的颜色为红黑/红红/黑黑，你可以视为使用一张无距离限制的【杀】/火【杀】/雷【杀】。当你使用【杀】对体力不小于你的其他角色造成伤害时，你回复1点体力。",
 	},
 	dynamicTranslate: {
 		jlsg_xiejia: function (player) {

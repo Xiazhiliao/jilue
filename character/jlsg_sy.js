@@ -2488,7 +2488,7 @@ export default {
 						if (!bool) return false;
 						if (key == "damage") {
 							if (event.hasNature()) return false;
-							if (!event.source && event.source == player) return false;
+							if (!event.source || event.source == player) return false;
 						} else if (["loseHp", "loseMaxHp", "loseSkill", "link", "turnOver"].includes(key)) {
 							if (key == "loseSkill" && !event.removeSkill.length) return false;
 							if (event.getParent().player && event.getParent().player == player) return false;
