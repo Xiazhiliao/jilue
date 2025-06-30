@@ -202,7 +202,7 @@ export default {
 				},
 			},
 		},
-		jlsg_xionglve: {
+		/*jlsg_xionglve: {
 			audio: "ext:极略/audio/skill/jlsg_xionglve1.mp3",
 			marktext: `略`,
 			intro: {
@@ -232,7 +232,7 @@ export default {
 				return (
 					(type == "basic" || type == "trick") &&
 					player.hasCard(card => {
-						return card.hasGaintag("jlsg_xionglve") && get.type(card) == type;
+						return card.hasGaintag("jlsg_xionglve") && get.type2(card) == type;
 					}, "x")
 				);
 			},
@@ -241,7 +241,7 @@ export default {
 					var list = [];
 					for (var i = 0; i < lib.inpile.length; i++) {
 						var name = lib.inpile[i];
-						if (!player.getExpansions("jlsg_xionglve").some(j => get.type(j) == get.type(name)) || get.type(name) == "equip") continue;
+						if (!player.getExpansions("jlsg_xionglve").some(j => get.type2(j) == get.type2(name)) || get.type2(name) == "equip") continue;
 						if (name == "sha") {
 							if (event.filterCard({ name: name }, player, event)) list.push(["基本", "", "sha"]);
 							for (var j of lib.inpile_nature) {
@@ -258,7 +258,7 @@ export default {
 				},
 				select() {
 					if (ui.selected.buttons.length && get.itemtype(ui.selected.buttons[0].link) == "card") {
-						if (get.type(ui.selected.buttons[0].link) == "equip") return 1;
+						if (get.type2(ui.selected.buttons[0].link) == "equip") return 1;
 					}
 					return 2;
 				},
@@ -276,8 +276,8 @@ export default {
 				check(button) {
 					var player = get.player();
 					if (!ui.selected.buttons.length) {
-						if (player.getExpansions("jlsg_xionglve").some(i => get.type(i) == "equip")) {
-							if (get.itemtype(button.link) == "card" && get.type(button.link) == "equip") return 1;
+						if (player.getExpansions("jlsg_xionglve").some(i => get.type2(i) == "equip")) {
+							if (get.itemtype(button.link) == "card" && get.type2(button.link) == "equip") return 1;
 							else return 0;
 						}
 						return (
@@ -294,18 +294,18 @@ export default {
 					return {
 						audio: "jlsg_xionglve",
 						viewAs: function () {
-							if (get.type(links[0]) == "equip") return links[0];
+							if (get.type2(links[0]) == "equip") return links[0];
 							else return { name: links[1][2], nature: links[1][3] };
 						},
 						position: "x",
 						filterCard: card => card == lib.skill.jlsg_xionglve_backup.card,
 						selectCard: -1,
 						filterTarget: function (card, player, target) {
-							if (get.type(links[0]) == "equip") return target != player;
+							if (get.type2(links[0]) == "equip") return target != player;
 							else return player.canUse({ name: links[1][2], nature: links[1][3] }, target);
 						},
 						selectTarget: function () {
-							if (get.type(links[0]) == "equip") return 1;
+							if (get.type2(links[0]) == "equip") return 1;
 							else return lib.filter.selectTarget({ name: links[1][2], nature: links[1][3] }, get.player());
 						},
 						card: links[0],
@@ -316,7 +316,7 @@ export default {
 					};
 				},
 				prompt: function (links, player) {
-					if (get.type(links[0]) == "equip") return "请选择" + get.translation(links[0]) + "的目标";
+					if (get.type2(links[0]) == "equip") return "请选择" + get.translation(links[0]) + "的目标";
 					else return "请选择" + get.translation(links[1][2]) + "的目标";
 				},
 			},
@@ -328,7 +328,7 @@ export default {
 				skillTagFilter: function (player) {
 					if (!player.isPhaseUsing()) return false;
 					return player.hasCard(card => {
-						return card.hasGaintag("jlsg_xionglve") && get.type(card) == "basic";
+						return card.hasGaintag("jlsg_xionglve") && get.type2(card) == "basic";
 					}, "x");
 				},
 				order: 6,
@@ -385,12 +385,12 @@ export default {
 								list2 = [];
 							game.countPlayer(current => {
 								if (current == player) return false;
-								if (get.type(card1) == "equip") num1.add(get.effect_use(current, card1, player, player)).sort((a, b) => b - a);
-								if (get.type(card2) == "equip") num2.add(get.effect_use(current, card2, player, player)).sort((a, b) => b - a);
+								if (get.type2(card1) == "equip") num1.add(get.effect_use(current, card1, player, player)).sort((a, b) => b - a);
+								if (get.type2(card2) == "equip") num2.add(get.effect_use(current, card2, player, player)).sort((a, b) => b - a);
 							});
 							for (var i of lib.inpile) {
-								if (get.type(card1) != "equip" && get.type2(i) == get.type2(card1)) list1.add(player.getUseValue(i)).sort((a, b) => b - a);
-								if (get.type(card1) != "equip" && get.type2(i) == get.type2(card2)) list2.add(player.getUseValue(i)).sort((a, b) => b - a);
+								if (get.type2(card1) != "equip" && get.type2(i) == get.type2(card1)) list1.add(player.getUseValue(i)).sort((a, b) => b - a);
+								if (get.type2(card1) != "equip" && get.type2(i) == get.type2(card2)) list2.add(player.getUseValue(i)).sort((a, b) => b - a);
 							}
 							if (num1.length && num2.length) return num1[0] <= get.effect_use(player, card1, player, player);
 							else if (num1.length && !num2.length) return list2[0] <= get.effect_use(player, card1, player, player);
@@ -420,7 +420,7 @@ export default {
 					sourceSkill: "jlsg_xionglve",
 				},
 			},
-		},
+		},*/
 		jlsg_yanmie: {
 			audio: "ext:极略/audio/skill:2",
 			enable: "phaseUse",

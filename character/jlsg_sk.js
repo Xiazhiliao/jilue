@@ -1984,7 +1984,7 @@ export default {
 						next.set("_backupevent", "jlsg_mozhix");
 						next.set("custom", {
 							add: {},
-							replace: { window: function () {} },
+							replace: { window: function () { } },
 						});
 						next.backup("jlsg_mozhix");
 					}
@@ -4865,7 +4865,7 @@ export default {
 			filter: function (event, player) {
 				return (event.card.name == "sha" && event.cards && event.cards.length == 1 && event.cards[0].name == "tao") || (event.card.name == "jiu" && event.cards && event.cards.length == 1 && event.cards[0].name == "shan");
 			},
-			content: function () {},
+			content: function () { },
 		},
 		jlsg_baoli: {
 			audio: "ext:极略/audio/skill:2",
@@ -5594,12 +5594,12 @@ export default {
 			},
 			getTargets(player) {
 				let damage = player
-						.getAllHistory("damage", evt => {
-							return evt.source && evt.source.isIn();
-						})
-						.map(evt => evt.source)
-						.reverse()
-						.slice(0, 3),
+					.getAllHistory("damage", evt => {
+						return evt.source && evt.source.isIn();
+					})
+					.map(evt => evt.source)
+					.reverse()
+					.slice(0, 3),
 					recover = game
 						.getAllGlobalHistory("changeHp", evt => {
 							if (evt.player != player || !evt.parent) return false;
@@ -6101,13 +6101,13 @@ export default {
 						var currentLastCard = lastedCard;
 						if (
 							lastedCard +
-								game.countPlayer(function (cur) {
-									if (cur != player && cur.countCards("h") > currentLastCard && !cur.isTurnedOver()) {
-										currentLastCard++;
-										return true;
-									}
-									return false;
-								}) <=
+							game.countPlayer(function (cur) {
+								if (cur != player && cur.countCards("h") > currentLastCard && !cur.isTurnedOver()) {
+									currentLastCard++;
+									return true;
+								}
+								return false;
+							}) <=
 							player.maxHp - 2
 						)
 							return 0;
@@ -6993,7 +6993,8 @@ export default {
 					},
 				},
 			},
-		},jlsg_zhengnan: {
+		},
+		 jlsg_zhengnan: {
 			audio: "ext:极略/audio/skill:2",
 			enable: "phaseUse",
 			usable: 1,
@@ -8063,8 +8064,8 @@ export default {
 					.set("choiseTarget", choiseTarget);
 				if (!result1?.bool || !result1?.targets?.length) return;
 				const {
-						targets: [target],
-					} = result1,
+					targets: [target],
+				} = result1,
 					[choice] = eff;
 				choiceList = [`令${get.translation(target)}回复体力至全场唯一最多`, `令${get.translation(target)}摸牌至全场唯一最多`, `系统为${get.translation(target)}的每个空装备栏选择一张装备牌，然后其使用之`, `令${get.translation(target)}获得技能〖恢拓〗`];
 				if (target.hasSkill("jlsg_huituo", null, false, false)) choiceList = choiceList.slice(0, -1);
@@ -9229,7 +9230,7 @@ export default {
 						next.set("_backupevent", "jlsg_mozhix");
 						next.set("custom", {
 							add: {},
-							replace: { window: function () {} },
+							replace: { window: function () { } },
 						});
 						next.backup("jlsg_mozhix");
 					}
@@ -13872,7 +13873,7 @@ export default {
 				else str += `${evt.name == "chooseToUse" ? "使用" : "打出"}的牌`;
 				if (evt.name != "chooseToCompare") {
 					//使用|打出
-					player.storage.jlsg_tianbian ??= Object.entries(await game.createEvent("empty", false).setContent(function () {}));
+					player.storage.jlsg_tianbian ??= Object.entries(await game.createEvent("empty", false).setContent(function () { }));
 					let args = Object.entries(evt),
 						obj = {
 							prompt: str,
@@ -14305,8 +14306,8 @@ export default {
 					player = event.player;
 				player.storage.jlsg_jingce ??= { draw: 0, sha: 0 };
 				const num = player.getHistory("useCard", evt => {
-						return evt.getParent("phaseUse") == event.getParent("phaseUse");
-					}).length,
+					return evt.getParent("phaseUse") == event.getParent("phaseUse");
+				}).length,
 					list2 = [lib.skill.jlsg_jingce.countShaUsable(player), 2 + (player.storage?.jlsg_jingce?.draw || 0), player.maxHp];
 				let drawCheck = player.getAllHistory("gain", evt => {
 					return evt.getParent(2).name == "phaseDraw";
@@ -15976,6 +15977,7 @@ export default {
 		jlsg_dujin: "独进",
 		jlsg_dujin2: "独进",
 		jlsg_dujin_info: "锁定技，你使用【杀】无次数限制。你于出牌阶段内使用的第一张【杀】的伤害+1且不能被【闪】响应，其余的【杀】被其他角色的【闪】响应后，其对你造成1点伤害。",
+		jlsg_sanjue:"三绝",
 		jlsg_sanjue_info: "锁定技,当你第一次或第三次使用同名牌时,你摸一张牌并随机将一个未上场的吴势力武将的一个技能加入技能库。出牌阶段,你可以令一名角色获得一个技能库中的技能。",
 		jlsg_canshi: "蚕食",
 		jlsg_canshi_info: "当其他角色回复体力/加体力上限/对你造成伤害后，你可以令其获得1枚「蚕食」标记，然后你摸两张牌。拥有此标记的角色手牌上限-X(X为标记数)。",

@@ -265,7 +265,7 @@ export default {
 				if (event.card.name != "sha") return false;
 				return event.targets.length > 1;
 			},
-			content: function () {},
+			content: function () { },
 		},
 		jlsgsy_guiming: {
 			audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_guiming'],
@@ -2411,10 +2411,10 @@ export default {
 			},
 			getSkills(player) {
 				let equipSkills = player.getCards("e").reduce((list, card) => {
-						const info = get.info(card);
-						if (info && info.skills) return list.addArray(info.skills);
-						return list;
-					}, []),
+					const info = get.info(card);
+					if (info && info.skills) return list.addArray(info.skills);
+					return list;
+				}, []),
 					skills = player.getSkills(null, false, false);
 				return equipSkills.concat(skills).filter(skill => {
 					let info = get.info(skill);
