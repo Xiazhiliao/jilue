@@ -31,7 +31,7 @@ export default {
 		jlsgsy_zoushibaonu: ["female", "shen", 3, ["jlsgsy_huoshi", "jlsgsy_yinzi", "jlsgsy_mowu"], ["qun", "hiddenboss", "bossallowed"]],
 		jlsgsy_menghuo: ["male", "shen", 8, ["jlsgsy_qiushou", "jlsgsy_baonumenghuo"], ["shu", "boss", "bossallowed"]],
 		jlsgsy_menghuobaonu: ["male", "shen", 3, ["jlsgsy_qiushou", "jlsgsy_moshou"], ["shu", "hiddenboss", "bossallowed"]],
-		jlsgsy_zhangchunhua: ["female", "shen", 3, ["jlsgsy_baonuzhangchunhua", "jlsgsy_diaoling"], ["wei", "boss", "bossallowed"]],
+		jlsgsy_zhangchunhua: ["female", "shen", 7, ["jlsgsy_baonuzhangchunhua", "jlsgsy_diaoling"], ["wei", "boss", "bossallowed"]],
 		jlsgsy_zhangchunhuabaonu: ["female", "shen", 3, ["jlsgsy_diaoling", "jlsgsy_ejue", "jlsgsy_jianmie"], ["wei", "hiddenboss", "bossallowed"]],
 	},
 	skill: {
@@ -265,7 +265,7 @@ export default {
 				if (event.card.name != "sha") return false;
 				return event.targets.length > 1;
 			},
-			content: function () {},
+			content: function () { },
 		},
 		jlsgsy_guiming: {
 			audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_guiming'],
@@ -1053,30 +1053,12 @@ export default {
 			},
 		},
 		jlsgsy_shiao: {
-			audio: ["ext:极略/audio/skill/jlsgsy_shiao2.mp3", "ext:极略/audio/skill:true"],
+			audio: "ext:极略/audio/skill:true",
 			trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
+			filter: (event, player) => player.hasUseTarget("sha", false),
 			direct: true,
-			filter: function (event, player) {
-				return game.hasPlayer(function (current) {
-					if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
-					if (event.name == "phaseZhunbei") return current.countCards("h") < player.countCards("h");
-					return current.countCards("h") > player.countCards("h");
-				});
-			},
 			async content(event, trigger, player) {
-				await player
-					.chooseUseTarget(
-						game.filterPlayer(function (current) {
-							if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
-							if (event.name == "phaseZhunbei") return current.countCards("h") < player.countCards("h");
-							return current.countCards("h") > player.countCards("h");
-						}),
-						`###是否发动【恃傲】？###视为对一名手牌${trigger.name == "phaseZhunbei" ? "小于" : "大于"}你的角色使用一张【杀】`,
-						get.autoViewAs({ name: "sha" }, []),
-						false,
-						"nodistance"
-					)
-					.set("logSkill", "jlsgsy_shiao");
+				player.chooseUseTarget("###是否发动【恃傲】？###视为使用一张【杀】", { name: "sha" }, false, "nodistance").set("logSkill", "jlsgsy_shiao");
 			},
 		},
 		jlsgsy_kuangxi: {
@@ -1422,26 +1404,22 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { global: "useCardToPlayer" },
 			usable: 1,
-			filter: function (event, player) {
-				return event.targets.length == 1 && event.player != player && ["basic", "trick"].includes(get.type(event.card)) && game.filterPlayer(p => !event.targets.includes(p)).length;
+			filter(event, player) {
+				return event.targets.length == 1 && event.player != player && ["basic", "trick"].includes(get.type(event.card)) && game.countPlayer(p => !event.targets.includes(p));
 			},
-			direct: true,
-			content: function () {
-				"step 0";
-				player
-					.chooseTarget(get.prompt2(event.name), function (card, player, target) {
-						return !trigger.targets.includes(target);
-					})
-					.set("ai", function (target) {
-						return get.effect(target, _status.event.card, _status.event.user, _status.event.player);
-					})
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseTarget(get.prompt("jlsgsy_luanzheng"), `每回合限一，你可以为${get.translation(trigger.card)}额外指定一个目标`)
+					.set("filterTarget", (_, player, target) => !get.event("targetsx").includes(target))
+					.set("ai", target => get.effect(target, get.event("card"), get.event("user"), player))
+					.set("targetsx", trigger.targets)
 					.set("card", trigger.card)
-					.set("user", trigger.player);
-				("step 1");
-				if (result.bool) {
-					player.logSkill(event.name, result.targets);
-					trigger.targets.addArray(result.targets);
-				}
+					.set("user", trigger.player)
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				game.log(event.targets, "成为了", trigger.card, "额外目标");
+				trigger.targets.addArray(event.targets);
 			},
 			ai: {
 				threaten: 3,
@@ -2433,10 +2411,10 @@ export default {
 			},
 			getSkills(player) {
 				let equipSkills = player.getCards("e").reduce((list, card) => {
-						const info = get.info(card);
-						if (info && info.skills) return list.addArray(info.skills);
-						return list;
-					}, []),
+					const info = get.info(card);
+					if (info && info.skills) return list.addArray(info.skills);
+					return list;
+				}, []),
 					skills = player.getSkills(null, false, false);
 				return equipSkills.concat(skills).filter(skill => {
 					let info = get.info(skill);
@@ -2510,7 +2488,7 @@ export default {
 						if (!bool) return false;
 						if (key == "damage") {
 							if (event.hasNature()) return false;
-							if (!event.source && event.source == player) return false;
+							if (!event.source || event.source == player) return false;
 						} else if (["loseHp", "loseMaxHp", "loseSkill", "link", "turnOver"].includes(key)) {
 							if (key == "loseSkill" && !event.removeSkill.length) return false;
 							if (event.getParent().player && event.getParent().player == player) return false;
@@ -2807,7 +2785,7 @@ export default {
 		jlsgsy_luansi_info: "变身技，出牌阶段限一次，你可以令两名角色拼点，然后你弃置没赢的角色两张牌；若拼点赢的角色不为你，你摸两张牌。",
 		jlsgsy_huoxin_info: "变身技，锁定技，当你受到伤害时，除非伤害来源令你获得其区域里的牌各一张，否则你防止此伤害，其失去1点体力。",
 		jlsgsy_baonucaifuren_info: "锁定技，当你体力降至4或者更少时，你变身为暴怒蔡夫人并立即开始你的回合",
-		jlsgsy_shiao_info: "回合开始阶段开始时，你可以视为对手牌数少于你的一名其他角色使用一张【杀】；回合结束阶段开始时你可以视为对手牌数大于你的一名其他角色使用一张【杀】",
+		jlsgsy_shiao_info: "准备/结束阶段，你可以视为使用一张【杀】。",
 		jlsgsy_kuangxi_info: "你使用锦囊牌后，可以视为对此牌的目标使用【杀】。若你以此法没有造成伤害，你失去1点体力。",
 		jlsgsy_baonuweiyan_info: "锁定技，当你体力降至4或者更少时，你变身为暴怒魏延并立即开始你的回合",
 		jlsgsy_fangu_info: "锁定技，当你受到伤害后，结束当前回合，你执行一个额外回合",

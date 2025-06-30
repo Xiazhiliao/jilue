@@ -8,58 +8,71 @@ export default {
 					audio: "ext:极略/audio/skill:2",
 					enable: "phaseUse",
 					usable: 1,
-					filterTarget: function (card, player, target) {
-						return target.countCards("hej");
+					filter(event, player) {
+						return game.hasPlayer(current => current.countDiscardableCards(player, "hej"));
 					},
-					content: function () {
-						"step 0";
-						player.discardPlayerCard(target, "hej", forced).set("ai", (button, buttons) => {
-							var target = _status.event.getParent().target;
-							var val = get.buttonValue(button); // get.effect(target, {name: 'nanman'}, get.owner(buttons.randomGet().link), _status.event.player)
-							if (get.attitude(_status.event.player, get.owner(button.link)) > 0) val = -val;
-							if (button.name && get.type(button.link) != "basic") val += 6;
-							return val;
+					filterTarget(card, player, target) {
+						return target.countDiscardableCards(player, "hej");
+					},
+					async content(event, trigger, player) {
+						const { result } = await player.discardPlayerCard(event.target, "hej", true).set("ai", button => {
+							const event = get.event(),
+								card = button.link,
+								player = get.player();
+							const target = event.getParent().target,
+								position = get.position(card);
+							let eff = get.value(card) * -get.sgnAttitude(player, target);
+							if (position != "h") {
+								eff += target.getUseValue("nanman");
+							}
+							return eff;
 						});
-						("step 1");
-						if (!result.bool || get.type(result.links[0]) == "basic") {
-							event.finish();
-							return;
+						if (result?.bool && result?.links?.length) {
+							const card = result.links[0];
+							if (get.type(card) != "basic") {
+								const nanman = get.autoViewAs({ name: "nanman" }, []);
+								if (event.target.hasUseTarget(nanman)) {
+									await event.target.chooseUseTarget(nanman, true);
+								}
+							}
 						}
-						target.chooseUseTarget({ name: "nanman" }, true).set("oncard", (card, player) => {
-							_status.event.skill = "jlsg_zhengnan";
-						});
 					},
-					group: ["jlsg_zhengnan2"],
+					group: ["jlsg_zhengnan_damage"],
+					subSkill: {
+						audio: "jlsg_zhengnan",
+						direct: true,
+						popup: true,
+						trigger: { global: "damageEnd" },
+						filter(event, player) {
+							if (event.card?.name == "nanman") {
+								return false;
+							}
+							let evt = event.getParent("useCard", true)?.getParent(2);
+							return evt?.name === "jlsg_zhengnan" && evt?.player == player;
+						},
+						async content(event, trigger, player) {
+							await player.draw();
+						},
+					},
 					ai: {
 						result: {
-							target: function (player, target) {
-								var ratio = target.countCards("hej", c => get.type(c) != "basic") / target.countCards("hej");
-								if (get.attitude(player, target) < 0) return 1 - ratio;
+							target(player, target) {
+								let ratio = target.countDiscardableCards(player, "hej", c => get.type(c) != "basic") / target.countDiscardableCards(player, "hej");
+								if (get.attitude(player, target) < 0) {
+									return 1 - ratio;
+								}
 								return ratio;
 							},
 							player: 1,
 						},
-						order: function (item, player) {
+						order(item, player) {
 							return get.order({ name: "nanman" }, player) + 0.5;
 						},
 						threaten: 0.5,
 					},
 				},
-				jlsg_zhengnan2: {
-					audio: "jlsg_zhengnan",
-					frequent: true,
-					trigger: { global: "damageEnd" },
-					filter: function (event, player) {
-						var evt = event.getParent("useCard");
-						return event.card && event.card.name == "nanman" && evt && evt.skill === "jlsg_zhengnan";
-					},
-					content: function () {
-						player.draw();
-					},
-				},
 			},
 			translate: {
-				jlsg_zhengnan2: "征南",
 				jlsg_zhengnan_info: "出牌阶段限一次，你可以弃置一名角色区域里的一张牌，若以此法弃置的牌为非基本牌，视为其使用一张【南蛮入侵】；以此法使用的【南蛮入侵】造成伤害时，你摸一张牌。",
 			},
 		},
@@ -134,7 +147,7 @@ export default {
 		},
 	},
 	jlsgsk_wanniangongzhu: {
-		1: {
+		xiaoas: {
 			skill: {
 				jlsg_xinghan: {
 					audio: "ext:极略/audio/skill:2",
@@ -482,24 +495,24 @@ export default {
 						// AI attitude
 						player.markAuto("jlsg_xinghan", recruit);
 						/*if (get.attitude(player, recruit) <= 0 || get.attitude(recruit, player) <= 0) {
-                  if (_status.jlsg_xinghan_attitude_patch) {
-                    console.error("jlsg_xinghan get.attitude not working");
-                  } else {
-                    _status.jlsg_xinghan_attitude_patch = true;
-                    get.attitude = new Proxy(get.attitude, {
-                      apply(target, thisArg, argumentsList) {
-                        let [from, to] = argumentsList;
-                        if (from?.storage.jlsg_xinghan_recruit) {
-                          argumentsList[0] = from.storage.jlsg_xinghan_recruit;
-                        }
-                        if (to?.storage.jlsg_xinghan_recruit) {
-                          argumentsList[1] = to.storage.jlsg_xinghan_recruit;
-                        }
-                        return Reflect.apply(target, thisArg, argumentsList);
-                      },
-                    });
-                  }
-                }*/
+									if (_status.jlsg_xinghan_attitude_patch) {
+										console.error("jlsg_xinghan get.attitude not working");
+									} else {
+										_status.jlsg_xinghan_attitude_patch = true;
+										get.attitude = new Proxy(get.attitude, {
+											apply(target, thisArg, argumentsList) {
+												let [from, to] = argumentsList;
+												if (from?.storage.jlsg_xinghan_recruit) {
+													argumentsList[0] = from.storage.jlsg_xinghan_recruit;
+												}
+												if (to?.storage.jlsg_xinghan_recruit) {
+													argumentsList[1] = to.storage.jlsg_xinghan_recruit;
+												}
+												return Reflect.apply(target, thisArg, argumentsList);
+											},
+										});
+									}
+								}*/
 						//
 						game.triggerEnter(recruit);
 					},

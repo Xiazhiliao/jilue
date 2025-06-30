@@ -110,17 +110,35 @@ export default {
 		1: {
 			skill: {
 				jlsgsy_shiao: {
-					audio: "ext:极略/audio/skill:true",
+					audio: ["ext:极略/audio/skill/jlsgsy_shiao2.mp3", "ext:极略/audio/skill:true"],
 					trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
-					filter: (event, player) => player.hasUseTarget("sha", false),
 					direct: true,
-					content() {
-						player.chooseUseTarget("###是否发动【恃傲】？###视为使用一张【杀】", { name: "sha" }, false, "nodistance").set("logSkill", "jlsgsy_shiao");
+					filter: function (event, player) {
+						return game.hasPlayer(function (current) {
+							if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
+							if (event.name == "phaseZhunbei") return current.countCards("h") < player.countCards("h");
+							return current.countCards("h") > player.countCards("h");
+						});
+					},
+					async content(event, trigger, player) {
+						await player
+							.chooseUseTarget(
+								game.filterPlayer(function (current) {
+									if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
+									if (event.name == "phaseZhunbei") return current.countCards("h") < player.countCards("h");
+									return current.countCards("h") > player.countCards("h");
+								}),
+								`###是否发动【恃傲】？###视为对一名手牌${trigger.name == "phaseZhunbei" ? "小于" : "大于"}你的角色使用一张【杀】`,
+								get.autoViewAs({ name: "sha" }, []),
+								false,
+								"nodistance"
+							)
+							.set("logSkill", "jlsgsy_shiao");
 					},
 				},
 			},
 			translate: {
-				jlsgsy_shiao_info: "准备/结束阶段，你可以视为使用一张【杀】。",
+				jlsgsy_shiao_info: "回合开始阶段开始时，你可以视为对手牌数少于你的一名其他角色使用一张【杀】；回合结束阶段开始时你可以视为对手牌数大于你的一名其他角色使用一张【杀】",
 			},
 		},
 	},

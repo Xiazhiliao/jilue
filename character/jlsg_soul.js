@@ -4,7 +4,7 @@ export default {
 	connect: true,
 	character: {
 		jlsgsoul_caocao: ["male", "shen", 3, ["jlsg_guixin", "jlsg_feiying"], ["wei"]],
-		jlsgsoul_sunquan: ["male", "shen", 4, ["jlsg_huju"], ["wu"]],
+		jlsgsoul_sunquan: ["male", "shen", 5, ["jlsg_huju"], ["wu"]],
 		jlsgsoul_jiaxu: ["male", "shen", 3, ["jlsg_yanmie", "jlsg_shunshi"], ["wei"]],
 		jlsgsoul_liubei: ["male", "shen", 4, ["jlsg_junwang", "jlsg_jizhao"], ["shu"]],
 		jlsgsoul_zhugeliang: ["male", "shen", 3, ["jlsg_qixing", "jlsg_kuangfeng", "jlsg_dawu"], ["shu", "name:诸葛|亮"]],
@@ -50,6 +50,7 @@ export default {
 		jlsgsoul_sp_sunshangxiang: ["female", "shen", 3, ["jlsg_zhuxing", "jlsg_lingze"], ["wu", "name:孙|null"]],
 		jlsgsoul_caiwenji: ["female", "shen", 3, ["jlsg_hanshuang", "jlsg_liluan"], ["qun", "name:蔡|琰"]],
 		jlsgsoul_sp_guanyu: ["male", "shen", 4, ["jlsg_zhanyue", "jlsg_fengtian"], ["shu", "name:关|羽"]],
+		jlsgsoul_zhoutai: ["male", "shen", 10, ["jlsg_zhanhun"], ["wu", "name:周|泰"]],
 	},
 	characterIntro: {},
 	characterTitle: {
@@ -58,6 +59,7 @@ export default {
 		jlsgsoul_sp_sunshangxiang: "星流霆击",
 		jlsgsoul_caiwenji: "霜弦哀世",
 		jlsgsoul_sp_guanyu: "青龙",
+		jlsgsoul_zhoutai: "百战不灭",
 	},
 	skill: {
 		jlsg_guixin: {
@@ -77,9 +79,9 @@ export default {
 						game.countPlayer(function (current) {
 							return get.attitude(player, current) <= 0 && current.countGainableCards(player, "hej") > 0;
 						}) >=
-							game.countPlayer(function (currentx) {
-								return get.attitude(player, currentx) > 0 && currentx.countGainableCards(player, "hej") > 0;
-							}))
+						game.countPlayer(function (currentx) {
+							return get.attitude(player, currentx) > 0 && currentx.countGainableCards(player, "hej") > 0;
+						}))
 				)
 					return true;
 				let num = game.countPlayer(function (current) {
@@ -175,7 +177,7 @@ export default {
 				await player.draw(4);
 				if (trigger.player == player) {
 					await player.loseMaxHp(1);
-					await layer.removeSkills("jlsg_huju");
+					await player.removeSkills("jlsg_huju");
 					await player.addSkills(lib.skill[event.name].derivation);
 				}
 			},
@@ -187,7 +189,7 @@ export default {
 			filter: (event, player) => game.hasPlayer(current => current != player && current.countCards("e")),
 			filterTarget: (card, player, target) => target != player && target.countCards("e"),
 			async content(event, trigger, player) {
-				var num = target.countCards("e");
+				var num = event.target.countCards("e");
 				await event.target.chooseToDiscard(`${get.translation(player)}对你发动“虎缚”，请弃置${num}张牌`, true, [num, num], "he");
 			},
 			ai: {
@@ -200,7 +202,7 @@ export default {
 				},
 			},
 		},
-		jlsg_xionglve: {
+		/*jlsg_xionglve: {
 			audio: "ext:极略/audio/skill/jlsg_xionglve1.mp3",
 			marktext: `略`,
 			intro: {
@@ -230,7 +232,7 @@ export default {
 				return (
 					(type == "basic" || type == "trick") &&
 					player.hasCard(card => {
-						return card.hasGaintag("jlsg_xionglve") && get.type(card) == type;
+						return card.hasGaintag("jlsg_xionglve") && get.type2(card) == type;
 					}, "x")
 				);
 			},
@@ -239,7 +241,7 @@ export default {
 					var list = [];
 					for (var i = 0; i < lib.inpile.length; i++) {
 						var name = lib.inpile[i];
-						if (!player.getExpansions("jlsg_xionglve").some(j => get.type(j) == get.type(name)) || get.type(name) == "equip") continue;
+						if (!player.getExpansions("jlsg_xionglve").some(j => get.type2(j) == get.type2(name)) || get.type2(name) == "equip") continue;
 						if (name == "sha") {
 							if (event.filterCard({ name: name }, player, event)) list.push(["基本", "", "sha"]);
 							for (var j of lib.inpile_nature) {
@@ -256,7 +258,7 @@ export default {
 				},
 				select() {
 					if (ui.selected.buttons.length && get.itemtype(ui.selected.buttons[0].link) == "card") {
-						if (get.type(ui.selected.buttons[0].link) == "equip") return 1;
+						if (get.type2(ui.selected.buttons[0].link) == "equip") return 1;
 					}
 					return 2;
 				},
@@ -274,8 +276,8 @@ export default {
 				check(button) {
 					var player = get.player();
 					if (!ui.selected.buttons.length) {
-						if (player.getExpansions("jlsg_xionglve").some(i => get.type(i) == "equip")) {
-							if (get.itemtype(button.link) == "card" && get.type(button.link) == "equip") return 1;
+						if (player.getExpansions("jlsg_xionglve").some(i => get.type2(i) == "equip")) {
+							if (get.itemtype(button.link) == "card" && get.type2(button.link) == "equip") return 1;
 							else return 0;
 						}
 						return (
@@ -292,18 +294,18 @@ export default {
 					return {
 						audio: "jlsg_xionglve",
 						viewAs: function () {
-							if (get.type(links[0]) == "equip") return links[0];
+							if (get.type2(links[0]) == "equip") return links[0];
 							else return { name: links[1][2], nature: links[1][3] };
 						},
 						position: "x",
 						filterCard: card => card == lib.skill.jlsg_xionglve_backup.card,
 						selectCard: -1,
 						filterTarget: function (card, player, target) {
-							if (get.type(links[0]) == "equip") return target != player;
+							if (get.type2(links[0]) == "equip") return target != player;
 							else return player.canUse({ name: links[1][2], nature: links[1][3] }, target);
 						},
 						selectTarget: function () {
-							if (get.type(links[0]) == "equip") return 1;
+							if (get.type2(links[0]) == "equip") return 1;
 							else return lib.filter.selectTarget({ name: links[1][2], nature: links[1][3] }, get.player());
 						},
 						card: links[0],
@@ -314,7 +316,7 @@ export default {
 					};
 				},
 				prompt: function (links, player) {
-					if (get.type(links[0]) == "equip") return "请选择" + get.translation(links[0]) + "的目标";
+					if (get.type2(links[0]) == "equip") return "请选择" + get.translation(links[0]) + "的目标";
 					else return "请选择" + get.translation(links[1][2]) + "的目标";
 				},
 			},
@@ -326,7 +328,7 @@ export default {
 				skillTagFilter: function (player) {
 					if (!player.isPhaseUsing()) return false;
 					return player.hasCard(card => {
-						return card.hasGaintag("jlsg_xionglve") && get.type(card) == "basic";
+						return card.hasGaintag("jlsg_xionglve") && get.type2(card) == "basic";
 					}, "x");
 				},
 				order: 6,
@@ -383,12 +385,12 @@ export default {
 								list2 = [];
 							game.countPlayer(current => {
 								if (current == player) return false;
-								if (get.type(card1) == "equip") num1.add(get.effect_use(current, card1, player, player)).sort((a, b) => b - a);
-								if (get.type(card2) == "equip") num2.add(get.effect_use(current, card2, player, player)).sort((a, b) => b - a);
+								if (get.type2(card1) == "equip") num1.add(get.effect_use(current, card1, player, player)).sort((a, b) => b - a);
+								if (get.type2(card2) == "equip") num2.add(get.effect_use(current, card2, player, player)).sort((a, b) => b - a);
 							});
 							for (var i of lib.inpile) {
-								if (get.type(card1) != "equip" && get.type2(i) == get.type2(card1)) list1.add(player.getUseValue(i)).sort((a, b) => b - a);
-								if (get.type(card1) != "equip" && get.type2(i) == get.type2(card2)) list2.add(player.getUseValue(i)).sort((a, b) => b - a);
+								if (get.type2(card1) != "equip" && get.type2(i) == get.type2(card1)) list1.add(player.getUseValue(i)).sort((a, b) => b - a);
+								if (get.type2(card1) != "equip" && get.type2(i) == get.type2(card2)) list2.add(player.getUseValue(i)).sort((a, b) => b - a);
 							}
 							if (num1.length && num2.length) return num1[0] <= get.effect_use(player, card1, player, player);
 							else if (num1.length && !num2.length) return list2[0] <= get.effect_use(player, card1, player, player);
@@ -418,7 +420,7 @@ export default {
 					sourceSkill: "jlsg_xionglve",
 				},
 			},
-		},
+		},*/
 		jlsg_yanmie: {
 			audio: "ext:极略/audio/skill:2",
 			enable: "phaseUse",
@@ -1651,7 +1653,7 @@ export default {
 			filter: function (event, player) {
 				return event.card.name == "juedou" && event.cards && event.cards.length == 1 && ["sha", "tao"].includes(event.cards[0].name);
 			},
-			content: function () {},
+			content: function () { },
 			group: ["jlsg_wushen2"],
 			ai: {
 				effect: {
@@ -10303,12 +10305,12 @@ export default {
 							const gainSkills = i[1].content.gainSkills;
 							str = '<div class="popup text" style="width:calc(100% - 10px);display:inline-block">选项' + get.cnNumber(v + 1, true) + "：获得" + translate(get.translation(gainSkills[0]), lib.translate[gainSkills[0] + "_info"]) + "和" + translate(get.translation(gainSkills[1]), lib.translate[gainSkills[1] + "_info"]) + "</div>";
 							/*for (let skill of gainSkills) {
-                  str += '<div class="popup pointerdiv" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' +
-                    get.translation(skill) +
-                    "】</div><div>" +
-                    lib.translate[skill + "_info"] +
-                    "</div></div>";
-                };*/
+									str += '<div class="popup pointerdiv" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' +
+										get.translation(skill) +
+										"】</div><div>" +
+										lib.translate[skill + "_info"] +
+										"</div></div>";
+								};*/
 						}
 						return str;
 					});
@@ -11942,12 +11944,12 @@ export default {
 									content: async function (event, trigger, player) {
 										const cards = [lib.skill.jlsg_lingze.createTempCard("jlsgqs_dunjiatianshu")];
 										let attack = lib.inpile
-												.filter(name => {
-													if (get.type(name, null, false) != "equip") return false;
-													const card = lib.card[name];
-													return card.distance?.globalFrom;
-												})
-												.randomGet(),
+											.filter(name => {
+												if (get.type(name, null, false) != "equip") return false;
+												const card = lib.card[name];
+												return card.distance?.globalFrom;
+											})
+											.randomGet(),
 											defend = lib.inpile
 												.filter(name => {
 													if (get.type(name, null, false) != "equip") return false;
@@ -12737,9 +12739,9 @@ export default {
 					num =
 						trigger.name == "lose"
 							? trigger.cards.filter(card => {
-									if (get.owner(card) == target) return false;
-									return !["h", "e"].includes(get.position(card));
-							  }).length
+								if (get.owner(card) == target) return false;
+								return !["h", "e"].includes(get.position(card));
+							}).length
 							: trigger.num;
 				const prompt = `${get.translation(target)}即将${trigger.name == "lose" ? "弃置" : "摸"}${get.cnNumber(num)}张牌，是否取消此操作改为其以外的角色各${trigger.name == "lose" ? "随机弃置" : "摸"}一张牌？`;
 				event.result = await player
@@ -13095,6 +13097,122 @@ export default {
 				},
 			},
 		},
+		jlsg_zhanhun: {
+			audio: "ext:极略/audio/skill:2",
+			trigger: {
+				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore"],
+			},
+			filter(event, player) {
+				let key = lib.skill.jlsg_qianyuan.translate[event.name];
+				let bool = lib.skill.jlsg_qianyuan.getInfo(event, player, key).bool;
+				if (!bool) return false;
+				if (key == "damage") {
+					if (!event.source || event.source == player) return false;
+				} else if (["loseHp", "loseMaxHp", "loseSkill", "link", "turnOver"].includes(key)) {
+					if (key == "loseSkill" && !event.removeSkill.length) return false;
+					if (event.getParent().player && event.getParent().player == player) return false;
+					if (!event.getParent().player) return false;
+				} else if (key == "discard") {
+					let discarder = event.discarder || event.getParent().player;
+					if (discarder && discarder == player) return false;
+					if (!discarder) return false;
+				}
+				return true;
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				let key = lib.skill.jlsg_qianyuan.translate[trigger.name];
+				const { str } = lib.skill.jlsg_qianyuan.getInfo(trigger, player, key);
+				if (trigger.name == "changeSkills") trigger.removeSkill = [];
+				else if (trigger.name == "lose") {
+					trigger.cards = trigger.cards.filter(card => {
+						if (get.owner(card) == player) return false;
+						return !["h", "e"].includes(get.position(card));
+					});
+					if (!trigger.cards.length) trigger.cancel();
+				} else trigger.cancel();
+				game.log(player, "取消了", `#y${str}`);
+				player.addTempSkill("jlsg_zhanhun_used");
+				player.storage.jlsg_zhanhun_used ??= 0;
+				player.storage.jlsg_zhanhun_used++;
+				player.markSkill("player.storage.jlsg_zhanhun_used");
+				const num = (player.storage.jlsg_zhanhun_used || 1) - 1;
+				if (num > 0) {
+					await player.loseHp(num);
+				}
+				const { result } = await player.draw(2);
+				if (!result?.some(card => ["black", "red"].includes(get.color(card)))) {
+					return;
+				} else if (result?.length != 2) {
+					return;
+				}
+				let suits = result.map(card => get.color(card)).sort(),
+					nature = null;
+				if (suits[0] == "black") {
+					if (suits[1] == "black") {
+						nature = "thunder";
+					}
+				} else {
+					nature = "fire";
+				}
+				const sha = get.autoViewAs({ name: "sha", nature }, []);
+				if (player.hasUseTarget(sha, false)) {
+					await player.chooseUseTarget(sha, "nodistance");
+				}
+			},
+			group: "jlsg_zhanhun_sha",
+			subSkill: {
+				used: {
+					charlotte: true,
+					onremove: true,
+					mark: "战",
+					intro: {
+						name: "战魂",
+						content: "本回合已发动#次",
+					},
+				},
+				sha: {
+					audio: "ext:极略/audio/skill:2",
+					trigger: {
+						player: "damageBegin2",
+					},
+					filter(event, player) {
+						if (event.player == player) {
+							return false;
+						}
+						return event.card?.name == "sha" && event.player.hp >= player.hp;
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						await player.recover(1);
+					},
+					ai: {
+						player(card, player, target) {
+							if (player == target) return;
+							else if (card?.name != "sha") return;
+							else if (player.isHealthy()) return;
+							return [1, 2];
+						},
+					},
+				},
+			},
+			ai: {
+				maixie: true,
+				maixie_defend: true,
+				effect: {
+					target(card, player, target) {
+						if (player == target) return;
+						let num = -(player.storage.jlsg_zhanhun_used || 1) + 1;
+						num += target.hasUseTarget("sha") ? 3 : 1;
+						if (card.name == "tiesuo") return [1, 0, 0, num];
+						if (card.name == "guohe") return [1, 0, 0, num];
+						if (get.tag(card, "damage")) return [1, 0, 0, num];
+						if (get.name(card) == "guohe") return [1, 0, 0, num];
+						if (get.name(card) == "tiesuo" && !target.isLinked()) return [1, 0, 0, num];
+					},
+				},
+			},
+		},
 	},
 	translate: {
 		jlsg_soul: "魂烈包",
@@ -13143,6 +13261,7 @@ export default {
 		jlsgsoul_sp_zhaoyun: "SP神赵云",
 		jlsgsoul_sp_sunshangxiang: "SP神孙尚香",
 		jlsgsoul_caiwenji: "SK神蔡文姬",
+		jlsgsoul_zhoutai: "SK神周泰",
 
 		jlsg_yinyang_s: "阴阳",
 		jlsg_yinyang_s_info: "锁定技，若你的体力：多于已损失体力，你拥有〖极阳〗；少于已损失体力，你拥有〖极阴〗；等于已损失体力，你拥有〖相生〗。",
@@ -13415,6 +13534,8 @@ export default {
 		jlsg_zhanyue_info: "当你使用【杀】仅指定一名其他角色为目标后，你可以令至多两名与其相连且不为你的其他角色也成为目标，然后令此【杀】无视防具、不计入次数限制且造成的伤害改为目标角色一半的体力值（向上取整），此【杀】结算后，你摸此【杀】造成伤害总数的牌。",
 		jlsg_fengtian: "封天",
 		jlsg_fengtian_info: "其他角色的回合开始时，你可以弃置一张牌，若如此做，该角色于本回合内首次摸牌、弃牌或使用每种牌名的牌后，你视为对其使用【杀】，若你弃置的牌为【杀】，你令其所有技能失效，上述效果持续至本回合结束或其对你造成伤害。",
+		jlsg_zhanhun: "战魂",
+		jlsg_zhanhun_info: "锁定技，当你受到其他角色施加的负面效果前，你将此负面效果改为失去X点体力并摸两张牌（X为你本回合再次发动此技能的次数），然后若这两张牌的颜色为红黑/红红/黑黑，你可以视为使用一张无距离限制的【杀】/火【杀】/雷【杀】。当你使用【杀】对体力不小于你的其他角色造成伤害时，你回复1点体力。",
 	},
 	dynamicTranslate: {
 		jlsg_xiejia: function (player) {

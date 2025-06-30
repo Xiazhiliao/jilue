@@ -390,7 +390,7 @@ export default {
 				}
 				return event.filterCard(get.autoViewAs({ name: "sha" }, []), player, event);
 			},
-			filterCard: function () {
+			filterCard() {
 				return false;
 			},
 			selectCard: -1,
@@ -774,7 +774,7 @@ export default {
 				markcount: "expansion",
 				content: "expansion",
 			},
-			onremove: function (player, skill) {
+			onremove(player, skill) {
 				const cards = player.getExpansions(skill);
 				if (cards.length) {
 					player.loseToDiscardpile(cards);
@@ -784,7 +784,7 @@ export default {
 				player: "damageEnd",
 				source: "damageSource",
 			},
-			filter: function (event, player) {
+			filter(event, player) {
 				if (event.num <= 0) {
 					return false;
 				}

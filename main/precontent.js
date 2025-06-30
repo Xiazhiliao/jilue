@@ -1387,10 +1387,9 @@ export async function precontent(config, originalPack) {
 	for (let packName in characters) {
 		const pack = characters[packName];
 		let name = pack.name;
-		delete pack.name;
-		game.addCharacterPack(pack, name);
-		lib.translate[`${name}_character_config`] = pack.translate[name];
-		lib.config[`${name}_characters_enable`] = true;
+		game.import("character", function () {
+			return pack;
+		});
 		lib.arenaReady.push(() => {
 			lib.connectCharacterPack.add(name);
 		});
@@ -1488,13 +1487,11 @@ export async function precontent(config, originalPack) {
 	}
 
 	let name = jlsg_qs.name;
-	delete jlsg_qs.name;
-	game.addCardPack(jlsg_qs, "jlsg_qs");
-	lib.translate[`${name}_card_config`] = jlsg_qs.translate[name];
-	lib.config[`${name}_cards_enable`] = true;
+	game.import("card", function () {
+		return jlsg_qs;
+	});
 	lib.arenaReady.push(() => {
 		lib.connectCardPack.add(name);
-		lib.config.all.cards.add(name);
 	});
 	if (!_status.postReconnect[`${name}_pack`]) {
 		_status.postReconnect[`${name}_pack`] = [
@@ -1503,7 +1500,7 @@ export async function precontent(config, originalPack) {
 				lib.cardPack[name] = pack;
 				lib.config[`extension_${name}_cards_enable`] = true;
 				lib.connectCardPack.add(name);
-				lib.config.all.cards.add(name);
+				//lib.config.all.cards.add(name);
 				lib.config.cards.add(name);
 			},
 			lib.cardPack[name],
