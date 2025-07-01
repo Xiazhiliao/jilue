@@ -89,8 +89,14 @@ const b = 1;
 	for (let packName of ["jlsg_sr", "jlsg_sk", "jlsg_soul", "jlsg_skpf", "jlsg_sy"]) {
 		const characterPack = lib.characterPack[packName];
 		if (packName != "jlsg_sy") {
-			for (let name of Object.keys(characterPack)) {
-				trivialSolveCharacterReplace(name);
+			if (packName == "jlsg_soul") {
+				for (let name of Object.keys(characterPack)) {
+					trivialSolveCharacterReplace(name, "shen_");
+				}
+			} else {
+				for (let name of Object.keys(characterPack)) {
+					trivialSolveCharacterReplace(name);
+				}
 			}
 		} else {
 			if (!lib.config.forbidai_user.includes(i)) lib.config.forbidai.remove(i);

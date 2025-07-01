@@ -1427,7 +1427,7 @@ export default {
 		},
 		jlsgsy_baonuzhangrang: {
 			inherit: "jlsgsy_baonu",
-			animationStr: "明帝, 都得叫我一声爹呢!",
+			animationStr: "灵帝, 都得叫我一声爹呢!",
 			mode: ["identity", "guozhan", "boss", "stone"],
 		},
 		jlsgsy_baonudiaochan: {
