@@ -25,7 +25,7 @@ for (let character in config) {
 	if (!replaceInfo) continue;
 	for (let i in replaceInfo) {
 		if (i == "info") {
-			pack[character] = replaceInfo.info;
+			pack.character[character] = replaceInfo.info;
 		} else if (i == "translate") {
 			for (let j in replaceInfo.translate) {
 				pack.translate[j] = replaceInfo.translate[j];
