@@ -3288,7 +3288,8 @@ export default {
 								return false;
 							})
 							.set("target", trigger.player)
-							.set("chooseonly", true);
+							.set("chooseonly", true)
+							.forResult();
 						if (event.result?.bool) {
 							event.result.targets = [trigger.player];
 						}
