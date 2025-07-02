@@ -4459,7 +4459,7 @@ export default {
 				} = event;
 				const name = lib.skill.jlsg_shouji.getCardName(card);
 				const cardx = get.autoViewAs({ name }, []);
-				if (cardName != "jiedao") {
+				if (name != "jiedao") {
 					await target1.useCard(cardx, [target2], "noai");
 				} else {
 					await target1.useCard(cardx, [target2], "noai").set("addedTargets", [target3]);
@@ -4493,7 +4493,7 @@ export default {
 			},
 			async cost(event, trigger, player) {
 				event.result = await player
-					.chooseCard(`###${get.prompt("jlsg_hemou", triggert.player)}###令其本回合可以将一张手牌牌按如下规则使用(限一次)<br>黑桃：决斗<br>梅花：借刀杀人<br>红桃：顺手牵羊<br>方片：火攻`)
+					.chooseCard(`###${get.prompt("jlsg_hemou", trigger.player)}###令其本回合可以将一张手牌牌按如下规则使用(限一次)<br>黑桃：决斗<br>梅花：借刀杀人<br>红桃：顺手牵羊<br>方片：火攻`)
 					.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("targetx"), player, event))
 					.set("ai", card => {
 						const player = get.player(),
@@ -4746,6 +4746,7 @@ export default {
 						if (card.name == "tao") return -1;
 						return get.event("diff") - get.value(card);
 					})
+					.set("types", types)
 					.set("diff", 2.5 * get.damageEffect(target, player) - cardDiff);
 				if (discard.bool) {
 					await player.gain(cards, "gain2");
@@ -4765,13 +4766,13 @@ export default {
 							values[type] += get.value(card, player) + (get.attitude(player, target) < -1 ? get.value(card, target) : 0);
 						}
 						if (Object.keys(values).length) {
-							choice = Object.keys(values).find(type => list[type] == Math.max(...Object.values(types)));
+							choice = Object.keys(values).find(type => values[type] == Math.max(...Object.values(types)));
 						}
 						const {
 							result: { control },
 						} = await target
 							.chooseControl(types)
-							.set("dialog", ["仇袭：选择一种类型的卡牌卡牌获得之", event.cards1])
+							.set("dialog", ["仇袭：选择一种类型的卡牌卡牌获得之", cards])
 							.set("ai", () => {
 								return get.event("choice");
 							})
@@ -4783,9 +4784,9 @@ export default {
 						target.popup(control);
 						for (let card of cards) {
 							if (get.type2(card, target) == control) {
-								cards[0][1].push(card);
+								list[0][1].push(card);
 							} else {
-								cards[1][1].push(card);
+								list[1][1].push(card);
 							}
 						}
 						await game
@@ -5119,7 +5120,7 @@ export default {
 		},
 		jlsg_jianxiong2: {
 			trigger: { player: "damageEnd" },
-			getIndex() {
+			getIndex(event, player) {
 				return game.filterPlayer(current => {
 					return current.hasZhuSkill("jlsg_jianxiong", player);
 				});
@@ -5204,7 +5205,7 @@ export default {
 			global: ["jlsg_zhonghou_global"],
 			subSkill: {
 				use: {
-					onremove:true,
+					onremove: true,
 				},
 				backup: {},
 			},
@@ -5224,7 +5225,7 @@ export default {
 						} else if (current.isDying()) {
 							return false;
 						}
-						return current == player || player.inRangeOf(target);
+						return current == player || player.inRangeOf(current);
 					})
 				) {
 					return false;
@@ -5290,14 +5291,14 @@ export default {
 				fireAttack: true,
 				respondSha: true,
 				respondShan: true,
-				skillTagFilter: function (player, tag) {
+				skillTagFilter(player, tag) {
 					return game.hasPlayer(current => {
 						if (!current.hasSkill("jlsg_zhonghou") || current.hasStorage("jlsg_zhonghou_use", player)) {
 							return false;
 						} else if (current.isDying()) {
 							return false;
 						}
-						return current == player || player.inRangeOf(target);
+						return current == player || player.inRangeOf(current);
 					});
 				},
 			},
