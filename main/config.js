@@ -56,6 +56,39 @@ let block = {
 				item: {
 					false: "最新",
 					1: "一代",
+					2: "二代",
+				},
+			},
+			jlsgsr_guojia: {
+				name: "SR郭嘉",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
+			jlsgsr_huanggai: {
+				name: "SR黄盖",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
+			jlsgsr_ganning: {
+				name: "SR甘宁",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
+			jlsgsr_luxun: {
+				name: "SR陆逊",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
 				},
 			},
 		},
