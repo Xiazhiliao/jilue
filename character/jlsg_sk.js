@@ -10892,9 +10892,17 @@ export default {
 					trigger: { player: "useCard" },
 					direct: true,
 					async content(event, trigger, player) {
-						let s = player.storage.jlsg_sanjue.card[trigger.card.name];
-						player.storage.jlsg_sanjue.card[trigger.card.name] = (s || 0) + 1;
-						s = player.storage.jlsg_sanjue.card[trigger.card.name];
+						let cardName = trigger.card.name;
+						if (cardName == "sha") {
+							let nature = get.nature(trigger.card);
+							if (nature) {
+								cardName = `${nature}_sha`;
+							}
+						}
+						let s = player.storage.jlsg_sanjue.card[cardName];
+						player.storage.jlsg_sanjue.card[cardName] = (s || 0) + 1;
+						s = player.storage.jlsg_sanjue.card[cardName];
+						player.markSkill("jlsg_sanjue");
 						if (s != 1 && s != 3) return;
 						await player.logSkill(event.name);
 						await player.draw();
@@ -10925,9 +10933,7 @@ export default {
 			},
 			ai: {
 				order(skill, player) {
-					const storage = Object.entries(player.storage.jlsg_sanjue.skill)
-						.map(i => i[1])
-						.flat();
+					const storage = Object.values(player.storage.jlsg_sanjue.skill).flat();
 					if (!storage.length) return 0;
 					else {
 						for (let s in storage) {

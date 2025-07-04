@@ -79,9 +79,9 @@ export default {
 						game.countPlayer(function (current) {
 							return get.attitude(player, current) <= 0 && current.countGainableCards(player, "hej") > 0;
 						}) >=
-						game.countPlayer(function (currentx) {
-							return get.attitude(player, currentx) > 0 && currentx.countGainableCards(player, "hej") > 0;
-						}))
+							game.countPlayer(function (currentx) {
+								return get.attitude(player, currentx) > 0 && currentx.countGainableCards(player, "hej") > 0;
+							}))
 				)
 					return true;
 				let num = game.countPlayer(function (current) {
@@ -1653,7 +1653,7 @@ export default {
 			filter: function (event, player) {
 				return event.card.name == "juedou" && event.cards && event.cards.length == 1 && ["sha", "tao"].includes(event.cards[0].name);
 			},
-			content: function () { },
+			content: function () {},
 			group: ["jlsg_wushen2"],
 			ai: {
 				effect: {
@@ -7873,155 +7873,6 @@ export default {
 			},
 		},
 		jlsg_yingshi: {
-			audio: "ext:极略/audio/skill:2",
-			trigger: {
-				global: "gameDrawAfter",
-			},
-			forced: true,
-			init(player) {
-				player.storage.jlsg_yingshi = [];
-			},
-			content: function () {
-				"step 0";
-				var card = get.cardPile(card => get.type(card) == "basic");
-				if (card) {
-					player.gain(card, "gain2");
-				}
-				("step 1");
-				var cards = player.getCards("h", { type: "basic" });
-				player.addGaintag(cards, "jlsg_yingshi_tag");
-				player.storage.jlsg_yingshi.addArray(cards);
-			},
-			group: ["jlsg_yingshi2", "jlsg_yingshi3", "jlsg_yingshi_mark"],
-			mod: {
-				cardUsable: function (card, player) {
-					if (!card.cards || !card.cards.length) return;
-					for (var i of card.cards) {
-						if (!player.storage.jlsg_yingshi.includes(i)) return;
-					}
-					return Infinity;
-				},
-				targetInRange: function (card, player) {
-					if (!card.cards || !card.cards.length) return;
-					for (var i of card.cards) {
-						if (!player.storage.jlsg_yingshi.includes(i)) return;
-					}
-					return true;
-				},
-			},
-			subSkill: {
-				mark: {
-					trigger: {
-						global: ["gainEnd", "loseAsyncEnd"],
-					},
-					firstDo: true,
-					silent: true,
-					filter(event, player) {
-						for (let p of game.filterPlayer()) {
-							let cards = event.getg(p).filter(c => !c.hasGaintag("jlsg_yingshi_tag") && player.storage.jlsg_yingshi.includes(c));
-							if (cards.length) {
-								return true;
-							}
-						}
-						return false;
-					},
-					content() {
-						for (let p of game.filterPlayer()) {
-							let cards = trigger.getg(p).filter(c => !c.hasGaintag("jlsg_yingshi_tag") && player.storage.jlsg_yingshi.includes(c));
-							if (cards.length) {
-								p.addGaintag(cards, "jlsg_yingshi_tag");
-							}
-						}
-					},
-				},
-			},
-		},
-		jlsg_yingshi2: {
-			audio: "jlsg_yingshi",
-			// usable: 1,
-			trigger: {
-				player: "gainAfter",
-				global: "loseAsyncAfter",
-			},
-			forced: true,
-			filter(event, player) {
-				var cards = event.getg(player);
-				var used = player.storage.jlsg_yingshi2_used || new Set();
-				var cards2 = game
-					.filterPlayer(p => p != player && !used.has(p))
-					.map(p => event.getl(p).cards2)
-					.flat();
-				cards = cards.filter(c => cards2.includes(c));
-				return cards.every(c => get.type(c) == "basic") && cards.some(c => !player.storage.jlsg_yingshi.includes(c));
-			},
-			content() {
-				game.log(player, "获得的牌被标记为了", `#r"鹰"`);
-				var cards = trigger.getg(player);
-				player.addTempSkill("jlsg_yingshi2_used");
-				var used = player.storage.jlsg_yingshi2_used;
-				for (let target of game.filterPlayer(p => p != player && !used.has(p))) {
-					var cards2 = trigger.getl(target).cards2;
-					var targetCards = cards.filter(c => cards2.includes(c) && !player.storage.jlsg_yingshi.includes(c));
-					if (targetCards.length) {
-						used.add(target);
-						player.addGaintag(targetCards, "jlsg_yingshi_tag");
-						player.storage.jlsg_yingshi.addArray(targetCards);
-					}
-				}
-			},
-		},
-		jlsg_yingshi2_used: {
-			init(player) {
-				player.storage.jlsg_yingshi2_used = new Set();
-			},
-			onremove: true,
-		},
-		jlsg_yingshi3: {
-			audio: "jlsg_yingshi",
-			trigger: {
-				global: "phaseEnd",
-			},
-			forced: true,
-			filter(event, player) {
-				var cards = ["cardPile", "discardPile"]
-					.map(pos => Array.from(ui[pos].childNodes))
-					.flat()
-					.filter(c => player.storage.jlsg_yingshi.includes(c));
-				if (cards.length) {
-					return true;
-				}
-				for (let p of game.filterPlayer(p => p != player)) {
-					let pCards = p.getCards("h", c => player.storage.jlsg_yingshi.includes(c));
-					if (pCards.length) {
-						return true;
-					}
-				}
-				return false;
-			},
-			content() {
-				var cards = ["cardPile", "discardPile"]
-					.map(pos => Array.from(ui[pos].childNodes))
-					.flat()
-					.filter(c => player.storage.jlsg_yingshi.includes(c));
-				if (cards.length) {
-					player.$gain2(cards);
-				}
-				for (let p of game.filterPlayer(p => p != player)) {
-					let pCards = p.getCards("h", c => player.storage.jlsg_yingshi.includes(c));
-					if (pCards.length) {
-						p.$give(pCards, player);
-						cards.addArray(pCards);
-					}
-				}
-				game.loseAsync({
-					gain_list: [[player, cards]],
-					cards: cards,
-					visible: true,
-					gaintag: ["jlsg_yingshi_tag"],
-				}).setContent("gaincardMultiple");
-			},
-		},
-		jlsg_yingshi: {
 			mod: {
 				targetInRange(card, player) {
 					let cards = player.getCards("h", card => card.hasGaintag("jlsg_yingshi"));
@@ -8066,14 +7917,20 @@ export default {
 				if (event.name == "phase") {
 					const cards = player.storage.jlsg_yingshi.filter(card => ["e", "h", "j", "c", "d", "o"].includes(get.position(card))),
 						hs = player.getCards("h", card => get.type(card) == "basic" && card.hasGaintag("jlsg_yingshi"));
-					return cards.concat(hs).filter((item, index, arr) => arr.indexOf(item) == arr.lastIndexOf(item)).length > 0;
-				} else return true;
+					return cards.concat(hs).some((card, index, arr) => arr.indexOf(card) == arr.lastIndexOf(card));
+				}
+				return true;
 			},
 			async content(event, trigger, player) {
 				if (event.triggername == "gameDrawEnd") {
 					const vcards = [];
 					for (let name of lib.inpile) {
 						if (get.type(name) == "basic") vcards.push(["基本", "", name]);
+						if (name == "sha") {
+							for (let nature of lib.inpile_nature) {
+								vcards.push(["基本", "", "sha", nature]);
+							}
+						}
 					}
 					if (vcards.length) {
 						const [bool, links] = await player
@@ -8087,23 +7944,28 @@ export default {
 							})
 							.forResult("bool", "links");
 						if (bool) {
-							let card = get.cardPile(card => card.name == links[0][2]);
-							if (card) await player.gain(card, "draw");
+							let card = get.cardPile(card => {
+								if (links[0][2] != card.name) return false;
+								return get.nature(card) == links[0][3];
+							});
+							if (card) {
+								await player.gain(card, "draw2");
+							}
 						}
 					}
 					const cards = player.getCards("h", card => get.type(card) == "basic");
-					if (cards) {
+					if (cards.length) {
 						player.addGaintag(cards, "jlsg_yingshi");
-						player.storage.jlsg_yingshi.addArray(cards);
+						player.markAuto("jlsg_yingshi", cards);
 					}
 				} else {
 					const cards = ["cardPile", "discardPile"]
 						.map(pos => Array.from(ui[pos].childNodes))
 						.flat()
-						.filter(c => player.storage.jlsg_yingshi.includes(c));
+						.filter(c => player.hasStorage("jlsg_yingshi", c));
 					if (cards.length) await player.$gain2(cards);
 					for (let p of game.filterPlayer(p => p != player)) {
-						let pCards = p.getCards("hej", c => player.storage.jlsg_yingshi.includes(c));
+						let pCards = p.getCards("hej", c => player.hasStorage("jlsg_yingshi", c));
 						if (pCards.length) {
 							p.$give(pCards, player);
 							cards.addArray(pCards);
@@ -8114,7 +7976,7 @@ export default {
 							gain_list: [[player, cards]],
 							cards: cards,
 							visible: true,
-							//gaintag: ['jlsg_yingshi'],
+							gaintag: ["jlsg_yingshi"],
 						})
 						.setContent("gaincardMultiple");
 					await game.delayx();
@@ -8274,7 +8136,7 @@ export default {
 			},
 			async content(event, trigger, player) {
 				const name = event.cost_data || trigger.card.name;
-				player.storage.jlsg_langxi.add(name);
+				player.markAuto("jlsg_langxi", [name]);
 			},
 			group: "jlsg_langxi_use",
 			subSkill: {
@@ -11944,12 +11806,12 @@ export default {
 									content: async function (event, trigger, player) {
 										const cards = [lib.skill.jlsg_lingze.createTempCard("jlsgqs_dunjiatianshu")];
 										let attack = lib.inpile
-											.filter(name => {
-												if (get.type(name, null, false) != "equip") return false;
-												const card = lib.card[name];
-												return card.distance?.globalFrom;
-											})
-											.randomGet(),
+												.filter(name => {
+													if (get.type(name, null, false) != "equip") return false;
+													const card = lib.card[name];
+													return card.distance?.globalFrom;
+												})
+												.randomGet(),
 											defend = lib.inpile
 												.filter(name => {
 													if (get.type(name, null, false) != "equip") return false;
@@ -12739,9 +12601,9 @@ export default {
 					num =
 						trigger.name == "lose"
 							? trigger.cards.filter(card => {
-								if (get.owner(card) == target) return false;
-								return !["h", "e"].includes(get.position(card));
-							}).length
+									if (get.owner(card) == target) return false;
+									return !["h", "e"].includes(get.position(card));
+							  }).length
 							: trigger.num;
 				const prompt = `${get.translation(target)}即将${trigger.name == "lose" ? "弃置" : "摸"}${get.cnNumber(num)}张牌，是否取消此操作改为其以外的角色各${trigger.name == "lose" ? "随机弃置" : "摸"}一张牌？`;
 				event.result = await player
