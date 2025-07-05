@@ -445,6 +445,136 @@ export default {
 			},
 		},
 	},
+	jlsgsoul_huangyueying: {
+		1: {
+			skill: {
+				jlsg_zhiming: {
+					audio: "jlsg_zhiming",
+					trigger: { global: "phaseZhunbeiBegin" },
+					filter(event, player) {
+						if (event.player == player) {
+							return false;
+						}
+						return event.player.countDiscardableCards(player, "h") && player.countDiscardableCards(player, "h");
+					},
+					async cost(event, trigger, player) {
+						event.result = await player
+							.chooseToDiscard("h", get.prompt2("jlsg_zhiming", trigger.player))
+							.set("ai", card => {
+								if (get.attitude(get.player(), get.event("target")) < 0) {
+									return 10 - get.value(card);
+								}
+								return 0;
+							})
+							.set("chooseonly", true)
+							.set("target", trigger.player)
+							.forResult();
+						if (event.result?.bool) {
+							event.result.targets = [trigger.player];
+						}
+					},
+					async content(event, trigger, player) {
+						await player.discard(event.cards);
+						const {
+							result: {
+								links: [cardx],
+							},
+						} = await player
+							.discardPlayerCard(trigger.player, "知命", "h", true)
+							.set("ai", button => {
+								const event = get.event();
+								const isVisible = get.event("isVisible") || event.visible;
+								if (isVisible) {
+									const color1 = event.color1;
+									if (get.color(button.link) == color1) {
+										return get.value(button.link);
+									}
+								}
+								return event.getRand();
+							})
+							.set(
+								"isVisible",
+								(function () {
+									return trigger.player.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, trigger.player, true);
+								})()
+							)
+							.set("color1", get.color(event.cards[0]));
+						if (cardx) {
+							const color1 = get.color(event.cards[0]),
+								color2 = get.color(cardx);
+							if (color1 == color2) {
+								const {
+									result: { control },
+								} = await player.chooseControl("跳过摸牌", "跳过出牌").set("ai", (event, player) => {
+									const phase = event.getParent("phase");
+									const num = phase.num;
+									let phaseList = phase.phaseList;
+									let num1 = phaseList.findIndex(name => name.startsWith("phaseZhunbei"));
+									phaseList = phaseList.slice(num > num1 ? num : num1);
+									const phaseDraw = phaseList.find(name => name.startsWith("phaseDraw"));
+									if (phaseDraw) {
+										return "跳过摸牌";
+									}
+									return "跳过出牌";
+								});
+								if (control == "跳过摸牌") {
+									trigger.player.skip("phaseDraw");
+									game.log(trigger.player, "跳过了摸牌阶段");
+								} else {
+									trigger.player.skip("phaseUse");
+									game.log(trigger.player, "跳过了出牌阶段");
+								}
+							}
+						}
+					},
+					ai: {
+						expose: 0.4,
+					},
+				},
+				jlsg_suyin: {
+					audio: "ext:极略/audio/skill:1",
+					trigger: {
+						player: "loseAfter",
+						global: "loseAsyncAfter",
+					},
+					filter(event, player) {
+						if (player.countCards("h") || _status.currentPhase == player) {
+							return false;
+						}
+						const evt = event.getl(player);
+						if (evt?.player != player || !evt?.hs?.length) {
+							return false;
+						}
+						return true;
+					},
+					async cost(event, trigger, player) {
+						event.result = await player
+							.chooseTarget(get.prompt("jlsg_suyin"), "令一名角色翻面")
+							.set("ai", target => {
+								const player = get.player();
+								if (target.hasSkillTag("noturn")) {
+									return -1;
+								}
+								const isTurnedOver = target.isTurnedOver() ? 1 : -1,
+									att = get.attitude(player, target);
+								return isTurnedOver * att;
+							})
+							.forResult();
+					},
+					async content(event, trigger, player) {
+						await event.targets[0].turnOver();
+					},
+					ai: {
+						expose: 0.3,
+					},
+				},
+			},
+			translate: {
+				jlsg_zhiming_info: "其他角色的回合开始阶段开始时，若其有手牌，你可以弃置一张手牌，然后弃置其一张手牌，若两张牌颜色相同，你令其跳过此回合的摸牌阶段或出牌阶段。",
+				jlsg_suyin_info: "你的回合外，当你失去最后的手牌时，可令一名其他角色将其武将牌翻面。",
+			},
+		},
+	},
 	jlsgsoul_jiaxu: {
 		1: {
 			skill: {
@@ -703,6 +833,100 @@ export default {
 				jlsg_wumou_info: "锁定技，当你使用非延时锦囊牌时，你须选择一项：1，弃置一枚「暴」标记；2，受到一点伤害。",
 				jlsg_wuqian_info: "出牌阶段：你可以弃置2枚「暴」标记，若如此做，本回合内你视为拥有技能【无双】且你造成伤害后额外获得一枚「暴」标记。",
 				jlsg_shenfen_info: "出牌阶段，弃6个暴怒标记，你对每名其他角色各造成一点伤害，其他角色先弃掉各自装备区里所有的牌，再各弃4张手牌，然后将你的武将牌翻面，每回合限一次。",
+			},
+		},
+	},
+	jlsgsoul_lvmeng: {
+		1: {
+			skill: {
+				jlsg_shelie: {
+					audio: "ext:极略/audio/skill:1",
+					trigger: { player: "phaseDrawBegin1" },
+					filter(event, player) {
+						return !event.numFixed;
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						trigger.cancel(null, null, "notrigger");
+						event.cards = [];
+						let num = 0;
+						event.getResultString = function (str) {
+							switch (str) {
+								case "基本牌":
+									return "basic";
+								case "锦囊牌":
+									return "trick";
+								case "装备牌":
+									return "equip";
+							}
+							return str;
+						};
+						while (num < 4) {
+							num++;
+							const control = await player
+								.chooseControl(["basic", "trick", "equip"], (event, player) => {
+									return ["basic", "trick", "equip"].randomGet();
+								})
+								.set("prompt", "涉猎")
+								.set("prompt2", "请选择想要获得的第" + get.cnNumber(num, true) + "张牌的类型")
+								.forResultControl();
+							const card = get.cardPile2(card => get.type(card) == control && !event.cards.includes(card));
+							if (card) {
+								event.cards.add(card);
+							} else {
+								player.chat("无牌可得了吗");
+								game.log(`但是牌堆里面已经没有${get.translation(control)}了！`);
+							}
+						}
+						if (event.cards.length) {
+							await player.gain(event.cards, "gain2");
+						}
+					},
+				},
+				jlsg_gongxin: {
+					audio: "ext:极略/audio/skill:1",
+					enable: "phaseUse",
+					usable: 1,
+					filterTarget(_, player, target) {
+						return target != player && target.countCards("h");
+					},
+					async content(event, trigger, player) {
+						const target = event.targets[0];
+						await player.viewCards("攻心", target.getCards("h"));
+						event.cards = target.getCards("h", card => {
+							return get.suit(card) == "heart";
+						});
+						if (!event.cards.length) {
+							return;
+						}
+						await player.showCards(event.cards, get.translation(target) + "的红桃手牌");
+						if (event.cards.length == 1) {
+							await target.discard(event.cards);
+							await target.damage(1, player);
+						} else {
+							const { result } = await player.chooseButton(["攻心", "请选择获得一张牌", "hidden", event.cards], true).set("ai", button => {
+								return get.value(button.link);
+							});
+							if (result.bool) {
+								await player.gain(result.links, target, "give", "log");
+							}
+						}
+					},
+					ai: {
+						threaten: 1.5,
+						result: {
+							target(player, target) {
+								return -target.countCards("h");
+							},
+						},
+						order: 10,
+						expose: 0.4,
+					},
+				},
+			},
+			translate: {
+				jlsg_shelie_info: "锁定技，摸牌阶段开始时，你改为选择指定获得某种类型的牌（最多四次），然后从牌堆随机摸取之。",
+				jlsg_gongxin_info: "出牌阶段限一次，你可以观看一名其他角色的手牌并展示其中所有的红桃牌，然后若展示的牌数：为一，你弃置之并对其造成一点伤害；大于一，你获得其中一张红桃牌。",
 			},
 		},
 	},
@@ -2147,6 +2371,202 @@ export default {
 			translate: {
 				jlsg_lvezhen_info: "出牌阶段限一次，你使用【杀】或锦囊指定唯一目标后，可以随机获得其一张牌。",
 				jlsg_youlong_info: "锁定技，你始终背面朝上。其他角色的回合结束时，你摸一张牌并执行一个额外的出牌阶段。",
+			},
+		},
+	},
+	jlsgsoul_xiahoudun: {
+		1: {
+			skill: {
+				jlsg_danjing: {
+					audio: "ext:极略/audio/skill:2",
+					logAudio: index => (typeof index === "number" ? "jlsg_danjing" + index + ".mp3" : 2),
+					enable: "phaseUse",
+					usable: 1,
+					log: false,
+					filterTarget(card, player, target) {
+						return player != target;
+					},
+					async content(event, trigger, player) {
+						const target = event.targets[0];
+						const {
+							result: { index },
+						} = await player
+							.chooseControl("令其摸三张牌", "令其弃三张牌")
+							.set("ai", () => get.event("choice"))
+							.set(
+								"choice",
+								(function () {
+									const drawEff = get.effect(target, { name: "draw" }, player, player),
+										discardEff = get.effect(target, { name: "guohe_copy2" }, player, player);
+									return drawEff > discardEff ? 0 : 1;
+								})()
+							);
+						await player.logSkill("jlsg_danjing", event.targets, null, null, [index + 1]);
+						if (index == 0) {
+							await player.loseHp();
+							await target.draw(3);
+						} else {
+							await player.loseHp();
+							await target.chooseToDiscard(3, "he", true);
+						}
+					},
+					ai: {
+						order: 5,
+						result: {
+							player(player) {
+								return jlsg.getLoseHpEffect(player);
+							},
+							target(player, target) {
+								if (get.attitude(player, target) > 0) {
+									return 4;
+								} else {
+									return Math.min(3, target.countDiscardableCards(player, "he")) * 1.5;
+								}
+							},
+						},
+					},
+				},
+				jlsg_zhonghun: {
+					limited: true,
+					audio: "ext:极略/audio/skill:2",
+					trigger: { player: "die" },
+					direct: true,
+					forceDie: true,
+					async cost(event, trigger, player) {
+						event.result = await player
+							.chooseTarget(get.prompt2("jlsg_zhonghun"), (_, player, target) => {
+								return player != target;
+							})
+							.set("forceDie", true)
+							.set("ai", target => {
+								return get.attitude(get.player(), target);
+							})
+							.forResult();
+					},
+					async content(event, trigger, player) {
+						const target = event.targets[0],
+							skills = player.getSkills(null, false, false).filter(skill => {
+								if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
+									return false;
+								}
+								const info = lib.skill[skill];
+								return info && !info.vanish && !info.temp && !info.charlotte;
+							});
+						await target.addSkills(skills);
+					},
+				},
+			},
+			translate: {
+				jlsg_danjing_info: "出牌阶段限一次，你可以失去1点体力，然后令一名其他角色摸三张牌或弃置三张牌。",
+				jlsg_zhonghun_info: "限定技，当你死亡时，你可以令一名其他角色获得你当前的所有技能。",
+			},
+			info: ["male", "shen", 5, ["jlsg_danjing", "jlsg_zhonghun"], ["wei", "name:夏侯|惇", "noZhuHp"]],
+		},
+	},
+	jlsgsoul_zhangliao: {
+		1: {
+			skill: {
+				jlsg_nizhan: {
+					audio: "ext:极略/audio/skill:1",
+					trigger: { global: "damageEnd" },
+					filter(event, player) {
+						if (event.source == player && event.player == player) {
+							return false;
+						}
+						return ["sha", "juedou"].includes(event.card?.name) && event.notLink();
+					},
+					async cost(event, trigger, player) {
+						event.result = await player
+							.chooseTarget(get.prompt("jlsg_nizhan"), "令一名角色获得一枚「袭」标记")
+							.set("filterTarget", (_, player, target) => {
+								const targetx = get.event("targetsx");
+								return targetx.includes(target) && target != player;
+							})
+							.set("ai", target => -get.attitude(get.player(), target))
+							.set("targetsx", [trigger.source, trigger.player].unique())
+							.forResult();
+					},
+					async content(event, trigger, player) {
+						event.targets[0].addMark("jlsg_nizhan_mark", 1);
+					},
+					subSkill: {
+						mark: {
+							charlotte: true,
+							onremove: true,
+							marktext: "袭",
+							intro: {
+								content: "共有#个标记",
+							},
+						},
+					},
+					ai: {
+						threaten(player) {
+							if (player.hasSkill("jlsg_cuifeng")) return 4.5;
+							return 0;
+						},
+					},
+				},
+				jlsg_cuifeng: {
+					audio: "ext:极略/audio/skill:1",
+					trigger: { player: "phaseJieshuBegin" },
+					filter(player) {
+						return game.countPlayer(current => current.countMark("jlsg_nizhan_mark")) > 4;
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						const targets = game.filterPlayer().sortBySeat();
+						for (const target of targets) {
+							if (!target.hasMark("jlsg_nizhan_mark")) {
+								continue;
+							}
+							const hs = target.countGainableCards(player, "h"),
+								marks = target.countMark("jlsg_nizhan_mark");
+							if (hs >= marks) {
+								await player.gainPlayerCard("摧锋", target, "h", get.select(marks));
+							} else {
+								await player.gain(target, hs, "give");
+								await target.damage(1, player);
+							}
+						}
+						for (const target of targets) {
+							if (target.hasMark("jlsg_nizhan_mark")) {
+								target.removeMark("jlsg_nizhan_mark", target.countMark("jlsg_nizhan_mark"));
+							}
+						}
+					},
+				},
+				jlsg_weizhen: {
+					audio: "ext:极略/audio/skill:1",
+					trigger: { player: "phaseZhunbeiBegin" },
+					filter(event, player) {
+						return game.hasPlayer(current => current.hasMark("jlsg_nizhan_mark"));
+					},
+					prompt2(event, player) {
+						let num = game.countPlayer(current => current.countMark("jlsg_nizhan_mark"));
+						return "移除场上全部的【袭】标记，然后摸" + num + "张牌";
+					},
+					check(event, player) {
+						if (player.countCards("h") == 0 || player.hp == 1) return 1;
+						return 0;
+					},
+					async content(event, trigger, player) {
+						let num = 0;
+						for (let target of game.filterPlayer().sortBySeat()) {
+							if (!target.hasMark("jlsg_nizhan_mark")) {
+								continue;
+							}
+							num += target.countMark("jlsg_nizhan_mark");
+							target.removeMark("jlsg_nizhan_mark", target.countMark("jlsg_nizhan_mark"));
+						}
+						await game.delay();
+						await player.draw(num);
+					},
+				},
+			},
+			translate: {
+				jlsg_nizhan_info: "每当一名角色受到【杀】或【决斗】造成的一次伤害后，你可以令该角色或伤害来源(不为你)获得一枚「袭」标记。",
+				jlsg_cuifeng_info: "锁定技，结束阶段，若场上的「袭」标记总数不小于4，你依次从每名被标记的角色处获得等同于其「袭」标记数量的手牌。若该角色手牌不足，则你获得其全部手牌，然后你对其造成的一点伤害。最后移除场上全部的「袭」标记。",
+				jlsg_weizhen_info: "准备阶段，你可以移除场上全部的「袭」标记，然后摸等同于「袭」标记数量的牌。",
 			},
 		},
 	},

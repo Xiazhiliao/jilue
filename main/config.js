@@ -180,6 +180,14 @@ let block = {
 					1: "一代",
 				},
 			},
+			jlsgsoul_huangyueying: {
+				name: "SK神黄月英",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
 			jlsgsoul_huanggai: {
 				name: "SK神黄盖",
 				init: "false",
@@ -198,6 +206,14 @@ let block = {
 			},
 			jlsgsoul_liubei: {
 				name: "SK神刘备",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
+			jlsgsoul_lvmeng: {
+				name: "SK神吕蒙",
 				init: "false",
 				item: {
 					false: "最新",
@@ -275,6 +291,22 @@ let block = {
 					false: "最新",
 					1: "一代",
 					2: "二代",
+				},
+			},
+			jlsgsoul_xiahoudun: {
+				name: "SK神夏侯惇",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
+			jlsgsoul_zhangliao: {
+				name: "SK神张辽",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
 				},
 			},
 		},

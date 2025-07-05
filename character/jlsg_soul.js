@@ -2061,134 +2061,6 @@ export default {
 				},
 			},
 		},
-		jlsg_old_nizhan: {
-			// audio: "ext:极略/audio/skill:1",
-			audio: "jlsg_nizhan",
-			trigger: { global: "damageBegin2" },
-			filter: function (event) {
-				return event.card && (event.card.name == "sha" || event.card.name == "juedou") && event.notLink();
-			},
-			init: function (player) {
-				for (var i = 0; i < game.players.length; i++) {
-					game.players[i].storage.jlsg_old_nizhan_mark = 0;
-				}
-			},
-			direct: true,
-			content: function () {
-				"step 0";
-				player.chooseTarget(get.prompt("jlsg_old_nizhan"), function (card, player, target) {
-					return (trigger.source == target || trigger.player == target) && player != target;
-				}).ai = function (target) {
-					return -get.attitude(player, target);
-				};
-				("step 1");
-				if (result.bool) {
-					player.logSkill("jlsg_old_nizhan", result.targets[0]);
-					if (!result.targets[0].storage.jlsg_old_nizhan_mark) {
-						result.targets[0].storage.jlsg_old_nizhan_mark = 0;
-					}
-					result.targets[0].storage.jlsg_old_nizhan_mark += 1;
-					result.targets[0].markSkill("jlsg_old_nizhan_mark");
-					result.targets[0].syncStorage("jlsg_old_nizhan_mark");
-				}
-			},
-			subSkill: {
-				mark: {
-					forced: true,
-					charlotte: true,
-					mark: true,
-					marktext: "袭",
-					intro: {
-						content: "共有#个标记",
-					},
-				},
-			},
-			ai: {
-				threaten: function (player) {
-					if (player.hasSkill("jlsg_old_cuifeng")) return 4.5;
-					return 0;
-				},
-			},
-		},
-		jlsg_old_cuifeng: {
-			// audio: "ext:极略/audio/skill:1",
-			audio: "jlsg_cuifeng",
-			trigger: { player: "phaseJieshuBegin" },
-			forced: true,
-			filter: function (player) {
-				var num = 0;
-				for (var i = 0; i < game.players.length; i++) {
-					if (!game.players[i].storage.jlsg_old_nizhan_mark) continue;
-					num += game.players[i].storage.jlsg_old_nizhan_mark;
-				}
-				if (num >= 4) return true;
-				return false;
-			},
-			content: function () {
-				"step 0";
-				for (var i = 0; i < game.players.length; i++) {
-					if (game.players[i].storage.jlsg_old_nizhan_mark) {
-						player.line(game.players[i], "fire");
-						if (game.players[i].num("h") >= game.players[i].storage.jlsg_old_nizhan_mark) {
-							player.gainPlayerCard(game.players[i].storage.jlsg_old_nizhan_mark, game.players[i], "h", true);
-						} else {
-							player.gain(game.players[i].get("h"));
-							game.players[i].$give(game.players[i].num("h"), player);
-							game.players[i].damage();
-						}
-						game.delay(1);
-					}
-				}
-				("step 1");
-				for (var i = 0; i < game.players.length; i++) {
-					if (!game.players[i].storage.jlsg_old_nizhan_mark) continue;
-					game.players[i].storage.jlsg_old_nizhan_mark = 0;
-					game.players[i].unmarkSkill("jlsg_old_nizhan_mark");
-				}
-			},
-		},
-		jlsg_old_weizhen: {
-			// audio: "ext:极略/audio/skill:1",
-			audio: "jlsg_weizhen",
-			trigger: { player: "phaseBegin" },
-			filter: function (event, player) {
-				var num = 0;
-				for (var i = 0; i < game.players.length; i++) {
-					if (!game.players[i].storage.jlsg_old_nizhan_mark) continue;
-					num += game.players[i].storage.jlsg_old_nizhan_mark;
-				}
-				if (num > 0) return true;
-				return false;
-			},
-			prompt: function (event, player) {
-				var str = "";
-				var num = 0;
-				for (var i = 0; i < game.players.length; i++) {
-					if (!game.players[i].storage.jlsg_old_nizhan_mark) continue;
-					num += game.players[i].storage.jlsg_old_nizhan_mark;
-				}
-				str += "移除场上全部的【袭】标记，然后摸" + num + "张牌。";
-				return str;
-			},
-			check: function (event, player) {
-				if (player.countCards("h") == 0 || player.hp == 1) return 1;
-				return 0;
-			},
-			content: function () {
-				var num = 0;
-				for (var i = 0; i < game.players.length; i++) {
-					if (!game.players[i].storage.jlsg_old_nizhan_mark) continue;
-					if (game.players[i].storage.jlsg_old_nizhan_mark) {
-						player.line(game.players[i], "water");
-					}
-					num += game.players[i].storage.jlsg_old_nizhan_mark;
-					game.players[i].storage.jlsg_old_nizhan_mark = 0;
-					game.players[i].unmarkSkill("jlsg_old_nizhan_mark");
-				}
-				game.delay();
-				player.draw(num);
-			},
-		},
 		jlsg_nizhan: {
 			audio: "ext:极略/audio/skill:1",
 			trigger: { global: "phaseZhunbeiBegin" },
@@ -2299,81 +2171,6 @@ export default {
 			charlotte: true,
 			skillBlocker: function (skill, player) {
 				return !lib.skill[skill].charlotte && !get.is.locked(skill, player) && player.countMark("jlsg_nizhan") >= 4;
-			},
-		},
-		jlsg_old_zhiming: {
-			audio: "jlsg_zhiming",
-			trigger: { global: "phaseZhunbeiBegin" },
-			filter: function (event, player) {
-				return event.player != player && event.player.countCards("h") && player.countCards("h");
-			},
-			direct: true,
-			content: function () {
-				"step 0";
-				player.chooseToDiscard("h", get.prompt2(event.name, trigger.player)).ai = function (card) {
-					if (get.attitude(player, trigger.player) < 0) return 10 - get.value(card);
-					return 0;
-				};
-				("step 1");
-				if (result.bool) {
-					player.logSkill("jlsg_old_zhiming", trigger.player);
-					event.color = get.color(result.cards[0]);
-					event.card = trigger.player.get("h").randomGet();
-					trigger.player.discard(event.card);
-				} else {
-					event.finish();
-				}
-				("step 2");
-				if (event.color == get.color(event.card)) {
-					player.chooseControl("跳过摸牌", "跳过出牌").ai = function () {
-						if (trigger.player.countCards("h") > trigger.player.hp) return "跳过出牌";
-						return "跳过摸牌";
-					};
-				} else {
-					event.finish();
-				}
-				("step 3");
-				if (result.control == "跳过摸牌") {
-					trigger.player.skip("phaseDraw");
-					game.log(trigger.player, "跳过了摸牌阶段");
-				}
-				if (result.control == "跳过出牌") {
-					trigger.player.skip("phaseUse");
-					game.log(trigger.player, "跳过了出牌阶段");
-				}
-			},
-			ai: {
-				expose: 0.4,
-			},
-		},
-		jlsg_old_suyin: {
-			audio: "ext:极略/audio/skill:1",
-			trigger: { player: "loseEnd" },
-			direct: true,
-			filter: function (event, player) {
-				if (player.countCards("h")) return false;
-				for (var i = 0; i < event.cards.length; i++) {
-					if (event.cards[i].original == "h") return _status.currentPhase != player;
-				}
-				return false;
-			},
-			content: function () {
-				"step 0";
-				player.chooseTarget("【夙隐】：选择一名角色将其翻面", function (card, player, target) {
-					return player != target;
-				}).ai = function (target) {
-					//if(target.isTurnedOver()&&get.attitude(player,target)>0) return 10;
-					if (!target.isTurnedOver() && get.attitude(player, target) < 0) return target.countCards("h");
-					return 0;
-				};
-				("step 1");
-				if (result.bool) {
-					player.logSkill("jlsg_old_suyin", result.targets);
-					result.targets[0].turnOver();
-				}
-			},
-			ai: {
-				expose: 0.3,
 			},
 		},
 		jlsg_zhiming: {
@@ -2669,138 +2466,6 @@ export default {
 				},
 			},
 		},
-		jlsg_old_shelie: {
-			audio: "jlsg_shelie",
-			trigger: { player: "phaseDrawBegin1" },
-			forced: true,
-			content: function () {
-				"step 0";
-				trigger.cancel(null, null, "notrigger");
-				event.cards = [];
-				event.num = 1;
-				event.getResultString = function (str) {
-					switch (str) {
-						case "基本牌":
-							return "basic";
-						case "锦囊牌":
-							return "trick";
-						case "装备牌":
-							return "equip";
-					}
-					return str;
-				};
-				("step 1");
-				player
-					.chooseControl("基本牌", "锦囊牌", "装备牌", function () {
-						var randomResult = Math.random();
-						if (randomResult < 0.4) return "锦囊牌";
-						if (randomResult < 0.8) return "基本牌";
-						return "装备牌";
-					})
-					.set("prompt", "请选择想要获得的第" + get.cnNumber(event.num, true) + "张牌的类型");
-				("step 2");
-				event.control = event.getResultString(result.control);
-				var card = get.cardPile2(function (card) {
-					return get.type(card, "trick") == event.control && !event.cards.includes(card);
-				});
-				if (card) {
-					event.cards.push(card);
-				} else {
-					player.chat("无牌可得了吗");
-					game.log(`但是牌堆里面已经没有${result.control}了！`);
-				}
-				if (event.num < 4) {
-					event.num++;
-					event.goto(1);
-				} else {
-					if (event.cards.length) {
-						player.gain(event.cards, "gain2");
-					}
-				}
-			},
-		},
-		jlsg_old_gongxin: {
-			audio: "jlsg_gongxin",
-			enable: "phaseUse",
-			usable: 1,
-			filterTarget: function (card, player, target) {
-				return target != player && target.countCards("h");
-			},
-			content: function () {
-				"step 0";
-				player.viewCards("攻心", target.get("h"));
-				event.cards = target.get("h", function (card) {
-					return get.suit(card) == "heart";
-				});
-				if (!event.cards.length) {
-					event.finish();
-					return;
-				}
-				("step 1");
-				if (event.cards.length > 1) {
-					event.videoId = lib.status.videoId++;
-					game.broadcastAll(
-						function (player, id, cards) {
-							var str;
-							if (player == game.me && !_status.auto) {
-								str = "攻心：选择获得其中的一张牌";
-							} else {
-								str = "攻心";
-							}
-							var dialog = ui.create.dialog(str, cards);
-							dialog.videoId = id;
-						},
-						player,
-						event.videoId,
-						event.cards
-					);
-					event.time = get.utc();
-					game.addVideo("showCards", player, ["攻心", get.cardsInfo(event.cards)]);
-					game.addVideo("delay", null, 2);
-				} else {
-					player.showCards(event.cards, get.translation(target.name) + "的红桃手牌");
-				}
-				("step 2");
-				if (event.cards.length == 1) {
-					target.discard(event.cards);
-					target.damage();
-					event.finish();
-					return;
-				}
-				("step 3");
-				var next = player.chooseButton();
-				next.set("dialog", event.videoId);
-				next.set("filterButton", function (button) {
-					return true;
-				});
-				next.set("ai", function (button) {
-					return get.value(button.link, _status.event.player);
-				});
-				("step 4");
-				if (result.bool && result.links) {
-					event.cards2 = result.links;
-				}
-				var time = 1000 - (get.utc() - event.time);
-				if (time > 0) {
-					game.delay(0, time);
-				}
-				("step 5");
-				game.broadcastAll("closeDialog", event.videoId);
-				if (event.cards2) {
-					player.gain(event.cards2, "log", "gain2");
-				}
-			},
-			ai: {
-				threaten: 1.5,
-				result: {
-					target: function (player, target) {
-						return -target.countCards("h");
-					},
-				},
-				order: 10,
-				expose: 0.4,
-			},
-		},
 		jlsg_shelie: {
 			audio: "ext:极略/audio/skill:1",
 			trigger: {
@@ -3094,94 +2759,6 @@ export default {
 				if (gain?.length) await player.gain(gain, "draw");
 				game.updateRoundNumber();
 				await game.delayx();
-			},
-		},
-		jlsg_tianji_old: {
-			audio: "jlsg_tianji",
-			trigger: { global: "phaseUseBegin" },
-			direct: true,
-			init: function (player) {
-				player.storage.pd = undefined;
-			},
-			content: function () {
-				"step 0";
-				var nh = player.countCards("h");
-				var num = 0;
-				for (var i = 0; i < game.players.length; i++) {
-					var np = game.players[i].num("h");
-					if (np > nh) num++;
-				}
-				var cards = [];
-				cards.push(ui.cardPile.firstChild);
-				event.cards = cards;
-				if (num) {
-					player
-						.chooseControl("获得", "替换", "cancel")
-						.set("dialog", ["天机", event.cards, "hidden"])
-						.set("ai", function () {
-							return "获得";
-						});
-				} else {
-					player
-						.chooseControl("替换", "cancel")
-						.set("dialog", ["天机", event.cards, "hidden"])
-						.set("ai", function () {
-							if (_status.currentPhase !== player) {
-								if (get.type(cards[0]) == "basic" && player.countCards("h", { type: "basic" }) < player.countCards("h") / 2) return "替换";
-								if (get.type(cards[0]) != "basic") return "替换";
-							}
-							if (_status.currentPhase == player) {
-								if (get.type(cards[0]) == "trick" && player.hp <= player.maxHp / 2) return "替换";
-								if (get.type(cards[0]) == "basic" && player.hp > player.maxHp / 2 && player.countCards("h", { type: "trick" })) return "替换";
-								if (get.type(cards[0]) == "equip" && player.countCards("e") < 4) return "替换";
-							}
-							if (get.type(cards[0]) == "basic") player.storage.pd = "basic";
-							else player.storage.pd = "trick";
-							return "cancel";
-						});
-				}
-				("step 1");
-				if (result.control == "获得") {
-					player.logSkill("jlsg_tianji");
-					player.gain(event.cards, "draw");
-					event.finish();
-				} else if (result.control == "替换") {
-					player.logSkill("jlsg_tianji");
-					player.chooseCard("选择一张牌置于牌堆顶", "h", true).ai = function (card) {
-						if (_status.currentPhase == player) {
-							if (player.hp <= player.maxHp / 2 && player.countCards("h", { type: "basic" })) {
-								return get.type(card) == "basic";
-							}
-							if (player.hp > player.maxHp / 2 && player.countCards("h", { type: "trick" })) {
-								return get.type(card) == "trick";
-							}
-						} else {
-							return 15 - get.value(card);
-						}
-					};
-				} else {
-					event.finish();
-				}
-				("step 2");
-				event.card = result.cards[0];
-				if (get.type(result.cards[0]) == "basic") {
-					player.storage.pd = "basic";
-				} else {
-					player.storage.pd = "trick";
-				}
-				player.lose(result.cards, ui.special);
-				var cardx = ui.create.card();
-				cardx.classList.add("infohidden");
-				cardx.classList.add("infoflip");
-				player.$throw(cardx, 1000);
-				("step 3");
-				game.delay(0.5);
-				("step 4");
-				if (event.card) {
-					event.card.fix();
-					ui.cardPile.insertBefore(event.card, ui.cardPile.firstChild);
-					player.gain(event.cards, "draw");
-				}
 			},
 		},
 		jlsg_xianzhu: {
@@ -4312,78 +3889,6 @@ export default {
 				("step 3");
 				if (result.bool) {
 					trigger.player.reinit(trigger.player.name, result.links[0]);
-				}
-			},
-		},
-		jlsg_old_danjing: {
-			audio: "ext:极略/audio/skill:2",
-			enable: "phaseUse",
-			usable: 1,
-			direct: true,
-			filterTarget: function (card, player, target) {
-				return player != target;
-			},
-			content: function () {
-				"step 0";
-				player.chooseControl("令其摸三张牌", "令其弃三张牌").ai = function () {
-					if (ai.get.attitude(player, target) > 0) return "令其摸三张牌";
-					return "令其弃三张牌";
-				};
-				("step 1");
-				if (result.control == "令其摸三张牌") {
-					player.logSkill("jlsg_old_danjing1");
-					player.loseHp();
-					target.draw(3);
-				} else {
-					player.logSkill("jlsg_old_danjing2");
-					player.loseHp();
-					target.chooseToDiscard(3, "he", true);
-				}
-			},
-			ai: {
-				order: 5,
-				result: {
-					player: function (player) {
-						return jlsg.getLoseHpEffect(player);
-					},
-					target: function (player, target) {
-						if (get.attitude(player, target) > 0) {
-							return 4;
-						} else {
-							return Math.min(3, target.countDiscardableCards(player, "he")) * 1.5;
-						}
-					},
-				},
-			},
-		},
-		jlsg_old_danjing1: {
-			charlotte: true,
-			audio: "ext:极略/audio/skill:true",
-		},
-		jlsg_old_danjing2: {
-			charlotte: true,
-			audio: "ext:极略/audio/skill:true",
-		},
-		jlsg_old_zhonghun: {
-			limited: true,
-			audio: "ext:极略/audio/skill:2",
-			trigger: { player: "dieBegin" },
-			direct: true,
-			content: function () {
-				"step 0";
-				player.chooseTarget(function (card, player, target) {
-					return player != target;
-				}).ai = function (target) {
-					return get.attitude(player, target);
-				};
-				("step 1");
-				if (result.bool) {
-					player.logSkill("jlsg_old_zhonghun", result.targets);
-					var skills = player.getSkills(null, false, false).filter(function (i) {
-						var info = get.info(i);
-						return info && !info.charlotte;
-					});
-					result.targets[0].addSkills(skills);
 				}
 			},
 		},
@@ -13187,13 +12692,6 @@ export default {
 		jlsg_suohun2: "索魂",
 		jlsg_juejing: "绝境",
 		jlsg_longhun: "龙魂",
-		jlsg_longhun1: "龙魂·桃",
-		jlsg_longhun2: "龙魂·杀",
-		jlsg_longhun3: "龙魂·无懈",
-		jlsg_longhun4: "龙魂·闪",
-		jlsg_old_nizhan: "逆战",
-		jlsg_old_cuifeng: "摧锋",
-		jlsg_old_weizhen: "威震",
 		jlsg_nizhan: "逆战",
 		jlsg_cuifeng: "摧锋",
 		jlsg_weizhen: "威震",
@@ -13201,8 +12699,6 @@ export default {
 		jlsg_weizhen3: "威震",
 		jlsg_zhiming: "知命",
 		jlsg_suyin: "夙隐",
-		jlsg_old_zhiming: "知命",
-		jlsg_old_suyin: "夙隐",
 		jlsg_dianjie: "电界",
 		jlsg_shendao: "神道",
 		jlsg_leihun: "雷魂",
@@ -13224,14 +12720,8 @@ export default {
 		jlsg_yuanhua: "元化",
 		jlsg_guiyuan: "归元",
 		jlsg_chongsheng: "重生",
-		jlsg_old_danjing: "啖睛",
-		jlsg_old_danjing1: "啖睛",
-		jlsg_old_danjing2: "啖睛",
-		jlsg_old_zhonghun: "忠魂",
 		jlsg_feiying: "飞影",
 		jlsg_guixin: "归心",
-		jlsg_old_dianjie: "电界",
-		jlsg_old_shendao: "神道",
 
 		jlsg_luocha: "罗刹",
 		jlsg_luocha_info: "锁定技，游戏开始时，你随机获得三个与【杀】有关的技能；当其他角色进入濒死状态时，你摸两张牌，然后随机获得一个与【杀】有关的技能。",
@@ -13278,22 +12768,15 @@ export default {
 		jlsg_suohun_info: "锁定技，当你对其他角色造成伤害后，或当你受到其他角色造成的1点伤害后，其获得一个「魂」标记。当你进入濒死状态时，减一半(向上取整)的体力上限并恢复体力至体力上限，拥有「魂」标记的角色依次弃置所有的「魂」标记，然后受到与弃置的「魂」标记数量相同的伤害。",
 		jlsg_juejing_info: "锁定技，你的体力不能大于1点，你的手牌上限为体力上限。当你进入或脱离濒死状态时，你摸两张牌。",
 		jlsg_longhun_info: "你可以将一至两张牌按下列规则使用或打出:红桃当【桃】，方块当火【杀】，梅花当【闪】,黑桃当【无懈可击】。若你以此法使用的牌为两张:使用的【桃】令目标角色加1点体力上限，使用的火【杀】额外结算两次，使用的【闪】令此【杀】的使用者随机弃置两张牌，使用的【无懈可击】不能被响应且你获得被响应的牌。",
-		jlsg_old_nizhan_info: "每当一名角色受到【杀】或【决斗】造成的一次伤害后，你可以将一枚「袭」标记放置在该角色或伤害来源(不为你)的武将牌上；锁定技，你的身份为“主公”时，不增加体力上限。",
-		jlsg_old_cuifeng_info: "锁定技，回合结束阶段，若场上的「袭」标记总数不小于4，你须依次从每名被标记的角色处获得等同于其「袭」标记数量的手牌。若该角色手牌不足，则你获得其全部手牌，然后该角色受到你对其造成的一点伤害。最后移除场上全部的「袭」标记。",
-		jlsg_old_weizhen_info: "回合开始阶段，你可以移除场上全部的「袭」标记，然后摸等同于「袭」标记数量的牌。",
 		jlsg_nizhan_info: "锁定技，场上每名角色的准备阶段开始时，若其已受伤，其获得一枚「逆」标记，否则其弃置一枚「逆」标记",
 		jlsg_cuifeng_info: "出牌阶段限一次，你可以移动场上的一枚「逆」，然后视为失去「逆」的角色对获得「逆」的角色使用一张不计入次数限制的【杀】。",
 		jlsg_weizhen_info: "锁定技，若一名角色的「逆」数至少为：1，你摸牌阶段摸牌数+1；2，其摸牌阶段摸牌数-1；3，你对其造成的伤害+1；4，其非锁定技无效。",
-		jlsg_old_zhiming_info: "其他角色的回合开始阶段开始时，若其有手牌，你可以弃置一张手牌，然后弃置其一张手牌，若两张牌颜色相同，你令其跳过此回合的摸牌阶段或出牌阶段。",
-		jlsg_old_suyin_info: "你的回合外，当你失去最后的手牌时，可令一名其他角色将其武将牌翻面。",
 		jlsg_zhiming_info: "出牌阶段限一次， 你可以选择至多X名其他角色(X为你的体力)，然后你依次选择是否失去1点体力、翻面、弃置任意张牌(不能选择上个出牌阶段以此法执行过的效果) ,若如此做，这些角色与你执行相同的效果。",
 		jlsg_suyin_info: "当你失去所有手牌后，你可以令一名角色翻面，若有角色以此法翻回正面，你令其回复所有体力。",
 		jlsg_dianjie_info: "你可以跳过你的摸牌阶段或出牌阶段,然后判定:若结果为黑桃,你对一名角色造成2点雷电伤害;若结果为梅花,你令任意名武将牌未横置的角色将其武将牌横置.",
 		jlsg_mod_shendao_info: "锁定技，对一名角色的判定牌生效前，你亮出牌堆顶的两张牌，选择其中一张直接代替之，若不是你的回合，你将另一种牌收入手牌。",
 		jlsg_shendao_info: "一名角色的判定牌生效前，你可以打出一张手牌或用场上的牌代替之，然后获得原判定牌。",
 		jlsg_leihun_info: "锁定技，你受到的雷电伤害均视为体力恢复。",
-		jlsg_old_shelie_info: "锁定技，摸牌阶段开始时，你跳过之，改为选择指定获得某种类型的牌（最多四次），然后从牌堆随机摸取之。",
-		jlsg_old_gongxin_info: "出牌阶段限一次，你可以观看一次任意一名角色的手牌并展示其中所有的红桃牌，然后若展示的牌数：为一，你弃置之并对其造成一点伤害；大于一，你获得其中一张红桃牌。",
 		jlsg_shelie_info: "锁定技，当你使用牌后，你从牌堆随机获得两张与此牌类别不同的牌，每回合每种类别限一次。",
 		jlsg_gongxin_info: "出牌阶段限一次，你可以观看一名其他角色的手牌并获得其中一张，然后你可以弃置另一张花色不同的牌，若如此做，该角色于本回合内不能使用或打出剩余两种花色的手牌。",
 		jlsg_tianqi_info: "出牌阶段基本牌和非延时锦囊牌各限一次，或当你于濒死状态外需要使用或打出基本牌或非延时锦囊牌时，你可以将牌堆顶牌当此牌使用或打出，若转化前后的牌类别不同，你于此牌结算前失去1点体力。",
@@ -13310,8 +12793,6 @@ export default {
 		jlsg_yuanhua_info: "锁定技，你获得【桃】后，若你已受伤，你回复1点体力并摸两张牌，然后将此【桃】移出游戏。",
 		jlsg_guiyuan_info: "出牌阶段限一次，你可以失去一点体力，然后令所有其他角色依次交给你一张【桃】，然后从牌堆或弃牌堆获得一张【桃】。",
 		jlsg_chongsheng_info: "限定技，一名角色进入濒死状态时，你可以令其将体力上限调整至X并回复所有体力，然后其可以从随机三张同势力武将牌中选择一张替换之。（X为你发动〖元化〗移除牌的数量且至少为1）",
-		jlsg_old_danjing_info: "出牌阶段限一次，你可以失去1点体力，然后令一名其他角色摸三张牌或弃置三张牌。",
-		jlsg_old_zhonghun_info: "限定技，当你死亡时，你可以令一名其他角色获得你当前的所有技能。",
 
 		jlsg_qifeng: "栖凤",
 		jlsg_qifeng_info: "锁定技，当你进入濒死状态时，你减1点体力上限，回复体力至1点，摸0张牌，然后对一名其他角色造成0点火焰伤害。",
