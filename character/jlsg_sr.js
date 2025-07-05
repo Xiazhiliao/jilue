@@ -3,30 +3,30 @@ export default {
 	name: "jlsg_sr",
 	connect: true,
 	character: {
-		jlsgsr_zhangliao: ["male", "wei", 4, ["jlsg_wuwei", "jlsg_yansha"], ["name:张|辽"]],
+		jlsgsr_zhangliao: ["male", "wei", 4, ["jlsg_wuwei", "jlsg_yansha"], []],
 		jlsgsr_xiahoudun: ["male", "wei", 4, ["jlsg_zhonghou", "jlsg_ganglie"], ["name:夏侯|惇"]],
 		jlsgsr_zhenji: ["female", "wei", 3, ["jlsg_liuyun", "jlsg_lingbo", "jlsg_qingcheng"], ["name:甄|null"]],
-		jlsgsr_xuzhu: ["male", "wei", 4, ["jlsg_aozhan", "jlsg_huxiao"], ["name:许|诸"]],
-		jlsgsr_simayi: ["male", "wei", 3, ["jlsg_guicai", "jlsg_langgu", "jlsg_zhuizun"], ["name:司|马懿"]],
-		jlsgsr_guojia: ["male", "wei", 3, ["jlsg_tianshang", "jlsg_yiji", "jlsg_huiqu"], ["name:郭|嘉"]],
-		jlsgsr_caocao: ["male", "wei", 4, ["jlsg_zhaoxiang", "jlsg_zhishi", "jlsg_jianxiong"], ["zhu", "name:曹操"]],
-		jlsgsr_zhaoyun: ["male", "shu", 4, ["jlsg_jiuzhu", "jlsg_tuwei"], ["name:赵|云"]],
-		jlsgsr_zhangfei: ["male", "shu", 4, ["jlsg_xujin", "jlsg_paoxiao"], ["name:张|飞"]],
-		jlsgsr_machao: ["male", "shu", 4, ["jlsg_benxi", "jlsg_yaozhan"], ["name:马|超"]],
-		jlsgsr_guanyu: ["male", "shu", 4, ["jlsg_wenjiu", "jlsg_shuixi"], ["name:关|羽"]],
+		jlsgsr_xuzhu: ["male", "wei", 4, ["jlsg_aozhan", "jlsg_huxiao"], []],
+		jlsgsr_simayi: ["male", "wei", 3, ["jlsg_guicai", "jlsg_langgu", "jlsg_zhuizun"], ["name:司马|懿"]],
+		jlsgsr_guojia: ["male", "wei", 3, ["jlsg_tianshang", "jlsg_yiji", "jlsg_huiqu"], []],
+		jlsgsr_caocao: ["male", "wei", 4, ["jlsg_zhaoxiang", "jlsg_zhishi", "jlsg_jianxiong"], ["zhu"]],
+		jlsgsr_zhaoyun: ["male", "shu", 4, ["jlsg_jiuzhu", "jlsg_tuwei"], []],
+		jlsgsr_zhangfei: ["male", "shu", 4, ["jlsg_xujin", "jlsg_paoxiao"], []],
+		jlsgsr_machao: ["male", "shu", 4, ["jlsg_benxi", "jlsg_yaozhan"], []],
+		jlsgsr_guanyu: ["male", "shu", 4, ["jlsg_wenjiu", "jlsg_shuixi"], []],
 		jlsgsr_zhugeliang: ["male", "shu", 3, ["jlsg_sanfen", "jlsg_guanxing", "jlsg_weiwo"], ["name:诸葛|亮"]],
 		jlsgsr_huangyueying: ["female", "shu", 3, ["jlsg_shouji", "jlsg_hemou", "jlsg_qicai"], ["name:黄|null"]],
-		jlsgsr_liubei: ["male", "shu", 4, ["jlsg_rende", "jlsg_chouxi", "jlsg_yongbing"], ["zhu", "name:刘|备"]],
+		jlsgsr_liubei: ["male", "shu", 4, ["jlsg_rende", "jlsg_chouxi", "jlsg_yongbing"], ["zhu"]],
 		jlsgsr_sunshangxiang: ["female", "wu", 3, ["jlsg_yinmeng", "jlsg_xiwu", "jlsg_juelie"], ["name:孙|null"]],
 		jlsgsr_daqiao: ["female", "wu", 3, ["jlsg_fangxin", "jlsg_xiyu", "jlsg_wanrou"], ["name:桥|null"]],
-		jlsgsr_huanggai: ["male", "wu", 4, ["jlsg_zhouyan", "jlsg_zhaxiang"], ["name:黄|盖"]],
-		jlsgsr_lvmeng: ["male", "wu", 4, ["jlsg_shixue", "jlsg_guoshi"], ["name:吕|蒙"]],
-		jlsgsr_zhouyu: ["male", "wu", 3, ["jlsg_yingcai", "jlsg_weibao", "jlsg_choulve"], ["name:周|瑜"]],
-		jlsgsr_ganning: ["male", "wu", 4, ["jlsg_jiexi", "jlsg_youxia"], ["name:甘|宁"]],
-		jlsgsr_luxun: ["male", "wu", 3, ["jlsg_dailao", "jlsg_youdi", "jlsg_ruya"], ["name:陆|逊"]],
-		jlsgsr_sunquan: ["male", "wu", 4, ["jlsg_quanheng", "jlsg_xionglve", "jlsg_fuzheng"], ["zhu", "name:孙|权"]],
-		jlsgsr_lvbu: ["male", "qun", 4, ["jlsg_jiwu", "jlsg_sheji"], ["name:吕|布"]],
-		jlsgsr_huatuo: ["male", "qun", 3, ["jlsg_xingyi", "jlsg_guagu", "jlsg_wuqin"], ["name:华|佗"]],
+		jlsgsr_huanggai: ["male", "wu", 4, ["jlsg_zhouyan", "jlsg_zhaxiang"], []],
+		jlsgsr_lvmeng: ["male", "wu", 4, ["jlsg_shixue", "jlsg_guoshi"], []],
+		jlsgsr_zhouyu: ["male", "wu", 3, ["jlsg_yingcai", "jlsg_weibao", "jlsg_choulve"], []],
+		jlsgsr_ganning: ["male", "wu", 4, ["jlsg_jiexi", "jlsg_youxia"], []],
+		jlsgsr_luxun: ["male", "wu", 3, ["jlsg_dailao", "jlsg_youdi", "jlsg_ruya"], []],
+		jlsgsr_sunquan: ["male", "wu", 4, ["jlsg_quanheng", "jlsg_xionglve", "jlsg_fuzheng"], ["zhu"]],
+		jlsgsr_lvbu: ["male", "qun", 4, ["jlsg_jiwu", "jlsg_sheji"], []],
+		jlsgsr_huatuo: ["male", "qun", 3, ["jlsg_xingyi", "jlsg_guagu", "jlsg_wuqin"], []],
 		jlsgsr_diaochan: ["female", "qun", 3, ["jlsg_lijian", "jlsg_manwu", "jlsg_baiyue"], ["name:null|null"]],
 	},
 	characterIntro: {},
@@ -1195,10 +1195,10 @@ export default {
 			filterCard() {
 				return true;
 			},
-			selectCard () {
+			selectCard() {
 				return get.select(Math.max(0, Math.min(1, _status.event.player.countCards("h") - 1)));
 			},
-			check (card) {
+			check(card) {
 				const player = get.player();
 				if (player.countCards("h") > player.maxHp) return 0;
 				if (get.name(card) != "sha") return 0;
@@ -2865,7 +2865,7 @@ export default {
 				player: "loseAfter",
 				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 			},
-			filter (event, player) {
+			filter(event, player) {
 				if (player.countCards("h")) {
 					return false;
 				}
@@ -5028,7 +5028,6 @@ export default {
 		jlsg_jianxiong_info: "主公技。每当其他魏势力受到不为你的一次伤害后，该角色可以弃置一张手牌，然后令你获得对其造成伤害的牌。",
 		jlsg_jiuzhu_info: "每当一张非转化的【闪】进入弃牌堆时，你可以用一张不为【闪】的牌替换之。若此时不是你的回合，你可以视为对当前回合角色使用一张无视防具的【杀】。",
 		jlsg_tuwei_info: "每当一张非转化的【杀】进入弃牌堆时，若你是此【杀】的目标或使用者，你可以弃置一张伤害牌，然后弃置此牌目标或使用者的共计两张牌。",
-		// jlsg_xujin_info: '摸牌阶段，你可以放弃摸牌，改为展示牌堆顶的5张牌，并令一名角色获得其中1种花色的所有牌，再将其余的牌置入弃牌堆。若如此做，你本回合的攻击范围和可以使用的【杀】数量与以此法被获得的牌的数量相同。',
 		jlsg_xujin_info: "摸牌阶段开始时，你展示牌堆顶的五张牌，然后，你可以放弃摸牌并将其中一种花色的牌交给一名角色，令你本回合的攻击范围和可以使用的【杀】数量与以此法被获得的牌的数量相同。否则你将展示的牌置入弃牌堆。",
 		jlsg_paoxiao_info: "出牌阶段，当你使用【杀】对目标角色造成一次伤害并结算完毕后，你可以摸一张牌，然后选择一项：使用一张无视距离的【杀】，或令该角色弃置你的一张牌。",
 		jlsg_benxi_info: "锁定技，你计算与其他角色的距离时始终-1.你使用【杀】指定目标后，目标角色须弃置一张装备牌，否则此【杀】不可被【闪】响应。",
