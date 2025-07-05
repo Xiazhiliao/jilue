@@ -3096,67 +3096,6 @@ export default {
 				await game.delayx();
 			},
 		},
-		jlsg_tianji: {
-			audio: "ext:极略/audio/skill:1",
-			trigger: { global: "phaseUseBegin" },
-			frequent: true,
-			filter: function (event, player) {
-				if (ui.cardPile.hasChildNodes() == false) return false;
-				return true;
-			},
-			content: function () {
-				"step 0";
-				event.top = [ui.cardPile.firstChild];
-				player.storage.jlsg_tianji_top = [ui.cardPile.firstChild];
-				event.dialog = ui.create.dialog("天机", event.top, true);
-				var controls = [];
-				if (
-					game.hasPlayer(function (target) {
-						return player.countCards("h") <= target.countCards("h") && target != player;
-					})
-				) {
-					controls.push("获得");
-				}
-				controls.push("替换");
-				player.chooseControl(controls, "cancel", event.dialog).ai = function () {
-					if (event.top[0].name == "du") return "cancel";
-					return 0;
-				};
-				("step 1");
-				if (result.control == "获得") {
-					player.draw();
-					event.finish();
-				} else if (result.control == "替换") {
-					player.chooseCard("选择一张牌置于牌堆顶", "h", true).ai = function (card) {
-						if (_status.currentPhase == player) {
-							if (player.hp <= player.maxHp / 2 && player.countCards("h", { type: "basic" })) {
-								return get.type(card) == "basic";
-							}
-							if (player.hp > player.maxHp / 2 && player.countCards("h", { type: "trick" })) {
-								return get.type(card) == "trick";
-							}
-						} else {
-							return 15 - get.value(card);
-						}
-					};
-				} else {
-					event.finish();
-				}
-				("step 2");
-				event.card = result.cards[0];
-				if (!event.card) {
-					event.finish();
-					return;
-				}
-				// player.lose(event.card, ui.special);
-				player.draw();
-				("step 3");
-				player.$throw(1, 1000);
-				player.storage.jlsg_tianji_top = [event.card];
-				player.lose(event.card, ui.cardPile, "insert");
-				game.log(player, "将一张牌置于牌堆顶");
-			},
-		},
 		jlsg_tianji_old: {
 			audio: "jlsg_tianji",
 			trigger: { global: "phaseUseBegin" },
