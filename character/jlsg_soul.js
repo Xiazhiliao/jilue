@@ -1026,6 +1026,7 @@ export default {
 			},
 			frequent: true,
 			async content(event, trigger, player) {
+				await player.draw();
 				if (!_status.characterlist) {
 					game.initCharactertList();
 				}
