@@ -1026,6 +1026,7 @@ export default {
 			},
 			frequent: true,
 			async content(event, trigger, player) {
+				await player.draw();
 				if (!_status.characterlist) {
 					game.initCharactertList();
 				}
@@ -1259,6 +1260,10 @@ export default {
 		jlsg_yaozhi_temp: {
 			sourceSkill: "jlsg_yaozhi",
 			onremove: true,
+			charlotte: true,
+			direct: true,
+			firstDo: true,
+			priority: Infinity,
 			trigger: { player: ["useSkill", "logSkillBegin"] },
 			filter(event, player) {
 				var info = get.info(event.skill);
@@ -7703,7 +7708,7 @@ export default {
 			},
 			onremove(player) {
 				if (player.hasMark("jlsg_shenyin")) player.useSkill("jlsg_shenyin_dying", false);
-				else delete player.setStorage("jlsg_shenyin_record",undefined);
+				else delete player.setStorage("jlsg_shenyin_record", undefined);
 			},
 			priority: 1,
 			trigger: {
@@ -7745,7 +7750,7 @@ export default {
 					鹰标记牌: ying.slice(),
 					狼标记牌: lang.slice(),
 				};
-				if (!norecord) player.setStorage("jlsg_shenyin_record",list);
+				if (!norecord) player.setStorage("jlsg_shenyin_record", list);
 				return list;
 			},
 			getInfo: function (player, num) {
