@@ -355,5 +355,4 @@ const b = 1;
 		addRank(rank);
 	}
 
-	//武将替换（挖坑）
 }

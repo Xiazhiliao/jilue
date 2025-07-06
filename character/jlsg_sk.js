@@ -11770,7 +11770,9 @@ export default {
 			getList(player) {
 				const configx = lib.config.extension_极略_jlsgsk_jiangwei;
 				let list = {};
-				if (!_status.characterlist) lib.skill.pingjian.initList();
+				if (!_status.characterlist){
+					game.initCharactertList()
+				}
 				let character = _status.characterlist.filter(name => {
 					if (["character", "all"].includes(configx)) {
 						if (!lib.translate[name]) return false;
@@ -12766,7 +12768,9 @@ export default {
 			priority: 1,
 			get getCharacters() {
 				//角色列表
-				if (!_status.characterlist) lib.skill.pingjian.initList();
+				if (!_status.characterlist){
+					game.initCharactertList()
+				}
 				let list = {};
 				for (const pack in lib.characterPack) {
 					if (

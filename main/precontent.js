@@ -73,6 +73,9 @@ export async function precontent(config, originalPack) {
 			for (const name in characterPack) {
 				if (!name.startsWith("jlsgsy_")) continue;
 				characterPack[name].group = "jlsgsy";
+				if (lib.character?.[name]) {
+					lib.character[name].group = "jlsgsy";
+				}
 				const title = lib.translate[name],
 					baonu = name.endsWith("baonu") ? true : false;
 				const info = baonu ? name.slice(7, -5) : name.slice(7);

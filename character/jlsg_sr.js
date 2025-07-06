@@ -4490,13 +4490,16 @@ export default {
 			logTarget: "player",
 			async content(event, trigger, player) {
 				if (!_status.characterlist) {
-					lib.skill.pingjian.initList();
+					game.initCharactertList();
 				}
 				const allList = _status.characterlist.slice(0);
 				game.countPlayer(function (current) {
-					if (current.name && lib.character[current.name] && current.name.indexOf("gz_shibing") != 0 && current.name.indexOf("gz_jun_") != 0) allList.add(current.name);
-					if (current.name1 && lib.character[current.name1] && current.name1.indexOf("gz_shibing") != 0 && current.name1.indexOf("gz_jun_") != 0) allList.add(current.name1);
-					if (current.name2 && lib.character[current.name2] && current.name2.indexOf("gz_shibing") != 0 && current.name2.indexOf("gz_jun_") != 0) allList.add(current.name2);
+					const nameList = get.nameList(current);
+					nameList.forEach(name => {
+						if (lib.character[name] && name.indexOf("gz_shibing") != 0 && name.indexOf("gz_jun_") != 0) {
+							allList.add(name);
+						}
+					});
 				});
 				const skills = [];
 				allList.randomSort();
@@ -4522,20 +4525,27 @@ export default {
 									let indexedData;
 									if (typeof info.getIndex === "function") {
 										indexedData = info.getIndex(trigger, trigger.player, "damageEnd");
-									}
-									if (Array.isArray(indexedData)) {
-										if (
-											!indexedData.some(target => {
-												try {
-													const bool = info.filter(trigger, trigger.player, "damageEnd", target);
-													if (bool) return true;
-													return false;
-												} catch (e) {
-													return false;
-												}
-											})
-										) {
-											continue;
+										if (Array.isArray(indexedData)) {
+											if (
+												!indexedData.some(target => {
+													try {
+														const bool = info.filter(trigger, trigger.player, "damageEnd", target);
+														if (bool) return true;
+														return false;
+													} catch (e) {
+														return false;
+													}
+												})
+											) {
+												continue;
+											}
+										} else if (typeof indexedData === "number" && indexedData > 0) {
+											try {
+												const bool = info.filter(trigger, trigger.player, "damageEnd", true);
+												if (!bool) continue;
+											} catch (e) {
+												continue;
+											}
 										}
 									} else {
 										try {
@@ -4563,16 +4573,13 @@ export default {
 				}
 				const skill = result.links[0];
 				game.log(trigger.player, `选择了【${get.translation(skill)}】`);
-				//坐等本体修复
-				event.addTrigger = lib.skill.jlsg_zhishi.addTrigger;
-
 				trigger.player.addTempSkill(skill, { player: "damageAfter" });
-				//若目标角色在arrangeTrigger中顺序已过，则手动createTrigger
 				const arrange = event.getParent("arrangeTrigger", true);
 				if (arrange) {
 					const { doingList, doing } = arrange;
 					const num1 = doingList.indexOf(doing),
 						num2 = doingList.findIndex(i => i.player == trigger.player);
+					//若目标角色在arrangeTrigger中顺序已过，则手动createTrigger
 					if (num1 > num2) {
 						const skills2 = game.expandSkills([skill]),
 							toadds = [];
@@ -4600,69 +4607,6 @@ export default {
 							}
 						}
 					}
-				}
-			},
-			addTrigger(skills, player) {
-				if (!player || !skills) return this;
-				let evt = this;
-				if (typeof skills == "string") skills = [skills];
-				while (true) {
-					evt = evt.getParent("arrangeTrigger");
-					if (!evt || evt.name != "arrangeTrigger" || !evt.doingList) return this;
-					const doing = evt.doingList.find(i => i.player === player);
-					const firstDo = evt.doingList.find(i => i.player === "firstDo");
-					const lastDo = evt.doingList.find(i => i.player === "lastDo");
-					skills.forEach(skill => {
-						const info = lib.skill[skill];
-						if (!info.trigger) return;
-						if (
-							!Object.keys(info.trigger).some(i => {
-								if (Array.isArray(info.trigger[i])) return info.trigger[i].includes(evt.triggername);
-								return info.trigger[i] === evt.triggername;
-							})
-						)
-							return;
-						let toadds = [];
-						if (typeof info.getIndex === "function") {
-							const indexedResult = info.getIndex(evt.getTrigger(), player, evt.triggername);
-							if (Array.isArray(indexedResult)) {
-								indexedResult.forEach(indexedData => {
-									toadds.push({
-										skill: skill,
-										player: player,
-										priority: get.priority(skill),
-										indexedData,
-									});
-								});
-							} else if (typeof indexedResult === "number" && indexedResult > 0) {
-								for (let i = 0; i < indexedResult; i++) {
-									toadds.push({
-										skill: skill,
-										player: player,
-										priority: get.priority(skill),
-										indexedData: true,
-									});
-								}
-							}
-						} else {
-							toadds.push({
-								skill: skill,
-								player: player,
-								priority: get.priority(skill),
-							});
-						}
-						const map = info.firstDo ? firstDo : info.lastDo ? lastDo : doing;
-						if (!map) return;
-						for (const toadd of toadds) {
-							if (!toadd.indexedData) {
-								if (map.doneList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
-								if (map.todoList.some(i => i.skill === toadd.skill && i.player === toadd.player)) return;
-							}
-							map.todoList.add(toadd);
-						}
-						if (typeof map.player === "string") map.todoList.sort((a, b) => b.priority - a.priority || evt.playerMap.indexOf(a) - evt.playerMap.indexOf(b));
-						else map.todoList.sort((a, b) => b.priority - a.priority);
-					});
 				}
 			},
 			ai: {

@@ -1018,80 +1018,117 @@ export default {
 		},
 		jlsg_yaozhi: {
 			audio: "ext:极略/audio/skill:2",
+			init(player, skill) {
+				player.setStorage(skill, [], true);
+			},
 			trigger: {
 				player: ["phaseBegin", "damageEnd", "phaseJieshuBegin"],
 			},
 			frequent: true,
-			content: function () {
-				"step 0";
-				if (!player.storage.jlsg_yaozhi) player.storage.jlsg_yaozhi = [];
-				player.draw();
-				("step 1");
+			async content(event, trigger, player) {
 				if (!_status.characterlist) {
-					lib.skill.pingjian.initList();
+					game.initCharactertList();
 				}
-				var list = [];
-				var skills = [];
-				_status.characterlist.randomSort();
-				var name2 = [];
-				if (event.triggername == "phaseBegin") {
-					name2.push("phaseZhunbeiBegin");
-					name2.push(event.triggername);
-				} else {
-					name2.push(event.triggername);
-				}
-				for (var i = 0; i < _status.characterlist.length; i++) {
-					var name = _status.characterlist[i];
-					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name == "jlsgsoul_sp_xushao") continue;
-					if (!get.character(name)) continue;
-					var skills2 = get.character(name)[3];
-					for (var j = 0; j < skills2.length; j++) {
-						if (player.hasSkill(skills2[j])) continue;
-						if (skills.includes(skills2[j])) continue;
-						if (player.storage.jlsg_yaozhi.includes(skills2[j])) continue;
-						var list2 = [skills2[j]];
-						game.expandSkills(list2);
-						for (var k = 0; k < list2.length; k++) {
-							var info = lib.skill[list2[k]];
-							if (!info || !info.trigger || !info.trigger.player || info.silent || info.limited || info.juexingji || info.zhuanhuanji || info.hiddenSkill || info.dutySkill) continue;
-							for (var y = 0; y < name2.length; y++) {
-								if (info.trigger.player == name2[y] || (Array.isArray(info.trigger.player) && info.trigger.player.includes(name2[y]))) {
-									if (info.init || (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg))) continue;
-									if (info.filter) {
-										try {
-											var bool = info.filter(trigger, player, name2[y]);
-											if (!bool) continue;
-										} catch (e) {
-											continue;
-										}
-									}
-									list.add(name);
-									skills.add(skills2[j]);
-									break;
+				const characterList = _status.characterlist.slice().randomSort(),
+					triggername = event.triggername == "phaseBegin" ? ["phaseBegin", "phaseZhunbeiBegin"] : [event.triggername],
+					list = {};
+				let packList = ["jlsg_sr", "jlsg_sk", "jlsg_soul"];
+				for (let name of characterList) {
+					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
+						continue;
+					} else if (packList.every(pack => !(name in lib.characterPack[pack]))) {
+						continue;
+					}
+					let skills = get.character(name).skills;
+					for (let skill of skills) {
+						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
+							continue;
+						}
+						const skills2 = game.expandSkills([skill]);
+						for (let skill2 of skills2) {
+							const info = lib.skill[skill2];
+							if (!info || !info.trigger || !info.trigger.player || info.silent || info.juexingji || info.zhuanhuanji || info.hiddenSkill || info.dutySkill) {
+								continue;
+							}
+							if (triggername.includes(info.trigger.player) || (Array.isArray(info.trigger.player) && info.trigger.player.some(i => triggername.includes(i)))) {
+								if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) {
+									continue;
 								}
+								if (info.init) {
+									continue;
+								}
+								if (info.filter) {
+									if (
+										triggername.every(triggername2 => {
+											if (typeof info.getIndex === "function") {
+												let indexedData = info.getIndex(trigger, player, triggername2);
+												if (Array.isArray(indexedData)) {
+													if (
+														!indexedData.some(target => {
+															try {
+																const bool = info.filter(trigger, player, triggername2, target);
+																if (bool) return true;
+																return false;
+															} catch (e) {
+																return false;
+															}
+														})
+													) {
+														return true;
+													}
+												} else if (typeof indexedData === "number" && indexedData > 0) {
+													try {
+														const bool = info.filter(trigger, player, triggername2, true);
+														if (!bool) return true;
+													} catch (e) {
+														return true;
+													}
+												}
+											} else {
+												try {
+													const bool = info.filter(trigger, player, triggername2, true);
+													if (!bool) return true;
+												} catch (e) {
+													return true;
+												}
+											}
+										})
+									) {
+										continue;
+									}
+								}
+								if (!list[name]) {
+									list[name] = [];
+								}
+								list[name].add(skill);
+								break;
 							}
 						}
-						if (skills.includes(skills2[j])) {
-							break;
-						}
 					}
-					if (skills.length > 2) break;
+					if (Object.values(list).flat().length > 2) {
+						break;
+					}
 				}
-				player
-					.chooseControl(skills)
-					.set("dialog", ["请选择要发动的技能", [list, "character"]])
+				if (!Object.keys(list).length) {
+					return;
+				}
+				const control = await player
+					.chooseControl(Object.values(list).flat())
+					.set("dialog", ["妖智", "请选择要发动的技能", [Object.keys(list), "character"]])
 					.set("ai", function () {
 						return 0;
-					});
-				("step 2");
-				player.storage.jlsg_yaozhi.add(result.control);
-				var removeT = "damageAfter";
+					})
+					.forResultControl();
+				const flashName = Object.entries(list).find(i => i[1].includes(control))[0];
+				player.flashAvatar(null, flashName);
+				player.markAuto(event.name, [control]);
+				let expire = "damageAfter";
 				if (event.triggername == "phaseJieshuBegin") {
-					removeT = "phaseJieshuEnd";
+					expire = "phaseJieshuEnd";
 				} else if (event.triggername == "phaseBegin") {
-					removeT = "phaseZhunbeiEnd";
+					expire = "phaseZhunbeiEnd";
 				}
-				player.addTempSkill(result.control, removeT);
+				player.addTempSkill(control, expire);
 			},
 			ai: {
 				maixie: true,
@@ -1120,89 +1157,121 @@ export default {
 			audio: "jlsg_yaozhi",
 			enable: "phaseUse",
 			usable: 1,
-			content: function () {
-				"step 0";
-				if (!player.storage.jlsg_yaozhi) player.storage.jlsg_yaozhi = [];
-				player.draw();
-				("step 1");
-				var list = [];
-				var skills = [];
+			async content(event, trigger, player) {
+				await player.draw(1);
+				let evt = event.getParent(2);
 				if (!_status.characterlist) {
-					lib.skill.pingjian.initList();
+					game.initCharactertList();
 				}
-				_status.characterlist.randomSort();
-				for (var i = 0; i < _status.characterlist.length; i++) {
-					var name = _status.characterlist[i];
-					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name == "jlsgsoul_sp_xushao") continue;
-					var skills2 = get.character(name)[3];
-					for (var j = 0; j < skills2.length; j++) {
-						if (skills.includes(skills2[j])) continue;
-						if (player.hasSkill(skills2[j])) continue;
-						if (player.storage.jlsg_yaozhi.includes(skills2[j])) continue;
-						if (lib.skill.pingjian.phaseUse_special.includes(skills2[j])) {
-							list.add(name);
-							skills.add(skills2[j]);
+				const characterList = _status.characterlist.slice().randomSort(),
+					list = {};
+				let packList = ["jlsg_sr", "jlsg_sk", "jlsg_soul"];
+				for (let name of characterList) {
+					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
+						continue;
+					} else if (packList.every(pack => !(name in lib.characterPack[pack]))) {
+						continue;
+					}
+					let skills = get.character(name).skills;
+					for (let skill of skills) {
+						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
 							continue;
 						}
-						var list2 = [skills2[j]];
-						game.expandSkills(list2);
-						for (var k = 0; k < list2.length; k++) {
-							var info = lib.skill[list2[k]];
-							if (!info || !info.enable || info.viewAs || info.limited || info.juexingji || info.zhuanhuanji || info.hiddenSkill || info.dutySkill) continue;
-							if (info.enable == "phaseUse" || (Array.isArray(info.enable) && info.enable.includes("phaseUse"))) {
-								if (info.init || info.onChooseToUse || (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg))) continue;
+						if (get.is.locked(skill, player)) {
+							continue;
+						}
+						let translation = lib.translate[skill + "_info"];
+						if (translation && translation.indexOf("当你于出牌阶段") != -1 && translation.indexOf("当你于出牌阶段外") == -1) {
+							if (!list[name]) {
+								list[name] = [];
+							}
+							list[name].add(skill);
+							continue;
+						}
+						const skills2 = game.expandSkills([skill]);
+						for (let skill2 of skills2) {
+							let info = lib.skill[skill2];
+							if (get.is.zhuanhuanji(skill2, player)) {
+								continue;
+							}
+							if (!info || !info.enable || info.charlotte || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())) {
+								continue;
+							}
+							if (info.enable == "phaseUse" || (Array.isArray(info.enable) && info.enable.includes("phaseUse")) || info.enable == "chooseToUse" || (Array.isArray(info.enable) && info.enable.includes("chooseToUse"))) {
+								if (info.ai && ((info.ai.combo && !player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)) {
+									continue;
+								}
+								if (info.init || info.onChooseToUse) {
+									continue;
+								}
 								if (info.filter) {
 									try {
-										var bool = info.filter(event.getParent(2), player);
-										if (!bool) continue;
+										var bool = info.filter(evt, player);
+										if (!bool) {
+											continue;
+										}
+									} catch (e) {
+										continue;
+									}
+								} else if (info.viewAs && typeof info.viewAs != "function") {
+									try {
+										if (evt.filterCard && !evt.filterCard(info.viewAs, player, evt)) {
+											continue;
+										}
+										if (info.viewAsFilter && info.viewAsFilter(player) == false) {
+											continue;
+										}
 									} catch (e) {
 										continue;
 									}
 								}
-								list.add(name);
-								skills.add(skills2[j]);
+								if (!list[name]) {
+									list[name] = [];
+								}
+								list[name].add(skill);
 								break;
 							}
 						}
-						if (skills.includes(skills2[j])) break;
 					}
-					if (skills.length > 2) break;
+					if (Object.values(list).flat().length > 2) {
+						break;
+					}
 				}
-				player
-					.chooseControl(skills)
-					.set("dialog", ["请选择要发动的技能", [list, "character"]])
-					.set("ai", function () {
-						return 0;
-					});
-				("step 2");
-				if (result.control == "摸一张牌") {
-					player.draw();
+				if (!Object.keys(list).length) {
 					return;
 				}
-				player.storage.jlsg_yaozhi.add(result.control);
-				player.addTempSkill(result.control, "phaseUseEnd");
+				const control = await player
+					.chooseControl(Object.values(list).flat())
+					.set("dialog", ["请选择要发动的技能", [Object.keys(list), "character"]])
+					.set("ai", function () {
+						return 0;
+					})
+					.forResultControl();
+				const flashName = Object.entries(list).find(i => i[1].includes(control))[0];
+				player.flashAvatar(null, flashName);
+				player.markAuto("jlsg_yaozhi", [control]);
+				player.addTempSkill(control, "phaseUseEnd");
 				player.addTempSkill("jlsg_yaozhi_temp", "phaseUseEnd");
-				player.storage.jlsg_yaozhi_temp = result.control;
-				//event.getParent(2).goto(0);
+				player.markAuto("jlsg_yaozhi_temp", [control]);
 			},
 			ai: { order: 10, result: { player: 1 } },
 		},
 		jlsg_yaozhi_temp: {
+			sourceSkill: "jlsg_yaozhi",
 			onremove: true,
-			trigger: { player: ["useSkillBegin", "useCard1"] },
-			silent: true,
-			firstDo: true,
-			filter: function (event, player) {
-				var info = lib.skill[event.skill];
-				if (!info) return false;
-				if (event.skill == player.storage.jlsg_yaozhi_temp) return true;
-				if (info.sourceSkill == player.storage.jlsg_yaozhi_temp || info.group == player.storage.jlsg_yaozhi_temp) return true;
-				if (Array.isArray(info.group) && info.group.includes(player.storage.jlsg_yaozhi_temp)) return true;
-				return false;
+			trigger: { player: ["useSkill", "logSkillBegin"] },
+			filter(event, player) {
+				var info = get.info(event.skill);
+				if (info && info.charlotte) {
+					return false;
+				}
+				var skill = get.sourceSkillFor(event);
+				return player.storage.jlsg_yaozhi_temp.includes(skill);
 			},
-			content: function () {
-				player.removeSkill(player.storage.jlsg_yaozhi_temp);
-				player.removeSkill("jlsg_yaozhi_temp");
+			async content(event, trigger, player) {
+				let skill = get.sourceSkillFor(trigger);
+				player.removeSkill(skill);
+				player.unmarkAuto(event.name, [skill]);
 			},
 		},
 		jlsg_xingyun: {
@@ -3554,7 +3623,7 @@ export default {
 			content: function () {
 				"step 0";
 				if (!_status.characterlist) {
-					lib.skill.pingjian.initList();
+					game.initCharactertList();
 				}
 				_status.characterlist.randomSort();
 				var list = [];
@@ -4236,7 +4305,7 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			initList: function () {
 				if (!_status.characterlist) {
-					lib.skill.pingjian.initList();
+					game.initCharactertList();
 				}
 				_status.jlsg_luocha_list = [];
 				_status.jlsg_luocha_list_hidden = [];
@@ -8786,7 +8855,9 @@ export default {
 						获得一个同势力武将技能: {
 							content: async function (event, trigger, player) {
 								let group = player.group;
-								if (!_status.characterlist) lib.skill.pingjian.initList();
+								if (!_status.characterlist) {
+									game.initCharactertList();
+								}
 								let allList = _status.characterlist.slice(0).randomSort();
 								for (let name of allList) {
 									if (!lib.character[name]) continue;
