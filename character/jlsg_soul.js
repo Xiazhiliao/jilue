@@ -7703,7 +7703,7 @@ export default {
 			},
 			onremove(player) {
 				if (player.hasMark("jlsg_shenyin")) player.useSkill("jlsg_shenyin_dying", false);
-				else delete player.storage.jlsg_shenyin_record;
+				else delete player.setStorage("jlsg_shenyin_record",undefined);
 			},
 			priority: 1,
 			trigger: {
@@ -7745,7 +7745,7 @@ export default {
 					鹰标记牌: ying.slice(),
 					狼标记牌: lang.slice(),
 				};
-				if (!norecord) player.storage.jlsg_shenyin_record = list;
+				if (!norecord) player.setStorage("jlsg_shenyin_record",list);
 				return list;
 			},
 			getInfo: function (player, num) {
@@ -7838,10 +7838,10 @@ export default {
 						await player.recoverTo(info["体力"]);
 						await player.addSkills(info["技能"].filter(i => !player.hasSkill(i)));
 						await player.removeGaintag("jlsg_yingshi", player.getCards("h"));
-						player.storage.jlsg_yingshi = info["鹰标记牌"];
+						player.setStorage("jlsg_yingshi", info["鹰标记牌"]);
 						await player.useSkill("jlsg_yingshi");
 						player.addGaintag(info["鹰标记牌"], "jlsg_yingshi");
-						player.storage.jlsg_langxi = info["狼标记牌"];
+						player.setStorage("jlsg_langxi", info["狼标记牌"]);
 						await player.draw(2 * num);
 					},
 				},
