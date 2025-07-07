@@ -4052,7 +4052,7 @@ export default {
 			async cost(event, trigger, player) {
 				event.result = await player
 					.chooseCard(`###${get.prompt("jlsg_hemou", trigger.player)}###令其本回合可以将一张手牌牌按如下规则使用(限一次)<br>黑桃：决斗<br>梅花：借刀杀人<br>红桃：顺手牵羊<br>方片：火攻`)
-					.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("targetx"), player, event))
+					.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event().getTrigger().player, player, event))
 					.set("ai", card => {
 						const player = get.player(),
 							target = get.event("targetx");
@@ -4061,7 +4061,7 @@ export default {
 						}
 						return 0;
 					})
-					.set("targetx", trigger, player)
+					.set("targetx", trigger.player)
 					.forResult();
 				if (event.result?.bool) {
 					event.result.targets = [trigger.player];
