@@ -1028,7 +1028,7 @@ export default {
 			async content(event, trigger, player) {
 				await player.draw();
 				let characterList;
-				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == 'false') {
+				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false") {
 					if (!_status.characterlist) {
 						game.initCharactertList();
 					}
@@ -1046,7 +1046,7 @@ export default {
 				for (let name of characterList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 						continue;
-					} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == 'false' && packList.every(pack => !(name in lib.characterPack[pack]))) {
+					} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false" && packList.every(pack => !(name in lib.characterPack[pack]))) {
 						continue;
 					}
 					let skills = get.character(name).skills;
@@ -1171,7 +1171,7 @@ export default {
 				await player.draw(1);
 				let evt = event.getParent(2);
 				let characterList;
-				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == 'false') {
+				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false") {
 					if (!_status.characterlist) {
 						game.initCharactertList();
 					}
@@ -1188,12 +1188,12 @@ export default {
 				for (let name of characterList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 						continue;
-					} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == 'false' && packList.every(pack => !(name in lib.characterPack[pack]))) {
+					} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false" && packList.every(pack => !(name in lib.characterPack[pack]))) {
 						continue;
 					}
 					let skills = get.character(name).skills;
 					for (let skill of skills) {
-						if (["jlsg_xianzhou", "jlsg_sanjue"].includes(skill)) {
+						if (["jlsg_xianzhou"].includes(skill)) {
 							continue;
 						}
 						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
@@ -4581,7 +4581,7 @@ export default {
 				event.result = {
 					bool: next.result?.bool,
 					targets: [trigger.player],
-					cost_data: { next: next },
+					cost_data: { next },
 				};
 			},
 			async content(event, trigger, player) {
@@ -4590,17 +4590,18 @@ export default {
 				} = event;
 				await player.gain(next.result.cards, next.target, "bySelf");
 				await player.turnOver();
-				const phase = trigger.getParent("phase");
+				const phase = trigger.getParent("phase", true);
+				const target = _status.currentPhase || phase.player;
 				if (player.isTurnedOver() && phase && !phase.finished) {
 					const { result } = await player
-						.chooseBool("掠阵：是否结束" + get.translation(_status.currentPhase) + "的回合")
+						.chooseBool("掠阵：是否结束" + get.translation(target) + "的回合")
 						.set("ai", (event, player) => get.attitude(player, get.event("target")) > 0)
-						.set("target", _status.currentPhase);
+						.set("target", target);
 					if (result.bool) {
-						await player.logSkill("jlsg_lvezhen", _status.currentPhase);
-						_status.event = phase;
-						phase.finish();
-						game.log(_status.currentPhase, "的回合结束了");
+						await player.logSkill("jlsg_lvezhen", target);
+						phase.num = phaseList.length;
+						phase.step = 13;
+						game.log(target, "的回合结束了");
 					}
 				}
 			},
