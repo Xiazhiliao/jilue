@@ -1175,6 +1175,9 @@ export default {
 					}
 					let skills = get.character(name).skills;
 					for (let skill of skills) {
+						if (["jlsg_xianzhou", "jlsg_sanjue"].includes(skill)) {
+							continue;
+						}
 						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
 							continue;
 						}
@@ -3636,11 +3639,14 @@ export default {
 				var map = [];
 				for (var i = 0; i < _status.characterlist.length; i++) {
 					var name = _status.characterlist[i];
-					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1) continue;
+					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_") || name.startsWith("jlsgsy_")) {
+						continue;
+					}
 					if (!get.character(name)) continue;
 					var skills2 = get.character(name)[3] ?? [];
 					if (!skills2.length) continue;
 					for (var j = 0; j < skills2.length; j++) {
+						if (["jlsg_sanjue", "jlsg_xianshou"].includes(skills[k])) continue;
 						if (skills.includes(skills2[j])) {
 							list.add(name);
 							if (!map[name]) map[name] = [];
@@ -5954,12 +5960,17 @@ export default {
 			},
 			get skills() {
 				let skills = {};
-				let players = game.players.concat(game.dead);
 				for (let c of lib.jlsg.characterList) {
+					if (c.indexOf("zuoci") != -1 || c.indexOf("xushao") != -1 || c.startsWith("jlsgsoul_sp_") || c.startsWith("jlsgsy_")) {
+						continue;
+					}
 					if (!get.character(c) || !get.character(c)[3]?.length) continue;
 					let sex = get.character(c, 0);
 					skills[sex] = skills[sex] || [];
-					skills[sex].addArray(get.character(c)[3].filter(s => !lib.filter.skillDisabled(s) && !lib.skill[s]?.charlotte));
+					let skills2 = get.character(c).skills.filter(s => {
+						return !["jlsg_xianshou", "jlsg_sanjue"].includes(s) && !lib.filter.skillDisabled(s) && !lib.skill[s]?.charlotte;
+					});
+					skills[sex].addArray(skills2);
 				}
 				delete this.skills;
 				this.skills = skills;
@@ -8866,9 +8877,13 @@ export default {
 								let allList = _status.characterlist.slice(0).randomSort();
 								for (let name of allList) {
 									if (!lib.character[name]) continue;
+									if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_") || name.startsWith("jlsgsy_")) {
+										continue;
+									}
 									if (lib.character[name][1] != group) continue;
 									if (!lib.character[name][3]) continue;
-									let skills = lib.character[name][3].filter(s => {
+									let skills = get.character(name).skills.filter(s => {
+										if (["jlsg_sanjue", "jlsg_xianshou"].includes(s)) return false;
 										if (player.hasSkill(s)) return false;
 										let info = get.info(s);
 										if (!info || info.unique || info.charlotte) return false;
@@ -11887,7 +11902,9 @@ export default {
 					const pack = lib.characterPack[packname];
 					if (!Object.keys(pack).length) continue;
 					for (const i in pack) {
-						if (i.includes("xushao") || i.includes("zuoci")) continue;
+						if (i.indexOf("zuoci") != -1 || i.indexOf("xushao") != -1 || i.startsWith("jlsgsoul_sp_") || i.startsWith("jlsgsy_")) {
+							continue;
+						}
 						if (lib.filter.characterDisabled(i)) continue;
 						if (lib.filter.characterDisabled2(i)) continue;
 						if (pack[i].isBoss) continue;
@@ -11895,6 +11912,7 @@ export default {
 						if (pack[i].isMinskin) continue;
 						if (pack[i].isUnseen) continue;
 						for (const skill of pack[i].skills) {
+							if (["jlsg_sanjue", "jlsg_xianshou"].includes(skill)) continue;
 							const info = lib.skill[skill];
 							if (lib.filter.skillDisabled(skill)) continue;
 							if (info?.charlotte) continue;
