@@ -1027,17 +1027,26 @@ export default {
 			frequent: true,
 			async content(event, trigger, player) {
 				await player.draw();
-				if (!_status.characterlist) {
-					game.initCharactertList();
+				let characterList;
+				if (lib.config.extension_极略_jlsgsoul_sp_zhangjiao == 'false') {
+					if (!_status.characterlist) {
+						game.initCharactertList();
+					}
+					characterList = _status.characterlist.slice().randomSort();
+				} else {
+					characterList = [];
+					for (let i in lib.character) {
+						characterList.push(i);
+					}
+					characterList = characterList.randomSort();
 				}
-				const characterList = _status.characterlist.slice().randomSort(),
-					triggername = event.triggername == "phaseBegin" ? ["phaseBegin", "phaseZhunbeiBegin"] : [event.triggername],
+				const triggername = event.triggername == "phaseBegin" ? ["phaseBegin", "phaseZhunbeiBegin"] : [event.triggername],
 					list = {};
 				let packList = ["jlsg_sr", "jlsg_sk", "jlsg_soul"];
 				for (let name of characterList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 						continue;
-					} else if (packList.every(pack => !(name in lib.characterPack[pack]))) {
+					} else if (lib.config.extension_极略_jlsgsoul_sp_zhangjiao == 'false' && packList.every(pack => !(name in lib.characterPack[pack]))) {
 						continue;
 					}
 					let skills = get.character(name).skills;
@@ -1161,16 +1170,25 @@ export default {
 			async content(event, trigger, player) {
 				await player.draw(1);
 				let evt = event.getParent(2);
-				if (!_status.characterlist) {
-					game.initCharactertList();
+				let characterList;
+				if (lib.config.extension_极略_jlsgsoul_sp_zhangjiao == 'false') {
+					if (!_status.characterlist) {
+						game.initCharactertList();
+					}
+					characterList = _status.characterlist.slice().randomSort();
+				} else {
+					characterList = [];
+					for (let i in lib.character) {
+						characterList.push(i);
+					}
+					characterList = characterList.randomSort();
 				}
-				const characterList = _status.characterlist.slice().randomSort(),
-					list = {};
+				const list = {};
 				let packList = ["jlsg_sr", "jlsg_sk", "jlsg_soul"];
 				for (let name of characterList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 						continue;
-					} else if (packList.every(pack => !(name in lib.characterPack[pack]))) {
+					} else if (lib.config.extension_极略_jlsgsoul_sp_zhangjiao == 'false' && packList.every(pack => !(name in lib.characterPack[pack]))) {
 						continue;
 					}
 					let skills = get.character(name).skills;
