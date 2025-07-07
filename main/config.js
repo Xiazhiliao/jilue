@@ -309,6 +309,15 @@ let block = {
 					1: "一代",
 				},
 			},
+			jlsgsoul_sp_zhugeliang: {
+				name: "SP神诸葛亮",
+				init: "false",
+				intro: "“极略”为极略官方版本[妖智]<br>“无名杀”为全扩版本[妖智]",
+				item: {
+					false: "极略",
+					noname: "无名杀",
+				},
+			},
 		},
 		sy: {
 			jlsgsy_weiyan: {
