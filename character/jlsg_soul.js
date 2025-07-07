@@ -1028,7 +1028,7 @@ export default {
 			async content(event, trigger, player) {
 				await player.draw();
 				let characterList;
-				if (lib.config.extension_极略_jlsgsoul_sp_zhangjiao == 'false') {
+				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == 'false') {
 					if (!_status.characterlist) {
 						game.initCharactertList();
 					}
@@ -1046,7 +1046,7 @@ export default {
 				for (let name of characterList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 						continue;
-					} else if (lib.config.extension_极略_jlsgsoul_sp_zhangjiao == 'false' && packList.every(pack => !(name in lib.characterPack[pack]))) {
+					} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == 'false' && packList.every(pack => !(name in lib.characterPack[pack]))) {
 						continue;
 					}
 					let skills = get.character(name).skills;
@@ -1171,7 +1171,7 @@ export default {
 				await player.draw(1);
 				let evt = event.getParent(2);
 				let characterList;
-				if (lib.config.extension_极略_jlsgsoul_sp_zhangjiao == 'false') {
+				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == 'false') {
 					if (!_status.characterlist) {
 						game.initCharactertList();
 					}
@@ -1188,7 +1188,7 @@ export default {
 				for (let name of characterList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 						continue;
-					} else if (lib.config.extension_极略_jlsgsoul_sp_zhangjiao == 'false' && packList.every(pack => !(name in lib.characterPack[pack]))) {
+					} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == 'false' && packList.every(pack => !(name in lib.characterPack[pack]))) {
 						continue;
 					}
 					let skills = get.character(name).skills;
