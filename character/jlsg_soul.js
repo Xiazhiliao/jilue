@@ -1193,7 +1193,7 @@ export default {
 					}
 					let skills = get.character(name).skills;
 					for (let skill of skills) {
-						if (["jlsg_xianzhou"].includes(skill)) {
+						if (["jlsg_xianshou"].includes(skill)) {
 							continue;
 						}
 						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
@@ -4599,7 +4599,7 @@ export default {
 						.set("target", target);
 					if (result.bool) {
 						await player.logSkill("jlsg_lvezhen", target);
-						phase.num = phaseList.length;
+						phase.num = phase.phaseList.length;
 						phase.step = 13;
 						game.log(target, "的回合结束了");
 					}
@@ -4762,36 +4762,30 @@ export default {
 		jlsg_yinyang_s: {
 			audio: "ext:极略/audio/skill:2",
 			derivation: ["jlsg_jiyang", "jlsg_jiyin", "jlsg_xiangsheng"],
-			forced: true,
 			charlotte: true,
 			unique: true,
-			trigger: {
-				player: ["showCharacterEnd", "changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
-			},
-			delay: false,
-			init: function (player) {
+			init (player) {
 				if (player.hasSkill("jlsg_yinyang_s")) {
 					player.useSkill("jlsg_yinyang_s");
 				}
 			},
 			onremove: true,
-			filter: function (event, player) {
-				let skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
-				return !player.hasSkill(skill, null, false, false) || player.isTempBanned(skill);
+			trigger: {
+				player: ["showCharacterEnd", "changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
 			},
+			filter (event, player) {
+				let skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
+				return !player.hasStorage("jlsg_yinyang_s",skill);
+			},
+			forced: true,
+			delay: false,
 			async content(event, trigger, player) {
 				const skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
 				await player.changeSkills(
 					[skill],
 					[player.storage.jlsg_yinyang_s].filter(i => i)
 				);
-				game.broadcastAll(
-					(player, skill) => {
-						player.storage.jlsg_yinyang_s = skill;
-					},
-					player,
-					skill
-				);
+				player.setStorage("jlsg_yinyang_s",skill);
 			},
 			getCurrentSkill(player) {
 				let diff = player.hp - player.getDamagedHp();
