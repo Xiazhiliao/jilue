@@ -1054,6 +1054,9 @@ export default {
 						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
 							continue;
 						}
+						if(["jlsg_xianshou"].includes(skill)){
+							continue
+						}
 						const skills2 = game.expandSkills([skill]);
 						for (let skill2 of skills2) {
 							const info = lib.skill[skill2];

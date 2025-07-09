@@ -10284,85 +10284,78 @@ export default {
 		jlsg_diancai: {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { player: "phaseJieshuBegin" },
-			direct: true,
-			content() {
-				"step 0";
-				var players = game.filterPlayer();
-				var attMap = new Map();
-				for (let p of players) {
-					attMap.set(p, get.attitude(player, p));
-				}
-				var cntMap = new Map();
-				for (let p of players) {
-					let cnt = p
-						.getHistory("lose", e => e.cards2)
-						.map(e => e.cards2.length)
-						.reduce((a, b) => a + b, 0);
-					cntMap.set(p, cnt);
-				}
-				event.cntMap = cntMap;
-				var vMax = -Infinity,
-					aiTargets = null;
-				for (let p of players) {
-					for (let p2 of players) {
-						let v = attMap.get(p) * cntMap.get(p2) + attMap.get(p2) * cntMap.get(p);
-						if (v > vMax) {
-							vMax = v;
-							aiTargets = [p, p2];
-						}
+			filter(event, player) {
+				return (
+					game.countPlayer(current => {
+						return current.hasHistory("lose", evt => evt.cards2?.length);
+					}) >= 2
+				);
+			},
+			async cost(event, trigger, player) {
+				const list = {};
+				for (let current of game.players) {
+					const cnt = current
+						.getHistory("lose", evt => evt.cards2.length)
+						.map(evt => evt.cards2.length)
+						.reduce((sum, num) => sum + num, 0);
+					if (cnt > 0) {
+						list[current.playerid] = cnt;
 					}
 				}
-
-				var custom = {
-					add: {
-						_target: [
-							() => {
-								for (let [p, cnt] of cntMap.entries()) {
-									p.prompt(cnt.toString());
+				const next = player
+					.chooseTarget(2, get.prompt2("jlsg_diancai"))
+					.set("filterTarget", (_, player, target) => get.event("list")[target.playerid] > 0)
+					.set("ai")
+					.set("ai", target => get.event("choice").includes(target))
+					.set(
+						"choice",
+						(function () {
+							let vMax = -Infinity,
+								aiTargets = [null, null];
+							for (let current1 of game.players) {
+								if (get.effect(current1, { name: "draw" }, player, player) <= 0) {
+									continue;
 								}
-							},
-						],
-					},
-					replace: {},
-				};
-				Object.defineProperty(custom.add, "target", {
-					enumerable: true,
-					configurable: true,
-					get() {
-						return function () {
-							// console.log(this);
-							for (let f of this._target) {
-								f.call(this);
+								for (let current2 of game.players) {
+									if (get.effect(current2, { name: "draw" }, player, player) <= 0) {
+										continue;
+									}
+									let v = list[current1.playerid] + list[current2.playerid];
+									if (v > vMax) {
+										vMax = v;
+										aiTargets = [current1, current2];
+									}
+								}
 							}
-						};
-					},
-					set(newValue) {
-						this._target.add(newValue);
-					},
+							return aiTargets;
+						})()
+					)
+					.set("list", list);
+				next.targetprompt2.add(target => {
+					const list = get.event("list");
+					if (list[target.playerid] < 0) {
+						return false;
+					}
+					return get.cnNumber(list[target.playerid], true);
 				});
-				var next = player
-					.chooseTarget(2, get.prompt2(event.name))
-					.set("custom", custom)
-					.set("cntMap", cntMap)
-					.set("ai", function (target) {
-						return _status.event.targets && _status.event.targets.includes(target) ? 1 : 0;
-					})
-					.set("targetprompt", p => _status.event.cntMap.get(p).toString());
-				if (vMax > 0) {
-					next.set("targets", aiTargets);
+				event.result = await next.forResult();
+				if (event.result?.bool) {
+					event.result.targets.sortBySeat();
+					let [target1, target2] = event.result.targets;
+					event.result.cost_data = { info: {} };
+					event.result.cost_data.info[target1.playerid] = list[target2.playerid];
+					event.result.cost_data.info[target2.playerid] = list[target1.playerid];
 				}
-				("step 1");
-				if (!result.bool) {
-					event.finish();
-					return;
-				}
-				player.logSkill(event.name, result.targets);
-				if (result.targets.some(p => p.ai.shown > player.ai.shown)) {
+			},
+			async content(event, trigger, player) {
+				const {
+					targets: [target1, target2],
+					cost_data: { info },
+				} = event;
+				await game.asyncDraw([target1, target2], [info[target1.playerid], info[target2.playerid]]);
+				if (event.targets.some(target => target.ai.shown > player.ai.shown)) {
 					player.addExpose(0.1);
 				}
-				var [p, p2] = result.targets.sortBySeat();
-				p.draw(event.cntMap.get(p2));
-				p2.draw(event.cntMap.get(p));
 			},
 		},
 		jlsg_zhendu: {
@@ -11770,8 +11763,8 @@ export default {
 			getList(player) {
 				const configx = lib.config.extension_极略_jlsgsk_jiangwei;
 				let list = {};
-				if (!_status.characterlist){
-					game.initCharactertList()
+				if (!_status.characterlist) {
+					game.initCharactertList();
 				}
 				let character = _status.characterlist.filter(name => {
 					if (["character", "all"].includes(configx)) {
@@ -12768,8 +12761,8 @@ export default {
 			priority: 1,
 			get getCharacters() {
 				//角色列表
-				if (!_status.characterlist){
-					game.initCharactertList()
+				if (!_status.characterlist) {
+					game.initCharactertList();
 				}
 				let list = {};
 				for (const pack in lib.characterPack) {

@@ -1471,7 +1471,7 @@ export default {
 		jlsg_wuqin: {
 			audio: "ext:极略/audio/skill:1",
 			srlose: true,
-			trigger: { player: "phaseZhunbeiEnd" },
+			trigger: { player: "phaseJieshuBegin" },
 			filter(event, player) {
 				return player.countDiscardableCards(player, "h", card => get.type(card) == "basic");
 			},
@@ -5016,7 +5016,7 @@ export default {
 		jlsg_sheji_info: "当一名装备区有武器牌的其他角色对另一名角色造成伤害后，你可以弃置一张牌，然后获得该角色的武器牌。你可以将装备牌当无距离限制的【杀】使用或打出，你以此法使用的【杀】须连续使用两张【闪】才能抵消。",
 		jlsg_xingyi_info: "出牌阶段限一次，你可以获得一名有手牌的其他角色一张手牌，然后令其恢复1点体力。",
 		jlsg_guagu_info: "当一名角色进入濒死状态时，你可以弃置其所有手牌（至少一张），然后该角色恢复1点体力。若你以此法弃置其两张或更多的手牌，该角色摸一张牌。",
-		jlsg_wuqin_info: "准备阶段结束时，你可以弃置一张基本牌，然后摸两张牌并进行一个额外的出牌阶段。",
+		jlsg_wuqin_info: "结束阶段，你可以弃置一张基本牌，然后摸两张牌并进行一个额外的出牌阶段。",
 		jlsg_lijian_info: "出牌阶段限一次，你可以弃一张牌并选择两名其他男性角色。若如此做，视为其中一名男性角色对另一名男性角色使用一张【决斗】(该【决斗】不可被【无懈可击】响应)。",
 		jlsg_manwu_info: "出牌阶段限一次，你可以展示一名男性角色的一张手牌，若此牌为方片，将之置于该角色的判定区内，视为【乐不思蜀】；若不为方片，你获得之。",
 		jlsg_baiyue_info: "准备阶段开始时，你可以获得本回合其他角色进入弃牌堆的一张牌。",
