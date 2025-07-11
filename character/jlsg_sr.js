@@ -1611,7 +1611,7 @@ export default {
 			srlose: true,
 			enable: "phaseUse",
 			filter: function (event, player) {
-				return player.countCards("h") && (player.storage?.jlsg_yinmeng_used || 0) < Math.max(1, player.getDamagedHp());
+				return player.countCards("h") && player.getStorage("jlsg_yinmeng_used", 0) < Math.max(1, player.getDamagedHp());
 			},
 			filterTarget: function (card, player, target) {
 				return target.hasSex("male") && target.countCards("h") && player != target;
@@ -1624,7 +1624,7 @@ export default {
 					targets: [target],
 				} = event;
 				const { result: result1 } = await player
-					.choosePlayerCard(target, "h", true, "婚盟")
+					.choosePlayerCard(target, "h", true, "姻盟")
 					.set("prompt2", `请选择${get.translation(target)}要展示的一张手牌`)
 					.set("ai", button => {
 						const player = get.player(),
@@ -1678,7 +1678,7 @@ export default {
 			subSkill: {
 				used: {
 					init(player, skill) {
-						player.storage[skill] = 0;
+						player.setStorage(skill, 0, true);
 					},
 					onremove: true,
 					mark: true,
@@ -1792,7 +1792,7 @@ export default {
 			sourceSkill: "jlsg_xianger",
 			audio: false,
 			init(player, skill) {
-				player.storage[skill] = [];
+				player.setStorage(skill, [], true);
 			},
 			onremove: true,
 			mark: true,
@@ -3571,9 +3571,8 @@ export default {
 				const { cards: gainCards } = await target.gain(gain, "gain2");
 				let num = gainCards.length;
 				if (num > 0) {
-					player.storage.jlsg_xujin_effect = num;
 					player.addTempSkill("jlsg_xujin_effect");
-					player.markSkill("jlsg_xujin_effect");
+					player.setStorage("jlsg_xujin_effect", num, true);
 				}
 				await game.delay();
 			},

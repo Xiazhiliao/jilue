@@ -679,7 +679,7 @@ export default {
 			group: ["jlsg_jizhao_damage", "jlsg_jizhao_remove"],
 			subSkill: {
 				damage: {
-					audio: "jlsg_jizhao_zhao",
+					audio: "jlsg_jizhao",
 					trigger: { global: "damageBegin1" },
 					filter: event => event.source && event.source.hasMark("jlsg_jizhao"),
 					prompt: event => `是否对${get.translation(event.source)}发动“激诏”？`,
@@ -739,27 +739,6 @@ export default {
 			forced: true,
 			async content(event, trigger, player) {
 				await trigger.player.chooseToGive(true, player, `###${get.translation(player)}对你发动了【君望】###交给其一张手牌`);
-			},
-		},
-		jlsg_jizhao_zhao: {
-			audio: "ext:极略/audio/skill:1",
-			trigger: {
-				player: "phaseEnd",
-			},
-			mark: true,
-			marktext: "<font color=red>诏</font>",
-			direct: true,
-			content: function () {
-				if (!player.getStat("damage")) {
-					player.storage.jlsg_jizhao2.logSkill("jlsg_jizhao", player);
-					player.storage.jlsg_jizhao1 = false;
-					player.damage(player.storage.jlsg_jizhao2);
-					player.removeSkill("jlsg_jizhao_zhao");
-					delete player.storage.jlsg_jizhao2;
-				}
-			},
-			intro: {
-				content: "该角色的回合未造成伤害，回合结束将受到你的1点伤害并弃置该标记",
 			},
 		},
 		jlsg_qixing: {
@@ -1054,8 +1033,8 @@ export default {
 						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
 							continue;
 						}
-						if(["jlsg_xianshou"].includes(skill)){
-							continue
+						if (["jlsg_xianshou"].includes(skill)) {
+							continue;
 						}
 						const skills2 = game.expandSkills([skill]);
 						for (let skill2 of skills2) {
@@ -1295,7 +1274,7 @@ export default {
 					return false;
 				}
 				var skill = get.sourceSkillFor(event);
-				return player.storage.jlsg_yaozhi_temp.includes(skill);
+				return player.hasStorage("jlsg_yaozhi_temp", skill);
 			},
 			async content(event, trigger, player) {
 				let skill = get.sourceSkillFor(trigger);
@@ -1311,12 +1290,12 @@ export default {
 				"step 0";
 				player.loseMaxHp();
 				("step 1");
-				if (!player.storage.jlsg_yaozhi || !player.storage.jlsg_yaozhi.length) {
+				if (!player.getStorage("jlsg_yaozhi").length) {
 					event.finish();
 					return;
 				}
 				var characters = [];
-				var leftSkills = player.storage.jlsg_yaozhi.randomGets(16);
+				var leftSkills = player.getStorage("jlsg_yaozhi").randomGets(16);
 				var skills = [];
 				for (let pack in lib.characterPack) {
 					for (let c in lib.characterPack[pack]) {
@@ -1412,7 +1391,7 @@ export default {
 				var map = event.result || result;
 				if (map && map.skills && map.skills.length) {
 					player.addSkills(map.skills);
-					player.storage.jlsg_yaozhi.removeArray(map.skills);
+					player.unmarkAuto("jlsg_yaozhi", map.skills);
 				}
 				game.broadcastAll(function (list) {
 					game.expandSkills(list);
@@ -1634,9 +1613,9 @@ export default {
 			},
 			content: function () {
 				"step 0";
-				if (player.storage.jlsg_kuangbao > 0) {
+				if (player.getStorage("jlsg_kuangbao", 0) > 0) {
 					player.chooseControl("选项一", "选项二").set("prompt", '无谋<br><br><div class="text">1:弃置1枚「暴」标记</div><br><div class="text">2:受到1点伤害</div></br>').ai = function () {
-						if (player.storage.jlsg_kuangbao > 6) return "选项一";
+						if (player.getStorage("jlsg_kuangbao", 0) > 6) return "选项一";
 						if (player.hp >= 4 && player.countCards("h", "tao") >= 1) return "选项二";
 						return Math.random() < 0.5 && "选项一";
 					};
@@ -1647,7 +1626,7 @@ export default {
 				("step 1");
 				if (result.control == "选项一") {
 					player.storage.jlsg_kuangbao--;
-					player.syncStorage("jlsg_kuangbao");
+					player.markSkill("jlsg_kuangbao");
 				} else {
 					player.damage("nosource");
 				}
@@ -1697,7 +1676,7 @@ export default {
 			enable: "phaseUse",
 			usable: 1,
 			filter: function (event, player) {
-				return player.storage.jlsg_kuangbao >= 6;
+				return player.getStorage("jlsg_kuangbao", 0) >= 6;
 			},
 			skillAnimation: true,
 			animationColor: "metal",
@@ -1793,11 +1772,6 @@ export default {
 				return event.player != player && event.player?.isIn();
 			},
 			forced: true,
-			init: function (player) {
-				for (var i = 0; i < game.players.length; i++) {
-					game.players[i].storage.jlsg_suohun_mark = 0;
-				}
-			},
 			content: function () {
 				var target = trigger.source,
 					cnt = trigger.num;
@@ -1805,11 +1779,10 @@ export default {
 					target = trigger.player;
 					cnt = 1;
 				}
-				if (!target.storage.jlsg_suohun_mark) {
-					target.storage.jlsg_suohun_mark = 0;
+				if (!target.getStorage("jlsg_suohun_mark", 0)) {
+					target.setStorage("jlsg_suohun_mark", 0, true);
 				}
 				target.storage.jlsg_suohun_mark += cnt;
-				target.syncStorage("jlsg_suohun_mark");
 				target.markSkill("jlsg_suohun_mark");
 			},
 			global: ["jlsg_suohun_mark"],
@@ -1851,12 +1824,11 @@ export default {
 				}
 				("step 1");
 				for (var i = 0; i < game.players.length; i++) {
-					if (game.players[i].storage.jlsg_suohun_mark) {
+					if (game.players[i].getStorage("jlsg_suohun_mark", 0)) {
 						player.line(game.players[i], "fire");
 						game.delay(1.5);
-						game.players[i].damage(game.players[i].storage.jlsg_suohun_mark, player);
-						game.players[i].storage.jlsg_suohun_mark = 0;
-						game.players[i].unmarkSkill("jlsg_suohun_mark");
+						game.players[i].damage(game.players[i].getStorage("jlsg_suohun_mark", 0), player);
+						game.players[i].setStorage("jlsg_suohun_mark", 0, true);
 					}
 				}
 			},
@@ -1867,7 +1839,7 @@ export default {
 						if (target.maxHp == 1) return;
 						var num = 0;
 						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].storage.jlsg_suohun_mark && get.attitude(target, game.players[i]) <= -2) num += game.players[i].storage.jlsg_suohun_mark;
+							if (game.players[i].getStorage("jlsg_suohun_mark", 0) && get.attitude(target, game.players[i]) <= -2) num += game.players[i].getStorage("jlsg_suohun_mark", 0);
 						}
 						if (get.tag(card, "damage")) {
 							if (target.hp == 1) return [0, 2 * num];
@@ -2284,14 +2256,14 @@ export default {
 			content: function () {
 				"step 0";
 				targets.sortBySeat();
-				if (player.storage["jlsg_zhiming1"]) {
-					player.storage["jlsg_zhiming1"] = false;
+				if (player.getStorage("jlsg_zhiming1")) {
+					player.setStorage("jlsg_zhiming1", false, true);
 					event.goto(2);
 				} else {
 					player.chooseBool(`###是否失去1点体力？###令${get.translation(targets)}失去1点体力`, true);
 				}
 				("step 1");
-				player.storage["jlsg_zhiming1"] = result.bool;
+				player.setStorage("jlsg_zhiming1", result.bool, true);
 				if (result.bool) {
 					player.loseHp();
 					targets.forEach(p => p.loseHp());
@@ -2301,14 +2273,14 @@ export default {
 					event.finish();
 					return;
 				}
-				if (player.storage["jlsg_zhiming2"]) {
-					player.storage["jlsg_zhiming2"] = false;
+				if (player.getStorage("jlsg_zhiming2")) {
+					player.setStorage("jlsg_zhiming2", false, true);
 					event.goto(4);
 				} else {
 					player.chooseBool(`###是否翻面？###令${get.translation(targets)}翻面`, true);
 				}
 				("step 3");
-				player.storage["jlsg_zhiming2"] = result.bool;
+				player.setStorage("jlsg_zhiming2", result.bool, true);
 				if (result.bool) {
 					player.turnOver();
 					targets.filter(p => p.isIn()).forEach(p => p.turnOver());
@@ -2318,8 +2290,8 @@ export default {
 					event.finish();
 					return;
 				}
-				if (player.storage["jlsg_zhiming3"]) {
-					player.storage["jlsg_zhiming3"] = false;
+				if (player.getStorage("jlsg_zhiming3")) {
+					player.setStorage("jlsg_zhiming3", false, true);
 					event.finish();
 				} else {
 					let targetMax = Math.max(...targets.map(p => p.countCards("he")));
@@ -2339,7 +2311,7 @@ export default {
 						.set("cards", cards);
 				}
 				("step 5");
-				player.storage["jlsg_zhiming3"] = result.bool;
+				player.setStorage("jlsg_zhiming3", result.bool, true);
 				if (result.bool) {
 					targets.filter(p => p.isIn()).forEach(p => p.chooseToDiscard(result.cards.length, "he", true));
 				}
@@ -2611,8 +2583,12 @@ export default {
 					.set("ai", button => get.value(button.link, get.event("target")));
 				if (!result2.bool) return;
 				const suits = [get.suit(card, target), get.suit(result2.cards[0], target)];
-				target.storage.jlsg_gongxin2 = target.getStorage("jlsg_gongxin2").addArray(lib.suit.filter(s => !suits.includes(s)));
 				target.addTempSkill("jlsg_gongxin2");
+				target.setStorage(
+					"jlsg_gongxin2",
+					lib.suit.filter(s => !suits.includes(s)),
+					true
+				);
 			},
 			ai: {
 				result: {
@@ -2642,9 +2618,7 @@ export default {
 					if (player.getStorage("jlsg_gongxin2").includes(get.suit(card))) return false;
 				},
 			},
-			onremove(player) {
-				player.storage.jlsg_gongxin2 = [];
-			},
+			onremove: true,
 		},
 		jlsg_tianqi: {
 			audio: "ext:极略/audio/skill:2",
@@ -2655,16 +2629,16 @@ export default {
 				let type = get.type(name);
 				if (!["basic", "trick"].includes(type)) return false;
 				if (player.isPhaseUsing() && get.event().type == "phase") {
-					let basic = player.storage?.jlsg_tianqi_used?.basic ?? false,
-						trick = player.storage?.jlsg_tianqi_used?.trick ?? false;
+					let basic = player.getStorage("jlsg_tianqi_used", {}).basic,
+						trick = player.getStorage("jlsg_tianqi_used", {}).trick;
 					return (type == "basic" && !basic) || (type == "trick" && !trick);
 				}
 				return true;
 			},
 			filter: function (event, player) {
 				if (player.isDying()) return false;
-				let basic = player.storage?.jlsg_tianqi_used?.basic ?? false,
-					trick = player.storage?.jlsg_tianqi_used?.trick ?? false;
+				let basic = player.getStorage("jlsg_tianqi_used", {}).basic,
+					trick = player.getStorage("jlsg_tianqi_used", {}).trick;
 				if (player.isPhaseUsing() && get.event().type == "phase" && basic && trick) return false;
 				for (let i of lib.inpile) {
 					let type = get.type(i);
@@ -2686,8 +2660,8 @@ export default {
 				dialog: function (event, player) {
 					let list1 = [],
 						list2 = [],
-						basic = player.storage?.jlsg_tianqi_used?.basic ?? false,
-						trick = player.storage?.jlsg_tianqi_used?.trick ?? false;
+						basic = player.getStorage("jlsg_tianqi_used", {}).basic,
+						trick = player.getStorage("jlsg_tianqi_used", {}).trick;
 					for (let i of lib.inpile) {
 						let type = get.type(i);
 						if (!["basic", "trick"].includes(type)) continue;
@@ -2745,7 +2719,8 @@ export default {
 					var tianqiOnUse = function (result, player) {
 						if (player.isPhaseUsing() && get.event().type == "phase") {
 							player.addTempSkill("jlsg_tianqi_used", "phaseUseAfter");
-							player.storage.jlsg_tianqi_used[get.type(result.card, "trick", false)] = true;
+							player.storage.jlsg_tianqi_used[get.type2(result.card, false)] = true;
+							player.markAuto("jlsg_tianqi_used");
 						}
 						player.logSkill("jlsg_tianqi");
 						game.log(player, "声明了" + get.translation(links[0][0]) + "牌");
@@ -2782,8 +2757,8 @@ export default {
 				respondSha: true,
 				skillTagFilter: function (player, tag, arg) {
 					if (player.isDying()) return false;
-					let basic = player.storage?.jlsg_tianqi_used?.basic ?? false,
-						trick = player.storage?.jlsg_tianqi_used?.trick ?? false;
+					let basic = player.getStorage("jlsg_tianqi_used", {}).basic,
+						trick = player.getStorage("jlsg_tianqi_used", {}).trick;
 					if (player.isPhaseUsing()) return !basic || !trick;
 				},
 				result: {
@@ -2804,7 +2779,7 @@ export default {
 					temp: true,
 					charlotte: true,
 					init(player) {
-						player.storage.jlsg_tianqi_used = {};
+						player.setStorage("jlsg_tianqi_used", {}, true);
 					},
 					onremove: true,
 				},
@@ -2966,7 +2941,7 @@ export default {
 			limited: true,
 			animationColor: "fire",
 			init: function (player) {
-				player.storage.jlsg_liangyuan = false;
+				player.setStorage("jlsg_liangyuan", false, true);
 			},
 			filter: function (event, player) {
 				return !player.storage.jlsg_liangyuan;
@@ -2975,7 +2950,7 @@ export default {
 				return player != target && target.hasSex("male");
 			},
 			content: function () {
-				player.storage.jlsg_liangyuan = true;
+				player.setStorage("jlsg_liangyuan", true, true);
 				target.addSkill("jlsg_liangyuan2");
 			},
 			ai: {
@@ -3146,7 +3121,7 @@ export default {
 			},
 			async content(event, trigger, player) {
 				const target = event.targets[0];
-				player.storage.jlsg_lihun = target;
+				player.setStorage("jlsg_lihun", target, true);
 				target.insertPhase("jlsg_lihun");
 			},
 			group: ["jlsg_lihun_swapControl"],
@@ -3163,6 +3138,7 @@ export default {
 					popup: false,
 					async content(event, trigger, player) {
 						delete player.storage.jlsg_lihun;
+						player.markAuto("jlsg_lihun");
 						trigger.player._trueMe = player;
 						game.addGlobalSkill("autoswap");
 						if (trigger.player == game.me) {
@@ -3852,7 +3828,7 @@ export default {
 				content: "发动元化移出游戏了#张牌",
 			},
 			init: function (player) {
-				player.storage.jlsg_yuanhua = 0;
+				player.setStorage("jlsg_yuanhua", 0, true);
 			},
 			locked: true,
 			direct: true,
@@ -3958,7 +3934,7 @@ export default {
 				"step 0";
 				player.awakenSkill("jlsg_chongsheng");
 				("step 1");
-				var num = player.storage.jlsg_yuanhua || 1;
+				var num = player.setStorage("jlsg_yuanhua", 1);
 				trigger.player.maxHp = num;
 				trigger.player.recover(trigger.player.maxHp - trigger.player.hp);
 
@@ -4767,7 +4743,7 @@ export default {
 			derivation: ["jlsg_jiyang", "jlsg_jiyin", "jlsg_xiangsheng"],
 			charlotte: true,
 			unique: true,
-			init (player) {
+			init(player) {
 				if (player.hasSkill("jlsg_yinyang_s")) {
 					player.useSkill("jlsg_yinyang_s");
 				}
@@ -4776,9 +4752,9 @@ export default {
 			trigger: {
 				player: ["showCharacterEnd", "changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
 			},
-			filter (event, player) {
+			filter(event, player) {
 				let skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
-				return !player.hasStorage("jlsg_yinyang_s",skill);
+				return !player.hasStorage("jlsg_yinyang_s", skill);
 			},
 			forced: true,
 			delay: false,
@@ -4788,7 +4764,7 @@ export default {
 					[skill],
 					[player.storage.jlsg_yinyang_s].filter(i => i)
 				);
-				player.setStorage("jlsg_yinyang_s",skill);
+				player.setStorage("jlsg_yinyang_s", skill);
 			},
 			getCurrentSkill(player) {
 				let diff = player.hp - player.getDamagedHp();
@@ -12778,7 +12754,6 @@ export default {
 		jlsg_shunshi: "顺世",
 		jlsg_junwang: "君望",
 		jlsg_jizhao: "激诏",
-		jlsg_jizhao_zhao: "<font color=Red>激诏</font>",
 		jlsg_qixing: "七星",
 		jlsg_kuangfeng: "狂风",
 		jlsg_kuangfeng2: "狂风",

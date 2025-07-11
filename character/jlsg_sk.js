@@ -10059,12 +10059,12 @@ export default {
 			trigger: { player: "useCardAfter" },
 			frequent: true,
 			get list() {
-				var list = new Set();
+				var list = [];
 				for (let c of lib.jlsg.characterList.filter(c => get.character(c, 1) == "shu")) {
 					get.character(c)[3].forEach(s => list.add(s));
 				}
 				delete this.list;
-				this.list = [...list];
+				this.list = list;
 				return this.list;
 			},
 			usable: 1,
