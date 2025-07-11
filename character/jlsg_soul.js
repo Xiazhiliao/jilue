@@ -44,7 +44,6 @@ export default {
 		jlsgsoul_xiaoqiao: ["female", "shen", 3, ["jlsg_xingwu", "jlsg_chenyu"], ["wu", "name:桥|null"]],
 		jlsgsoul_caoren: ["male", "shen", 8, ["jlsg_bamen", "jlsg_gucheng"], ["wei"]],
 		jlsgsoul_caopi: ["male", "shen", 3, ["jlsg_chuyuan", "jlsg_dengji"], ["wei"]],
-
 		jlsgsoul_pangtong: ["male", "shen", 3, ["jlsg_qifeng", "jlsg_lunce"], ["shu", "name:庞|统"]],
 		jlsgsoul_sp_zhaoyun: ["male", "shen", 1, ["jlsg_qianyuan", "jlsg_hualong"], ["shu", "name:赵|云"]],
 		jlsgsoul_sp_sunshangxiang: ["female", "shen", 3, ["jlsg_zhuxing", "jlsg_lingze"], ["wu", "name:孙|null"]],
