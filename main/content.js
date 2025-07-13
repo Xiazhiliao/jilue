@@ -99,7 +99,9 @@ const b = 1;
 				}
 			}
 		} else {
-			if (!lib.config.forbidai_user.includes(i)) lib.config.forbidai.remove(i);
+			for (let name of Object.keys(characterPack)) {
+				if (!lib.config.forbidai_user.includes(name)) lib.config.forbidai.remove(name);
+			}
 		}
 	}
 
@@ -354,5 +356,4 @@ const b = 1;
 		};
 		addRank(rank);
 	}
-
 }
