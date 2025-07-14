@@ -100,7 +100,7 @@ const b = 1;
 			}
 		} else {
 			for (let name of Object.keys(characterPack)) {
-				if (!lib.config.forbidai_user.includes(name)) lib.config.forbidai.remove(name);
+				if (!lib.config.forbidai_user.includes(name) && name.includes("baonu")) lib.config.forbidai.remove(name);
 			}
 		}
 	}

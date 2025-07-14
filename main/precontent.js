@@ -68,58 +68,6 @@ export async function precontent(config, originalPack) {
 				return span.outerHTML;
 			},
 		});
-		lib.arenaReady.push(function () {
-			const characterPack = lib.characterPack["jlsg_sy"];
-			for (const name in characterPack) {
-				if (!name.startsWith("jlsgsy_")) continue;
-				characterPack[name].group = "jlsgsy";
-				if (lib.character?.[name]) {
-					lib.character[name].group = "jlsgsy";
-				}
-				const title = lib.translate[name],
-					baonu = name.endsWith("baonu") ? true : false;
-				const info = baonu ? name.slice(7, -5) : name.slice(7);
-				if (baonu) {
-					let num = 4;
-					let filter = `锁定技，当你的体力值降至${num}或更低时，`;
-					let eff1 = `重置武将牌并弃置判定区内所有牌，`;
-					let eff2 = `你进入暴怒状态，${num == 6 ? eff1 : ""}然后立即执行一个额外回合。`;
-					let str = filter + eff2;
-					game.broadcastAll(
-						function (name, str) {
-							let skill = "jlsgsy_baonu" + name;
-							if (lib.skill[skill]) lib.translate[skill + "_info"] = str;
-						},
-						info,
-						str
-					);
-				}
-				let num2 = 3;
-				if (get.mode() == "boss") {
-					num2 = 4;
-				}
-				characterPack[name].hp = baonu ? num2 : characterPack[name].hp;
-				characterPack[name].maxHp = baonu ? num2 : characterPack[name].maxHp;
-				if (get.mode() != "boss") {
-					if (!title) continue;
-					else {
-						lib.characterTitle[name] = title;
-						let translation = get.rawName(info);
-						lib.translate[name] = "SY" + (baonu ? "暴怒" : "") + translation;
-						lib.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
-						lib.translate[name + "_prefix"] = baonu ? "极略SY暴怒" : "极略SY";
-						if (name == "jlsgsy_sunhaobaonu") {
-							characterPack[name].skills.remove("jlsgsy_shisha");
-							characterPack[name].skills.unshift("jlsgsy_mingzheng");
-						}
-						//AI禁选
-						if (!baonu) {
-							characterPack[name].isAiForbidden = true;
-						}
-					}
-				}
-			}
-		});
 	}
 
 	// jlsg library
@@ -1386,10 +1334,34 @@ export async function precontent(config, originalPack) {
 	window.jlsg = jlsg;
 
 	//单向联机
+	//const [list1] = await game.promises.getFileList(`extension/极略/skin/image`);
 	for (let packName in characters) {
 		const pack = characters[packName];
 		let name = pack.name;
-		game.import("character", function () {
+		//资料卡换肤
+		//因本体资料卡换肤只停留于表层，故这部分无法实现
+		/*
+		for (let character in pack.character) {
+			if (!list1.includes(character)) {
+				continue;
+			}
+			if (!("characterSubstitute" in pack)) {
+				pack.characterSubstitute = {};
+			}
+			if (!(character in pack.characterSubstitute)) {
+				pack.characterSubstitute[character] = [];
+			}
+			const [folders, files] = await game.promises.getFileList(`extension/极略/skin/image/${character}`);
+			if (files.length) {
+				for (let file of files) {
+					let skinName = `${character}_${get.pinyin(file.slice(0, -4), false).join("")}`;
+					pack.characterSubstitute[character].push([skinName, [`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/skin/image/${character}/${file}`]]);
+					lib.config.skin[skinName] = 1;
+				}
+			}
+		}
+		*/
+		await game.import("character", function () {
 			return pack;
 		});
 		lib.arenaReady.push(() => {
@@ -1489,7 +1461,7 @@ export async function precontent(config, originalPack) {
 	}
 
 	let name = jlsg_qs.name;
-	game.import("card", function () {
+	await game.import("card", function () {
 		return jlsg_qs;
 	});
 	lib.arenaReady.push(() => {

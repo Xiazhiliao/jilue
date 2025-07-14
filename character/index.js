@@ -6,6 +6,7 @@ import jlsg_sr from "./jlsg_sr.js";
 import jlsg_soul from "./jlsg_soul.js";
 import jlsg_sy from "./jlsg_sy.js";
 import jlsg_skpf from "./jlsg_skpf.js";
+import { pinyin } from "../../../noname/get/pinyins/index.js";
 
 const packList = [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf];
 //技能替换
@@ -33,6 +34,38 @@ for (let character in config) {
 		} else if (i == "skill") {
 			for (let j in replaceInfo.skill) {
 				pack.skill[j] = replaceInfo.skill[j];
+			}
+		}
+	}
+}
+//魔将调整
+if (lib.config?.extension_极略_syRefactor) {
+	for (const name in jlsg_sy.character) {
+		if (!name.startsWith("jlsgsy_")) continue;
+		jlsg_sy.character[name][1] = "jlsgsy";
+		const title = jlsg_sy.translate[name],
+			baonu = name.endsWith("baonu") ? true : false;
+		const info = baonu ? name.slice(7, -5) : name.slice(7);
+		let num2 = 3;
+		if (get.mode() == "boss") {
+			num2 = 4;
+		}
+		if (baonu) jlsg_sy.character[name][2] = num2;
+		if (get.mode() != "boss") {
+			if (!title) continue;
+			else {
+				if (!jlsg_sy.characterTitle) {
+					jlsg_sy.characterTitle = {};
+				}
+				jlsg_sy.characterTitle[name] = title;
+				let translation = get.rawName(info);
+				jlsg_sy.translate[name] = "SY" + (baonu ? "暴怒" : "") + translation;
+				jlsg_sy.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
+				jlsg_sy.translate[name + "_prefix"] = baonu ? "极略SY暴怒" : "极略SY";
+				if (name == "jlsgsy_sunhaobaonu") {
+					jlsg_sy.character[name][3].remove("jlsgsy_shisha");
+					jlsg_sy.character[name][3].unshift("jlsgsy_mingzheng");
+				}
 			}
 		}
 	}
