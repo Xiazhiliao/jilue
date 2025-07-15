@@ -5052,82 +5052,95 @@ export default {
 		},
 		jlsg_lianti: {
 			audio: "ext:极略/audio/skill:2",
+			trigger: {
+				player: ["linkBefore", "enterGame"],
+				global: "phaseBefore",
+			},
 			forced: true,
 			delay: false,
-			trigger: {
-				player: "showCharacterEnd",
+			filter(event, player) {
+				if (event.name == "link") {
+					return player.isLinked();
+				}
+				return (event.name != "phase" || game.phaseNumber == 0) && !player.isLinked();
 			},
-			init: function (player) {
-				if (player.hasSkill("jlsg_lianti")) {
-					player.useSkill("jlsg_lianti");
+			async content(event, trigger, player) {
+				if (trigger.name != "link") {
+					await player.link(true);
+				} else {
+					trigger.cancel();
 				}
 			},
-			intro: {
-				content: "mark",
-			},
-			filter: function (event, player) {
-				return !player.isLinked();
-			},
-			content: function () {
-				player.link(true)._triggered = null;
-			},
-			group: ["jlsg_lianti_guard", "jlsg_lianti2", "jlsg_lianti3", "jlsg_lianti4"],
-			subSkill: {
-				guard: {
-					silent: true,
-					charlotte: true,
-					trigger: {
-						player: "linkBefore",
+			ai: {
+				noLink: true,
+				effect: {
+					target(card) {
+						if (card.name == "tiesuo") {
+							return "zeroplayertarget";
+						}
 					},
-					filter: function (event, player) {
-						return player.isLinked() && player.hasSkill("jlsg_lianti");
-					},
-					content: function () {
-						trigger.cancel();
-						game.log(player, "取消了重置");
-					},
-					sub: true,
-					sourceSkill: "jlsg_lianti",
-					forced: true,
-					popup: false,
 				},
 			},
-			_priority: 0,
-		},
-		jlsg_lianti2: {
-			audio: "jlsg_lianti",
-			forced: true,
-			trigger: {
-				global: "damageEnd",
-			},
-			filter: function (event, player) {
-				return player === _status.currentPhase && player != event.player && event.nature && event.player.getHistory("damage", e => e.nature).indexOf(event) == 0;
-			},
-			content: function () {
-				trigger.player.damage(trigger.num, trigger.source, trigger.nature);
-			},
-		},
-		jlsg_lianti3: {
-			audio: "jlsg_lianti",
-			forced: true,
-			trigger: {
-				player: "damageEnd",
-			},
-			filter: function (event, player) {
-				return event.nature;
-			},
-			content: function () {
-				"step 0";
-				player.addMark("jlsg_lianti");
-				("step 1");
-				if (
-					player
-						.getRoundHistory("damage", evt => {
-							return evt.hasNature();
-						})
-						.indexOf(trigger) == 0
-				)
-					player.loseMaxHp();
+			group: ["jlsg_lianti_damage"],
+			subSkill: {
+				damage: {
+					sub: true,
+					sourceSkill: "jlsg_lianti",
+					audio: "jlsg_lianti",
+					trigger: { global: "damageEnd" },
+					filter(event, player) {
+						if (!event.hasNature()) {
+							return false;
+						}
+						if (event.player == player) {
+							return true;
+						}
+						return player === _status.currentPhase && event.player.getHistory("damage", evt => evt.hasNature()).indexOf(event) == 0;
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						if (trigger.player == player) {
+							player.addMark("jlsg_lianti");
+							if (!player.hasSkill("jlsg_lianti_effect")) {
+								player.addSkill("jlsg_lianti_effect");
+							}
+							if (player.getRoundHistory("damage", evt => evt.hasNature()).indexOf(trigger) == 0) {
+								await player.loseMaxHp(1);
+							}
+						} else {
+							await trigger.player.damage(trigger.num, trigger.source, trigger.nature);
+						}
+					},
+				},
+				effect: {
+					sub: true,
+					sourceSkill: "jlsg_lianti",
+					charlotte: true,
+					mark: true,
+					intro: {
+						markcount(storage, player) {
+							return player.countMark("jlsg_lianti");
+						},
+						content(storage, player) {
+							let num = player.countMark("jlsg_lianti");
+							return "摸牌阶段摸牌数和手牌上限+" + num;
+						},
+					},
+					mod: {
+						maxHandcard(player, num) {
+							return num + player.countMark("jlsg_lianti");
+						},
+					},
+					trigger: {
+						player: "phaseDrawBegin2",
+					},
+					filter(event, player) {
+						return !event.numFixed && player.countMark("jlsg_lianti");
+					},
+					async content(event, trigger, player) {
+						trigger.num += player.countMark("jlsg_lianti");
+					},
+				},
 			},
 		},
 		jlsg_yanlie: {
@@ -12685,9 +12698,6 @@ export default {
 		jlsg_zhonghun3: "忠魂",
 		jlsg_zhonghun_info: "限定技，游戏开始时，或出牌阶段，你可以减1点体力上限并选择一名其他角色，令其加1点体力上限并回复1点体力。此后当其受到伤害时，若伤害来源不是你，将此伤害转移给你；你死亡时，其获得你的所有技能。",
 		jlsg_lianti: "炼体",
-		jlsg_lianti2: "炼体",
-		jlsg_lianti3: "炼体",
-		jlsg_lianti4: "炼体",
 		jlsg_lianti_info: "锁定技，你始终横置，其他角色于你的回合内第一次受到属性伤害后，你令其再受到一次等量同属性伤害。当你受到属性伤害后，你摸牌阶段摸牌数和手牌上限+1，然后若为你本轮首次受到属性伤害，你减1点体力上限。",
 		jlsg_huchi: "虎痴",
 		jlsg_huchi_info: "出牌阶段，你可以视为使用【决斗】（不能被【无懈可击】响应），以此法受到伤害的角色摸三张牌。若有角色以此法进入濒死状态，或此【决斗】未造成伤害，此技能失效直到阶段结束。",
