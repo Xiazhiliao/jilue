@@ -54,18 +54,17 @@ if (lib.config?.extension_极略_syRefactor) {
 		if (get.mode() != "boss") {
 			if (!title) continue;
 			else {
-				if (!jlsg_sy.characterTitle) {
-					jlsg_sy.characterTitle = {};
-				}
-				jlsg_sy.characterTitle[name] = title;
-				let translation = get.rawName(info);
-				jlsg_sy.translate[name] = "SY" + (baonu ? "暴怒" : "") + translation;
-				jlsg_sy.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
-				jlsg_sy.translate[name + "_prefix"] = baonu ? "极略SY暴怒" : "极略SY";
-				if (name == "jlsgsy_sunhaobaonu") {
-					jlsg_sy.character[name][3].remove("jlsgsy_shisha");
-					jlsg_sy.character[name][3].unshift("jlsgsy_mingzheng");
-				}
+				lib.arenaReady.push(function () {
+					lib.characterTitle[name] = title;
+					let translation = get.rawName(info);
+					lib.translate[name] = "SY" + (baonu ? "暴怒" : "") + translation;
+					lib.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
+					lib.translate[name + "_prefix"] = baonu ? "极略SY暴怒" : "极略SY";
+					if (name == "jlsgsy_sunhaobaonu") {
+						lib.character[name][3].remove("jlsgsy_shisha");
+						lib.character[name][3].unshift("jlsgsy_mingzheng");
+					}
+				});
 			}
 		}
 	}

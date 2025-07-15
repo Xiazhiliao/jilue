@@ -8400,7 +8400,9 @@ export default {
 						filterx: filter.filterx,
 						async content(event, trigger, player) {
 							if (lib.skill[event.name].filterx) {
-								if (!lib.skill[event.name].filterx(event, trigger, player)) return;
+								let bool = lib.skill[event.name].filterx(event, trigger, player);
+								player.markSkill(event.name);
+								if (!bool) return;
 							}
 							player.removeSkill(event.name);
 							const source = lib.skill[event.name].source;
