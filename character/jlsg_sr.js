@@ -3639,7 +3639,7 @@ export default {
 						if (num == 0) return 0;
 						return 8 - get.value(card);
 					});
-				if (!result.bool) {
+				if (!result?.bool) {
 					trigger.directHit = true;
 				}
 			},
