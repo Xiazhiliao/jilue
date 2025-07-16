@@ -99,31 +99,6 @@ if (lib.device || lib.node) {
 		}
 	}
 }
-if (!_status.postReconnect.extErdai_skill) {
-	_status.postReconnect.extErdai_skill = [
-		function (skills, info) {
-			for (let skill in skills) {
-				lib.skill[skill] = skills[skill];
-				if (info[skill]) {
-					lib.translate[skill] = info[skill];
-				}
-				if (info[skill + "_info"]) {
-					lib.translate[skill + "_info"] = info[skill + "_info"];
-				}
-				game.finishSkill(skill);
-			}
-		},
-		{},
-		{},
-	];
-}
-for (let pack of packList) {
-	for (let key in pack.skill) {
-		_status.postReconnect.extErdai_skill[1][key] = pack.skill[key];
-		if (pack.translate[key]) _status.postReconnect.extErdai_skill[2][key] = pack.translate[key];
-		if (pack.translate[key + "_info"]) _status.postReconnect.extErdai_skill[2][key + "_info"] = pack.translate[key + "_info"];
-	}
-}
 export const characters = {
 	jlsg_sk,
 	jlsg_sr,
