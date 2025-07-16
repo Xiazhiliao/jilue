@@ -1337,7 +1337,6 @@ export async function precontent(config, originalPack) {
 	//const [list1] = await game.promises.getFileList(`extension/极略/skin/image`);
 	for (let packName in characters) {
 		const pack = characters[packName];
-		let name = pack.name;
 		//资料卡换肤
 		//因本体资料卡换肤只停留于表层，故这部分无法实现
 		/*
@@ -1361,135 +1360,15 @@ export async function precontent(config, originalPack) {
 			}
 		}
 		*/
-		await game.import("character", function () {
+		game.import("character", function () {
 			return pack;
 		});
-		lib.arenaReady.push(() => {
-			lib.connectCharacterPack.add(name);
-		});
-		if (!_status.postReconnect[`${name}_pack`]) {
-			_status.postReconnect[`${name}_pack`] = [
-				function (pack, name) {
-					lib.translate[`${name}_character_config`] = pack[name];
-					lib.characterPack[name] = pack;
-					lib.config[`extension_${name}_characters_enable`] = true;
-					lib.connectCharacterPack.add(name);
-					lib.config.characters.add(name);
-				},
-				lib.characterPack[name],
-				name,
-			];
-		}
-		if (!_status.postReconnect[`${name}_translate`]) {
-			_status.postReconnect[`${name}_translate`] = [
-				function (translates, name) {
-					lib.translate[`${name}_character_config`] = translates[name];
-					for (let key in translates) {
-						lib.translate[key] = translates[key];
-					}
-				},
-				pack.translate,
-				name,
-			];
-		}
-	}
-	if (!_status.postReconnect.jlsg_namePrefix) {
-		_status.postReconnect.jlsg_namePrefix = [
-			function () {
-				lib.namePrefix.set("极略SK神", {
-					getSpan(prefix, name) {
-						return `${get.prefixSpan("极略SK", name)}${get.prefixSpan("神", name)}`;
-					},
-				});
-				lib.namePrefix.set("极略SP神", {
-					getSpan(prefix, name) {
-						return `${get.prefixSpan("极略SP", name)}${get.prefixSpan("神", name)}`;
-					},
-				});
-				lib.namePrefix.set("极略SR", {
-					getSpan: () => {
-						return `<span style="writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)" data-nature="keymm">SR</span>`;
-					},
-				});
-				lib.namePrefix.set("极略SK", {
-					getSpan: () => {
-						return `<span style="color:#fbefef;writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)" data-nature="firemm">SK</span>`;
-					},
-				});
-				lib.namePrefix.set("极略SP", {
-					getSpan: () => {
-						return `<span style="writing-mode:horizontal-tb;-webkit-writing-mode:horizontal-tb;font-family:MotoyaLMaru;transform:scaleY(0.85)">SP</span>`;
-					},
-				});
-				lib.namePrefix.set("极略★SK", {
-					getSpan(prefix, name) {
-						return `${get.prefixSpan("★SP", name)}${get.prefixSpan("极略SK", name)}`;
-					},
-				});
-				if (lib.config?.extension_极略_syRefactor) {
-					game.addGroup("jlsgsy", "魔", "极略三英", { color: "#8B4A51" });
-					lib.namePrefix.set("极略SY", {
-						getSpan: () => {
-							const span = document.createElement("span"),
-								style = span.style;
-							style.color = "#8B4A51";
-							style.writingMode = style.webkitWritingMode = "horizontal-tb";
-							style.fontFamily = "MotoyaLMaru";
-							style.transform = "scaleY(0.85)";
-							span.dataset.nature = "keymm";
-							span.innerHTML = "SY";
-							return span.outerHTML;
-						},
-					});
-					lib.namePrefix.set("极略SY暴怒", {
-						getSpan: () => {
-							const span = document.createElement("span"),
-								style = span.style;
-							style.color = "#B22222";
-							style.writingMode = style.webkitWritingMode = "horizontal-tb";
-							style.fontFamily = "MotoyaLMaru";
-							style.transform = "scaleY(0.85)";
-							span.dataset.nature = "orangemm";
-							span.innerHTML = "SY";
-							return span.outerHTML;
-						},
-					});
-				}
-			},
-			[],
-		];
 	}
 
 	let name = jlsg_qs.name;
-	await game.import("card", function () {
+	game.import("card", function () {
 		return jlsg_qs;
 	});
-	lib.arenaReady.push(() => {
-		lib.connectCardPack.add(name);
-	});
-	if (!_status.postReconnect[`${name}_pack`]) {
-		_status.postReconnect[`${name}_pack`] = [
-			function (pack, name) {
-				lib.translate[`${name}_card_config`] = pack[name];
-				lib.cardPack[name] = pack;
-				lib.config[`extension_${name}_cards_enable`] = true;
-				lib.connectCardPack.add(name);
-				//lib.config.all.cards.add(name);
-				lib.config.cards.add(name);
-			},
-			lib.cardPack[name],
-		];
-	}
-	if (!_status.postReconnect[`${name}_translate`]) {
-		_status.postReconnect[`${name}_translate`] = [
-			function (translates, name) {
-				lib.translate[`${name}_card_config`] = translates[name];
-				for (let key in translates) lib.translate[key] = translates[key];
-			},
-			jlsg_qs.translate,
-			name,
-		];
-	}
 
 	lib.element.content.waitForPlayer = function () {
 		"step 0";
