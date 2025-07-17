@@ -5133,6 +5133,9 @@ export default {
 					characterlist.removeArray(get.nameList(current));
 				}
 				for (let name of characterlist) {
+					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
+						continue;
+					}
 					let skills = (get.character(name)[3] || []).filter(skill => {
 						if (player.hasSkill(skill, null, false, false) || storage.list.includes(skill)) {
 							return false;
@@ -5221,7 +5224,7 @@ export default {
 					event.dialog.open();
 					event.switchToAuto = function () {
 						_status.imchoosing = false;
-						event._result="ai"
+						event._result = "ai";
 						resolve(event._result);
 						if (event.dialog) {
 							event.dialog.close();
@@ -5245,14 +5248,12 @@ export default {
 					game.countChoose();
 					return promise;
 				};
-				let next,
-					list = Object.keys(map),
-					skills = Object.values(map).flat();
+				let next;
 				if (event.isMine()) {
-					next = chooseButton(list, skills, event.num);
+					next = chooseButton(Object.keys(map), Object.values(map).flat(), event.num);
 				} else if (event.isOnline()) {
 					const { promise, resolve } = Promise.withResolvers();
-					event.player.send(chooseButton, list, skills, event.num);
+					event.player.send(chooseButton, Object.keys(map), Object.values(map).flat(), event.num);
 					event.player.wait(async result => {
 						if (result == "ai") {
 							result = await switchToAuto();

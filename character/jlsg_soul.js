@@ -1261,7 +1261,6 @@ export default {
 		},
 		jlsg_yaozhi_temp: {
 			sourceSkill: "jlsg_yaozhi",
-			onremove: true,
 			charlotte: true,
 			direct: true,
 			firstDo: true,
@@ -1278,7 +1277,7 @@ export default {
 			async content(event, trigger, player) {
 				let skill = get.sourceSkillFor(trigger);
 				player.removeSkill(skill);
-				player.unmarkAuto(event.name, [skill]);
+				player.unmarkAuto("jlsg_yaozhi_temp", [skill]);
 			},
 		},
 		jlsg_xingyun: {
