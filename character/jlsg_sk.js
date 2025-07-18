@@ -14759,9 +14759,9 @@ export default {
 					.set(
 						"choice",
 						(function () {
-							let cards = trigger.player.getDiscardableCards(player, "he");
+							let cards = trigger.player.getDiscardableCards(player, "e");
 							if (trigger.player.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, trigger.player, true)) {
-								cards = trigger.player.getDiscardableCards(player, "e");
+								cards = trigger.player.getDiscardableCards(player, "he");
 							}
 							const black = cards.filter(i => get.color(i, null, false) == "black").sort((a, b) => get.value(a) - get.value(b)),
 								red = cards.filter(i => get.color(i, null, false) == "red").sort((a, b) => get.value(a) - get.value(b));
