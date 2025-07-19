@@ -7883,7 +7883,7 @@ export default {
 				const cards = trigger.getg(player).slice();
 				const { result: chooseCard } = await player
 					.chooseCard("鱼忧：选择一张牌保留", true)
-					.set("filterCard", (card, player) => get.event("cardx").includes(card))
+					.set("filterCard", (card, player) => get.event("cardx")?.includes(card))
 					.set("ai", card => get.useful(card, get.player()))
 					.set("cardx", cards);
 				if (chooseCard.bool) {
