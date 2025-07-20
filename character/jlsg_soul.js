@@ -1284,12 +1284,12 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			forced: true,
 			trigger: { player: "phaseEnd" },
-			async content (event, trigger, player) {
+			async content(event, trigger, player) {
 				await player.loseMaxHp();
 				if (!player.getStorage("jlsg_yaozhi").length) return;
-				var characters = [];
-				var leftSkills = player.getStorage("jlsg_yaozhi").randomGets(16);
-				var skills = [];
+				let characters = [],
+					leftSkills = player.getStorage("jlsg_yaozhi").randomGets(16),
+					skills = [];
 				for (let pack in lib.characterPack) {
 					for (let c in lib.characterPack[pack]) {
 						var info = lib.characterPack[pack][c];
@@ -1305,140 +1305,140 @@ export default {
 				await Promise.all(event.next);
 				event.videoId = lib.status.videoId++;
 				if (player.isUnderControl()) {
-				    game.swapPlayerAuto(player);
+					game.swapPlayerAuto(player);
 				}
 				const chooseCharacterSkills = function (player, list, skills, force = false, num, ai = { bool: false }) {
-				    const { promise, resolve } = Promise.withResolvers();
-				    const event = _status.event;
-				    //初始化result
-				    event._result ??= {};
-				    event._result.skills = [];
-				    event.selectedSkills ??= event._result.skills;
-				    //创建对话框
-				    let dialog = ui.create.dialog(`请选择获得至多${get.cnNumber(num)}个技能`, [list, "character"], "hidden");
-				    event.dialog = dialog;
-				    //创建确定按钮
-				    event.control_ok = ui.create.control("ok", link => {
-				        _status.imchoosing = false;
-				        event.dialog.close();
-				        event.control_ok?.close();
-				        event.control_cancel?.close();
-				        event._result = {
-				            bool: true,
-				            skills: event.selectedSkills,
-				        };
-				        resolve(event._result);
-				        game.resume();
-				    });
-				    //event.control_ok.classList.add("disabled");
-				    //如果是非强制的，才创建取消按钮
-				    if (!force) {
-				        event.control_cancel = ui.create.control("cancel", link => {
-				            _status.imchoosing = false;
-				            event.dialog.close();
-				            event.control_ok?.close();
-				            event.control_cancel?.close();
-				            event._result = {
-				                bool: false,
-				            };
-				            resolve(event._result);
-				            game.resume();
-				        });
-				    }
-				    event.switchToAuto = function () {
-				        _status.imchoosing = false;
-				        event.dialog?.close();
-				        event.control_ok?.close();
-				        event.control_cancel?.close();
-				        event._result = ai;
-				        resolve(event._result);
-				        game.resume();
-				    };
-				    //创建用于选择的技能按钮（tdnodes样式）
-				    const table = document.createElement("div");
-				    table.classList.add("add-setting");
-				    table.style.margin = "0";
-				    table.style.width = "100%";
-				    table.style.position = "relative";
-				    for (let i = 0; i < skills.length; i++) {
-				        const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-				        td.link = skills[i];
-				        table.appendChild(td);
-				        td.innerHTML = "<span>" + get.translation(skills[i]) + "</span>";
-				        //给按钮添加监听
-				        td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-				            if (_status.dragged) {
-				                return;
-				            }
-				            if (_status.justdragged) {
-				                return;
-				            }
-				            _status.tempNoButton = true;
-				            setTimeout(function () {
-				                _status.tempNoButton = false;
-				            }, 500);
-				            const link = this.link;
-				            if (!this.classList.contains("bluebg")) {
-				                //限制选择数量
-				                if (event.selectedSkills.length >= num) {
-				                    return;
-				                }
-				                event.selectedSkills.add(link);
-				                this.classList.add("bluebg");
-				            } else {
-				                this.classList.remove("bluebg");
-				                event.selectedSkills.remove(link);
-				            }
-				            //event.control_ok.classList[event.selectedSkills.length >= 0 ? "remove" : "add"]("disabled");
-				        });
-				    }
-				    dialog.content.appendChild(table);
-				    dialog.add("　　");
-				    dialog.open();
-						
-				    //点亮所有按钮（包括角色的）
-				    for (let i = 0; i < event.dialog.buttons.length; i++) {
-				        event.dialog.buttons[i].classList.add("selectable");
-				    }
-				    game.pause();
-				    _status.imchoosing = true;
-				    return promise;
+					const { promise, resolve } = Promise.withResolvers();
+					const event = _status.event;
+					//初始化result
+					event._result ??= {};
+					event._result.skills = [];
+					event.selectedSkills ??= event._result.skills;
+					//创建对话框
+					let dialog = ui.create.dialog(`请选择获得至多${get.cnNumber(num)}个技能`, [list, "character"], "hidden");
+					event.dialog = dialog;
+					//创建确定按钮
+					event.control_ok = ui.create.control("ok", link => {
+						_status.imchoosing = false;
+						event.dialog.close();
+						event.control_ok?.close();
+						event.control_cancel?.close();
+						event._result = {
+							bool: true,
+							skills: event.selectedSkills,
+						};
+						resolve(event._result);
+						game.resume();
+					});
+					//event.control_ok.classList.add("disabled");
+					//如果是非强制的，才创建取消按钮
+					if (!force) {
+						event.control_cancel = ui.create.control("cancel", link => {
+							_status.imchoosing = false;
+							event.dialog.close();
+							event.control_ok?.close();
+							event.control_cancel?.close();
+							event._result = {
+								bool: false,
+							};
+							resolve(event._result);
+							game.resume();
+						});
+					}
+					event.switchToAuto = function () {
+						_status.imchoosing = false;
+						event.dialog?.close();
+						event.control_ok?.close();
+						event.control_cancel?.close();
+						event._result = ai;
+						resolve(event._result);
+						game.resume();
+					};
+					//创建用于选择的技能按钮（tdnodes样式）
+					const table = document.createElement("div");
+					table.classList.add("add-setting");
+					table.style.margin = "0";
+					table.style.width = "100%";
+					table.style.position = "relative";
+					for (let i = 0; i < skills.length; i++) {
+						const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+						td.link = skills[i];
+						table.appendChild(td);
+						td.innerHTML = "<span>" + get.translation(skills[i]) + "</span>";
+						//给按钮添加监听
+						td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+							if (_status.dragged) {
+								return;
+							}
+							if (_status.justdragged) {
+								return;
+							}
+							_status.tempNoButton = true;
+							setTimeout(function () {
+								_status.tempNoButton = false;
+							}, 500);
+							const link = this.link;
+							if (!this.classList.contains("bluebg")) {
+								//限制选择数量
+								if (event.selectedSkills.length >= num) {
+									return;
+								}
+								event.selectedSkills.add(link);
+								this.classList.add("bluebg");
+							} else {
+								this.classList.remove("bluebg");
+								event.selectedSkills.remove(link);
+							}
+							//event.control_ok.classList[event.selectedSkills.length >= 0 ? "remove" : "add"]("disabled");
+						});
+					}
+					dialog.content.appendChild(table);
+					dialog.add("　　");
+					dialog.open();
+
+					//点亮所有按钮（包括角色的）
+					for (let i = 0; i < event.dialog.buttons.length; i++) {
+						event.dialog.buttons[i].classList.add("selectable");
+					}
+					game.pause();
+					_status.imchoosing = true;
+					return promise;
 				};
 				const ai = function () {
-				    return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout"))[0] };
+					return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout"))[0] };
 				};
 				let next;
 				if (event.isMine()) {
-				    next = chooseCharacterSkills(player, list, skills, true, 1, ai());
+					next = chooseCharacterSkills(player, list, skills, true, 1, ai());
 				} else if (player.isOnline()) {
-				    let { promise, resolve } = Promise.withResolvers();
-				    player.send(chooseCharacterSkills, player, list, skills, true, 1, ai());
-				    player.wait(result => {
-				        if (result == "ai") {
-				            result = ai();
-				        }
-				        resolve(result);
-				    });
-				    next = promise;
+					let { promise, resolve } = Promise.withResolvers();
+					player.send(chooseCharacterSkills, player, list, skills, true, 1, ai());
+					player.wait(result => {
+						if (result == "ai") {
+							result = ai();
+						}
+						resolve(result);
+					});
+					next = promise;
 				} else {
-				    next = Promise.resolve(ai());
+					next = Promise.resolve(ai());
 				}
 				const result = await next;
 				if (result?.skills?.length) {
-				    await player.addSkills(result.skills);
+					await player.addSkills(result.skills);
 				}
 				game.broadcastAll(function (list) {
-				    game.expandSkills(list);
-				    for (const i of list) {
-				        var info = lib.skill[i];
-				        if (!info) {
-				            continue;
-				        }
-				        if (!info.audioname2) {
-				            info.audioname2 = {};
-				        }
-				        info.audioname2.old_yuanshu = "weidi";
-				    }
+					game.expandSkills(list);
+					for (const i of list) {
+						var info = lib.skill[i];
+						if (!info) {
+							continue;
+						}
+						if (!info.audioname2) {
+							info.audioname2 = {};
+						}
+						info.audioname2.old_yuanshu = "weidi";
+					}
 				}, result.skills);
 			},
 			ai: {
