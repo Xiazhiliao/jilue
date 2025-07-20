@@ -1399,7 +1399,7 @@ export async function precontent(config, originalPack) {
 			document.querySelector("#server_status").innerHTML = "等待中";
 		}
 		game.pause();
-		("step 1");
+		"step 1"
 		_status.waitingForPlayer = false;
 		lib.configOL.gameStarted = true;
 		if (window.isNonameServer) {
