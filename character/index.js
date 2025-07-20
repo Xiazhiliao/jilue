@@ -7,7 +7,6 @@ import jlsg_soul from "./jlsg_soul.js";
 import jlsg_sy from "./jlsg_sy.js";
 import jlsg_skpf from "./jlsg_skpf.js";
 import jlsgZhu from "./jlsg_zhu.js";
-import { pinyin } from "../../../noname/get/pinyins/index.js";
 
 const packList = [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf];
 //技能替换
@@ -100,12 +99,12 @@ if (lib.device || lib.node) {
 		}
 	}
 	//导入jlsgZhu里的skill和translate
-	if (!config.jlsg_buff) {
+	if (lib.config?.extension_极略_jlsg_buff) {
 		for (let i in jlsgZhu.skill) {
-			lib.skill[i] = jlsgZhu.skill[i];
+			jlsg_sr.skill[i] = jlsgZhu.skill[i];
 		}
 		for (let i in jlsgZhu.translate) {
-			lib.translate[i] = jlsgZhu.translate[i];
+			jlsg_sr.translate[i] = jlsgZhu.translate[i];
 		}
 	}
 }

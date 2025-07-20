@@ -106,7 +106,7 @@ export default {
 			},
 			forced: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				delete trigger.skill;
 				trigger.getParent().set("jijiang", true);
 				"step 1"
@@ -173,7 +173,7 @@ export default {
 			},
 			direct: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				var list = [];
 				for (var i = 0; i < game.players.length; i++) {
 					if (game.players[i] != player && game.players[i].hasZhuSkill("jlsg_zhugong_yongbin", player)) {
@@ -331,7 +331,7 @@ export default {
 			},
 			direct: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				var list = [];
 				for (var i = 0; i < game.players.length; i++) {
 					if (game.players[i] != player && game.players[i].hasZhuSkill("jlsg_zhugong_jianxiong", player)) {
