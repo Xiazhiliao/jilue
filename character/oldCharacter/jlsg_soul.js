@@ -22,14 +22,14 @@ export default {
 					content: function () {
 						"step 0";
 						event.num2 = trigger.num;
-						("step 1");
+						"step 1"
 						var targets = game.filterPlayer();
 						targets.remove(player);
 						targets.sort(lib.sort.seat);
 						event.targets = targets;
 						event.num = 0;
 						player.line(targets, "green");
-						("step 2");
+						"step 2"
 						if (num < event.targets.length) {
 							var hej = event.targets[num].getCards("hej");
 							if (hej.length) {
@@ -45,17 +45,17 @@ export default {
 							event.num++;
 							event.redo();
 						}
-						("step 3");
+						"step 3"
 						player.draw(game.dead.length);
 						player.turnOver();
-						("step 4");
+						"step 4"
 						event.num2--;
 						if (event.num2 > 0) {
 							player.chooseBool(get.prompt2("jlsg_guixin"));
 						} else {
 							event.finish();
 						}
-						("step 5");
+						"step 5"
 						if (result.bool) {
 							player.logSkill("jlsg_guixin");
 							event.goto(1);
@@ -195,7 +195,7 @@ export default {
 						"step 0";
 						trigger.changeToZero();
 						event.current = player.next;
-						("step 1");
+						"step 1"
 						event.current.chooseCard("交给" + get.translation(player) + "一张手牌或令其摸一张牌").ai = function (card) {
 							if (ai.get.attitude(event.current, player) > 0) {
 								return -1;
@@ -203,7 +203,7 @@ export default {
 								return 3 - ai.get.value(card);
 							}
 						};
-						("step 2");
+						"step 2"
 						if (result.bool == false) {
 							event.current.line(player, "green");
 							game.log(get.translation(event.current) + "让" + get.translation(player) + "摸了一张牌");
@@ -356,7 +356,7 @@ export default {
 					content: function () {
 						"step 0";
 						player.addMark("jlsg_lianti");
-						("step 1");
+						"step 1"
 						player.loseMaxHp();
 					},
 				},
@@ -403,7 +403,7 @@ export default {
 					content: function () {
 						"step 0";
 						player.useCard({ name: "tiesuo", isCard: true }, targets);
-						("step 1");
+						"step 1"
 						player
 							.chooseTarget(true, function (_, player, target) {
 								return target.isLinked();
@@ -415,7 +415,7 @@ export default {
 								}
 								return Math.random();
 							});
-						("step 2");
+						"step 2"
 						if (result.bool) {
 							result.targets[0].damage("fire");
 						}
@@ -600,7 +600,7 @@ export default {
 						target.discard(target.get("h"));
 						target.draw(num);
 						target.showHandcards();
-						("step 1");
+						"step 1"
 						var cards = target.getCards("h", function (card) {
 							return get.type(card) != "basic";
 						});
@@ -648,7 +648,7 @@ export default {
 							// }
 							return get.effect(target, { name: trigger.card.name }, player);
 						};
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							player.logSkill("jlsg_shunshi", result.targets);
 							player.draw();
@@ -716,7 +716,7 @@ export default {
 							player.damage("nosource");
 							event.finish();
 						}
-						("step 1");
+						"step 1"
 						if (result.control == "选项一") {
 							player.storage.jlsg_kuangbao--;
 							player.syncStorage("jlsg_kuangbao");
@@ -738,7 +738,7 @@ export default {
 					content: function () {
 						"step 0";
 						player.removeMark("jlsg_kuangbao", 2);
-						("step 1");
+						"step 1"
 						player.addTempSkill("wushuang", "phaseAfter");
 						player.addTempSkill("jlsg_wuqian_buff", "phaseAfter");
 					},
@@ -792,12 +792,12 @@ export default {
 						event.targets.remove(player);
 						event.targets.sort(lib.sort.seat);
 						event.targets2 = event.targets.slice(0);
-						("step 1");
+						"step 1"
 						if (event.targets.length) {
 							event.targets.shift().damage();
 							event.redo();
 						}
-						("step 2");
+						"step 2"
 						if (event.targets2.length) {
 							var cur = event.targets2.shift();
 							if (cur && cur.num("he")) {
@@ -808,7 +808,7 @@ export default {
 							}
 							event.redo();
 						}
-						("step 3");
+						"step 3"
 						player.turnOver();
 					},
 					ai: {
@@ -1031,7 +1031,7 @@ export default {
 								return "选项一";
 							})
 							.set("prompt", '虎踞<br><br><div class="text">1：失去1点体力</div><br><div class="text">2：减1点体力上限，失去【虎踞】，获得【制衡】和【虎缚】</div></br>');
-						("step 1");
+						"step 1"
 						if (result.control == "选项一") {
 							game.trySkillAudio("jlsg_hujuStill");
 							player.loseHp();
@@ -1096,7 +1096,7 @@ export default {
 						player.chooseToUse().filterCard = function (card, player) {
 							return lib.filter.cardEnabled(card, player, event.parent.parent) && lib.filter.cardUsable(card, player, event.parent.parent);
 						};
-						("step 1");
+						"step 1"
 						if (!result.bool) {
 							player.chooseToDiscard("he", true);
 							player.addTempSkill("jlsg_jilve2", "phaseAfter");
@@ -1158,7 +1158,7 @@ export default {
 							skills.push("wansha");
 						}
 						player.addSkills(skills);
-						("step 1");
+						"step 1"
 						player.awakenSkill("jlsg_tongtian");
 					},
 					ai: {
@@ -1218,7 +1218,7 @@ export default {
 						player.judge(function (card) {
 							return get.color(card) == "black" ? 1.5 : -1;
 						});
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							player.chooseTarget("选择一个目标对其造成2点雷电伤害").ai = function (target) {
 								// if (player.hp == 1) return target == player ? 1 : -1;
@@ -1232,13 +1232,13 @@ export default {
 							};
 							event.goto(3);
 						}
-						("step 2");
+						"step 2"
 						if (result.bool) {
 							player.line(result.targets[0], "thunder");
 							result.targets[0].damage("thunder", 2);
 						}
 						event.finish();
-						("step 3");
+						"step 3"
 						if (result.bool) {
 							player.line(result.targets, "thunder");
 							for (var i = 0; i < result.targets.length; i++) {
@@ -1342,7 +1342,7 @@ export default {
 								}
 								return eff - 0.5 + Math.random();
 							});
-						("step 1");
+						"step 1"
 						if (!result.bool) {
 							event.finish();
 							return;
@@ -1411,7 +1411,7 @@ export default {
 								}
 								return eff - 0.5 + Math.random();
 							});
-						("step 1");
+						"step 1"
 						if (!result.bool) {
 							event.finish();
 							return;
@@ -1477,10 +1477,10 @@ export default {
 							event.finish();
 							return;
 						}
-						("step 1");
+						"step 1"
 						event.color = event.colors.shift();
 						player.chooseBool(get.prompt(event.name), true).set("prompt2", `你可以摸一张${lib.translate[event.color]}牌`).set("frequentSkill", event.name);
-						("step 2");
+						"step 2"
 						if (result.bool) {
 							player.logSkill(event.name);
 							player.removeMark(event.name);
@@ -1516,7 +1516,7 @@ export default {
 					content: function () {
 						"step 0";
 						player.showHandcards();
-						("step 1");
+						"step 1"
 						if (!player.countCards("h", "sha")) {
 							player.addTempSkill("jlsg_shayi_buff", "phaseAfter");
 						} else {
@@ -1925,7 +1925,7 @@ export default {
 							if (event.top[0].name == "du") return "cancel";
 							return 0;
 						};
-						("step 1");
+						"step 1"
 						if (result.control == "获得") {
 							player.draw();
 							event.finish();
@@ -1945,7 +1945,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2"
 						event.card = result.cards[0];
 						if (!event.card) {
 							event.finish();
@@ -1953,7 +1953,7 @@ export default {
 						}
 						// player.lose(event.card, ui.special);
 						player.draw();
-						("step 3");
+						"step 3"
 						player.$throw(1, 1000);
 						player.storage.jlsg_tianji_top = [event.card];
 						player.lose(event.card, ui.cardPile, "insert");
@@ -1986,14 +1986,14 @@ export default {
 					content: function () {
 						"step 0";
 						player.gain(get.cards(7))._triggered = null;
-						("step 1");
+						"step 1"
 						if (player == game.me) {
 							game.addVideo("delay", null);
 						}
 						player.chooseCard("选择七张牌作为「星」", 7, true).ai = function (card) {
 							return get.value(card);
 						};
-						("step 2");
+						"step 2"
 						player.addToExpansion(result.cards, player, "giveAuto").gaintag.add(event.name);
 					},
 					mark: true,
@@ -2032,7 +2032,7 @@ export default {
 						player.chooseCard(get.prompt("jlsg_qixing"), [1, 3]).ai = function (card) {
 							return 1;
 						};
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							player.logSkill("jlsg_qixing");
 							player.addToExpansion(result.cards, player, "giveAuto").gaintag.add("jlsg_qixing");
@@ -2040,7 +2040,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2"
 						player.chooseCardButton(player.getExpansions("jlsg_qixing"), "选择1-2张牌作为手牌", [1, 2], true).ai = function (button) {
 							if (player.skipList.includes("phaseUse") && button.link != "du") {
 								return -get.value(button.link);
@@ -2050,7 +2050,7 @@ export default {
 						if (player == game.me && _status.auto) {
 							game.delay(0.5);
 						}
-						("step 3");
+						"step 3"
 						//  player.gain(result.links)._triggered=null;
 						player.gain(result.links)._triggered = null;
 						player.syncStorage("jlsg_qixing");
@@ -2077,7 +2077,7 @@ export default {
 							if (player.getExpansions("jlsg_qixing").length > 3) return jlsg.isWeak(target) && jlsg.isEnemy(player, target);
 							return -1;
 						};
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							result.targets[0].addSkill("jlsg_kuangfeng2");
 							result.targets[0].popup("jlsg_kuangfeng");
@@ -2086,7 +2086,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2"
 						player.discard(result.links);
 					},
 				},
@@ -2154,7 +2154,7 @@ export default {
 							}
 							return -1;
 						};
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							var length = result.targets.length;
 							for (var i = 0; i < length; i++) {
@@ -2166,7 +2166,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2"
 						player.discard(result.links);
 					},
 					group: ["jlsg_dawu_remove"],
@@ -2244,7 +2244,7 @@ export default {
 						event.cards = get.cards(3);
 						game.cardsGotoOrdering(cards);
 						player.showCards(event.cards);
-						("step 1");
+						"step 1"
 						event.numx = 0;
 						for (var i = 0; i < event.cards.length; i++) {
 							if (get.type(event.cards[i]) != "basic") event.numx++;
@@ -2361,7 +2361,7 @@ export default {
 					content: function () {
 						"step 0";
 						player.draw();
-						("step 1");
+						"step 1"
 						var next = player.phaseUse();
 						event.next.remove(next);
 						trigger.next.push(next);

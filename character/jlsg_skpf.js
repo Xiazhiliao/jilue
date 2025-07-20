@@ -70,12 +70,12 @@ export default {
 				event.targets = [player, target].sortBySeat();
 				event.drawn = event.targets.filter(p => p.isHealthy());
 				event.drawn.forEach(p => p.draw(2, player));
-				("step 1");
+				"step 1"
 				event.targets.filter(p => p.isDamaged()).forEach(p => p.recover(player));
 				if (event.drawn.length) {
 					event.finish();
 				}
-				("step 2");
+				"step 2"
 				var stat = player.getStat().skill;
 				delete stat.jlsg_jieyin;
 			},
@@ -275,13 +275,13 @@ export default {
 						})
 						.set("judge2", result => result.bool);
 					if (get.mode() != "guozhan" && !player.hasSkillTag("rejudge")) {
-						next.set("callback", async (event, trigger, player) => {
+						judgeEvent.set("callback", async (event, trigger, player) => {
 							if (get.position(event.card, true) == "o") {
 								await player.gain(event.card, "gain2");
 							}
 						});
 					} else {
-						next.set("callback", async (event, trigger, player) => {
+						judgeEvent.set("callback", async (event, trigger, player) => {
 							event.getParent().orderingCards.remove(card);
 						});
 					}

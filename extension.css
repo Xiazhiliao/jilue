@@ -1,8 +1,8 @@
 /*临时牌*/
 .card.jlsg_tempCard-glow:before {
-  opacity: 0.2;
-  box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(255, 109, 12) 0 0 5px, rgb(255, 0, 0) 0 0 10px;
-  background-color: red;
-  -webkit-filter: blur(5px);
-  filter: blur(5px);
+	opacity: 0.2;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 0 0 1px, rgb(255, 109, 12) 0 0 5px, rgb(255, 0, 0) 0 0 10px;
+	background-color: red;
+	-webkit-filter: blur(5px);
+	filter: blur(5px);
 }

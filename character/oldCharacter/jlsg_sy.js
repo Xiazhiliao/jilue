@@ -27,7 +27,7 @@ export default {
 						"step 0";
 						targets[0].line(targets[1], "green");
 						targets[0].chooseToCompare(targets[1]);
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							targets[0].useCard({ name: "juedou" }, targets[1]);
 							if (targets[1].isAlive()) player.discardPlayerCard(targets[1], "he", 2, true);
@@ -87,7 +87,7 @@ export default {
 								return 7 - get.value(card);
 							}
 						};
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							player.gain(result.cards[0], event.target);
 							event.target.$give(result.cards[0], player);

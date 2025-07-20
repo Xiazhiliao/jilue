@@ -371,7 +371,7 @@ export default {
 						event.time = get.utc();
 						game.addVideo("showCards", player, ["雄略", get.cardsInfo(event.cards)]);
 						game.addVideo("delay", null, 2);
-						("step 1");
+						"step 1"
 						var next = player.chooseButton(1, true);
 						next.set("dialog", event.videoId);
 						next.set("ai", function (button) {
@@ -401,14 +401,14 @@ export default {
 							}
 							return Math.random();
 						});
-						("step 2");
+						"step 2"
 						if (result.bool && result.links) {
 							event.cards2 = result.links;
 							event.cards.removeArray(event.cards2);
 						} else event.finish();
 						var time = 1000 - (get.utc() - event.time);
 						if (time > 0) game.delay(0, time);
-						("step 3");
+						"step 3"
 						game.broadcastAll("closeDialog", event.videoId);
 						player.gain(event.cards2, "log", "gain2");
 						player.addToExpansion(event.cards, player, "giveAuto").gaintag.add("jlsg_xionglve");
@@ -442,7 +442,7 @@ export default {
 				target.discard(cards);
 				target.draw(cards.length);
 				target.showHandcards();
-				("step 1");
+				"step 1"
 				event.cards = target.getCards("h", function (card) {
 					return get.type(card) != "basic";
 				});
@@ -451,7 +451,7 @@ export default {
 						return get.damageEffect(target, player, player) > 0;
 					});
 				}
-				("step 2");
+				"step 2"
 				if (result.bool) {
 					target.discard(event.cards, player);
 					target.damage(event.cards.length);
@@ -488,7 +488,7 @@ export default {
 						return true;
 					})
 					.set("ai", target => get.effect(target, trigger.card, trigger.player, player) > 0);
-				("step 1");
+				"step 1"
 				if (result.bool) {
 					result.targets.sortBySeat();
 					player.logSkill("jlsg_shunshi", result.targets);
@@ -816,7 +816,7 @@ export default {
 						cards2 = cards.splice(0, player.getExpansions("jlsg_qixing").length);
 					return [cards2, cards];
 				});
-				("step 1");
+				"step 1"
 				if (result.bool) {
 					var pushs = result.moved[0],
 						gains = result.moved[1];
@@ -932,7 +932,7 @@ export default {
 					}
 					return -1;
 				};
-				("step 1");
+				"step 1"
 				if (result.bool) {
 					var length = result.targets.length;
 					for (var i = 0; i < length; i++) {
@@ -944,7 +944,7 @@ export default {
 				} else {
 					event.finish();
 				}
-				("step 2");
+				"step 2"
 				player.loseToDiscardpile(result.links);
 			},
 			group: ["jlsg_dawu_remove"],
@@ -1530,7 +1530,7 @@ export default {
 					return 0;
 				};
 				next.logSkill = ["jlsg_jieyan", trigger.target];
-				("step 1");
+				"step 1"
 				if (result.bool) {
 					//player.logSkill('jlsg_jieyan',trigger.target);
 					trigger.cancel();
@@ -1575,7 +1575,7 @@ export default {
 			content: function () {
 				"step 0";
 				player.draw();
-				("step 1");
+				"step 1"
 				let cnt = player.getHistory("useSkill", e => e.skill == event.name).length;
 				player.chooseCardTarget({
 					filterCard: function (card) {
@@ -1596,7 +1596,7 @@ export default {
 					prompt: get.prompt(event.name),
 					prompt2: `弃置${get.cnNumber(cnt)}张牌并造成${get.cnNumber(trigger.num)}点火焰伤害`,
 				});
-				("step 2");
+				"step 2"
 				if (result.bool) {
 					player.discard(result.cards);
 					player.line(result.targets[0], "red");
@@ -1661,7 +1661,7 @@ export default {
 					player.damage("nosource");
 					event.finish();
 				}
-				("step 1");
+				"step 1"
 				if (result.control == "选项一") {
 					player.storage.jlsg_kuangbao--;
 					player.markSkill("jlsg_kuangbao");
@@ -1726,18 +1726,18 @@ export default {
 				event.targets.remove(player);
 				event.targets.sort(lib.sort.seat);
 				event.targets2 = event.targets.slice(0);
-				("step 1");
+				"step 1"
 				if (event.targets.length) {
 					event.targets.shift().damage();
 					event.redo();
 				}
-				("step 2");
+				"step 2"
 				if (event.targets2.length) {
 					var cur = event.targets2.shift();
 					if (cur && cur.countCards("he")) cur.discard(cur.getCards("he"));
 					event.redo();
 				}
-				("step 3");
+				"step 3"
 				player.turnOver();
 			},
 			ai: {
@@ -1860,7 +1860,7 @@ export default {
 					player.loseMaxHp();
 					player.update();
 				}
-				("step 1");
+				"step 1"
 				for (var i = 0; i < game.players.length; i++) {
 					if (game.players[i].getStorage("jlsg_suohun_mark", 0)) {
 						player.line(game.players[i], "fire");
@@ -2208,7 +2208,7 @@ export default {
 				"step 0";
 				targets[0].removeMark("jlsg_nizhan");
 				targets[1].addMark("jlsg_nizhan");
-				("step 1");
+				"step 1"
 				targets[0].useCard({ name: "sha", isCard: true }, targets[1], "noai", false).animate = false;
 			},
 			ai: {
@@ -2300,13 +2300,13 @@ export default {
 				} else {
 					player.chooseBool(`###是否失去1点体力？###令${get.translation(targets)}失去1点体力`, true);
 				}
-				("step 1");
+				"step 1"
 				player.setStorage("jlsg_zhiming1", result.bool, true);
 				if (result.bool) {
 					player.loseHp();
 					targets.forEach(p => p.loseHp());
 				}
-				("step 2");
+				"step 2"
 				if (!player.isIn()) {
 					event.finish();
 					return;
@@ -2317,13 +2317,13 @@ export default {
 				} else {
 					player.chooseBool(`###是否翻面？###令${get.translation(targets)}翻面`, true);
 				}
-				("step 3");
+				"step 3"
 				player.setStorage("jlsg_zhiming2", result.bool, true);
 				if (result.bool) {
 					player.turnOver();
 					targets.filter(p => p.isIn()).forEach(p => p.turnOver());
 				}
-				("step 4");
+				"step 4"
 				if (!player.isIn()) {
 					event.finish();
 					return;
@@ -2348,7 +2348,7 @@ export default {
 						.set("ai", c => _status.event.cards.includes(c))
 						.set("cards", cards);
 				}
-				("step 5");
+				"step 5"
 				player.setStorage("jlsg_zhiming3", result.bool, true);
 				if (result.bool) {
 					targets.filter(p => p.isIn()).forEach(p => p.chooseToDiscard(result.cards.length, "he", true));
@@ -2381,7 +2381,7 @@ export default {
 					if (!target.isTurnedOver() && get.attitude(player, target) < 0) return target.countCards("h");
 					return (get.attitude(_status.event.player, target) - 1) * (target.isTurnedOver() ? 4 + 2 * (target.maxHp - target.hp) : -4);
 				};
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -2393,7 +2393,7 @@ export default {
 				if (!target.isTurnedOver()) {
 					event.finish();
 				}
-				("step 2");
+				"step 2"
 				if (event.target.isDamaged()) {
 					event.target.recover(event.target.maxHp - event.target.hp);
 				}
@@ -2437,7 +2437,7 @@ export default {
 				}).judge2 = function (result) {
 					return result.bool == false;
 				};
-				("step 1");
+				"step 1"
 				if (result.suit == "spade") {
 					player.chooseTarget("选择一个目标对其造成2点雷电伤害").ai = function (target) {
 						return get.damageEffect(target, player, player, "thunder");
@@ -2450,13 +2450,13 @@ export default {
 					};
 					event.goto(3);
 				} else event.finish();
-				("step 2");
+				"step 2"
 				if (result.bool) {
 					player.line(result.targets[0], "thunder");
 					result.targets[0].damage("thunder", 2);
 				}
 				event.finish();
-				("step 3");
+				"step 3"
 				if (result.bool) {
 					player.line(result.targets, "thunder");
 					for (var i = 0; i < result.targets.length; i++) {
@@ -2477,7 +2477,7 @@ export default {
 				}).ai = function (target) {
 					return player == target;
 				};
-				("step 1");
+				"step 1"
 				if (result.bool) {
 					event.target = result.targets[0];
 					if (result.targets[0] == player) {
@@ -2516,7 +2516,7 @@ export default {
 							.set("judging", trigger.player.judging[0]);
 					}
 				}
-				("step 2");
+				"step 2"
 				if (result.bool) {
 					event.cardx = result.cards[0] || result.links[0];
 					if (event.target != player) {
@@ -2533,13 +2533,13 @@ export default {
 				} else {
 					event.finish();
 				}
-				("step 3");
+				"step 3"
 				player.logSkill(event.name, event.target);
 				player.gain(trigger.player.judging[0], "gain2");
 				trigger.player.judging[0] = event.cardx;
 				trigger.orderingCards.add(event.cardx);
 				game.log(trigger.player, "的判定牌改为", event.cardx);
-				("step 4");
+				"step 4"
 				game.delayx();
 			},
 			ai: {
@@ -2907,7 +2907,7 @@ export default {
 					var evt = trigger.getl(p);
 					return evt && evt.es && evt.es.length > 0;
 				});
-				("step 1");
+				"step 1"
 				event.target = event.players.shift();
 				if (!event.target) {
 					event.finish();
@@ -2915,7 +2915,7 @@ export default {
 				}
 				var evt = trigger.getl(event.target);
 				event.num = evt && evt.es && evt.es.length;
-				("step 2");
+				"step 2"
 				if (!event.num) {
 					// next target
 					event.goto(1);
@@ -2923,7 +2923,7 @@ export default {
 				}
 				--event.num;
 				player.chooseBool(get.prompt2("jlsg_xianzhu", player != event.target ? event.target : undefined)).set("choice", get.attitude(player, event.target) > 0);
-				("step 3");
+				"step 3"
 				if (result.bool) {
 					player.logSkill("jlsg_xianzhu2", event.target);
 					event.target.draw(2);
@@ -3711,7 +3711,7 @@ export default {
 							return Math.floor(Math.random() * _status.event.controls.length);
 						});
 				}
-				("step 1");
+				"step 1"
 				if (!lib.skill[result.control]) return;
 				event.skill = result.control;
 				player
@@ -3720,13 +3720,13 @@ export default {
 					.set("ai", function (target) {
 						return get.attitude(player, target);
 					});
-				("step 2");
+				"step 2"
 				if (!result.bool) return;
 				if (result.targets[0] == player) return;
 				player.line(result.targets[0], "green");
 				var cards = player.getCards("h");
 				result.targets[0].gain(cards, player, "giveAuto");
-				("step 3");
+				"step 3"
 				result.targets[0].addSkills(event.skill);
 				result.targets[0].loseHp();
 			},
@@ -3877,19 +3877,19 @@ export default {
 			content: function () {
 				"step 0";
 				event.cards = trigger.cards.filter(c => c.name == "tao");
-				("step 1");
+				"step 1"
 				event.card = event.cards.pop();
 				player.logSkill(event.name);
 				if (player.isDamaged()) {
 					player.recover();
 				}
-				("step 2");
+				"step 2"
 				player.draw(2, "nodelay");
-				("step 3");
+				"step 3"
 				game.log(player, "将", event.card, "移出游戏");
 				player.lose(event.card, ui.special);
 				player.addMark("jlsg_yuanhua", 1, false);
-				("step 4");
+				"step 4"
 				if (event.cards.length) {
 					event.goto(1);
 				}
@@ -3907,14 +3907,14 @@ export default {
 				event.targets.sortBySeat();
 				player.line(event.targets, "green");
 				event.gained = false;
-				("step 1");
+				"step 1"
 				event.target = event.targets.shift();
 				if (event.target.countCards("h", "tao")) {
 					var card = event.target.getCards("h", "tao").randomGet();
 					player.gain(event.target, card, "visible", "give");
 					event.gained = true;
 				}
-				("step 2");
+				"step 2"
 				if (event.targets.length) {
 					event.goto(1);
 				} else {
@@ -3971,12 +3971,12 @@ export default {
 			content: function () {
 				"step 0";
 				player.awakenSkill("jlsg_chongsheng");
-				("step 1");
+				"step 1"
 				var num = player.setStorage("jlsg_yuanhua", 1);
 				trigger.player.maxHp = num;
 				trigger.player.recover(trigger.player.maxHp - trigger.player.hp);
 
-				("step 2");
+				"step 2"
 				if (!trigger.player.isAlive() || !trigger.player.group || trigger.player.group == "unknown" || trigger.player.isUnseen(0)) {
 					event.finish();
 					return;
@@ -4001,7 +4001,7 @@ export default {
 						return get.rank(button.link, true) - get.character(button.link, 2) - (get.rank(trigger.player.name1, true) - get.character(trigger.player.name1, 2));
 					})
 					.set("createDialog", ["将武将牌替换为一名角色", [list, "character"]]);
-				("step 3");
+				"step 3"
 				if (result.bool) {
 					trigger.player.reinit(trigger.player.name, result.links[0]);
 				}
@@ -4066,7 +4066,7 @@ export default {
 						if (lose < recover && recover > 0 && event.list.includes("弃两张牌，然后令所有角色各恢复1点体力。")) return event.list.indexOf("弃两张牌，然后令所有角色各恢复1点体力。");
 						return event.list.indexOf("cancel2");
 					});
-				("step 1");
+				"step 1"
 				event.choice = result.index;
 				if (event.list[result.index] == "摸两张牌，然后令所有角色各失去1点体力。") {
 					event.recover = false;
@@ -4089,7 +4089,7 @@ export default {
 				} else {
 					event.finish();
 				}
-				("step 2");
+				"step 2"
 				if (!player.isIn()) {
 					event.finish();
 					return;
@@ -4118,7 +4118,7 @@ export default {
 							.reduce((a, b) => a + b, 0) > Math.random();
 				}
 				player.chooseBool(prompt, choice);
-				("step 3");
+				"step 3"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -4196,7 +4196,7 @@ export default {
 			content: function () {
 				"step 0";
 				player.awakenSkill("jlsg_yeyan");
-				("step 1");
+				"step 1"
 				targets.sortBySeat();
 				let cnt = cards.filter(c => get.color(c, player) == "red").length + 1;
 				if (cnt * targets.length >= 5) {
@@ -4245,7 +4245,7 @@ export default {
 					player.equip(card);
 				}
 				game.delayx();
-				("step 1");
+				"step 1"
 				var attack = lib.inpile.filter(c => lib.card[c].toself && lib.card[c].subtype == "equip4");
 				attack = attack.randomGet();
 				if (attack) {
@@ -4333,7 +4333,7 @@ export default {
 						return 2;
 					})
 					.set("target", trigger.player);
-				("step 1");
+				"step 1"
 				if (result.control == "cancel2") {
 					event.finish();
 					return;
@@ -4406,7 +4406,7 @@ export default {
 			content: function () {
 				"step 0";
 				event.cards = new Set(player.getCards("h"));
-				("step 1");
+				"step 1"
 				var card = player.getCards("h", c => event.cards.has(c)).randomGet();
 				event.cards.delete(card);
 				if (!card || !target.isIn()) {
@@ -4527,7 +4527,7 @@ export default {
 			content: function () {
 				"step 0";
 				player.drawTo(4);
-				("step 1");
+				"step 1"
 				let cards = trigger.getl(player).hs;
 				let suit = get.suit(cards, player);
 				if (!suit) {
@@ -4549,7 +4549,7 @@ export default {
 				} else {
 					event.finish();
 				}
-				("step 2");
+				"step 2"
 				if (result.bool) {
 					result.targets[0].damage("thunder");
 				}
@@ -4655,7 +4655,7 @@ export default {
 				player.chooseTarget(get.prompt2(event.name), lib.filter.notMe).set("ai", function (target) {
 					return -get.attitude(_status.event.player, target) + Math.random() - 0.5;
 				});
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -4694,11 +4694,11 @@ export default {
 			content() {
 				"step 0";
 				player.awakenSkill(event.name);
-				("step 1");
+				"step 1"
 				player.loseMaxHp();
 				target.gainMaxHp();
 				target.recover();
-				("step 2");
+				"step 2"
 				player.storage.jlsg_zhonghun2 = target;
 				player.markSkill("jlsg_zhonghun2");
 				player.addSkill("jlsg_zhonghun2");
@@ -4736,7 +4736,7 @@ export default {
 				player.chooseTarget(get.prompt2("jlsg_zhonghun"), lib.filter.notMe).set("ai", function (target) {
 					return get.attitude(_status.event.player, target) - 10;
 				});
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -5026,15 +5026,15 @@ export default {
 				"step 0";
 				event.diff = player.getDamagedHp() - player.hp;
 				player.changeHp(event.diff);
-				("step 1");
+				"step 1"
 				if (player.hp <= 0) {
 					game.delayx();
 					event._dyinged = true;
 					player.dying(event);
 				}
-				("step 2");
+				"step 2"
 				player.draw(Math.abs(event.diff));
-				("step 3");
+				"step 3"
 				if (player.hp > player.getDamagedHp()) {
 					player.loseMaxHp();
 				}
@@ -5075,15 +5075,15 @@ export default {
 				"step 0";
 				event.diff = trigger.player.getDamagedHp() - trigger.player.hp;
 				trigger.player.changeHp(event.diff);
-				("step 1");
+				"step 1"
 				if (trigger.player.hp <= 0) {
 					game.delayx();
 					// event._dyinged=true;
 					trigger.player.dying(event);
 				}
-				("step 2");
+				"step 2"
 				player.draw(Math.abs(event.diff));
-				("step 3");
+				"step 3"
 				if (trigger.player.hp < trigger.player.getDamagedHp()) {
 					player.loseMaxHp();
 				}
@@ -5219,7 +5219,7 @@ export default {
 					},
 					targets
 				);
-				("step 1");
+				"step 1"
 				player
 					.chooseTarget(true, function (_, player, target) {
 						return target.isLinked();
@@ -5231,7 +5231,7 @@ export default {
 						}
 						return Math.random();
 					});
-				("step 2");
+				"step 2"
 				if (result.bool) {
 					result.targets[0].damage("fire");
 				}
@@ -5295,7 +5295,7 @@ export default {
 				player.chooseControlList(get.prompt(event.name, trigger.player), event.options, function () {
 					return Math.floor(Math.random() * _status.event.parent.options.length);
 				});
-				("step 1");
+				"step 1"
 				if (result.control == "cancel2") {
 					event.finish();
 					return;
@@ -5329,7 +5329,7 @@ export default {
 					default:
 						break;
 				}
-				("step 2");
+				"step 2"
 				switch (event.choice) {
 					case event._options[0]:
 						player.gainMaxHp();
@@ -5347,7 +5347,7 @@ export default {
 					default:
 						break;
 				}
-				("step 3");
+				"step 3"
 				game.delayx();
 			},
 		},
@@ -5587,7 +5587,7 @@ export default {
 			content() {
 				"step 0";
 				player.chooseTarget(get.prompt2(event.name), (_, player, target) => !target.hasSkill("jlsg_luoyan2")).set("ai", (target, targets) => -get.attitude(_status.event.player, target) * (target.countCards("he") + 3));
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -5663,7 +5663,7 @@ export default {
 			content() {
 				"step 0";
 				player.chooseTarget(get.prompt2(event.name), (_, p, target) => target != p && !target.countMark("jlsg_jieying")).set("ai", p => -get.attitude(_status.event.player, p));
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -6132,7 +6132,7 @@ export default {
 			content() {
 				"step 0";
 				event.targets = game.filterPlayer(p => p != player).sortBySeat();
-				("step 1");
+				"step 1"
 				let target = event.targets.shift();
 				if (!target) {
 					game.delayx();
@@ -7304,7 +7304,7 @@ export default {
 				else {
 					const next = player.chooseButton([`玲珑:请选择${get.translation(removeSkill.length)}个技能不被失去`, [trigger.removeSkill.map(s => [s, get.translation(s)]), "tdnodes"]]);
 					next.set("forced", true);
-					next.set("selectButton", result.links.length);
+					next.set("selectButton", chooseRemove.links.length);
 					const { result: chooseRetain } = await next;
 					if (!chooseRetain.bool) return;
 					retainSkill = chooseRetain.links;

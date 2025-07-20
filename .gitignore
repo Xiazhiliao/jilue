@@ -1,2 +1,4 @@
 raw/
 .prettierrc
+.eslintrc.json
+eslint.config.mjs

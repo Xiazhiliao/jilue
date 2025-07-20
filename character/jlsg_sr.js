@@ -2437,7 +2437,7 @@ export default {
 							return "spade2";
 					}
 				});
-				("step 1");
+				"step 1"
 				game.log(target, "选择了" + get.translation(result.control));
 				const choice = result.control;
 				target.popup(choice);

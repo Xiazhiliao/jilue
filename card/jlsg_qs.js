@@ -40,7 +40,7 @@ let jlsg_qs = {
 						if (player.hp == 1) return 15 - ai.get.value(card);
 						return 8 - ai.get.value(card);
 					});
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					player.loseHp();
 				}
@@ -177,7 +177,7 @@ let jlsg_qs = {
 					if (get.recoverEffect(evt.target, evt.player, evt.target) > get.recoverEffect(evt.player, evt.player, evt.target)) return get.number(card);
 					else return -get.number(card);
 				};
-				("step 1");
+				"step 1"
 				event.criteria = get.number(result.cards[0]);
 				event.dialog = ui.create.dialog(get.translation(target) + "展示的手牌", result.cards);
 				event.videoId = lib.status.videoId++;
@@ -194,7 +194,7 @@ let jlsg_qs = {
 					return value;
 				};
 				game.delayx(2);
-				("step 2");
+				"step 2"
 				if (result.bool) {
 					// player.showCards(result.cards[0]);
 					// player.discard(result.cards);
@@ -300,7 +300,7 @@ let jlsg_qs = {
 			content: function () {
 				"step 0";
 				target.draw();
-				("step 1");
+				"step 1"
 				if (target.num("h") < 2) {
 					target.damage("fire");
 					event.finish();
@@ -322,7 +322,7 @@ let jlsg_qs = {
 						})
 						.set("target", target);
 				}
-				("step 2");
+				"step 2"
 				if (result.control == "获得你两张牌") {
 					player.gainPlayerCard(target, "h", 2, true);
 					event.finish();
@@ -374,7 +374,7 @@ let jlsg_qs = {
 			content: function () {
 				"step 0";
 				target.chooseToUse({ name: "sha" }, player, -1, "草船借箭：对" + get.translation(player) + "使用一张杀，或令其获得你的一张牌").set("targetRequired", true);
-				("step 1");
+				"step 1"
 				if (result.bool == false && target.num("he") > 0) {
 					player.gainPlayerCard(target, "he", true);
 					event.finish();
@@ -492,7 +492,7 @@ let jlsg_qs = {
 				else {
 					target.recover();
 				}
-				("step 1");
+				"step 1"
 				if (target.hp > 0 && event.getParent(2).type == "dying") target.draw();
 			},
 			ai: {
@@ -822,7 +822,7 @@ let jlsg_qs = {
 				}, "是否发动【袖箭】？").ai = function (target) {
 					return ai.get.damageEffect(target, player, player);
 				};
-				("step 1");
+				"step 1"
 				if (result.bool && result.targets) {
 					player.line(result.targets, "green");
 					player.logSkill("jlsgqs_xiujian", result.targets);
@@ -858,7 +858,7 @@ let jlsg_qs = {
 				if (trigger.target.countGainableCards(player, "e") == 0) {
 					event.finish();
 				}
-				("step 1");
+				"step 1"
 				player.gainPlayerCard("e", trigger.target, true);
 			},
 		},

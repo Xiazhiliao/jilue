@@ -281,7 +281,7 @@ export default {
 				event.cnt = game.filterPlayer().length;
 				player.recover(event.cnt - player.hp);
 				event.targets = game.filterPlayer(p => p != player).sortBySeat();
-				("step 1");
+				"step 1"
 				if (!event.targets.length) {
 					event.finish();
 					return;
@@ -394,7 +394,7 @@ export default {
 				let used = player.getStat().skill;
 				used = (used && used.jlsgsy_zuijiu) || 0;
 				player.randomDiscard(used - 1);
-				("step 1");
+				"step 1"
 				let sha = { name: "sha" };
 				let jiu = { name: "jiu" };
 				let shaTargets = game.filterPlayer(p => player.canUse(sha, p));
@@ -552,7 +552,7 @@ export default {
 			content: function () {
 				"step 0";
 				player.draw(2);
-				("step 1");
+				"step 1"
 				player.gainMaxHp();
 			},
 		},
@@ -580,7 +580,7 @@ export default {
 						return v;
 					})
 					.set("source", player);
-				("step 1");
+				"step 1"
 				if (result.bool) {
 					if (get.attitude(trigger.player, player) > 0 && trigger.player.ai.shown < player.ai.shown) {
 						trigger.player.addExpose(0.2);
@@ -614,12 +614,12 @@ export default {
 				}
 				let choice = trigger.source.getCards("e").reduce((a, b) => a + get.value(b), 0) < get.effect(trigger.source, { name: "sha" }, player, trigger.source);
 				trigger.source.chooseBool(`是否弃置装备区的牌？`, choice);
-				("step 1");
+				"step 1"
 				if (result.bool) {
 					trigger.source.discard(trigger.source.getCards("e"));
 					event.finish();
 				}
-				("step 2");
+				"step 2"
 				player.useCard({ name: "sha", isCard: true }, trigger.source, "noai");
 			},
 			ai: {
@@ -659,7 +659,7 @@ export default {
 			content() {
 				"step 0";
 				trigger.player.draw("nodelay");
-				("step 1");
+				"step 1"
 				trigger.player.addMark("jlsgsy_taiping");
 				game.delayx();
 			},
@@ -699,14 +699,14 @@ export default {
 						p.unmarkSkill("jlsgsy_taiping");
 					}
 				}
-				("step 1");
+				"step 1"
 				let others = game.filterPlayer(p => p != player).reduce((a, b) => a + b.countCards("h"), 0);
 				if (others >= player.countCards("h")) {
 					event.finish();
 					return;
 				}
 				player.chooseBool("是否对所有其他角色造成1点伤害？", true);
-				("step 2");
+				"step 2"
 				if (result.bool) {
 					let targets = game.filterPlayer(p => p != player).sortBySeat();
 					player.line(targets);
@@ -759,14 +759,14 @@ export default {
 				}
 				event.list = list;
 				player.chooseControlList(list, true);
-				("step 1");
+				"step 1"
 				event.choseCard = event.list[result.index].includes("并获得");
 				if (event.choseCard) {
 					player.chooseToDiscard(target.countCards("h"), true, "he");
 				} else {
 					player.chooseToDiscard(event.skills.length, true, "he");
 				}
-				("step 2");
+				"step 2"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -881,7 +881,7 @@ export default {
 				} else {
 					event.finish();
 				}
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -941,7 +941,7 @@ export default {
 				if (targets[1].ai.shown > player.ai.shown) {
 					player.addExpose(0.2);
 				}
-				("step 1");
+				"step 1"
 				if (player.isDamaged() && targets[0] != player) {
 					player.recover();
 				}
@@ -1376,7 +1376,7 @@ export default {
 						event.result = "ai";
 					}
 				}
-				("step 1");
+				"step 1"
 				if (event.result == "ai") {
 					game.check();
 					if ((ai.basic.chooseButton(event.ai) || forced) && (!event.filterOk || event.filterOk())) ui.click.ok();
@@ -1466,7 +1466,7 @@ export default {
 			content() {
 				"step 0";
 				player.give(cards, target);
-				("step 1");
+				"step 1"
 				event.cards = target.getCards("h", c => {
 					if (c.name != "sha" && get.type(c) != "trick") {
 						return false;
@@ -1478,13 +1478,13 @@ export default {
 					.chooseTarget([1, Infinity], `请选择${get.translation(target)}使用牌的目标"`, (_, player, target) => target != _status.event.target, true)
 					.set("ai", p => -get.attitude(_status.event.player, p) - Math.random())
 					.set("target", target);
-				("step 2");
+				"step 2"
 				if (!result.bool) {
 					event.finish();
 					return;
 				}
 				event.targets = result.targets;
-				("step 3");
+				"step 3"
 				if (!event.cards.length || !target.isIn()) {
 					event.finish();
 					return;
@@ -1528,7 +1528,7 @@ export default {
 				trigger.getParent().targets.push(trigger.player);
 				trigger.getParent().triggeredTargets2.push(trigger.player);
 				game.delayx();
-				("step 1");
+				"step 1"
 				player.logSkill(event.name, trigger.player);
 				game.log(trigger.player, "成为", trigger.card, "的额外目标");
 			},
@@ -1547,7 +1547,7 @@ export default {
 			content() {
 				"step 0";
 				event.targets = game.filterPlayer(p => p != player);
-				("step 1");
+				"step 1"
 				var target = event.targets.shift();
 				let cards = target.getCards("h");
 				if (!cards.length) {
@@ -1560,10 +1560,10 @@ export default {
 				if (event.targets.length) {
 					event.redo();
 				}
-				("step 2");
+				"step 2"
 				let cnt = Math.floor(player.countCards("h") / 2);
 				player.chooseCard(cnt, true);
-				("step 3");
+				"step 3"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -1582,7 +1582,7 @@ export default {
 				dis.randomSort();
 				event.dis = dis;
 				event.targets = game.filterPlayer(p => p != player).sortBySeat();
-				("step 4");
+				"step 4"
 				if (!event.targets.length) {
 					event.finish();
 					return;
@@ -1726,12 +1726,12 @@ export default {
 						});
 					} else next.set("ai", () => 0);
 				} else event.goto(2);
-				("step 1");
+				"step 1"
 				if (result.bool) {
 					delete player.storage.jlsgsy_quanqing.choice;
 					event.finish();
 				}
-				("step 2");
+				"step 2"
 				let list = get.inpileVCardList(v => {
 					if (!["basic", "trick"].includes(get.type(v[2], null, false))) return false;
 					let card = get.autoViewAs({ name: v[2], nature: v[3], isCard: true }, []);
@@ -1742,7 +1742,7 @@ export default {
 					return button.link[2] === _status.event.choice[0] && (button.link[3] || true) === (_status.event.choice[1] || true);
 				};
 				next.choice = player.storage.jlsgsy_quanqing.choice ?? [];
-				("step 3");
+				"step 3"
 				delete player.storage.jlsgsy_quanqing.choice;
 				if (!result.bool) {
 					event.finish();
@@ -1779,11 +1779,11 @@ export default {
 				next.set("subject", target);
 				next.set("prompt", `选择${get.translation(card)}的目标`);
 				next.set("prompt2", `由${get.translation(target)}使用`);
-				("step 4");
+				"step 4"
 				if (result.bool) {
 					target.useCard(event.card, result.targets, "noai");
 				}
-				("step 5");
+				"step 5"
 				if (player.isDamaged()) player.recover();
 			},
 			ai: {
@@ -1882,7 +1882,7 @@ export default {
 						let cnt2 = target.countDiscardableCards(target, "he");
 						return Math.min(target.isHealthy() ? 2 : 1, cnt < cnt2 ? cnt : Infinity) - (get.attitude(_status.event.player, target) + Math.random()) / 10;
 					});
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -1895,7 +1895,7 @@ export default {
 						player.addExpose(0.2);
 					}
 				}
-				("step 2");
+				"step 2"
 				var target = event.targets.shift();
 				event.target = target;
 				if (!target) {
@@ -1922,7 +1922,7 @@ export default {
 						}
 						return v;
 					});
-				("step 3");
+				"step 3"
 				if (!result.bool) {
 					target.loseMaxHp();
 				}
@@ -1948,7 +1948,7 @@ export default {
 				} else {
 					event.finish();
 				}
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
@@ -2019,7 +2019,7 @@ export default {
 						return _status.event.choice;
 					})
 					.set("choice", choice);
-				("step 1");
+				"step 1"
 				player.addSkill("jlsgsy_duzun_buff");
 				trigger.player.addSkill("jlsgsy_duzun_buff");
 				var index = event.allChoices.indexOf(event.choices[result.index]);
@@ -2162,13 +2162,13 @@ export default {
 						.set("choice", choice);
 					event.goto(2);
 				}
-				("step 1");
+				"step 1"
 				if (!result.bool) {
 					event.finish();
 					return;
 				}
 				event._result = { index: event.index };
-				("step 2");
+				"step 2"
 				if (result.control == "cancel2") {
 					event.finish();
 					return;
