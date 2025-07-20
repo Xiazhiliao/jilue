@@ -6,6 +6,7 @@ import jlsg_sr from "./jlsg_sr.js";
 import jlsg_soul from "./jlsg_soul.js";
 import jlsg_sy from "./jlsg_sy.js";
 import jlsg_skpf from "./jlsg_skpf.js";
+import jlsgZhu from "./jlsg_zhu.js";
 import { pinyin } from "../../../noname/get/pinyins/index.js";
 
 const packList = [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf];
@@ -97,6 +98,13 @@ if (lib.device || lib.node) {
 				}
 			}
 		}
+	}
+	//导入jlsgZhu里的skill和translate
+	for (let i in jlsgZhu.skill) {
+		lib.skill[i] = jlsgZhu.skill[i];
+	}
+	for (let i in jlsgZhu.translate) {
+		lib.translate[i] = jlsgZhu.translate[i];
 	}
 }
 export const characters = {
