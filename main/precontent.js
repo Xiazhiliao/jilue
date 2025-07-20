@@ -1370,7 +1370,7 @@ export async function precontent(config, originalPack) {
 	});
 
 	lib.element.content.waitForPlayer = function () {
-		"step 0";
+		"step 0"
 		ui.auto.hide();
 		ui.pause.hide();
 		game.createServer();

@@ -6,7 +6,7 @@ import jlsg_sr from "./jlsg_sr.js";
 import jlsg_soul from "./jlsg_soul.js";
 import jlsg_sy from "./jlsg_sy.js";
 import jlsg_skpf from "./jlsg_skpf.js";
-import { pinyin } from "../../../noname/get/pinyins/index.js";
+import jlsgZhu from "./jlsg_zhu.js";
 
 const packList = [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf];
 //技能替换
@@ -96,6 +96,15 @@ if (lib.device || lib.node) {
 					pack.translate[name + "_prefix"] = "极略" + prefix;
 				}
 			}
+		}
+	}
+	//导入jlsgZhu里的skill和translate
+	if (lib.config?.extension_极略_jlsg_buff) {
+		for (let i in jlsgZhu.skill) {
+			jlsg_sr.skill[i] = jlsgZhu.skill[i];
+		}
+		for (let i in jlsgZhu.translate) {
+			jlsg_sr.translate[i] = jlsgZhu.translate[i];
 		}
 	}
 }

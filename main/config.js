@@ -23,6 +23,11 @@ let block = {
 			name: "挑战模式背景＆音乐",
 			init: false,
 		},
+		jlsg_buff: {
+			name: "极略主公buff",
+			intro: "极略武将做主公时从三个随机极略主公技中选择并获得一个",
+			init: false,
+		},
 		oldCharacterReplace: {
 			clear: true,
 			name: "<li>技能替换（点击后折叠）▽",
