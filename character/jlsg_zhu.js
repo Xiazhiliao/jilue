@@ -13,6 +13,7 @@ export default {
 			unique: true,
 			filter: function (event, player) {
 				//if (lib.config.extension_极略_jlsg_buff === false) return false;
+				//孩子我没意见————流年
 				//本来就是我扩展搬过来的，我推销一下自己的扩展不过分吧（
 				if (!lib.config.extension_钟会包_loseBuffLimit && !(player.name.substring(0, 2) === "jl")) return false;
 				return player.isZhu2();
