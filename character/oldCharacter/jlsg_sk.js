@@ -99,7 +99,7 @@ export default {
 						return game.filterPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(event.card, event.player, current) && lib.filter.targetInRange(event.card, event.player, current)).length;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						var prompt2 = "为" + get.translation(trigger.card) + "增加或减少一个目标";
 						player
 							.chooseTarget(get.prompt(event.name), function (card, player, target) {
@@ -617,7 +617,7 @@ export default {
 						return !player.hasSkill("jlsg_jueyong2") && event.player.isIn() && event.notLink() && event.card && event.card.name == "sha" && (player.hp != player.maxHp || player.hp != event.player.countCards("h"));
 					},
 					content() {
-						"step 0";
+						"step 0"
 						var choices = [];
 						let choice = -1,
 							curEff = -Infinity;
@@ -703,7 +703,7 @@ export default {
 					},
 					selectCard: -1,
 					precontent() {
-						"step 0";
+						"step 0"
 						let cnt = Math.max(1, Math.floor(player.maxHp / 2));
 						player.loseMaxHp(cnt);
 						event.getParent().addCount = false;
@@ -796,7 +796,7 @@ export default {
 					trigger: { player: "phaseUseBegin" },
 					direct: true,
 					content() {
-						"step 0";
+						"step 0"
 						player.chooseTarget(get.prompt2(event.name)).set("ai", p => get.attitude(player, p) - Math.random() * 2);
 						"step 1"
 						if (!result.bool) {

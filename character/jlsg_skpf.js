@@ -3,7 +3,7 @@ export default {
 	name: "jlsg_skpf",
 	connect: true,
 	character: {
-		jlsgsk_jdjg_sunshangxiang: ["female", "wu", 3, ["jlsg_jieyin", "jlsg_xiaoji"], ["name:孙|null"]],
+		jlsgsk_jdjg_sunshangxiang: ["female", "wu", 3, ["jlsg_jdjg_jieyin", "jlsg_jdjg_xiaoji"], ["name:孙|null"]],
 		jlsgsk_syqj_guanyu: ["male", "shu", 4, ["jlsg_syqj_wusheng"], []],
 		jlsgsk_sslh_zhenji: ["female", "wei", 3, ["jlsg_sslh_luoshen", "jlsg_sslh_qingguo"], ["name:甄|null"]],
 		jlsgsk_spwq_lvbu: ["male", "qun", 4, ["jlsg_spwq_wushuang"], []],
@@ -64,20 +64,6 @@ export default {
 				if (!draw.length) {
 					delete player.getStat("skill").jlsg_jdjg_jieyin;
 				}
-			},
-			content() {
-				"step 0";
-				event.targets = [player, target].sortBySeat();
-				event.drawn = event.targets.filter(p => p.isHealthy());
-				event.drawn.forEach(p => p.draw(2, player));
-				"step 1"
-				event.targets.filter(p => p.isDamaged()).forEach(p => p.recover(player));
-				if (event.drawn.length) {
-					event.finish();
-				}
-				"step 2"
-				var stat = player.getStat().skill;
-				delete stat.jlsg_jieyin;
 			},
 			ai: {
 				order: 3,
@@ -364,7 +350,7 @@ export default {
 						}
 						return eff + eff2 - get.value(card);
 					})
-					.set("card", trigger.card)
+					.set("cardx", trigger.card)
 					.set("target", trigger.player)
 					.set("chooseonly", true)
 					.forResult();

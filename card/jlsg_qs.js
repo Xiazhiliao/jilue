@@ -29,7 +29,7 @@ let jlsg_qs = {
 			chongzhu: true,
 			skills: ["jlsgqs_muniu"],
 			onLose: function () {
-				"step 0";
+				"step 0"
 				player
 					.chooseToDiscard("h", "木牛流马：请弃置一张基本牌，否则失去1点体力", function (card) {
 						return get.type(card) == "basic";
@@ -167,7 +167,7 @@ let jlsg_qs = {
 				return target.countCards("h") != 0 && player != target;
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				if (!target.countCards("h")) {
 					event.finish();
 					return;
@@ -298,7 +298,7 @@ let jlsg_qs = {
 			},
 			modTarget: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				target.draw();
 				"step 1"
 				if (target.num("h") < 2) {
@@ -372,7 +372,7 @@ let jlsg_qs = {
 			},
 			modTarget: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				target.chooseToUse({ name: "sha" }, player, -1, "草船借箭：对" + get.translation(player) + "使用一张杀，或令其获得你的一张牌").set("targetRequired", true);
 				"step 1"
 				if (result.bool == false && target.num("he") > 0) {
@@ -487,7 +487,7 @@ let jlsg_qs = {
 			filterTarget: true,
 			modTarget: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				if (target.hp > 1) target.draw(2);
 				else {
 					target.recover();
@@ -816,7 +816,7 @@ let jlsg_qs = {
 				return false;
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				player.chooseTarget(function (card, player, target) {
 					return player != target;
 				}, "是否发动【袖箭】？").ai = function (target) {
@@ -850,7 +850,7 @@ let jlsg_qs = {
 				return 1;
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				var card = player.getEquip("jlsgqs_qixingbaodao");
 				if (card) {
 					player.give(card, trigger.target);

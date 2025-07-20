@@ -223,7 +223,7 @@ export default {
 				return event.card.name != "juedou";
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				player.draw();
 				trigger.card.name = "juedou";
 				if (trigger.card.isCard && trigger.cards.length) {
@@ -276,7 +276,7 @@ export default {
 			animationColor: "thunder",
 			check: () => true,
 			content: function () {
-				"step 0";
+				"step 0"
 				player.awakenSkill(event.name);
 				event.cnt = game.filterPlayer().length;
 				player.recover(event.cnt - player.hp);
@@ -375,7 +375,7 @@ export default {
 				return event.card.name == "sha" && event.target.countCards("he");
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				var num = 1 + Math.floor(Math.random() * 3);
 				trigger.target.randomDiscard(num);
 			},
@@ -390,7 +390,7 @@ export default {
 				return player.countCards("h") >= used;
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				let used = player.getStat().skill;
 				used = (used && used.jlsgsy_zuijiu) || 0;
 				player.randomDiscard(used - 1);
@@ -449,7 +449,7 @@ export default {
 				};
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				if (!_status.jlsgsy_bolue_list) {
 					lib.skill.jlsgsy_bolue.initList();
 				}
@@ -495,7 +495,7 @@ export default {
 				return cnt != 0 || player.isDamaged();
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				let cnt = game.getAllGlobalHistory("changeHp", e => {
 					let p = e.getParent();
 					if (p.name != "damage") {
@@ -550,7 +550,7 @@ export default {
 			},
 			frequent: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				player.draw(2);
 				"step 1"
 				player.gainMaxHp();
@@ -565,7 +565,7 @@ export default {
 			},
 			logTarget: "player",
 			content: function () {
-				"step 0";
+				"step 0"
 				trigger.player
 					.chooseCard(`交给${get.translation(event.player)}一张锦囊牌`, function (card) {
 						return get.type(card, "trick") == "trick";
@@ -607,7 +607,7 @@ export default {
 			logTarget: "source",
 			line: false,
 			content: function () {
-				"step 0";
+				"step 0"
 				if (trigger.source.countCards("e") == 0) {
 					event.goto(2);
 					return;
@@ -657,7 +657,7 @@ export default {
 			check: () => Math.random() < 0.8,
 			logTarget: "player",
 			content() {
-				"step 0";
+				"step 0"
 				trigger.player.draw("nodelay");
 				"step 1"
 				trigger.player.addMark("jlsgsy_taiping");
@@ -689,7 +689,7 @@ export default {
 				return Math.random > 0.5;
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				let marks = game.filterPlayer().reduce((a, b) => a + b.countMark("jlsgsy_taiping"), 0);
 				player.draw(marks);
 				for (let p of game.filterPlayer()) {
@@ -741,7 +741,7 @@ export default {
 				player.storage.jlsg_yaohuo_retrieve = new Map();
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				let quota = player.countDiscardableCards(player, "he"),
 					skills = target.getSkills(null, false, false);
 				event.skills = target.getStockSkills(true, true).filter(s => {
@@ -870,7 +870,7 @@ export default {
 				return !player.getStorage("jlsgsy_sanzhi").includes(get.type(event.card, "trick"));
 			},
 			content: function () {
-				"step 0";
+				"step 0"
 				player.storage.jlsgsy_sanzhi.add(get.type(trigger.card, "trick"));
 				if (player.hasSkill("jlsgsy_sanzhi")) {
 					player.markSkill("jlsgsy_sanzhi");
@@ -935,7 +935,7 @@ export default {
 			selectTarget: 2,
 			prompt2: "请选择造成伤害与受到伤害的角色",
 			content: function () {
-				"step 0";
+				"step 0"
 				// targets[0].line(targets[1], 'green');
 				targets[1].damage(targets[0]);
 				if (targets[1].ai.shown > player.ai.shown) {
@@ -1264,7 +1264,7 @@ export default {
 				}
 			},
 			choosePlayerCard: function () {
-				"step 0";
+				"step 0"
 				if (!event.dialog) event.dialog = ui.create.dialog("hidden");
 				else if (!event.isMine()) {
 					event.dialog.style.display = "none";
@@ -1464,7 +1464,7 @@ export default {
 				return 10 - 3 * Math.random();
 			},
 			content() {
-				"step 0";
+				"step 0"
 				player.give(cards, target);
 				"step 1"
 				event.cards = target.getCards("h", c => {
@@ -1524,7 +1524,7 @@ export default {
 			},
 			logTarget: "player",
 			content() {
-				"step 0";
+				"step 0"
 				trigger.getParent().targets.push(trigger.player);
 				trigger.getParent().triggeredTargets2.push(trigger.player);
 				game.delayx();
@@ -1545,7 +1545,7 @@ export default {
 				return gain * 1.2 > lose;
 			},
 			content() {
-				"step 0";
+				"step 0"
 				event.targets = game.filterPlayer(p => p != player);
 				"step 1"
 				var target = event.targets.shift();
@@ -1707,7 +1707,7 @@ export default {
 			lose: false,
 			delay: false,
 			content() {
-				"step 0";
+				"step 0"
 				player.showCards(cards);
 				player.storage.jlsgsy_quanqing.shown.add(cards[0]);
 				player.storage.jlsgsy_quanqing.targets.add(target);
@@ -1871,7 +1871,7 @@ export default {
 			},
 			direct: true,
 			content() {
-				"step 0";
+				"step 0"
 				player
 					.chooseTarget(get.prompt2(event.name), [1, Infinity], (_, player, target) => target.getAllHistory("sourceDamage", e => e.player == _status.event.player).length)
 					.set("ai", (target, targets) => {
@@ -1939,7 +1939,7 @@ export default {
 			trigger: { player: "damageEnd" },
 			frequent: true,
 			content() {
-				"step 0";
+				"step 0"
 				player.draw(2);
 				if (trigger.card && trigger.card.isCard && trigger.cards.length) {
 					let cards = trigger.cards.slice().filterInD("o");
@@ -1983,7 +1983,7 @@ export default {
 			logTarget: "player",
 			forced: true,
 			content() {
-				"step 0";
+				"step 0"
 				let triggeredCnt = player.storage.jlsgsy_duzun.get(trigger.player) || 0;
 				player.storage.jlsgsy_duzun.set(trigger.player, triggeredCnt + 1);
 
@@ -2123,7 +2123,7 @@ export default {
 				return cnt.filter(cnt => cnt > 0).length >= 2;
 			},
 			content() {
-				"step 0";
+				"step 0"
 				var cnt = [lib.skill.jlsgsy_longbian.countShaUsable(player), 2 + (player.storage.jlsgsy_duzun_buff || [null, 0])[1], player.maxHp];
 				event.cnt = cnt;
 				var names = ["使用【杀】的次数上限", "摸牌阶段摸牌基数", "体力上限"];

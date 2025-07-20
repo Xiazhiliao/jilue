@@ -12,7 +12,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						if (trigger.player.inRangeOf(player)) {
 							var next = player.chooseBool(get.prompt("jlsg_zhaoxiang", trigger.player));
 							next.ai = function () {
@@ -85,7 +85,7 @@ export default {
 					discard: false,
 					lose: false,
 					content: function () {
-						"step 0";
+						"step 0"
 						player.showCards(cards[0]);
 						var nono = false;
 						if (ai.get.damageEffect(target, player, player)) nono = true;
@@ -153,7 +153,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						if (trigger.player.inRangeOf(player)) {
 							var next = player.chooseBool(get.prompt("jlsg_zhaoxiang", trigger.player));
 							next.ai = function () {
@@ -217,7 +217,7 @@ export default {
 						return player != target;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						if (!target.countDiscardableCards(target, "h")) {
 							target.damage(player);
 							target.recover();

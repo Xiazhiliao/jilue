@@ -24,7 +24,7 @@ export default {
 					selectTarget: 2,
 					prompt: "选择两名拼点目标",
 					content: function () {
-						"step 0";
+						"step 0"
 						targets[0].line(targets[1], "green");
 						targets[0].chooseToCompare(targets[1]);
 						"step 1"
@@ -69,7 +69,7 @@ export default {
 						return event.player;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						event.target = trigger.player == player ? trigger.source : trigger.player;
 						if (!event.target.countCards("e")) {
 							event.target.loseHp();

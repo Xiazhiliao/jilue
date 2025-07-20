@@ -20,7 +20,7 @@ export default {
 						return num >= 2;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						event.num2 = trigger.num;
 						"step 1"
 						var targets = game.filterPlayer();
@@ -192,7 +192,7 @@ export default {
 						return game.countPlayer() - event.num > 1;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						trigger.changeToZero();
 						event.current = player.next;
 						"step 1"
@@ -354,7 +354,7 @@ export default {
 						return event.nature;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						player.addMark("jlsg_lianti");
 						"step 1"
 						player.loseMaxHp();
@@ -401,7 +401,7 @@ export default {
 					multiline: true,
 
 					content: function () {
-						"step 0";
+						"step 0"
 						player.useCard({ name: "tiesuo", isCard: true }, targets);
 						"step 1"
 						player
@@ -595,7 +595,7 @@ export default {
 						return player != target && target.countCards("h");
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						var num = target.countCards("h");
 						target.discard(target.get("h"));
 						target.draw(num);
@@ -634,7 +634,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						player.chooseTarget("是否发动【顺世】?", [1, 3], function (card, player, target) {
 							return player != target && trigger.player != target;
 						}).ai = function (target) {
@@ -705,7 +705,7 @@ export default {
 						return get.type(event.card) == "trick";
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						if (player.storage.jlsg_kuangbao > 0) {
 							player.chooseControl("选项一", "选项二").set("prompt", '无谋<br><br><div class="text">1:弃置1枚「暴」标记</div><br><div class="text">2:受到1点伤害</div></br>').ai = function () {
 								if (player.storage.jlsg_kuangbao > 6) return "选项一";
@@ -736,7 +736,7 @@ export default {
 						return player.storage.jlsg_kuangbao > 1;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						player.removeMark("jlsg_kuangbao", 2);
 						"step 1"
 						player.addTempSkill("wushuang", "phaseAfter");
@@ -785,7 +785,7 @@ export default {
 					animationColor: "metal",
 					mark: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						player.storage.jlsg_kuangbao -= 6;
 						player.syncStorage("jlsg_kuangbao");
 						event.targets = game.players.slice(0);
@@ -1018,7 +1018,7 @@ export default {
 					},
 					forced: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						player
 							.chooseControl("选项一", "选项二", function () {
 								if (
@@ -1091,7 +1091,7 @@ export default {
 						return !player.hasSkill("jlsg_jilve2");
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						player.draw("nodelay");
 						player.chooseToUse().filterCard = function (card, player) {
 							return lib.filter.cardEnabled(card, player, event.parent.parent) && lib.filter.cardUsable(card, player, event.parent.parent);
@@ -1142,7 +1142,7 @@ export default {
 					},
 					derivation: ["zhiheng", "guanxing", "fankui", "wansha"],
 					content: function () {
-						"step 0";
+						"step 0"
 						var suits = cards.map(card => get.suit(card));
 						let skills = [];
 						if (suits.includes("spade")) {
@@ -1213,7 +1213,7 @@ export default {
 						return 1;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						trigger.cancel();
 						player.judge(function (card) {
 							return get.color(card) == "black" ? 1.5 : -1;
@@ -1329,7 +1329,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						player
 							.chooseTarget(get.prompt(event.name))
 							.set("prompt2", "令一名角色回复1点体力，若其未受伤则改为加1点体力上限。")
@@ -1398,7 +1398,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						player
 							.chooseTarget(get.prompt(event.name))
 							.set("prompt2", "对一名角色造成1点雷电伤害，若其已受伤则改为减1点体力上限。")
@@ -1463,7 +1463,7 @@ export default {
 					direct: true,
 					frequent: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						event.colors = [];
 						var evt = trigger.getl(player);
 						event.cards = evt.cards2;
@@ -1514,7 +1514,7 @@ export default {
 					},
 					forced: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						player.showHandcards();
 						"step 1"
 						if (!player.countCards("h", "sha")) {
@@ -1908,7 +1908,7 @@ export default {
 						return true;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						event.top = [ui.cardPile.firstChild];
 						player.storage.jlsg_tianji_top = [ui.cardPile.firstChild];
 						event.dialog = ui.create.dialog("天机", event.top, true);
@@ -1984,7 +1984,7 @@ export default {
 						return event.name != "phase" || game.phaseNumber == 0;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						player.gain(get.cards(7))._triggered = null;
 						"step 1"
 						if (player == game.me) {
@@ -2028,7 +2028,7 @@ export default {
 						return player.getExpansions("jlsg_qixing").length;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						player.chooseCard(get.prompt("jlsg_qixing"), [1, 3]).ai = function (card) {
 							return 1;
 						};
@@ -2067,7 +2067,7 @@ export default {
 						return player.getExpansions("jlsg_qixing").length;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						var clearKuangfeng = jlsg.findPlayerBySkillName("jlsg_kuangfeng2");
 						if (clearKuangfeng) {
 							clearKuangfeng.removeSkill("jlsg_kuangfeng2");
@@ -2141,7 +2141,7 @@ export default {
 					},
 					audio: "ext:极略/audio/skill:2",
 					content: function () {
-						"step 0";
+						"step 0"
 						player.chooseTarget("选择角色获得大雾标记", [1, Math.min(game.players.length, player.getExpansions("jlsg_qixing").length)]).ai = function (target) {
 							if (target.isMin()) return 0;
 							if (target.hasSkill("biantian2")) return 0;
@@ -2240,7 +2240,7 @@ export default {
 						return get.attitude(player, event.target) < 0;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						event.cards = get.cards(3);
 						game.cardsGotoOrdering(cards);
 						player.showCards(event.cards);
@@ -2359,7 +2359,7 @@ export default {
 					},
 					forced: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						player.draw();
 						"step 1"
 						var next = player.phaseUse();
