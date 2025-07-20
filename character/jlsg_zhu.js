@@ -12,8 +12,9 @@ export default {
 			zhuSkill: true,
 			unique: true,
 			filter: function (event, player) {
-				if (lib.config.extension_极略_jlsg_buff === "false") return false;
+				if (!lib.config.extension_极略_jlsg_buff) return false;
 				//本来就是我扩展搬过来的，我推销一下自己的扩展不过分吧（
+				//孩子我没意见————流年
 				if (!lib.config.extension_钟会包_loseBuffLimit && !(player.name.substring(0, 2) === "jl")) return false;
 				return player.isZhu2();
 			},
@@ -105,7 +106,7 @@ export default {
 			},
 			forced: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				delete trigger.skill;
 				trigger.getParent().set("jijiang", true);
 				"step 1"
@@ -172,7 +173,7 @@ export default {
 			},
 			direct: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				var list = [];
 				for (var i = 0; i < game.players.length; i++) {
 					if (game.players[i] != player && game.players[i].hasZhuSkill("jlsg_zhugong_yongbin", player)) {
@@ -330,7 +331,7 @@ export default {
 			},
 			direct: true,
 			content: function () {
-				"step 0";
+				"step 0"
 				var list = [];
 				for (var i = 0; i < game.players.length; i++) {
 					if (game.players[i] != player && game.players[i].hasZhuSkill("jlsg_zhugong_jianxiong", player)) {

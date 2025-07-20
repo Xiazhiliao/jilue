@@ -26,11 +26,7 @@ let block = {
 		jlsg_buff: {
 			name: "极略主公buff",
 			intro: "极略武将做主公时从三个随机极略主公技中选择并获得一个",
-			init: "false",
-			item: {
-				false: "关闭",
-				global: "开启",
-			},
+			init: false,
 		},
 		oldCharacterReplace: {
 			clear: true,
