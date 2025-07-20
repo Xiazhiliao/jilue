@@ -100,11 +100,13 @@ if (lib.device || lib.node) {
 		}
 	}
 	//导入jlsgZhu里的skill和translate
-	for (let i in jlsgZhu.skill) {
-		lib.skill[i] = jlsgZhu.skill[i];
-	}
-	for (let i in jlsgZhu.translate) {
-		lib.translate[i] = jlsgZhu.translate[i];
+	if (!config.jlsg_buff) {
+		for (let i in jlsgZhu.skill) {
+			lib.skill[i] = jlsgZhu.skill[i];
+		}
+		for (let i in jlsgZhu.translate) {
+			lib.translate[i] = jlsgZhu.translate[i];
+		}
 	}
 }
 export const characters = {
