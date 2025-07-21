@@ -565,8 +565,42 @@ export default {
 					});
 					if (result.bool) {
 						game.log(target, "响应了", player);
-						target.chat("我来助你！");
 						target.line(player, "green");
+						//我来助你！
+						if (true) {
+							target.chat("我来助你！");
+							let node = target.node.avatar,
+								flashAvatat = function (target, src) {
+									game.broadcastAll(
+										function (target, src) {
+											let node = target.node.avatar;
+											target.smoothAvatar(false, false);
+											if (node) {
+												node.setBackgroundImage(src);
+											}
+										},
+										target,
+										src
+									);
+								};
+							if (node._jlsg_zhugong_fuzheng) {
+								node._jlsg_zhugong_fuzheng.push(`extension/极略/image/other/jlsg_zhugong_fuzheng.jpg`);
+							} else {
+								const func = function () {
+									if (node._jlsg_zhugong_fuzheng.length) {
+										flashAvatat(target, node._jlsg_zhugong_fuzheng.shift());
+									} else {
+										clearInterval(node._jlsg_zhugong_fuzhengInterval);
+										delete node._jlsg_zhugong_fuzheng;
+										delete node._jlsg_zhugong_fuzhengInterval;
+										target.setAvatar(target.name, target.name, false, false);
+									}
+								};
+								node._jlsg_zhugong_fuzheng = [`extension/极略/image/other/jlsg_zhugong_fuzheng.jpg`];
+								node._jlsg_zhugong_fuzhengInterval = setInterval(func, 1000);
+								func();
+							}
+						}
 						await player.draw();
 					}
 				}
