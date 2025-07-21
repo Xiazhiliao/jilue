@@ -12,11 +12,10 @@ export default {
 			zhuSkill: true,
 			unique: true,
 			filter: function (event, player) {
-				//if (lib.config.extension_极略_jlsg_buff === false) return false;
-				//孩子我没意见————流年
 				//本来就是我扩展搬过来的，我推销一下自己的扩展不过分吧（
+				//孩子我没意见————流年
 				if (!lib.config.extension_钟会包_loseBuffLimit && !(player.name.substring(0, 2) === "jl")) return false;
-				return player.isZhu2();
+				return player.isZhu2() && get.nameList(player).some(name => name.startsWith("jlsg"));
 			},
 			async content(event, trigger, player) {
 				let list = ["jlsg_zhugong_ruoyu", "jlsg_zhugong_yongbin", "jlsg_zhugong_ruoyu", "jlsg_zhugong_hujia", "jlsg_zhugong_jianxiong", "jlsg_zhugong_songwei", "jlsg_zhugong_jiuyuan", "jlsg_zhugong_fuzheng", "jlsg_zhugong_xieli", "jlsg_zhugong_huangtian", "jlsg_zhugong_mingmen", "jlsg_zhugong_hunlie"];
