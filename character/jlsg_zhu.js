@@ -351,7 +351,6 @@ export default {
 					await player.draw();
 				}
 			},
-			global: "jlsg_zhugong_yongbin2",
 			_priority: 0,
 		},
 		jlsg_zhugong_ruoyu: {
@@ -464,7 +463,6 @@ export default {
 		jlsg_zhugong_jianxiong: {
 			//奸雄
 			unique: true,
-			global: "jlsg_zhugong_jianxiong2",
 			trigger: { global: "damageEnd" },
 			direct: true,
 			filter: function (event, player) {
