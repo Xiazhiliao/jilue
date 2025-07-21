@@ -14,6 +14,7 @@ export default {
 			filter: function (event, player) {
 				//本来就是我扩展搬过来的，我推销一下自己的扩展不过分吧（
 				//孩子我没意见————流年
+				//player.name是主将姓名，name2是副将姓名
 				if (!lib.config.extension_钟会包_loseBuffLimit && !(player.name.substring(0, 2) === "jl")) return false;
 				return player.isZhu2() && get.nameList(player).some(name => name.startsWith("jlsg"));
 			},
@@ -40,9 +41,13 @@ export default {
 						lists.push(litm);
 					}
 				});
+				let num = 1;
+				if (get.config("double_character") === true) {
+					num++;
+				}
 				let next = await player
 					.chooseButton([
-						"极略主公buff：请选择一项主公技获得",
+						"极略主公buff：请选择至多" + get.cnNumber(num) + "项主公技获得",
 						[
 							lists.map((item, i) => {
 								return [i, item];
@@ -51,10 +56,13 @@ export default {
 						],
 					])
 					.set("ai", () => Math.floor(Math.random() * list.length)) /*.set("forced", true)*/
-					.set("selectButton", 1)
+					.set("selectButton", [1, num])
 					.forResultLinks();
 				if (next) {
-					player.addSkill(skill[next[0]]);
+					let links = next.sort();
+					links.forEach(i => {
+						player.addSkill(skill[i]);
+					});
 				}
 			},
 			_priority: 114514191981,
