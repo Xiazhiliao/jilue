@@ -2,70 +2,57 @@ import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export default {
 	name: "jlsgZhu",
 	skill: {
+		//极略主公buff
 		_jlsg_buff: {
-			//极略主公buff
-			forced: true,
+			zhuSkill: true,
+			unique: true,
+			ruleSkill: true,
 			charlotte: true,
 			trigger: {
 				global: "gameStart",
 			},
-			zhuSkill: true,
-			unique: true,
-			filter: function (event, player) {
+			filter(event, player) {
 				//本来就是我扩展搬过来的，我推销一下自己的扩展不过分吧（
 				//孩子我没意见————流年
 				//player.name是主将姓名，name2是副将姓名
-				if (!lib.config.extension_钟会包_loseBuffLimit && !(player.name.substring(0, 2) === "jl")) return false;
+				if (!lib.config.extension_钟会包_loseBuffLimit && !(player.name.substring(0, 2) === "jl")) {
+					return false;
+				}
 				return player.isZhu2() && get.nameList(player).some(name => name.startsWith("jlsg"));
 			},
+			forced: true,
 			//适应helpStr，方便调用
 			list: ["jlsg_zhugong_yuren", "jlsg_zhugong_yongbin", "jlsg_zhugong_ruoyu", "jlsg_zhugong_hujia", "jlsg_zhugong_jianxiong", "jlsg_zhugong_songwei", "jlsg_zhugong_jiuyuan", "jlsg_zhugong_fuzheng", "jlsg_zhugong_xieli", "jlsg_zhugong_huangtian", "jlsg_zhugong_mingmen", "jlsg_zhugong_hunlie"],
 			async content(event, trigger, player) {
-				let list = lib.skill._jlsg_buff.list;
-				let skill = [];
-				for (let i = 0; i < 3; i++) {
-					let r = Math.floor(Math.random() * list.length);
-					skill.push(list[r]);
-					list = list.filter(item => item !== list[r]);
-				}
-				let lists = [];
-				skill.forEach(i => {
-					if (lib.translate[i + "_info"]) {
-						var translation = get.translation(i);
-						if (translation[0] == "新" && translation.length == 3) {
-							translation = translation.slice(1, 3);
-						} else {
-							translation = translation.slice(0, 2);
-						}
-						var litm = "【" + translation + "】<div>" + lib.translate[i + "_info"] + "</div>";
-						lists.push(litm);
+				let list = lib.skill._jlsg_buff.list.filter(skill => !player.hasSkill(skill, null, false, false));
+				event.num = 0;
+				while (list.length) {
+					let skills = list.filter(skill => !player.hasSkill(skill, null, false, false)).randomGets(3);
+					const buttons = skills.map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
+					let links = await player
+						.chooseButton(["极略主公buff：请选择一项主公技获得", [buttons, "textbutton"]])
+						.set("selectButton", [1, 1])
+						.set("forced", true)
+						.set("ai", () => get.event().getRand())
+						.forResultLinks();
+					event.num++;
+					if (links?.length) {
+						player.addSkill(links);
 					}
-				});
-				let num = 1;
-				if (get.config("double_character") === true) {
-					num++;
-				}
-				let next = await player
-					.chooseButton([
-						"极略主公buff：请选择至多" + get.cnNumber(num) + "项主公技获得",
-						[
-							lists.map((item, i) => {
-								return [i, item];
-							}),
-							"textbutton",
-						],
-					])
-					.set("ai", () => Math.floor(Math.random() * list.length)) /*.set("forced", true)*/
-					.set("selectButton", [1, num])
-					.forResultLinks();
-				if (next) {
-					let links = next.sort();
-					links.forEach(i => {
-						player.addSkill(skill[i]);
-					});
+					//双将适配
+					if (get.config("double_character") != true || event.num > 1) {
+						break;
+					}
 				}
 			},
-			_priority: 114514191981,
+			//势力统一判断
+			groupCheck(player, target) {
+				if (player.group == "shen" || target.group == "shen") {
+					return true;
+				}
+				return player.group == target.group;
+			},
+			priority: 114514191981,
 		},
 		//极略buff主公技
 		jlsg_zhugong_yuren: {
