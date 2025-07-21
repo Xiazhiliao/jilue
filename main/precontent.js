@@ -1330,17 +1330,18 @@ export async function precontent(config, originalPack) {
 			return player.countCards("he", name);
 		},
 		helpStr: {
-			mainStr: function(html) {
+			mainStr: function (html) {
 				if (html.hth_more == undefined) {
 					let str = "";
 					if (lib.skill?._jlsg_buff?.list) {
 						for (let i of lib.skill._jlsg_buff.list) {
-							str += '<br><b style="color: green">' + get.translation(i) + "：</b>" + get.translation(i+"_info");
+							str += '<br><b style="color: green">' + get.translation(i) + "：</b>" + get.translation(i + "_info");
 						}
 						str = '<hr><li>极略主公buff：<br>极略的特殊机制，当极略武将作为主公时，可以从三个随机主公技中选择并获得一个<br>详见：<a href="https://www.bilibili.com/opus/844481636614537270/?from=readlist">极略主公buff详情</a><br><li>极略主公技能一览：<br>' + str;
 					}
-					var more = ui.create.div('.hth_more',
-					`本拓展基于民间极略的某魔改版，因为当时那位作者说“修复了所有的bug”<br>
+					var more = ui.create.div(
+						".hth_more",
+						`本拓展基于民间极略的某魔改版，因为当时那位作者说“修复了所有的bug”<br>
 					事实证明这种说法比较离谱<br>
 					——xiaoas<br>
 					本拓展QQ群：<br>
@@ -1354,7 +1355,7 @@ export async function precontent(config, originalPack) {
 					是指在游戏中额外生成的卡牌。<br>
 					临时牌在置入弃牌堆后移除，在其他区域里和正常的卡牌没有区别。<br>
 					<br>
-					`+str
+					` + str
 					);
 					html.hth_more = more;
 				}
@@ -1362,8 +1363,7 @@ export async function precontent(config, originalPack) {
 					html.hth_more_mode = true;
 					html.parentNode.insertBefore(html.hth_more, html.nextSibling);
 					html.innerHTML = '<div class="hth_menu" onclick="jlsg.helpStr.mainStr(this)">▼帮助内容</div>';
-				}
-				else {
+				} else {
 					html.parentNode.removeChild(html.hth_more);
 					delete html.hth_more_mode;
 					html.innerHTML = '<div class="hth_menu" onclick="jlsg.helpStr.mainStr(this)">▶帮助内容</div>';
