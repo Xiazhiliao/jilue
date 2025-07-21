@@ -1337,7 +1337,7 @@ export async function precontent(config, originalPack) {
 						for (let i of lib.skill._jlsg_buff.list) {
 							str += `<br><b style="color: green" onclick="jlsg.helpStr.skillStr(this, '` + i + `')">▶` + get.translation(i) + "</b>";
 						}
-						str = '<hr><li>极略主公buff：<br>极略的特殊机制，当极略武将作为主公时，可以从三个随机主公技中选择并获得一个<br>详见：<a href="https://www.bilibili.com/opus/844481636614537270/?from=readlist">极略主公buff详情</a><br><li>极略主公技能一览：<br>' + str;
+						str = '<hr><li>极略主公buff：<br>极略的特殊机制，当极略武将作为主公时，可以从三个随机主公技中选择并获得一个（如果游戏为双将模式，则额外选择一个主公技）<br>神势力角色当主公时，所有其他角色均视为与其势力相同，神势力角色可以响应所有势力的主公的主公技（未完工）<br>详见：<a href="https://www.bilibili.com/opus/844481636614537270/?from=readlist">极略主公buff详情</a><br><li>极略主公技能一览：<br>' + str;
 					}
 					var more = ui.create.div(
 						".hth_more",
