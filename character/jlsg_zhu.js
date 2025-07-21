@@ -17,8 +17,10 @@ export default {
 				if (!lib.config.extension_钟会包_loseBuffLimit && !(player.name.substring(0, 2) === "jl")) return false;
 				return player.isZhu2() && get.nameList(player).some(name => name.startsWith("jlsg"));
 			},
+			//适应helpStr，方便调用
+			list: ["jlsg_zhugong_ruoyu", "jlsg_zhugong_yongbin", "jlsg_zhugong_ruoyu", "jlsg_zhugong_hujia", "jlsg_zhugong_jianxiong", "jlsg_zhugong_songwei", "jlsg_zhugong_jiuyuan", "jlsg_zhugong_fuzheng", "jlsg_zhugong_xieli", "jlsg_zhugong_huangtian", "jlsg_zhugong_mingmen", "jlsg_zhugong_hunlie"],
 			async content(event, trigger, player) {
-				let list = ["jlsg_zhugong_ruoyu", "jlsg_zhugong_yongbin", "jlsg_zhugong_ruoyu", "jlsg_zhugong_hujia", "jlsg_zhugong_jianxiong", "jlsg_zhugong_songwei", "jlsg_zhugong_jiuyuan", "jlsg_zhugong_fuzheng", "jlsg_zhugong_xieli", "jlsg_zhugong_huangtian", "jlsg_zhugong_mingmen", "jlsg_zhugong_hunlie"];
+				let list = lib.skill._jlsg_buff.list;
 				let skill = [];
 				for (let i = 0; i < 3; i++) {
 					let r = Math.floor(Math.random() * list.length);
