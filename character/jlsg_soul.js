@@ -1426,20 +1426,20 @@ export default {
 				const result = await next;
 				if (result?.skills?.length) {
 					await player.addSkills(result.skills);
+					game.broadcastAll(function (list) {
+						game.expandSkills(list);
+						for (const i of list) {
+							var info = lib.skill[i];
+							if (!info) {
+								continue;
+							}
+							if (!info.audioname2) {
+								info.audioname2 = {};
+							}
+							info.audioname2.old_yuanshu = "weidi";
+						}
+					}, result.skills);
 				}
-				game.broadcastAll(function (list) {
-					game.expandSkills(list);
-					for (const i of list) {
-						var info = lib.skill[i];
-						if (!info) {
-							continue;
-						}
-						if (!info.audioname2) {
-							info.audioname2 = {};
-						}
-						info.audioname2.old_yuanshu = "weidi";
-					}
-				}, result.skills);
 			},
 			ai: {
 				halfneg: true,

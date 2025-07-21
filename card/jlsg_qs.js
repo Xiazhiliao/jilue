@@ -1152,28 +1152,5 @@ for (let cardName in jlsg_qs.card) {
 		}
 	}
 }
-if (!_status.postReconnect.extErdai_skill) {
-	_status.postReconnect.extErdai_skill = [
-		function (skills, info) {
-			for (let skill in skills) {
-				lib.skill[skill] = skills[skill];
-				if (info[skill]) {
-					lib.translate[skill] = info[skill];
-				}
-				if (info[skill + "_info"]) {
-					lib.translate[skill + "_info"] = info[skill + "_info"];
-				}
-				game.finishSkill(skill);
-			}
-		},
-		{},
-		{},
-	];
-}
-for (let key in jlsg_qs.skill) {
-	_status.postReconnect.extErdai_skill[1][key] = jlsg_qs.skill[key];
-	if (jlsg_qs.translate[key]) _status.postReconnect.extErdai_skill[2][key] = jlsg_qs.translate[key];
-	if (jlsg_qs.translate[key + "_info"]) _status.postReconnect.extErdai_skill[2][key + "_info"] = jlsg_qs.translate[key + "_info"];
-}
 
 export let card = jlsg_qs;
