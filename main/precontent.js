@@ -1329,6 +1329,51 @@ export async function precontent(config, originalPack) {
 			player = player || _status.event.player;
 			return player.countCards("he", name);
 		},
+		helpStr: {
+			mainStr: function (html) {
+				if (html.hth_more == undefined) {
+					let str = "";
+					if (lib.skill?._jlsg_buff?.list) {
+						for (let i of lib.skill._jlsg_buff.list) {
+							str += `<br><b style="color: green" onclick="jlsg.helpStr.skillStr(this, '` + i + `')">▶` + get.translation(i) + "</b>";
+						}
+						str = '<hr><li>极略主公buff：<br>极略的特殊机制，当极略武将作为主公时，可以从三个随机主公技中选择并获得一个（如果游戏为双将模式，则额外选择一个主公技）<br>神势力角色当主公时，所有其他角色均视为与其势力相同，神势力角色可以响应所有势力的主公的主公技（未完工）<br>详见：<a href="https://www.bilibili.com/opus/844481636614537270/?from=readlist">极略主公buff详情</a><br><li>极略主公技能一览：<br>' + str;
+					}
+					var more = ui.create.div(
+						".hth_more",
+						`本拓展基于民间极略的某魔改版，因为当时那位作者说“修复了所有的bug”<br>
+					事实证明这种说法比较离谱<br>
+					——xiaoas<br>
+					本拓展QQ群：<br>
+					无名杀极略拓展交流群 392224094<br>
+					无名杀极略2群 702142668<br>
+					github仓库：<a href="https://github.com/Xiazhiliao/jilue/tree/PR-Branch">点击此处进入</a><br>
+					<li>许愿：<br>
+					许愿是SP神孙尚香的独特机制，效果为从<b style="color: red">征伐</b>、<b style="color: green">宁息</b>、<b style="color: purple">混沌</b>三种命运中选择一个分支，并从随机给出的三个具体效果中获得一个。<br>
+					<br>
+					<li>临时牌：<br>
+					是指在游戏中额外生成的卡牌。<br>
+					临时牌在置入弃牌堆后移除，在其他区域里和正常的卡牌没有区别。<br>
+					<br>
+					` + str
+					);
+					html.hth_more = more;
+				}
+				if (html.hth_more_mode === undefined) {
+					html.hth_more_mode = true;
+					html.parentNode.insertBefore(html.hth_more, html.nextSibling);
+					html.innerHTML = '<div class="hth_menu" onclick="jlsg.helpStr.mainStr(this)">▼帮助内容</div>';
+				} else {
+					html.parentNode.removeChild(html.hth_more);
+					delete html.hth_more_mode;
+					html.innerHTML = '<div class="hth_menu" onclick="jlsg.helpStr.mainStr(this)">▶帮助内容</div>';
+				}
+			},
+			skillStr: function (html, skill) {
+				if (html.innerHTML[0] == "▶") html.innerHTML = "▼" + get.translation(skill) + '<br><b style="color: white;font-weight: normal">' + get.translation(skill + "_info") + "</b>";
+				else html.innerHTML = "▶" + get.translation(skill);
+			},
+		},
 	};
 	lib.jlsg = jlsg;
 	window.jlsg = jlsg;

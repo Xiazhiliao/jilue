@@ -38,6 +38,37 @@ for (let character in config) {
 		}
 	}
 }
+//导入jlsgZhu里的skill和translate
+if (lib.config?.extension_极略_jlsg_zhugong_buff) {
+	//清除原有主公技
+	for (let character in jlsg_sr.character) {
+		const skills = jlsg_sr.character[character][3];
+		for (let skill of skills) {
+			const info = jlsg_sr.skill[skill];
+			if (info?.zhuSkill) {
+				jlsg_sr.character[character][3].remove(skill);
+				if (info.group) {
+					const group = Array.isArray(info.group) ? info.group : [info.group];
+					for (let skill2 of group) {
+						delete jlsg_sr.skill[skill2];
+						delete jlsg_sr.translate[skill2];
+						delete jlsg_sr.translate[skill2 + "_info"];
+					}
+				}
+				delete jlsg_sr.skill[skill];
+				delete jlsg_sr.translate[skill];
+				delete jlsg_sr.translate[skill + "_info"];
+			}
+		}
+	}
+
+	for (let i in jlsgZhu.skill) {
+		jlsg_sr.skill[i] = jlsgZhu.skill[i];
+	}
+	for (let i in jlsgZhu.translate) {
+		jlsg_sr.translate[i] = jlsgZhu.translate[i];
+	}
+}
 //魔将调整
 if (lib.config?.extension_极略_syRefactor) {
 	for (const name in jlsg_sy.character) {
@@ -96,15 +127,6 @@ if (lib.device || lib.node) {
 					pack.translate[name + "_prefix"] = "极略" + prefix;
 				}
 			}
-		}
-	}
-	//导入jlsgZhu里的skill和translate
-	if (lib.config?.extension_极略_jlsg_buff) {
-		for (let i in jlsgZhu.skill) {
-			jlsg_sr.skill[i] = jlsgZhu.skill[i];
-		}
-		for (let i in jlsgZhu.translate) {
-			jlsg_sr.translate[i] = jlsgZhu.translate[i];
 		}
 	}
 }
