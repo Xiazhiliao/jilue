@@ -1405,7 +1405,7 @@ export default {
 					return promise;
 				};
 				const ai = function () {
-					return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout"))[0] };
+					return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")) };
 				};
 				let next;
 				if (event.isMine()) {
