@@ -316,7 +316,7 @@ export default {
 					charlotte: true,
 					sourceSkill: "jlsg_zhugong_yuren",
 					filter(event) {
-						return event.skill != "jlsg_zhugong_yuren" && event.skill != "qinwang" && !event.skill.includes("jijiang");
+						return event.skill != "jlsg_zhugong_yuren" && event.skill != "qinwang" && event.skill?.indexOf("jijiang") == -1;
 					},
 					async content(event, trigger, player) {
 						player.removeSkill("jlsg_zhugong_yuren_ban");
