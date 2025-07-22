@@ -870,6 +870,7 @@ export default {
 				return get.type2(event.card) == "trick";
 			},
 			locked: false,
+			frequent: true,
 			prompt: "是否发动【灵心】？",
 			prompt2: "摸一张牌并从牌堆中获得一张基本牌，以此法获得的基本牌不计入手牌上限，且无次使用数限制",
 			check(event, player) {
