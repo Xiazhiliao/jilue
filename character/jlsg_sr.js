@@ -4188,13 +4188,13 @@ export default {
 			},
 			frequent: true,
 			async content(event, trigger, player) {
-				const { result } = await await player
+				const { result } = await player
 					.judge(function (card) {
 						if (get.color(card) == "red") return 2;
 						return -2;
 					})
 					.set("judge2", result => result.bool);
-				if (result.bool) {
+				if (result?.bool) {
 					await player.draw();
 				}
 			},
@@ -4982,7 +4982,7 @@ export default {
 		jlsg_weiwo_info: "锁定技，当你有手牌时，你防止受到的属性伤害；当你没有手牌时，你防止受到的非属性伤害。",
 		jlsg_shouji_info: "出牌阶段限一次，你可以弃置一张牌并选择两名角色，然后根据你弃置牌的花色，视为其中一名角色对另一名角色使用一张牌：黑桃【决斗】，梅花【借刀杀人】，红桃【顺手牵羊】，方片【火攻】。",
 		jlsg_hemou_info: "其他角色的出牌阶段开始时，你可以将一张手牌正面朝上交给该角色，该角色本阶段限一次，可将一张与之相同花色的手牌按下列规则使用：黑桃【决斗】，梅花【借刀杀人】，红桃【顺手牵羊】，方片【火攻】。",
-		jlsg_qicai_info: "每当你失去一次手牌时，你可以进行判定，若结果为红色，你摸一张牌。",
+		jlsg_qicai_info: "每当你失去手牌时，你可以进行判定，若结果为红色，你摸一张牌。",
 		jlsg_rende_info: "任一角色的结束阶段结束时，你可以将任意数量的手牌交给该角色，然后该角色进行1个额外的出牌阶段。",
 		jlsg_chouxi_info: "出牌阶段限一次，你可以弃置一张手牌并展示牌堆顶的两张牌，然后令一名其他角色选择一项：1. 弃置一张与展示牌类别均不同的牌，然后令你获得展示的牌；2. 受到你造成的1点伤害并获得其中一种类别的牌，然后你获得其余的牌。",
 		jlsg_yongbing_info: "主公技，当一名其他蜀势力角色使用【杀】造成一次伤害后，该角色可令你摸一张牌。",
