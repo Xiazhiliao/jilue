@@ -381,43 +381,41 @@ export default {
 			},
 		},
 		jlsgsy_zuijiu: {
-			audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_zuijiu'],
+			audio: "ext:极略/audio/skill:1",
 			enable: "phaseUse",
-			delay: 0,
-			filter: function (event, player) {
-				let used = player.getStat().skill;
-				used = (used && used.jlsgsy_zuijiu) || 0;
-				return player.countCards("h") >= used;
-			},
-			content: function () {
-				"step 0"
-				let used = player.getStat().skill;
-				used = (used && used.jlsgsy_zuijiu) || 0;
-				player.randomDiscard(used - 1);
-				"step 1"
-				let sha = { name: "sha" };
-				let jiu = { name: "jiu" };
-				let shaTargets = game.filterPlayer(p => player.canUse(sha, p));
-				let jiuTargets = game.filterPlayer(p => player.canUse(jiu, p));
-				if (shaTargets.length > 0 && (jiuTargets.length == 0 || Math.random() < 0.5)) {
-					let cnt = get.rand(...lib.filter.selectTarget(sha, player));
-					player.useCard(sha, shaTargets.randomGets(cnt), "noai", false);
-				} else if (jiuTargets.length > 0) {
-					let cnt = get.rand(...lib.filter.selectTarget(jiu, player));
-					if (cnt >= 0) {
-						player.useCard(jiu, jiuTargets.randomGets(cnt), "noai", false);
-					} else {
-						player.useCard(jiu, jiuTargets, "noai", false);
-					}
+			filter(event, player) {
+				const sha = get.autoViewAs({ name: "sha", isCard: true }, []),
+					jiu = get.autoViewAs({ name: "jiu", isCard: true }, []);
+				let list = [sha, jiu].filter(card => player.hasUseTarget(card, false, false));
+				if (!list.length) {
+					return false;
 				}
+				let used = player.getStat("skill")?.jlsgsy_zuijiu || 0;
+				return player.countDiscardableCards(player, "h") >= used;
+			},
+			delay: 0,
+			async content(event, trigger, player) {
+				let used = (player.getStat("skill")?.jlsgsy_zuijiu || 1) - 1;
+				if (used > 0) {
+					await player.randomDiscard(used, "h");
+				}
+				const sha = get.autoViewAs({ name: "sha", isCard: true }, []),
+					jiu = get.autoViewAs({ name: "jiu", isCard: true }, []);
+				let list = [sha, jiu].filter(card => player.hasUseTarget(card, false, false));
+				if (!list.length) {
+					return;
+				}
+				let card = list.randomGet();
+				await player.chooseUseTarget(card, true, false, "nodistance");
 			},
 			ai: {
-				order: 6,
+				order(item, player) {
+					return get.order("sha", player) + 1;
+				},
 				result: {
-					player: function (player) {
-						let used = player.getStat().skill;
-						used = (used && used.jlsgsy_zuijiu) || 0;
-						if (used <= 1) return 1;
+					player(player) {
+						let used = player.getStat("skill")?.jlsgsy_zuijiu || 0;
+						if (used <= 2) return 1;
 						return 0;
 					},
 				},
@@ -2809,7 +2807,7 @@ export default {
 		jlsgsy_huangyin: "荒淫",
 		jlsgsy_huangyin_info: "当你弃置其他角色的牌后，你可以从这些牌里随机获得一张牌。",
 		jlsgsy_zuijiu: "醉酒",
-		jlsgsy_zuijiu_info: "出牌阶段，你可以随机弃置X张手牌(X为你于本阶段内再次发动此技能的次数)，然后随机视为使用【酒】或【杀】，以此法使用的牌不计入次数限制。",
+		jlsgsy_zuijiu_info: "出牌阶段，你可以随机弃置X张手牌(X为你于本阶段内发动此技能的次数)，然后随机视为使用【酒】或【杀】，以此法使用的牌无距离限制且不计入次数限制。",
 		jlsgsy_guiming: "归命",
 		jlsgsy_guiming_info: "限定技，当你进入濒死状态时，你可以将回复体力至X,然后令其他角色各随机弃置X张牌（X为存活角色数）。",
 		jlsgsy_taiping4: "太平",
