@@ -44,6 +44,8 @@ const b = 1;
 	} else {
 		game.saveConfig("extension_极略_wrongExtensionNameAlert", false);
 	}
+	//适配PR 换个写法（
+	if(get.info("lihun2").onremove) game.initCharactertList=game.initCharacterList;
 
 	//武将替换
 	const characterReplaceExclude = {
