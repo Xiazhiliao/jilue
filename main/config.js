@@ -56,7 +56,7 @@ let block = {
 	oldCharacterReplace = {
 		sr: {
 			jlsgsr_caocao: {
-				jlsg_upgrade:true,
+				jlsg_upgrade: true,
 				name: "SR曹操",
 				init: "false",
 				item: {
@@ -112,7 +112,7 @@ let block = {
 				},
 			},
 			jlsgsr_liubei: {
-				jlsg_upgrade:true,
+				jlsg_upgrade: true,
 				name: "SR刘备",
 				init: "false",
 				item: {

@@ -65,7 +65,7 @@ export default {
 							break;
 						}
 						let info = [false, false, false, false],
-							choiceList = ["起始手牌数+3", "摸牌数+1", "技能突破", "携带所有技能"];
+							choiceList = [...Object.keys(lib.skill[event.name].upgradeContent[name]), "技能突破", "携带所有技能"];
 						//非强制突破，非顺次选择
 						const { result: upgrade } = await player
 							.chooseButton([1, 4], [`请选择${get.translation(name)}的突破`, [choiceList.map((item, i) => [i, item]), "textbutton"]])
@@ -73,13 +73,12 @@ export default {
 							.set("info", info);
 						if (upgrade?.bool) {
 							const choice = upgrade.links;
+							event.info = info;
 							if (choice.includes(0)) {
-								player.directgain(get.cards(3));
-								info[0] = true;
+								await lib.skill[event.name].upgradeContent[name][choiceList[0]](event, trigger, player);
 							}
 							if (choice.includes(1)) {
-								game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-								info[1] = true;
+								await lib.skill[event.name].upgradeContent[name][choiceList[1]](event, trigger, player);
 							}
 							if (choice.includes(2)) {
 								info[2] = true;
@@ -88,11 +87,12 @@ export default {
 								info[3] = true;
 							}
 							//将结果广播
-							/*_jlsgsr_upgrade = {
+							/*_status_jlsgsr_upgrade = {
 								//角色id
 								"player.playerid": {
-									//武将名：[第一次突破(起始手牌), 第二次突破(摸牌数), 第三次突破(技能突破), 第四次突破(携带所有技能)]
-									characterName: [false, false, false, false],默认全关
+									//武将名：[第一次突破, 第二次突破, 第三次突破(技能突破), 第四次突破(携带所有技能)]
+									characterName: [false, false, false, false],
+									默认全关
 								},
 							}*/
 							game.broadcastAll(
@@ -166,10 +166,52 @@ export default {
 				}
 				return list;
 			},
+			//属性突破列表
+			upgradeContent: {
+				jlsgsr_caocao: {
+					"手牌上限+3": async function (event, trigger, player) {
+						game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+						event.info[0] = "maxHandcard|3";
+					},
+					"体力上限+1": async function (event, trigger, player) {
+						game.broadcastAll(function (player) {
+							player.maxHp++;
+							player.hp++;
+							player.update();
+						}, player);
+						event.info[1] = true;
+					},
+				},
+				jlsgsr_liubei: {
+					"起始手牌数+3": async function (event, trigger, player) {
+						player.directgain(get.cards(3));
+						event.info[0] = true;
+					},
+					"摸牌数+1": async function (event, trigger, player) {
+						game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+						event.info[1] = "draw|1";
+					},
+				},
+			},
 		},
 		_jlsgsr_upgrade_effect: {
 			charlotte: true,
 			unique: true,
+			mod: {
+				maxHandcard(player, num) {
+					let nameList = get.nameList(player),
+						upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {},
+						numx = 0;
+					for (let name in upgrade) {
+						if (!nameList.includes(name)) {
+							continue;
+						}
+						let infoList = upgrade[name].filter(info => typeof info === "string" && info.startsWith("maxHandcard")).map(info => Number(info.split("|")[1]));
+						numx += infoList.reduce((sum, info) => sum + info, 0);
+					}
+					return num + numx;
+				},
+			},
 			trigger: { player: "phaseDrawBegin2" },
 			filter(event, player) {
 				if (event.numFixed) {
@@ -177,7 +219,12 @@ export default {
 				}
 				let nameList = get.nameList(player),
 					upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				return nameList.some(name => name in upgrade && upgrade[name][1]);
+				return nameList.some(name => {
+					if (!(name in upgrade)) {
+						return false;
+					}
+					return upgrade[name].some(info => typeof info === "string" && info.startsWith("draw"));
+				});
 			},
 			forced: true,
 			popup: false,
@@ -185,11 +232,13 @@ export default {
 				let nameList = get.nameList(player),
 					upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {},
 					num = 0;
-				nameList.forEach(name => {
-					if (name in upgrade && upgrade[name][1]) {
-						num++;
+				for (let name in upgrade) {
+					if (!nameList.includes(name)) {
+						continue;
 					}
-				});
+					let infoList = upgrade[name].filter(info => typeof info === "string" && info.startsWith("draw")).map(info => Number(info.split("|")[1]));
+					num += infoList.reduce((sum, info) => sum + info, 0);
+				}
 				trigger.num += num;
 			},
 		},

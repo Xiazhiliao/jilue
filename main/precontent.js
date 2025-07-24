@@ -1409,17 +1409,13 @@ export async function precontent(config, originalPack) {
 		});
 	}
 	//SR武将突破初始列表
-	if (!lib.config.extension_极略_upgradeList) {
-		let upgradeList = [];
-		const configx = config.config;
-		for (let i in configx) {
-			if (!configx[i].jlsg_upgrade) {
-				continue;
-			} else {
-				upgradeList.add(i);
-			}
+	const configx = config.config;
+	for (let i in configx) {
+		if (!configx[i].jlsg_upgrade) {
+			continue;
+		} else {
+			configx[i].onclick(lib.config[`extension_极略_${i}`]);
 		}
-		game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 	}
 
 	let name = jlsg_qs.name;
