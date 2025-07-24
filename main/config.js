@@ -56,12 +56,27 @@ let block = {
 	oldCharacterReplace = {
 		sr: {
 			jlsgsr_caocao: {
+				jlsg_upgrade:true,
 				name: "SR曹操",
 				init: "false",
 				item: {
 					false: "最新",
 					1: "一代",
 					2: "二代",
+				},
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_caocao", item);
+					if ((item == "false" || Boolean(item) > 2) && !lib.config.extension_极略_upgradeList?.includes("jlsgsr_caocao")) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_caocao");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_caocao")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_caocao");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
 				},
 			},
 			jlsgsr_guojia: {
@@ -94,6 +109,29 @@ let block = {
 				item: {
 					false: "最新",
 					1: "一代",
+				},
+			},
+			jlsgsr_liubei: {
+				jlsg_upgrade:true,
+				name: "SR刘备",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_liubei", item);
+					if ((item == "false" || Boolean(item) > 1) && !lib.config.extension_极略_upgradeList?.includes("jlsgsr_liubei")) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_liubei");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_liubei")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_liubei");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
 				},
 			},
 		},

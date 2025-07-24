@@ -33,18 +33,13 @@ export default {
 	skill: {
 		//SR武将规则
 		_jlsgsr_choice: {
-			trigger: {
-				global: "gameStart",
-				player: "enterGame",
-			},
-			forced: true,
-			popup: false,
 			charlotte: true,
 			unique: true,
-			filter: function (event, player) {
-				if (!lib.config.extension_极略_srlose) {
-					return false;
-				}
+			trigger: {
+				global: "gameStart",
+				player: ["enterGame", "changeCharacterAfter"],
+			},
+			filter(event, player) {
 				if (get.itemtype(player) != "player") {
 					return false;
 				}
@@ -56,24 +51,68 @@ export default {
 				}
 				return false;
 			},
-			createList: function (name) {
-				const list = [];
-				const info = get.character(name);
-				if (info) {
-					const skills = info[3];
-					for (const skill of skills) {
-						let infox = get.info(skill);
-						if (lib.translate[skill + "_info"] && infox.srlose) {
-							list.add(skill);
-						}
-					}
-				}
-				return list;
-			},
+			forced: true,
+			popup: false,
 			async content(event, trigger, player) {
-				const nameList = get.nameList(player);
+				const nameList = get.nameList(player),
+					upgradeList = lib.config.extension_极略_upgradeList || [];
 				for (const name of nameList) {
 					if (!name.startsWith("jlsgsr_")) {
+						continue;
+					}
+					if (upgradeList.includes(name)) {
+						if (_status._jlsgsr_upgrade?.[player.playerid]?.[name]) {
+							break;
+						}
+						let info = [false, false, false, false],
+							choiceList = ["起始手牌数+3", "摸牌数+1", "技能突破", "携带所有技能"];
+						//非强制突破，非顺次选择
+						const { result: upgrade } = await player
+							.chooseButton([1, 4], [`请选择${get.translation(name)}的突破`, [choiceList.map((item, i) => [i, item]), "textbutton"]])
+							.set("ai", button => true)
+							.set("info", info);
+						if (upgrade?.bool) {
+							const choice = upgrade.links;
+							if (choice.includes(0)) {
+								player.directgain(get.cards(3));
+								info[0] = true;
+							}
+							if (choice.includes(1)) {
+								game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+								info[1] = true;
+							}
+							if (choice.includes(2)) {
+								info[2] = true;
+							}
+							if (choice.includes(3)) {
+								info[3] = true;
+							}
+							//将结果广播
+							/*_jlsgsr_upgrade = {
+								//角色id
+								"player.playerid": {
+									//武将名：[第一次突破(起始手牌), 第二次突破(摸牌数), 第三次突破(技能突破), 第四次突破(携带所有技能)]
+									characterName: [false, false, false, false],默认全关
+								},
+							}*/
+							game.broadcastAll(
+								function (player, name, info) {
+									if (!_status._jlsgsr_upgrade) {
+										_status._jlsgsr_upgrade = {};
+									}
+									if (!_status._jlsgsr_upgrade[player.playerid]) {
+										_status._jlsgsr_upgrade[player.playerid] = {};
+									}
+									_status._jlsgsr_upgrade[player.playerid][name] = info;
+								},
+								player,
+								name,
+								info
+							);
+						}
+					}
+					//原srlose部分
+					if (!lib.config.extension_极略_srlose || _status._jlsgsr_choice?.[player.playerid]?.[name]?.[3]) {
 						continue;
 					}
 					const skills = lib.skill._jlsgsr_choice.createList(name);
@@ -112,6 +151,46 @@ export default {
 						result.control
 					);
 				}
+			},
+			createList(name) {
+				const list = [];
+				const info = get.character(name);
+				if (info) {
+					const skills = info[3];
+					for (const skill of skills) {
+						let infox = get.info(skill);
+						if (lib.translate[skill + "_info"] && infox.srlose) {
+							list.add(skill);
+						}
+					}
+				}
+				return list;
+			},
+		},
+		_jlsgsr_upgrade_effect: {
+			charlotte: true,
+			unique: true,
+			trigger: { player: "phaseDrawBegin2" },
+			filter(event, player) {
+				if (event.numFixed) {
+					return false;
+				}
+				let nameList = get.nameList(player),
+					upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				return nameList.some(name => name in upgrade && upgrade[name][1]);
+			},
+			forced: true,
+			popup: false,
+			async content(event, trigger, player) {
+				let nameList = get.nameList(player),
+					upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {},
+					num = 0;
+				nameList.forEach(name => {
+					if (name in upgrade && upgrade[name][1]) {
+						num++;
+					}
+				});
+				trigger.num += num;
 			},
 		},
 
