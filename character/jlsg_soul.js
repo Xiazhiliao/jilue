@@ -1008,7 +1008,9 @@ export default {
 				let characterList;
 				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false") {
 					if (!_status.characterlist) {
-						game.initCharacterList();
+						//PR判断致敬我自己给本体修的bug（  ——zhonghui1966
+						if (lib.skill.lihun2.onremove) game.initCharacterList();
+						else game.initCharactertList();
 					}
 					characterList = _status.characterlist.slice().randomSort();
 				} else {
@@ -1154,7 +1156,8 @@ export default {
 				let characterList;
 				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false") {
 					if (!_status.characterlist) {
-						game.initCharacterList();
+						if (lib.skill.lihun2.onremove) game.initCharacterList();
+						else game.initCharactertList();
 					}
 					characterList = _status.characterlist.slice().randomSort();
 				} else {
@@ -3666,7 +3669,8 @@ export default {
 			content: function () {
 				"step 0"
 				if (!_status.characterlist) {
-					game.initCharacterList();
+					if (lib.skill.lihun2.onremove) game.initCharacterList();
+					else game.initCharactertList();
 				}
 				_status.characterlist.randomSort();
 				var list = [];
@@ -4351,7 +4355,8 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			initList: function () {
 				if (!_status.characterlist) {
-					game.initCharacterList();
+					if (lib.skill.lihun2.onremove) game.initCharacterList();
+					else game.initCharactertList();
 				}
 				_status.jlsg_luocha_list = [];
 				_status.jlsg_luocha_list_hidden = [];
@@ -8917,7 +8922,8 @@ export default {
 							content: async function (event, trigger, player) {
 								let group = player.group;
 								if (!_status.characterlist) {
-									game.initCharacterList();
+									if (lib.skill.lihun2.onremove) game.initCharacterList();
+									else game.initCharactertList();
 								}
 								let allList = _status.characterlist.slice(0).randomSort();
 								for (let name of allList) {
