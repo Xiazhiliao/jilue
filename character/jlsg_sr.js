@@ -43,26 +43,26 @@ export default {
 				if (get.itemtype(player) != "player") {
 					return false;
 				}
-				const names = get.nameList(player);
+				const nameList = get.nameList(player);
 				for (const name of names) {
 					if (name.indexOf("jlsgsr_") == 0) {
 						return true;
 					}
 				}
-				return false;
+				return nameList.some(name => name.startsWith("jlsgsr_"));
 			},
 			forced: true,
 			popup: false,
 			async content(event, trigger, player) {
-				const nameList = get.nameList(player);
+				const nameList = get.nameList(player),
+					upgradeList = lib.config.extension_极略_upgradeList || [];
 				for (const name of nameList) {
-					if (!name.startsWith("jlsgsr_") || !(name in get.info("_jlsgsr_choice").upgradeContent)) {
+					if (!name.startsWith("jlsgsr_")) {
 						continue;
 					}
-					let nameStr = "extension_极略_" + name;
-					if (lib.config?.[nameStr] == "false") {
+					if (upgradeList.includes(name)) {
 						if (_status._jlsgsr_upgrade?.[player.playerid]?.[name]) {
-							break;
+							continue;
 						}
 						let info = [false, false, false, false],
 							choiceList = [...Object.keys(lib.skill[event.name].upgradeContent[name]), "技能突破", "携带所有技能"];
