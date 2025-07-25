@@ -33,6 +33,8 @@ export default {
 		jlsgsy_menghuobaonu: ["male", "shen", 3, ["jlsgsy_qiushou", "jlsgsy_moshou"], ["shu", "hiddenboss", "bossallowed"]],
 		jlsgsy_zhangchunhua: ["female", "shen", 7, ["jlsgsy_baonuzhangchunhua", "jlsgsy_diaoling"], ["wei", "boss", "bossallowed"]],
 		jlsgsy_zhangchunhuabaonu: ["female", "shen", 3, ["jlsgsy_diaoling", "jlsgsy_ejue", "jlsgsy_jianmie"], ["wei", "hiddenboss", "bossallowed"]],
+		jlsgsy_liru: ["male", "shen", 8, ["jlsgsy_baonuliru", "jlsgsy_moce"], ["qun", "boss", "bossallowed"]],
+		jlsgsy_lirubaonu: ["male", "shen", 3, ["jlsgsy_moce", "jlsgsy_fenjie", "jlsgsy_jinmie"], ["qun", "hiddenboss", "bossallowed"]],
 	},
 	skill: {
 		jlsgsy_baonu: {
@@ -2682,6 +2684,313 @@ export default {
 				},
 			},
 		},
+		jlsgsy_baonuliru: {
+			animationStr: "仁义？天道？今日，唯有魔道！",
+			inherit: "jlsgsy_baonu",
+			mode: ["identity", "guozhan", "boss", "stone"],
+		},
+		jlsgsy_moce: {
+			audio: "ext:极略/audio/skill:2",
+			enable: "phaseUse",
+			filter(event, player) {
+				const guohe = get.autoViewAs({ name: "guohe" }, "unsure");
+				return event.filterCard(guohe, player, event) && !event.jlsgsy_moce;
+			},
+			filterTarget(card, player, target) {
+				const guohe = get.autoViewAs({ name: "guohe" }, "unsure");
+				return player.canUse(guohe, target);
+			},
+			filterCard: () => false,
+			selectCard: -1,
+			viewAs: { name: "guohe", isCard: false },
+			log: false,
+			async precontent(event, trigger, player) {
+				await player.logSkill("jlsgsy_moce", event.result.targets);
+				let evt = event.getParent(),
+					maps = game
+						.filterPlayer(current => current != player)
+						.map(current => {
+							return [
+								current,
+								current.getCards("he", card => {
+									if (get.suit(card) != "spade") {
+										return false;
+									}
+									return evt.filterCard(get.autoViewAs({ ...event.result.card, cards: [card] }, [card]), player, evt);
+								}),
+							];
+						})
+						.filter(map => map[1].length);
+				evt.set("jlsgsy_moce", true);
+				if (!maps.length) {
+					player.chat("尽是些酒囊饭袋！");
+					evt.goto(0);
+					return;
+				} else {
+					let map = maps.randomGet();
+					let card = map[1].randomGet();
+					event.result.card.cards = [card];
+					event.result.cards = [card];
+				}
+			},
+			ai: {
+				wuxie: (target, card, player, viewer, status) => {
+					if (
+						!target.countCards("hej") ||
+						status * get.attitude(viewer, player._trueMe || player) > 0 ||
+						(target.hp > 2 &&
+							!target.hasCard(i => {
+								let val = get.value(i, target),
+									subtypes = get.subtypes(i);
+								if (val < 8 && target.hp < 2 && !subtypes.includes("equip2") && !subtypes.includes("equip5")) {
+									return false;
+								}
+								return val > 3 + Math.min(5, target.hp);
+							}, "e") &&
+							target.countCards("h") * _status.event.getRand("guohe_wuxie") > 1.57)
+					) {
+						return 0;
+					}
+				},
+				basic: {
+					order: 9,
+					useful: (card, i) => 10 / (3 + i),
+					value: (card, player) => {
+						let max = 0;
+						game.countPlayer(cur => {
+							max = Math.max(max, lib.card.guohe.ai.result.target(player, cur) * get.attitude(player, cur));
+						});
+						if (max <= 0) {
+							return 5;
+						}
+						return 0.42 * max;
+					},
+				},
+				yingbian(card, player, targets, viewer) {
+					if (get.attitude(viewer, player) <= 0) {
+						return 0;
+					}
+					if (
+						game.hasPlayer(function (current) {
+							return !targets.includes(current) && lib.filter.targetEnabled2(card, player, current) && get.effect(current, card, player, player) > 0;
+						})
+					) {
+						return 6;
+					}
+					return 0;
+				},
+				button: button => {
+					let player = _status.event.player,
+						target = _status.event.target;
+					if (!lib.filter.canBeDiscarded(button.link, player, target)) {
+						return 0;
+					}
+					let att = get.attitude(player, target),
+						val = get.buttonValue(button),
+						pos = get.position(button.link),
+						name = get.name(button.link);
+					if (pos === "j") {
+						let viewAs = button.link.viewAs;
+						if (viewAs === "lebu") {
+							let needs = target.needsToDiscard(2);
+							val *= 1.08 + 0.2 * needs;
+						} else if (viewAs === "shandian" || viewAs === "fulei") {
+							val /= 2;
+						}
+					}
+					if (att > 0) {
+						val = -val;
+					}
+					if (pos !== "e") {
+						return val;
+					}
+					let sub = get.subtypes(button.link);
+					if (sub.includes("equip1")) {
+						return (val * Math.min(3.6, target.hp)) / 3;
+					}
+					if (sub.includes("equip2")) {
+						if (name === "baiyin" && pos === "e" && target.isDamaged()) {
+							let by = 3 - 0.6 * Math.min(5, target.hp);
+							return get.sgn(get.recoverEffect(target, player, player)) * by;
+						}
+						return 1.57 * val;
+					}
+					if (att <= 0 && (sub.includes("equip3") || sub.includes("equip4")) && (player.hasSkill("shouli") || player.hasSkill("psshouli"))) {
+						return 0;
+					}
+					if (sub.includes("equip6")) {
+						return val;
+					}
+					if (sub.includes("equip4")) {
+						return val / 2;
+					}
+					if (
+						sub.includes("equip3") &&
+						!game.hasPlayer(cur => {
+							return !cur.inRange(target) && get.attitude(cur, target) < 0;
+						})
+					) {
+						return 0.4 * val;
+					}
+					return val;
+				},
+				result: {
+					target(player, target) {
+						const att = get.attitude(player, target);
+						const hs = target.getDiscardableCards(player, "h");
+						const es = target.getDiscardableCards(player, "e");
+						const js = target.getDiscardableCards(player, "j");
+						if (!hs.length && !es.length && !js.length) {
+							return 0;
+						}
+						if (att > 0) {
+							if (
+								js.some(card => {
+									const cardj = card.viewAs ? { name: card.viewAs } : card;
+									if (cardj.name === "xumou_jsrg") {
+										return false;
+									}
+									return get.effect(target, cardj, target, player) < 0;
+								})
+							) {
+								return 3;
+							}
+							if (target.isDamaged() && es.some(card => card.name === "baiyin") && get.recoverEffect(target, player, player) > 0) {
+								if (target.hp === 1 && !target.hujia) {
+									return 1.6;
+								}
+							}
+							if (
+								es.some(card => {
+									return get.value(card, target) < 0;
+								})
+							) {
+								return 1;
+							}
+							return -1.5;
+						} else {
+							const noh = hs.length === 0 || target.hasSkillTag("noh");
+							const noe = es.length === 0 || target.hasSkillTag("noe");
+							const noe2 =
+								noe ||
+								!es.some(card => {
+									return get.value(card, target) > 0;
+								});
+							const noj =
+								js.length === 0 ||
+								!js.some(card => {
+									const cardj = card.viewAs ? { name: card.viewAs } : card;
+									if (cardj.name === "xumou_jsrg") {
+										return true;
+									}
+									return get.effect(target, cardj, target, player) < 0;
+								});
+							if (noh && noe2 && noj) {
+								return 1.5;
+							}
+							return -1.5;
+						}
+					},
+				},
+				tag: {
+					loseCard: 1,
+					discard: 1,
+				},
+			},
+		},
+		jlsgsy_fenjie: {
+			audio: "ext:极略/audio/skill:2",
+			onremove: true,
+			trigger: { player: "phaseBegin" },
+			forced: true,
+			async content(event, trigger, player) {
+				let num = player.getStorage(event.name, 0),
+					targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase || player);
+				for (const target of targets) {
+					if (target.isIn()) {
+						player.line(target);
+						if (num == 0) {
+							await target.gainMaxHp(1);
+						} else if (num == 1) {
+							const cards = target.getDiscardableCards(target, "he", card => get.color(card) == "red");
+							if (cards.length) {
+								await target.discard(cards).set("discarder", target);
+							}
+						} else {
+							await target.damage(player, 1, "fire");
+						}
+					}
+				}
+				num++;
+				player.setStorage(event.name, num);
+			},
+		},
+		jlsgsy_jinmie: {
+			audio: "ext:极略/audio/skill:2",
+			usable: 1,
+			trigger: {
+				global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+			},
+			getIndex(event, player) {
+				return game
+					.filterPlayer(current => {
+						if (current == player) {
+							return false;
+						}
+						let evt = event.getl(current);
+						return evt?.hs?.length;
+					})
+					.sortBySeat(_status.currentPhase || player);
+			},
+			filter(event, player, triggername, target) {
+				return !target.countCards("h") && target.isDamaged() && target.hp > 0;
+			},
+			prompt(event, player, triggername, target) {
+				return get.prompt("jlsgsy_jinmie", target);
+			},
+			prompt2(event, player, triggername, target) {
+				return `对其造成${target.hp}点火焰伤害`;
+			},
+			check(event, player, triggername, target) {
+				return get.damageEffect(target, player, player, "fire") > 0;
+			},
+			logTarget(event, player, triggername, target) {
+				return target;
+			},
+			async content(event, trigger, player) {
+				const target = event.targets[0];
+				await target.damage(player, target.hp, "fire");
+			},
+			global: ["jlsgsy_jinmie_ai"],
+			subSkill: {
+				ai: {
+					sub: true,
+					subSkill: "jlsgsy_jinmie",
+					charlotte: true,
+					ai: {
+						effect: {
+							target_use(card, player, target) {
+								let currents = game.filterPlayer(current => {
+									if (!current.hasSkill("jlsgsy_jinmie")) {
+										return false;
+									}
+									return !current.hasSkill("counttrigger") || !current.storage.counttrigger.jlsgsy_jinmie || current.storage.counttrigger.jlsgsy_jinmie < 1;
+								});
+								if (!currents.length) {
+									return;
+								}
+								let playerH = player.getCards("h");
+								if (playerH.length == 1 && (card == playerH[0] || card.cards.includes(player[0]))) {
+									if (currents.some(current => get.attitude(player, current) < 0) && !player.hasSkillTag("nofire")) {
+										return [1, 0, 1, -player.getHp()];
+									}
+								}
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 	translate: {
 		jlsg_sy: "SK三英",
@@ -2715,6 +3024,8 @@ export default {
 		jlsgsy_menghuobaonu: "南中魔兽",
 		jlsgsy_zhangchunhua: "万魂归寂",
 		jlsgsy_zhangchunhuabaonu: "万魂归寂",
+		jlsgsy_liru: "业火灭世",
+		jlsgsy_lirubaonu: "业火灭世",
 
 		jlsgsy_xiuluo: "修罗",
 		jlsgsy_shenwei: "神威",
@@ -2865,6 +3176,12 @@ export default {
 		jlsgsy_ejue_info: "变身技，出牌阶段限一次，或当你受到伤害后，你可以摸两张牌并弃置其中一张，然后令所有其他角色弃置点数小于此牌的所有相同类型的牌，若如此做，你从弃牌堆里随机获得每名角色以此法弃置的各一张牌。",
 		jlsgsy_jianmie: "翦灭",
 		jlsgsy_jianmie_info: "变身技，锁定技，你对手牌少于你的角色使用的普通【杀】改为火【杀】且不计入次数限制，这些角色于你的回合内跳过濒死状态。",
+		jlsgsy_moce: "魔策",
+		jlsgsy_moce_info: "出牌阶段，你可以将随机其他角色的黑桃牌当【过河拆桥】使用，然后摸一张牌。",
+		jlsgsy_fenjie: "焚劫",
+		jlsgsy_fenjie_info: "变身技，锁定技，你获得此技能后的第一个回合开始时，你令所有其他角色各加1点体力上限，摸两张牌；第二个回合开始时，你令所有其他角色各弃置所有红色牌；其余回合开始时，你对所有其他角色各造成1点火焰伤害。",
+		jlsgsy_jinmie: "烬灭",
+		jlsgsy_jinmie_info: "变身技，每回合限一次，当其他角色失去所有手牌后，若其已受伤，你可以对其造成X点火焰伤害（X为其体力）。",
 	},
 	dynamicTranslate: {
 		jlsgsy_bolue(player) {
