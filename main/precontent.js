@@ -1408,15 +1408,7 @@ export async function precontent(config, originalPack) {
 			return pack;
 		});
 	}
-	//SR武将突破初始列表
-	const configx = config.config;
-	for (let i in configx) {
-		if (!configx[i].jlsg_upgrade) {
-			continue;
-		} else {
-			configx[i].onclick(lib.config[`extension_极略_${i}`]);
-		}
-	}
+	
 
 	let name = jlsg_qs.name;
 	game.import("card", function () {

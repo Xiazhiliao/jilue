@@ -66,10 +66,7 @@ export default {
 							choiceList = choiceList.slice(0, -1);
 						}
 						//非强制突破，非顺次选择
-						const { result: upgrade } = await player
-							.chooseButton([1, 4], [`请选择${get.translation(name)}的突破`, [choiceList.map((item, i) => [i, item]), "textbutton"]])
-							.set("ai", button => true)
-							.set("info", info);
+						const { result: upgrade } = await player.chooseButton([1, 4], [`请选择${get.translation(name)}的突破`, [choiceList.map((item, i) => [i, item]), "textbutton"]]).set("ai", button => true);
 						if (upgrade?.bool) {
 							const choice = upgrade.links;
 							event.info = info;
