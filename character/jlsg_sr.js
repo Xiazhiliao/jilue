@@ -4493,6 +4493,44 @@ export default {
 				},
 			},
 		},
+		jlsg_yongbing: {
+			unique: true,
+			audio: "ext:极略/audio/skill:true",
+			zhuSkill: true,
+			global: "jlsg_yongbing2",
+		},
+		jlsg_yongbing2: {
+			sourceSkill: "jlsg_yongbing",
+			trigger: { source: "damageEnd" },
+			getIndex(event, player) {
+				return game.filterPlayer(current => {
+					return current.hasZhuSkill("jlsg_yongbing", player);
+				});
+			},
+			filter(event, player, triggername, target) {
+				if (player.group != "shu") {
+					return false;
+				} else if (event.card?.name != "sha") {
+					return false;
+				}
+				return target?.isIn();
+			},
+			check(event, player, triggername, target) {
+				return get.effect(target, { name: "draw" }, player, player);
+			},
+			prompt(event, player, triggername, target) {
+				return get.prompt("jlsg_yongbing", target);
+			},
+			logTarget(event, player, triggername, target) {
+				return target;
+			},
+			async content(event, trigger, player) {
+				await event.targets[0].draw(1);
+			},
+			ai: {
+				expose: 0.2,
+			},
+		},
 		jlsg_zhaoxiang: {
 			srlose: true,
 			audio: "ext:极略/audio/skill:1",
