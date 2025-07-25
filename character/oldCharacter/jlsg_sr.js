@@ -259,6 +259,210 @@ export default {
 			},
 		},
 	},
+	jlsgsr_liubei: {
+		1: {
+			info: ["male", "shu", 4, ["jlsg_rende", "jlsg_chouxi", "jlsg_yongbing"], ["zhu"]],
+			skill: {
+				jlsg_rende: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					trigger: { global: "phaseJieshuEnd" },
+					filter(event, player) {
+						return player.countGainableCards(event.player, "h") && event.player.isAlive();
+					},
+					async cost(event, trigger, player) {
+						const num = player.countGainableCards(trigger.player, "h");
+						event.result = await player
+							.chooseCard(get.prompt("jlsg_rende", trigger, player), [1, num])
+							.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("source"), player, event))
+							.set("ai", card => {
+								const player = get.player(),
+									source = get.event("source");
+								if (player == source) {
+									return 6;
+								}
+								if (get.attitude(player, source) > 1) {
+									if (source.countUsed("sha") > 0 && ["sha", "jiu"].includes(card.name)) {
+										return 6.5 - get.value(card);
+									}
+									let skills = source.getSkills(false);
+									for (let i = 0; i < skills.length; i++) {
+										let info = get.info(skills[i]);
+										if (info && info.enable == "phaseUse" && ui.selected.cards.length == 0) {
+											return 6.6 - get.value(card);
+										}
+									}
+									return 4 - get.value(card);
+								}
+								return get.value(card) < 0;
+							})
+							.set("source", trigger.player)
+							.forResult();
+						if (event.result?.bool) {
+							event.result.targets = [trigger.player];
+						}
+					},
+					async content(event, trigger, player) {
+						await player.give(event.cards, trigger.player);
+						await game.delay();
+						const phase = trigger.getParent("phase", true);
+						if (phase) {
+							phase.phaseList.splice(phase.num + 1, 0, `phaseUse|${event.name}`);
+						} else {
+							await trigger.player.phaseUse();
+						}
+					},
+					ai: {
+						expose: 0.2,
+					},
+				},
+				jlsg_chouxi: {
+					audio: "ext:极略/audio/skill:2",
+					usable: 1,
+					srlose: true,
+					enable: "phaseUse",
+					filter(event, player) {
+						return player.countDiscardableCards(player, "h");
+					},
+					filterCard: lib.filter.cardDiscardable,
+					check(card) {
+						return 6 - get.value(card);
+					},
+					filterTarget(card, player, target) {
+						return player != target;
+					},
+					async content(event, trigger, player) {
+						const cards = get.cards(2),
+							target = event.targets[0];
+						await game.cardsGotoOrdering(cards);
+						await player.showCards(event.cards1);
+						const types = cards.map(card => get.type2(card, false)).sort();
+						let prompt = "弃置一张与展示牌类别均不同的牌,然后令" + get.translation(player) + "获得" + get.translation(event.cards1) + ",或受到来自" + get.translation(player) + "的1点伤害并获得其中一种类别的牌.";
+						// value from card ownership
+						let cardDiff = 0;
+						for (let type of types) {
+							let newCardDiff = cards.filter(c => get.type(c) == type).reduce((a, b) => a - get.value(b, player) * get.sgnAttitude(target, player) + get.value(b, target), 0);
+							if (newCardDiff > cardDiff) {
+								cardDiff = newCardDiff;
+							}
+						}
+						const { result: discard } = await target
+							.chooseToDiscard((card, player) => {
+								return !get.event("types").includes(get.type2(card, player));
+							})
+							.set("dialog", [prompt, "hidden", cards])
+							.set("ai", card => {
+								if (card.name == "tao") return -1;
+								return get.event("diff") - get.value(card);
+							})
+							.set("types", types)
+							.set("diff", 2.5 * get.damageEffect(target, player) - cardDiff);
+						if (discard.bool) {
+							await player.gain(cards, "gain2");
+						} else {
+							await target.damage(1, player);
+							if (!target.isIn()) {
+								return;
+							}
+							if (types.length == 1) {
+								await target.gain(cards, "gain2");
+							} else {
+								let values = {},
+									choice = 0;
+								for (let card of cards) {
+									let type = get.type2(card);
+									values[type] = values[type] || 0;
+									values[type] += get.value(card, player) + (get.attitude(player, target) < -1 ? get.value(card, target) : 0);
+								}
+								if (Object.keys(values).length) {
+									choice = Object.keys(values).find(type => values[type] == Math.max(...Object.values(types)));
+								}
+								const {
+									result: { control },
+								} = await target
+									.chooseControl(types)
+									.set("dialog", ["仇袭：选择一种类型的卡牌卡牌获得之", cards])
+									.set("ai", () => {
+										return get.event("choice");
+									})
+									.set("choice", choice);
+								const list = [
+									[target, []],
+									[player, []],
+								];
+								target.popup(control);
+								for (let card of cards) {
+									if (get.type2(card, target) == control) {
+										list[0][1].push(card);
+									} else {
+										list[1][1].push(card);
+									}
+								}
+								await game
+									.loseAsync({
+										gain_list: list,
+										cards,
+									})
+									.setContent("gaincardMultiple");
+							}
+						}
+					},
+					ai: {
+						order: 4,
+						result: {
+							player: 0.5,
+							target: -1,
+						},
+					},
+				},
+				jlsg_yongbing: {
+					unique: true,
+					audio: "ext:极略/audio/skill:true",
+					zhuSkill: true,
+					global: "jlsg_yongbing2",
+				},
+				jlsg_yongbing2: {
+					sourceSkill: "jlsg_yongbing",
+					trigger: { source: "damageEnd" },
+					getIndex(event, player) {
+						return game.filterPlayer(current => {
+							return current.hasZhuSkill("jlsg_yongbing", player);
+						});
+					},
+					filter(event, player, triggername, target) {
+						if (player.group != "shu") {
+							return false;
+						} else if (event.card?.name != "sha") {
+							return false;
+						}
+						return target?.isIn();
+					},
+					check(event, player, triggername, target) {
+						return get.effect(target, { name: "draw" }, player, player);
+					},
+					prompt(event, player, triggername, target) {
+						return get.prompt("jlsg_yongbing", target);
+					},
+					logTarget(event, player, triggername, target) {
+						return target;
+					},
+					async content(event, trigger, player) {
+						await event.targets[0].draw(1);
+					},
+					ai: {
+						expose: 0.2,
+					},
+				},
+			},
+			translate: {
+				jlsg_yongbing: "拥兵",
+				jlsg_yongbing2: "拥兵",
+				jlsg_rende_info: "任一角色的结束阶段结束时，你可以将任意数量的手牌交给该角色，然后该角色进行1个额外的出牌阶段。",
+				jlsg_chouxi_info: "出牌阶段限一次，你可以弃置一张手牌并展示牌堆顶的两张牌，然后令一名其他角色选择一项：1. 弃置一张与展示牌类别均不同的牌，然后令你获得展示的牌；2. 受到你造成的1点伤害并获得其中一种类别的牌，然后你获得其余的牌。",
+				jlsg_yongbing_info: "主公技，当一名其他蜀势力角色使用【杀】造成一次伤害后，该角色可令你摸一张牌。",
+			},
+		},
+	},
 	jlsgsr_guojia: {
 		1: {
 			skill: {
