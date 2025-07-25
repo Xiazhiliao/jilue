@@ -474,7 +474,7 @@ export default {
 			trigger: { global: "damageEnd" },
 			filter(event, player) {
 				if (!get.itemtype(event.cards) == "cards") return false;
-				if (!event.cards.somInD("od")) {
+				if (!event.cards.someInD("od")) {
 					return false;
 				}
 				if (!event.source || event.source == player || event.player?.isIn() || event.player == player) {

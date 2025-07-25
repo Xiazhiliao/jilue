@@ -2550,8 +2550,9 @@ export default {
 			async content(event, trigger, player) {
 				const {
 					targets: [target],
-					cards: [card],
+					cards,
 				} = event;
+				game.addCardKnower(cards, player);
 				player.$throw(1, 1000);
 				game.log(player, "将一张牌置于了牌堆顶");
 				await game.delayx();
@@ -2569,7 +2570,6 @@ export default {
 							return "spade2";
 					}
 				});
-				"step 1"
 				game.log(target, "选择了" + get.translation(result.control));
 				const choice = result.control;
 				target.popup(choice);
@@ -4346,7 +4346,7 @@ export default {
 		jlsg_rende: {
 			audio: "ext:极略/audio/skill:1",
 			srlose: true,
-			trigger: { global: "phaseJieshuEnd" },
+			trigger: { global: "phaseJieshuBegin" },
 			filter(event, player) {
 				return event.player.isAlive();
 			},
@@ -4392,8 +4392,7 @@ export default {
 				const phase = trigger.getParent("phase", true);
 				if (improve) {
 					trigger.player.addTempSkill("jlsg_rende_effect", { player: "phaseUseEnd" });
-					trigger.player.when({ player: "phaseUseEnd" })
-						.then(() => player.removeGaintag("jlsg_rende"));
+					trigger.player.when({ player: "phaseUseEnd" }).then(() => player.removeGaintag("jlsg_rende"));
 				}
 				if (phase) {
 					phase.phaseList.splice(phase.num + 1, 0, `phaseUse|${event.name}`);
@@ -4409,10 +4408,10 @@ export default {
 					sub: true,
 					sourceSkill: "jlsg_rende",
 					mod: {
-						cardUsable:function (card, player, num) {
+						cardUsable: function (card, player, num) {
 							if (card?.cards?.some(i => i.hasGaintag("jlsg_rende"))) return Infinity;
 						},
-						targetInRange:function (card, player, target, now) {
+						targetInRange: function (card, player, target, now) {
 							if (card?.cards?.some(i => i.hasGaintag("jlsg_rende"))) return true;
 						},
 					},
@@ -4424,7 +4423,7 @@ export default {
 			srlose: true,
 			enable: "phaseUse",
 			filter(event, player) {
-				return game.hasPlayer(current =>  current != player && !player.storage.jlsg_chouxi?.includes(current));
+				return game.hasPlayer(current => current != player && !player.storage.jlsg_chouxi?.includes(current));
 			},
 			filterTarget(card, player, target) {
 				return player != target && !player.storage.jlsg_chouxi?.includes(target) && target.countCards("h");
@@ -4442,11 +4441,10 @@ export default {
 				num = result.cards.length;
 				let type = [];
 				result.cards.forEach(card => {
-					if(!type.includes(get.type(card, "trick"))) type.push(get.type(card, "trick"));
+					if (!type.includes(get.type(card, "trick"))) type.push(get.type(card, "trick"));
 				});
 				player.markAuto("jlsg_chouxi", [target]);
-				player.when({ player: "phaseUseEnd" })
-					.then(() => delete player.storage.jlsg_chouxi)
+				player.when({ player: "phaseUseEnd" }).then(() => delete player.storage.jlsg_chouxi);
 				let next = await player
 					.chooseCard("交给" + get.translation(target) + get.cnNumber(num) + "张牌", [num, num])
 					.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("source"), player, event))
@@ -4480,11 +4478,12 @@ export default {
 				await player.give(next.cards, target);
 				let type2 = [];
 				next.cards.forEach(card => {
-					if(!type2.includes(get.type(card, "trick"))) type2.push(get.type(card, "trick"));
+					if (!type2.includes(get.type(card, "trick"))) type2.push(get.type(card, "trick"));
 				});
 				if (type.length == type2.length) return;
-				num = Math.abs(type.length - type2.length)
-				let next2 = await player.chooseBool("是否对" + get.translation(target) + "造成" + get.cnNumber(num) + "点伤害？")
+				num = Math.abs(type.length - type2.length);
+				let next2 = await player
+					.chooseBool("是否对" + get.translation(target) + "造成" + get.cnNumber(num) + "点伤害？")
 					.set("ai", () => -1 * get.attitude(player, target))
 					.forResult();
 				if (next2.bool) await target.damage(num, player);

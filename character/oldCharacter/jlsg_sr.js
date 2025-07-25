@@ -12,7 +12,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						if (trigger.player.inRangeOf(player)) {
 							var next = player.chooseBool(get.prompt("jlsg_zhaoxiang", trigger.player));
 							next.ai = function () {
@@ -32,7 +32,7 @@ export default {
 							};
 							next.logSkill = ["jlsg_zhaoxiang", trigger.player];
 						}
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							if (!result.cards) {
 								player.logSkill("jlsg_zhaoxiang", trigger.player);
@@ -55,7 +55,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2"
 						if (!result.bool) {
 							trigger.untrigger();
 							trigger.finish();
@@ -85,7 +85,7 @@ export default {
 					discard: false,
 					lose: false,
 					content: function () {
-						"step 0";
+						"step 0"
 						player.showCards(cards[0]);
 						var nono = false;
 						if (ai.get.damageEffect(target, player, player)) nono = true;
@@ -109,11 +109,11 @@ export default {
 								})
 								.set("nono", nono);
 						}
-						("step 1");
+						"step 1"
 						if (cards[0].name == "shan" && result.cards) {
 							target.showCards(result.cards[0]);
 						}
-						("step 2");
+						"step 2"
 						if (result.bool) {
 							player.recover();
 							target.recover();
@@ -152,7 +152,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0";
+						"step 0"
 						if (trigger.player.inRangeOf(player)) {
 							var next = player.chooseBool(get.prompt("jlsg_zhaoxiang", trigger.player));
 							next.ai = function () {
@@ -172,7 +172,7 @@ export default {
 							};
 							next.logSkill = ["jlsg_zhaoxiang", trigger.player];
 						}
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							if (!result.cards) {
 								player.logSkill("jlsg_zhaoxiang", trigger.player);
@@ -195,7 +195,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2"
 						if (!result.bool) {
 							trigger.untrigger();
 							trigger.finish();
@@ -216,7 +216,7 @@ export default {
 						return player != target;
 					},
 					content: function () {
-						"step 0";
+						"step 0"
 						if (!target.countDiscardableCards(target, "h")) {
 							target.damage(player);
 							target.recover();
@@ -228,7 +228,7 @@ export default {
 							if (get.recoverEffect(target, target, target) > 0) return 7.5 - get.value(card);
 							return -1;
 						};
-						("step 1");
+						"step 1"
 						if (result.bool) {
 							target.recover();
 						} else {
@@ -485,7 +485,7 @@ export default {
 				jlsg_rende: {
 					audio: "ext:极略/audio/skill:1",
 					srlose: true,
-					trigger: { global: "phaseJieshuEnd" },
+					trigger: { global: "phaseJieshuBegin" },
 					filter(event, player) {
 						return player.countGainableCards(event.player, "h") && event.player.isAlive();
 					},
