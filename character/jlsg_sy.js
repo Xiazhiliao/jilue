@@ -2927,6 +2927,7 @@ export default {
 						player.line(target);
 						if (num == 0) {
 							await target.gainMaxHp(1);
+							await target.draw(2);
 						} else if (num == 1) {
 							const cards = target.getDiscardableCards(target, "he", card => get.color(card) == "red");
 							if (cards.length) {
