@@ -342,7 +342,7 @@ export default {
 			async cost(event, trigger, player) {
 				event.result = await trigger.source
 					.chooseBool("是否对" + get.translation(player) + "发动【拥兵】<br>令其摸一张牌？")
-					.set("choice", get.effect(player, { name: "draw" }, trigger.source, trigger, source) > 0)
+					.set("choice", get.effect(player, { name: "draw" }, trigger.source, trigger.source) > 0)
 					.forResult();
 				if (event.result?.bool) {
 					event.result.skill_popup = false;
