@@ -4418,6 +4418,7 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			srlose: true,
 			enable: "phaseUse",
+			log: false,
 			filter(event, player) {
 				return game.hasPlayer(current => current != player && !player.storage.jlsg_chouxi?.includes(current));
 			},
@@ -4442,6 +4443,7 @@ export default {
 					player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
 				}
 				player.markAuto("jlsg_chouxi", [target]);
+				player.logSkill("jlsg_chouxi", target);
 				let next = await player
 					.chooseCard("交给" + get.translation(target) + get.cnNumber(num) + "张牌", [num, num])
 					.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("source"), player, event))
