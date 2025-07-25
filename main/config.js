@@ -63,10 +63,11 @@ let block = {
 					false: "最新",
 					1: "一代",
 					2: "二代",
+					3: "三代",
 				},
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_caocao", item);
-					if ((item == "false" || Boolean(item) > 2) && !lib.config.extension_极略_upgradeList?.includes("jlsgsr_caocao")) {
+					if ((item == "false" || Boolean(item) >3) && !lib.config.extension_极略_upgradeList?.includes("jlsgsr_caocao")) {
 						let upgradeList = lib.config.extension_极略_upgradeList || [];
 						upgradeList.add("jlsgsr_caocao");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);

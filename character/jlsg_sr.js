@@ -4494,6 +4494,7 @@ export default {
 			},
 		},
 		jlsg_zhaoxiang: {
+			srlose: true,
 			audio: "ext:极略/audio/skill:1",
 			trigger: { global: "useCardToPlayer" },
 			filter(event, player) {
@@ -4515,9 +4516,8 @@ export default {
 						"check",
 						(function () {
 							const gainEff = get.effect(trigger.player, { name: "shunshou_copy2" }, player, player),
-								shaEff1 = get.effect(trigger.player, trigger.card, trigger.target, player),
-								shaEff2 = get.effect(trigger.player, trigger.card, player, player);
-							return gainEff + shaEff1 > 0 || gainEff + shaEff2 > 0;
+								resultList = lib.skill.jlsg_zhaoxiang.getCheck(trigger, player, _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2]);
+							return resultList.some(i => i + gainEff > 0);
 						})()
 					)
 					.set("logSkill", ["jlsg_zhaoxiang", trigger.player])
@@ -4533,25 +4533,64 @@ export default {
 					cards,
 					targets: [target],
 				} = event;
-				await player.gain(cards, target, "bySelf").set("ainimate", false);
+				await player.gain(cards, target).set("ainimate", false);
+				const choiceList = ["令此【杀】不能被响应", "令此【杀】无效", "将此【杀】的目标改为你"],
+					choiced = player.getStorage(event.name, [true, true, true]),
+					list = [];
+				if (_status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2] && choiced.length < 4) {
+					choiceList.add("令目标角色于此【杀】结算后回复1点体力");
+					choiced.push(true);
+				}
+				for (let i in choiced) {
+					if (!choiced[i]) {
+						choiceList[i] = '<span style="opacity:0.5">' + choiceList[i] + "</span>";
+					} else {
+						list.add(`选项${get.cnNumber(Number(i) + 1, true)}`);
+					}
+				}
 				const { result } = await player
-					.chooseControlList("招降", ["令此【杀】不能被响应", "将此【杀】的目标改为你"], true)
+					.chooseControl(list)
+					.set("prompt", "招降")
+					.set("choiceList", choiceList)
 					.set("ai", () => get.event("choice"))
 					.set(
 						"choice",
 						(function () {
-							const shaEff1 = get.effect(trigger.player, trigger.card, trigger.target, player),
-								shaEff2 = get.effect(trigger.player, trigger.card, player, player);
-							if (shaEff1 > shaEff2) {
-								return 0;
+							const resultList = lib.skill.jlsg_zhaoxiang.getCheck(trigger, player, _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2]);
+							let max = 0,
+								choice = 0;
+							for (let i in choiced) {
+								if (choiced[i]) {
+									if (resultList[i] > max) {
+										max = resultList[i];
+										choice = i;
+									}
+								}
 							}
-							return 1;
+							return `选项${get.cnNumber(choice + 1, true)}`;
 						})()
 					);
-				if (result?.index == 0) {
+				if (result) {
+					game.log(player, "选择了", result.control);
+					let map = Array.from({ length: 4 }, (v, i) => `选项${get.cnNumber(Number(i) + 1, true)}`);
+					let num = map.indexOf(result.control);
+					console.log(choiced.slice());
+					choiced[num] = false;
+					console.log(choiced.slice());
+					if (!choiced.filter(i => i).length) {
+						for (let i in choiced) {
+							choiced[i] = true;
+						}
+					}
+					player.setStorage(event.name, choiced);
+				}
+				if (result?.control == "选项一") {
 					game.log(player, "令", trigger.card, "不能被响应");
 					trigger.getParent().directHit.addArray(game.players);
-				} else if (result?.index == 1) {
+				} else if (result?.control == "选项二") {
+					game.log(player, "令", trigger.player, "使用的", trigger.card, "无效");
+					trigger.getParent().all_excluded = true;
+				} else if (result?.control == "选项三") {
 					game.log(player, "将", trigger.card, "的目标", trigger.target, "改为", player);
 					trigger.targets.remove(trigger.target);
 					trigger.targets.add(player);
@@ -4559,13 +4598,32 @@ export default {
 					trigger.getParent().triggeredTargets1.add(player);
 					trigger.getParent().targets.remove(trigger.target);
 					trigger.getParent().targets.add(player);
+				} else if (result?.control == "选项四") {
+					trigger.target
+						.when({ global: "useCardAfter" })
+						.filter(evt => evt.card == trigger.card)
+						.step(async (event, trigger, player) => {
+							await player.recover(1);
+						});
 				}
+			},
+			getCheck(trigger, player, upgrade = false) {
+				const { card, player: source, targets, target } = trigger;
+				let useCardToTargets = targets.reduce((sum, targetx) => sum + get.effect(targetx, card, source, player), 0),
+					useCardToTarget = get.effect(target, card, source, player),
+					useCardToPlayer = get.effect(player, card, source, player);
+				let result = [useCardToTargets, -useCardToTargets, useCardToPlayer - useCardToTarget, useCardToTarget + get.recoverEffect(target, player, player)];
+				if (upgrade) {
+					return result;
+				}
+				return result.slice(1, -1);
 			},
 			ai: {
 				expose: 0.5,
 			},
 		},
 		jlsg_zhishi: {
+			srlose: true,
 			audio: "ext:极略/audio/skill:2",
 			trigger: { global: "damageEnd" },
 			filter(event, player) {
@@ -4574,7 +4632,10 @@ export default {
 			prompt(event, player) {
 				return get.prompt("jlsg_zhishi", event.player);
 			},
-			prompt2: "令其从你拥有的随机两个能在此时机发动的技能中选择一个并发动",
+			prompt2(event, player) {
+				let num = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2] ? "三" : "两";
+				return `令其从随机${num}个能在此时机发动的技能中选择一个并发动`;
+			},
 			check(event, player) {
 				return get.attitude(player, event.player) > 0;
 			},
@@ -4592,7 +4653,8 @@ export default {
 						}
 					});
 				});
-				const skills = [];
+				const skills = [],
+					max = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2] ? 2 : 1;
 				allList.randomSort();
 				for (const name of allList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1) continue;
@@ -4652,7 +4714,7 @@ export default {
 							}
 						}
 					}
-					if (skills.length > 1) break;
+					if (skills.length > max) break;
 				}
 				if (!skills.length) {
 					return;
@@ -5058,7 +5120,7 @@ export default {
 		jlsg_tianshang_info: "限定技，你死亡时，可令一名其他角色获得你此武将牌上拥有的其他技能，然后其增加1点体力上限并恢复1点体力。",
 		jlsg_yiji_info: "每当你受到一点伤害，可以观看牌堆顶的两张牌，并将其交给任意1~2名角色。",
 		jlsg_huiqu_info: "准备阶段，你可以弃置一张手牌进行一次判定，若结果为红色，你将场上的一张牌移动到一个合理的位置；若结果为黑色，你对一名角色造成1点伤害，然后你摸一张牌。",
-		jlsg_zhaoxiang_info: "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择一项：1．令此【杀】不能被响应；2．将此【杀】的目标改为你。",
+		jlsg_zhaoxiang_info: "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；2．将此【杀】的目标改为你。当所有选项执行后，重置此技能",
 		jlsg_zhishi_info: "当任意角色受到伤害后，你可以令其从随机两个能在此时机发动的技能中选择一个并发动。",
 		jlsg_jianxiong_info: "主公技。每当其他魏势力受到不为你的一次伤害后，该角色可以弃置一张手牌，然后令你获得对其造成伤害的牌。",
 		jlsg_jiuzhu_info: "每当一张非转化的【闪】进入弃牌堆时，你可以用一张不为【闪】的牌替换之。若此时不是你的回合，你可以视为对当前回合角色使用一张无视防具的【杀】。",
@@ -5124,6 +5186,22 @@ export default {
 			let improve = name in upgrade && upgrade[name][2];
 			if (improve) return "出牌阶段每名角色限一次，你可以获得一名其他角色至多三张牌，然后交给其等量的牌，若如此做，你可以对其造成X点伤害（X为你以此法获得的牌与给出的牌的类别数之差）。";
 			else return get.translation("jlsg_chouxi_info");
+		},
+	},
+	dynamicTranslate: {
+		jlsg_zhaoxiang(player) {
+			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};
+			if (upgrade["jlsgsr_caocao"]?.[2]) {
+				return "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；3．将此【杀】的目标改为你；4．令目标角色于此【杀】结算后回复1点体力。当所有选项执行后，重置此技能";
+			}
+			return lib.translate.jlsg_zhaoxiang_info;
+		},
+		jlsg_zhishi(player) {
+			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};
+			if (upgrade["jlsgsr_caocao"]?.[2]) {
+				return "当任意角色受到伤害后，你可以令其从随机三个能在此时机发动的技能中选择一个并发动。";
+			}
+			return lib.translate.jlsg_zhishi_info;
 		},
 	},
 };
