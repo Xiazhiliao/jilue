@@ -5178,29 +5178,29 @@ export default {
 	dynamicTranslate: {
 		jlsg_zhaoxiang(player) {
 			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};
-			if (upgrade["jlsgsr_caocao"]?.[2]) {
+			if (upgrade["jlsgsr_caocao"]?.[2] || player?.index) {
 				return "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；3．将此【杀】的目标改为你；4．令目标角色于此【杀】结算后回复1点体力。当所有选项执行后，重置此技能";
 			}
 			return lib.translate.jlsg_zhaoxiang_info;
 		},
 		jlsg_zhishi(player) {
 			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};
-			if (upgrade["jlsgsr_caocao"]?.[2]) {
+			if (upgrade["jlsgsr_caocao"]?.[2] || player?.index) {
 				return "当任意角色受到伤害后，你可以令其从随机三个能在此时机发动的技能中选择一个并发动。";
 			}
 			return lib.translate.jlsg_zhishi_info;
 		},
-	},
-	jlsg_rende(player) {
-		const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgrade["jlsgsr_liubei"]?.[2];
-		if (improve) return "任意角色的回合结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
-		else return get.translation("jlsg_rende_info");
-	},
-	jlsg_chouxi(player) {
-		const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgrade["jlsgsr_liubei"]?.[2];
-		if (improve) return "出牌阶段每名角色限一次，你可以获得一名其他角色至多三张牌，然后交给其等量的牌，若如此做，你可以对其造成X点伤害（X为你以此法获得的牌与给出的牌的类别数之差）。";
-		else return get.translation("jlsg_chouxi_info");
+		jlsg_rende(player) {
+			const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			let improve = upgrade["jlsgsr_liubei"]?.[2];
+			if (improve || player?.index) return "任意角色的回合结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
+			else return get.translation("jlsg_rende_info");
+		},
+		jlsg_chouxi(player) {
+			const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			let improve = upgrade["jlsgsr_liubei"]?.[2];
+			if (improve || player?.index) return "出牌阶段每名角色限一次，你可以获得一名其他角色至多三张牌，然后交给其等量的牌，若如此做，你可以对其造成X点伤害（X为你以此法获得的牌与给出的牌的类别数之差）。";
+			else return get.translation("jlsg_chouxi_info");
+		},
 	},
 };

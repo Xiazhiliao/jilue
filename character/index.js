@@ -69,6 +69,26 @@ if (lib.config?.extension_极略_jlsg_zhugong_buff) {
 		jlsg_sr.translate[i] = jlsgZhu.translate[i];
 	}
 }
+//给突破的SR武将加上突破后描述
+let upgradeList = lib.config.extension_极略_upgradeList || [];
+for (let character in jlsg_sr.character) {
+	if (!upgradeList.includes(character)) {
+		continue;
+	}
+	const skills = jlsg_sr.character[character][3];
+	for (let skill of skills) {
+		//如果原技能的derivation里的技能也有突破的话就显示不了了，不过等有的时候再改吧（
+		jlsg_sr.skill[skill].derivation ??= [];
+		if (typeof jlsg_sr.skill[skill].derivation == "string") {
+			jlsg_sr.skill[skill].derivation = [jlsg_sr.skill[skill].derivation];
+		}
+		if (jlsg_sr?.dynamicTranslate?.[skill]) {
+			jlsg_sr.skill[skill].derivation.add(skill + "_improve");
+			jlsg_sr.translate[skill + "_improve"] = jlsg_sr.translate[skill];
+			jlsg_sr.translate[skill + "_improve_info"] = "突破后效果：" + jlsg_sr.dynamicTranslate[skill]({ index: true });
+		}
+	}
+}
 //魔将调整
 if (lib.config?.extension_极略_syRefactor) {
 	for (const name in jlsg_sy.character) {
