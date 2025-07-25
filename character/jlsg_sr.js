@@ -66,6 +66,10 @@ export default {
 						}
 						let info = [false, false, false, false],
 							choiceList = [...Object.keys(lib.skill[event.name].upgradeContent[name]), "技能突破", "携带所有技能"];
+						if (!lib.config.extension_极略_srlose) {
+							info = info.slice(1, -1);
+							choiceList = choiceList.slice(0, -1);
+						}
 						//非强制突破，非顺次选择
 						const { result: upgrade } = await player
 							.chooseButton([1, 4], [`请选择${get.translation(name)}的突破`, [choiceList.map((item, i) => [i, item]), "textbutton"]])
@@ -156,7 +160,7 @@ export default {
 				const list = [];
 				const info = get.character(name);
 				if (info) {
-					const skills = info[3];
+					const skills = info.skills;
 					for (const skill of skills) {
 						let infox = get.info(skill);
 						if (lib.translate[skill + "_info"] && infox.srlose) {
