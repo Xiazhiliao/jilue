@@ -44,11 +44,6 @@ export default {
 					return false;
 				}
 				const nameList = get.nameList(player);
-				for (const name of names) {
-					if (name.indexOf("jlsgsr_") == 0) {
-						return true;
-					}
-				}
 				return nameList.some(name => name.startsWith("jlsgsr_"));
 			},
 			forced: true,
