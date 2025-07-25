@@ -334,7 +334,7 @@ export default {
 			locked: false,
 			trigger: { target: "useCardToTargeted" },
 			filter(event, player) {
-				return event.player != player && event.card && (event.card.name == "sha" || get.type(event.card) == "trick");
+				return event.player != player && event.card && (event.card.name == "sha" || get.type(event.card) == "trick") && player.getCards("h").some(card => get.color(card) == "black");
 			},
 			async cost(event, trigger, player) {
 				event.result = await player
@@ -350,6 +350,8 @@ export default {
 						}
 						return eff + eff2 - get.value(card);
 					})
+					.set("filterCard", card => get.color(card) == "black")
+					.set("position", "h")
 					.set("cardx", trigger.card)
 					.set("target", trigger.player)
 					.set("chooseonly", true)
