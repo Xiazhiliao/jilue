@@ -4352,8 +4352,7 @@ export default {
 			},
 			async content(event, trigger, player) {
 				const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				let name = "jlsgsr_liubei";
-				let improve = name in upgrade && upgrade[name][2];
+				let improve = upgrade["jlsgsr_liubei"]?.[2];
 				let num = improve ? 3 : 2;
 				await player.draw(num);
 				let result = await player
@@ -4383,17 +4382,18 @@ export default {
 					.set("forced", true)
 					.set("source", trigger.player)
 					.forResult();
-				if (!result.bool) {
+				if (!result?.bool) {
 					return;
 				}
-				if (trigger.player != player) await player.give(result.cards, trigger.player);
-				trigger.player.addGaintag(result.cards, "jlsg_rende");
+				if (trigger.player != player) {
+					await player.give(result.cards, trigger.player);
+				}
+				if (improve) {
+					trigger.player.addGaintag(result.cards, "jlsg_rende");
+					trigger.player.addTempSkill("jlsg_rende_effect", { player: "phaseUseEnd" });
+				}
 				await game.delay();
 				const phase = trigger.getParent("phase", true);
-				if (improve) {
-					trigger.player.addTempSkill("jlsg_rende_effect", { player: "phaseUseEnd" });
-					trigger.player.when({ player: "phaseUseEnd" }).then(() => player.removeGaintag("jlsg_rende"));
-				}
 				if (phase) {
 					phase.phaseList.splice(phase.num + 1, 0, `phaseUse|${event.name}`);
 				} else {
@@ -4407,6 +4407,10 @@ export default {
 				effect: {
 					sub: true,
 					sourceSkill: "jlsg_rende",
+					charlotte: true,
+					onremove(player) {
+						player.removeGaintag("jlsg_rende");
+					},
 					mod: {
 						cardUsable: function (card, player, num) {
 							if (card?.cards?.some(i => i.hasGaintag("jlsg_rende"))) return Infinity;
@@ -4431,11 +4435,10 @@ export default {
 			async content(event, trigger, player) {
 				const target = event.targets[0];
 				const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				let name = "jlsgsr_liubei";
-				let improve = name in upgrade && upgrade[name][2];
+				let improve = upgrade["jlsgsr_liubei"]?.[2];
 				let num = improve ? 3 : 2;
 				let result = await player.gainPlayerCard(target, [1, num], false).forResult();
-				if (!result.bool || !result?.cards?.length) {
+				if (!result?.bool || !result?.cards?.length) {
 					return;
 				}
 				num = result.cards.length;
@@ -4443,8 +4446,10 @@ export default {
 				result.cards.forEach(card => {
 					if (!type.includes(get.type(card, "trick"))) type.push(get.type(card, "trick"));
 				});
+				if (!player.storage.jlsg_chouxi?.length) {
+					player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
+				}
 				player.markAuto("jlsg_chouxi", [target]);
-				player.when({ player: "phaseUseEnd" }).then(() => delete player.storage.jlsg_chouxi);
 				let next = await player
 					.chooseCard("交给" + get.translation(target) + get.cnNumber(num) + "张牌", [num, num])
 					.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("source"), player, event))
@@ -5176,22 +5181,6 @@ export default {
 		jlsg_ganglie_info: "出牌阶段开始时，你可以失去1点体力，若如此做，你本回合下一次造成的伤害+1。且本回合你每造成1点伤害，回合结束时你便摸一张牌",
 	},
 	dynamicTranslate: {
-		jlsg_rende(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			let name = "jlsgsr_liubei";
-			let improve = name in upgrade && upgrade[name][2];
-			if (improve) return "任意角色的回合结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
-			else return get.translation("jlsg_rende_info");
-		},
-		jlsg_chouxi(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			let name = "jlsgsr_liubei";
-			let improve = name in upgrade && upgrade[name][2];
-			if (improve) return "出牌阶段每名角色限一次，你可以获得一名其他角色至多三张牌，然后交给其等量的牌，若如此做，你可以对其造成X点伤害（X为你以此法获得的牌与给出的牌的类别数之差）。";
-			else return get.translation("jlsg_chouxi_info");
-		},
-	},
-	dynamicTranslate: {
 		jlsg_zhaoxiang(player) {
 			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};
 			if (upgrade["jlsgsr_caocao"]?.[2]) {
@@ -5206,5 +5195,17 @@ export default {
 			}
 			return lib.translate.jlsg_zhishi_info;
 		},
+	},
+	jlsg_rende(player) {
+		const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgrade["jlsgsr_liubei"]?.[2];
+		if (improve) return "任意角色的回合结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
+		else return get.translation("jlsg_rende_info");
+	},
+	jlsg_chouxi(player) {
+		const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgrade["jlsgsr_liubei"]?.[2];
+		if (improve) return "出牌阶段每名角色限一次，你可以获得一名其他角色至多三张牌，然后交给其等量的牌，若如此做，你可以对其造成X点伤害（X为你以此法获得的牌与给出的牌的类别数之差）。";
+		else return get.translation("jlsg_chouxi_info");
 	},
 };
