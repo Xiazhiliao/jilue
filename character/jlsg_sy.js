@@ -2733,6 +2733,22 @@ export default {
 					event.result.cards = [card];
 				}
 			},
+			group: "jlsgsy_moce_draw",
+			subSkill: {
+				draw: {
+					sub: true,
+					subSkill: "jlsgsy_moce",
+					audio: false,
+					trigger: { player: "useCardAfter" },
+					filter(event, player) {
+						return event.skill == "jlsgsy_moce" && event.card.name == "guohe";
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						await player.draw(1);
+					},
+				},
+			},
 			ai: {
 				wuxie: (target, card, player, viewer, status) => {
 					if (
