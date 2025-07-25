@@ -480,7 +480,6 @@ export default {
 	},
 	jlsgsr_liubei: {
 		1: {
-			info: ["male", "shu", 4, ["jlsg_rende", "jlsg_chouxi", "jlsg_yongbing"], ["zhu"]],
 			skill: {
 				jlsg_rende: {
 					audio: "ext:极略/audio/skill:1",
@@ -634,51 +633,10 @@ export default {
 						},
 					},
 				},
-				jlsg_yongbing: {
-					unique: true,
-					audio: "ext:极略/audio/skill:true",
-					zhuSkill: true,
-					global: "jlsg_yongbing2",
-				},
-				jlsg_yongbing2: {
-					sourceSkill: "jlsg_yongbing",
-					trigger: { source: "damageEnd" },
-					getIndex(event, player) {
-						return game.filterPlayer(current => {
-							return current.hasZhuSkill("jlsg_yongbing", player);
-						});
-					},
-					filter(event, player, triggername, target) {
-						if (player.group != "shu") {
-							return false;
-						} else if (event.card?.name != "sha") {
-							return false;
-						}
-						return target?.isIn();
-					},
-					check(event, player, triggername, target) {
-						return get.effect(target, { name: "draw" }, player, player);
-					},
-					prompt(event, player, triggername, target) {
-						return get.prompt("jlsg_yongbing", target);
-					},
-					logTarget(event, player, triggername, target) {
-						return target;
-					},
-					async content(event, trigger, player) {
-						await event.targets[0].draw(1);
-					},
-					ai: {
-						expose: 0.2,
-					},
-				},
 			},
 			translate: {
-				jlsg_yongbing: "拥兵",
-				jlsg_yongbing2: "拥兵",
 				jlsg_rende_info: "任一角色的结束阶段结束时，你可以将任意数量的手牌交给该角色，然后该角色进行1个额外的出牌阶段。",
 				jlsg_chouxi_info: "出牌阶段限一次，你可以弃置一张手牌并展示牌堆顶的两张牌，然后令一名其他角色选择一项：1. 弃置一张与展示牌类别均不同的牌，然后令你获得展示的牌；2. 受到你造成的1点伤害并获得其中一种类别的牌，然后你获得其余的牌。",
-				jlsg_yongbing_info: "主公技，当一名其他蜀势力角色使用【杀】造成一次伤害后，该角色可令你摸一张牌。",
 			},
 		},
 	},
