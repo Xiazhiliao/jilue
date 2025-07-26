@@ -4682,7 +4682,7 @@ export default {
 			logTarget: "player",
 			async content(event, trigger, player) {
 				if (!_status.characterlist) {
-					game.initCharactertList();
+					game.initCharacterList();
 				}
 				const allList = _status.characterlist.slice(0);
 				game.countPlayer(function (current) {
