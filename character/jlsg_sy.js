@@ -2997,7 +2997,7 @@ export default {
 									return;
 								}
 								let playerH = player.getCards("h");
-								if (playerH.length == 1 && (card == playerH[0] || card?.cards?.includes(player[0]))) {
+								if (playerH.length == 1 && (card == playerH[0] || (Array.isArray(card?.cards) && card?.cards?.includes(player[0])))) {
 									if (currents.some(current => get.attitude(player, current) < 0) && !player.hasSkillTag("nofire")) {
 										return [1, 0, 1, -player.getHp()];
 									}
