@@ -62,7 +62,7 @@ export default {
 						let info = [false, false, false, false],
 							choiceList = [...Object.keys(lib.skill[event.name].upgradeContent[name]), "技能突破", "携带所有技能"];
 						if (!lib.config.extension_极略_srlose) {
-							info = info.slice(1, -1);
+							info = info.slice(0, -1);
 							choiceList = choiceList.slice(0, -1);
 						}
 						//非强制突破，非顺次选择
