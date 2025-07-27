@@ -112,11 +112,11 @@ if (lib.config?.extension_极略_syRefactor) {
 					lib.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
 					lib.translate[name + "_prefix"] = baonu ? "极略SY暴怒" : "极略SY";
 					if (name == "jlsgsy_sunhaobaonu") {
-						lib.characterPack.jlsg_sy[name][3].remove("jlsgsy_shisha");
-						lib.characterPack.jlsg_sy[name][3].unshift("jlsgsy_mingzheng");
-						if (lib.character[name]) {
-							lib.character[name][3].remove("jlsgsy_shisha");
-							lib.character[name][3].unshift("jlsgsy_mingzheng");
+						lib.characterPack.jlsg_sy?.[name][3].remove("jlsgsy_shisha");
+						lib.characterPack.jlsg_sy?.[name][3].unshift("jlsgsy_mingzheng");
+						if (lib.character?.[name]) {
+							lib.character?.[name][3].remove("jlsgsy_shisha");
+							lib.character?.[name][3].unshift("jlsgsy_mingzheng");
 						}
 					}
 				});
