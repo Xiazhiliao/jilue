@@ -1388,7 +1388,7 @@ export async function precontent(config, originalPack) {
 					game.me.changeSkin({ characterName: name }, skin);
 				}
 			};
-			lib.hooks.refreshSkin?.push(changeSkin);
+			if (lib.hooks.refreshSkin) lib.hooks.refreshSkin.push(changeSkin);
 		}
 	});
 	const [list1] = await game.promises.getFileList(`extension/极略/skin/image`);
