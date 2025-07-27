@@ -62,7 +62,7 @@ export default {
 						let info = [false, false, false, false],
 							choiceList = [...Object.keys(lib.skill[event.name].upgradeContent[name]), "技能突破", "携带所有技能"];
 						if (!lib.config.extension_极略_srlose) {
-							info = info.slice(1, -1);
+							info = info.slice(0, -1);
 							choiceList = choiceList.slice(0, -1);
 						}
 						//非强制突破，非顺次选择
@@ -4342,9 +4342,11 @@ export default {
 			filter(event, player) {
 				return event.player.isAlive();
 			},
+			check(event, player) {
+				return get.attitude(player, event.player) > 0;
+			},
 			async content(event, trigger, player) {
-				const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				let improve = upgrade["jlsgsr_liubei"]?.[2];
+				const improve = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_liubei"]?.[2];
 				let num = improve ? 3 : 2;
 				await player.draw(num);
 				let result = await player
@@ -4353,23 +4355,13 @@ export default {
 					.set("ai", card => {
 						const player = get.player(),
 							source = get.event("source");
-						if (player == source) {
-							return 6;
+						if (source.hasSkillTag("nogain")) {
+							return source.getUseValue(card, false, false) - get.value(card) - 1;
 						}
 						if (get.attitude(player, source) > 1) {
-							if (source.countUsed("sha") > 0 && ["sha", "jiu"].includes(card.name)) {
-								return 6.5 - get.value(card);
-							}
-							let skills = source.getSkills(false);
-							for (let i = 0; i < skills.length; i++) {
-								let info = get.info(skills[i]);
-								if (info && info.enable == "phaseUse" && ui.selected.cards.length == 0) {
-									return 6.6 - get.value(card);
-								}
-							}
-							return 4 - get.value(card);
+							return source.getUseValue(card, false, false);
 						}
-						return get.value(card) < 0;
+						return source.getUseValue(card, false, false) - get.value(card);
 					})
 					.set("forced", true)
 					.set("source", trigger.player)
@@ -4418,32 +4410,26 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			srlose: true,
 			enable: "phaseUse",
-			log: false,
 			filter(event, player) {
-				return game.hasPlayer(current => current != player && !player.storage.jlsg_chouxi?.includes(current));
+				return game.hasPlayer(current => current != player && !player.hasStorage("jlsg_chouxi", current));
 			},
 			filterTarget(card, player, target) {
-				return player != target && !player.storage.jlsg_chouxi?.includes(target) && target.countCards("h");
+				return player != target && !player.hasStorage("jlsg_chouxi", target) && target.countCards("h");
 			},
 			async content(event, trigger, player) {
 				const target = event.targets[0];
-				const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				let improve = upgrade["jlsgsr_liubei"]?.[2];
+				if (!player.getStorage("jlsg_chouxi")?.length) {
+					player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
+				}
+				player.markAuto("jlsg_chouxi", [target]);
+				const improve = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_liubei"]?.[2];
 				let num = improve ? 3 : 2;
 				let result = await player.gainPlayerCard(target, [1, num], false).forResult();
 				if (!result?.bool || !result?.cards?.length) {
 					return;
 				}
 				num = result.cards.length;
-				let type = [];
-				result.cards.forEach(card => {
-					if (!type.includes(get.type(card, "trick"))) type.push(get.type(card, "trick"));
-				});
-				if (!player.storage.jlsg_chouxi?.length) {
-					player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
-				}
-				player.markAuto("jlsg_chouxi", [target]);
-				player.logSkill("jlsg_chouxi", target);
+				let type = result.cards.map(card => get.type2(card)).unique();
 				let next = await player
 					.chooseCard("交给" + get.translation(target) + get.cnNumber(num) + "张牌", [num, num])
 					.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("source"), player, event))
@@ -4457,16 +4443,9 @@ export default {
 							if (source.countUsed("sha") > 0 && ["sha", "jiu"].includes(card.name)) {
 								return 6.5 - get.value(card);
 							}
-							let skills = source.getSkills(false);
-							for (let i = 0; i < skills.length; i++) {
-								let info = get.info(skills[i]);
-								if (info && info.enable == "phaseUse" && ui.selected.cards.length == 0) {
-									return 6.6 - get.value(card);
-								}
-							}
-							return 4 - get.value(card);
+							return source.getUseValue(card);
 						}
-						return get.value(card) < 0;
+						return get.value(card) < 2 || !source.getUseValue(card) == 0;
 					})
 					.set("forced", true)
 					.set("source", target)
@@ -4474,18 +4453,23 @@ export default {
 				if (!next.bool) {
 					return;
 				}
-				await player.give(next.cards, target);
-				let type2 = [];
-				next.cards.forEach(card => {
-					if (!type2.includes(get.type(card, "trick"))) type2.push(get.type(card, "trick"));
-				});
-				if (type.length == type2.length) return;
+				if (player != target) {
+					await player.give(next.cards, target);
+				} else {
+					await game.delay();
+				}
+				let type2 = next.cards.map(card => get.type2(card)).unique();
+				if (type.length == type2.length) {
+					return;
+				}
 				num = Math.abs(type.length - type2.length);
 				let next2 = await player
 					.chooseBool("是否对" + get.translation(target) + "造成" + get.cnNumber(num) + "点伤害？")
-					.set("ai", () => -1 * get.attitude(player, target))
+					.set("ai", (event, player) => get.damageEffect(event.targets[0], player, player) > 0)
 					.forResult();
-				if (next2.bool) await target.damage(num, player);
+				if (next2.bool) {
+					await target.damage(num, player);
+				}
 			},
 			ai: {
 				order: 4,
@@ -4682,7 +4666,7 @@ export default {
 			logTarget: "player",
 			async content(event, trigger, player) {
 				if (!_status.characterlist) {
-					game.initCharactertList();
+					game.initCharacterList();
 				}
 				const allList = _status.characterlist.slice(0);
 				game.countPlayer(function (current) {

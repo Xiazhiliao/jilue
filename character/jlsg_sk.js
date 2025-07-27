@@ -11758,7 +11758,7 @@ export default {
 				const configx = lib.config.extension_极略_jlsgsk_jiangwei;
 				let list = {};
 				if (!_status.characterlist) {
-					game.initCharactertList();
+					game.initCharacterList();
 				}
 				let character = _status.characterlist.filter(name => {
 					if (["character", "all"].includes(configx)) {
@@ -12756,7 +12756,7 @@ export default {
 			get getCharacters() {
 				//角色列表
 				if (!_status.characterlist) {
-					game.initCharactertList();
+					game.initCharacterList();
 				}
 				let list = {};
 				for (const pack in lib.characterPack) {

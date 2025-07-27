@@ -1008,7 +1008,7 @@ export default {
 				let characterList;
 				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false") {
 					if (!_status.characterlist) {
-						game.initCharactertList();
+						game.initCharacterList();
 					}
 					characterList = _status.characterlist.slice().randomSort();
 				} else {
@@ -1154,7 +1154,7 @@ export default {
 				let characterList;
 				if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false") {
 					if (!_status.characterlist) {
-						game.initCharactertList();
+						game.initCharacterList();
 					}
 					characterList = _status.characterlist.slice().randomSort();
 				} else {
@@ -3666,7 +3666,7 @@ export default {
 			content: function () {
 				"step 0"
 				if (!_status.characterlist) {
-					game.initCharactertList();
+					game.initCharacterList();
 				}
 				_status.characterlist.randomSort();
 				var list = [];
@@ -4351,7 +4351,7 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			initList: function () {
 				if (!_status.characterlist) {
-					game.initCharactertList();
+					game.initCharacterList();
 				}
 				_status.jlsg_luocha_list = [];
 				_status.jlsg_luocha_list_hidden = [];
@@ -8917,7 +8917,7 @@ export default {
 							content: async function (event, trigger, player) {
 								let group = player.group;
 								if (!_status.characterlist) {
-									game.initCharactertList();
+									game.initCharacterList();
 								}
 								let allList = _status.characterlist.slice(0).randomSort();
 								for (let name of allList) {

@@ -125,7 +125,7 @@ export async function precontent(config, originalPack) {
 			} else if (_status.connectMode) {
 				result = get.charactersOL(() => true);
 			} else {
-				result = game.initCharactertList();
+				result = game.initCharacterList();
 			}
 			delete this.characterList;
 			this.characterList = result;

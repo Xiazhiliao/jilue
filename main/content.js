@@ -45,7 +45,10 @@ const b = 1;
 		game.saveConfig("extension_极略_wrongExtensionNameAlert", false);
 	}
 	//适配PR 换个写法（
-	if (get.info("lihun2").onremove) game.initCharactertList = game.initCharacterList;
+	//改为适配旧版本，更新了就直接肘击旧版——流年
+	if (typeof game.initCharactertList === "function") {
+		game.initCharacterList = game.initCharactertList;
+	}
 	//SR武将突破初始列表
 	const configx = pack.code.config;
 	for (let i in configx) {
