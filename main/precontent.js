@@ -1378,12 +1378,22 @@ export async function precontent(config, originalPack) {
 	lib.jlsg = jlsg;
 	window.jlsg = jlsg;
 
-	//const [list1] = await game.promises.getFileList(`extension/极略/skin/image`);
+	//资料卡换肤
+	//因本体资料卡换肤只停留于表层，故这部分无法实现
+	//需本体PR-202507276及以上版本
+	lib.arenaReady.push(function () {
+		if (!lib.hooks.refreshSkin.some(i => i.name == "changeSkin")) {
+			const changeSkin = function (name, skin) {
+				if ((get.nameList(game.me) || []).includes(name)) {
+					game.me.changeSkin({ characterName: name }, skin);
+				}
+			};
+			lib.hooks.refreshSkin.push(changeSkin);
+		}
+	});
+	const [list1] = await game.promises.getFileList(`extension/极略/skin/image`);
 	for (let packName in characters) {
 		const pack = characters[packName];
-		//资料卡换肤
-		//因本体资料卡换肤只停留于表层，故这部分无法实现
-		/*
 		for (let character in pack.character) {
 			if (!list1.includes(character)) {
 				continue;
@@ -1403,12 +1413,11 @@ export async function precontent(config, originalPack) {
 				}
 			}
 		}
-		*/
+		//导入武将包
 		game.import("character", function () {
 			return pack;
 		});
 	}
-	
 
 	let name = jlsg_qs.name;
 	game.import("card", function () {
