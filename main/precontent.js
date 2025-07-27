@@ -1382,13 +1382,13 @@ export async function precontent(config, originalPack) {
 	//因本体资料卡换肤只停留于表层，故这部分无法实现
 	//需本体PR-202507276及以上版本
 	lib.arenaReady.push(function () {
-		if (!lib.hooks.refreshSkin.some(i => i.name == "changeSkin")) {
+		if (!lib.hooks.refreshSkin?.some(i => i.name == "changeSkin")) {
 			const changeSkin = function (name, skin) {
 				if ((get.nameList(game.me) || []).includes(name)) {
 					game.me.changeSkin({ characterName: name }, skin);
 				}
 			};
-			lib.hooks.refreshSkin.push(changeSkin);
+			lib.hooks.refreshSkin?.push(changeSkin);
 		}
 	});
 	const [list1] = await game.promises.getFileList(`extension/极略/skin/image`);
