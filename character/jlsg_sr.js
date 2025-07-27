@@ -4418,6 +4418,9 @@ export default {
 			},
 			async content(event, trigger, player) {
 				const target = event.targets[0];
+				if (!player.getStorage("jlsg_chouxi")?.length) {
+					player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
+				}
 				player.markAuto("jlsg_chouxi", [target]);
 				const improve = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_liubei"]?.[2];
 				let num = improve ? 3 : 2;
@@ -4427,9 +4430,6 @@ export default {
 				}
 				num = result.cards.length;
 				let type = result.cards.map(card => get.type2(card)).unique();
-				if (!player.getStorage("jlsg_chouxi").length) {
-					player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
-				}
 				let next = await player
 					.chooseCard("交给" + get.translation(target) + get.cnNumber(num) + "张牌", [num, num])
 					.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("source"), player, event))
