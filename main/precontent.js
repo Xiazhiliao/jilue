@@ -1403,7 +1403,7 @@ export async function precontent(config, originalPack) {
 		}
 	}
 	if (skinCheck) {
-		characterSkinList = await game.promises.getFileList(`extension/极略/skin/image`)[0];
+		characterSkinList = (await game.promises.getFileList(`extension/极略/skin/image`))[0];
 	}
 	for (let packName in characters) {
 		const pack = characters[packName];
