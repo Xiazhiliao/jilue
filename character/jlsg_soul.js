@@ -7286,7 +7286,7 @@ export default {
 						next.set("selectButton", [1, trigger.removeSkill.length]);
 					}
 					const { result: chooseRemove } = await next;
-					if (!chooseRemove.bool) return;
+					if (!chooseRemove?.bool) return;
 					removeSkill = chooseRemove.links;
 				}
 				await target.removeSkills(removeSkill);
@@ -7300,7 +7300,7 @@ export default {
 				else {
 					const next = player.chooseButton([`玲珑:请选择${get.translation(removeSkill.length)}个技能不被失去`, [trigger.removeSkill.map(s => [s, get.translation(s)]), "tdnodes"]]);
 					next.set("forced", true);
-					next.set("selectButton", chooseRemove.links.length);
+					next.set("selectButton", removeSkill.length);
 					const { result: chooseRetain } = await next;
 					if (!chooseRetain.bool) return;
 					retainSkill = chooseRetain.links;
