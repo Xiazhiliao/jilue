@@ -11938,7 +11938,7 @@ export default {
 			},
 			async content(event, trigger, player) {
 				const target = trigger.source;
-				// target.viewCards(event.name, event.cards);
+				await target.viewCards(event.name, event.cards);
 				if (target.countDiscardableCards(target, "he") >= event.cards.length) {
 					let { result } = await target
 						.chooseToDiscard(event.cards.length, "he")
@@ -11964,8 +11964,8 @@ export default {
 					}
 				}
 				let { result } = await target.chooseCardButton(event.cards, true, `获得的${get.translation(player)}一张牌`).set("ai", card => get.value(card));
-				if (result.cards) {
-					await target.gain(player, result.cards, "giveAuto");
+				if (result.links) {
+					await target.gain(player, result.links, "giveAuto");
 					trigger.cancel();
 				}
 			},
