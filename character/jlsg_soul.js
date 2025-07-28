@@ -3910,7 +3910,7 @@ export default {
 					const cards = target.getGainableCards(player, "he", card => card.name == "tao");
 					if (cards.length) {
 						await target
-							.chooseToGive(player, `请交给${get.translation(player)}一张【桃】`)
+							.chooseToGive(player, `请交给${get.translation(player)}一张【桃】`, true)
 							.set("filterCard", card => get.event("tao").includes(card))
 							.set("tao", cards);
 					}
