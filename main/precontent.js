@@ -1391,25 +1391,40 @@ export async function precontent(config, originalPack) {
 			lib.hooks.refreshSkin.push(changeSkin);
 		}
 	});
-	const [list1] = await game.promises.getFileList(`extension/极略/skin/image`);
+	let skinCheck = true,
+		characterSkinList;
+	let [files] = await game.promises.getFileList(`extension/极略`);
+	if (!files.some(file => file == "skin")) {
+		skinCheck = false;
+	} else {
+		let [files] = await game.promises.getFileList(`extension/极略/skin`);
+		if (!files.some(file => file == "image")) {
+			skinCheck = false;
+		}
+	}
+	if (skinCheck) {
+		characterSkinList = await game.promises.getFileList(`extension/极略/skin/image`)[0];
+	}
 	for (let packName in characters) {
 		const pack = characters[packName];
-		for (let character in pack.character) {
-			if (!list1.includes(character)) {
-				continue;
-			}
-			if (!("characterSubstitute" in pack)) {
-				pack.characterSubstitute = {};
-			}
-			if (!(character in pack.characterSubstitute)) {
-				pack.characterSubstitute[character] = [];
-			}
-			const [folders, files] = await game.promises.getFileList(`extension/极略/skin/image/${character}`);
-			if (files.length) {
-				for (let file of files) {
-					let skinName = `${character}_${get.pinyin(file.slice(0, -4), false).join("")}`;
-					pack.characterSubstitute[character].push([skinName, [`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/skin/image/${character}/${file}`]]);
-					lib.config.skin[skinName] = 1;
+		if (skinCheck) {
+			for (let character in pack.character) {
+				if (!characterSkinList.includes(character)) {
+					continue;
+				}
+				if (!("characterSubstitute" in pack)) {
+					pack.characterSubstitute = {};
+				}
+				if (!(character in pack.characterSubstitute)) {
+					pack.characterSubstitute[character] = [];
+				}
+				const [folders, files] = await game.promises.getFileList(`extension/极略/skin/image/${character}`);
+				if (files.length) {
+					for (let file of files) {
+						let skinName = `${character}_${get.pinyin(file.slice(0, -4), false).join("")}`;
+						pack.characterSubstitute[character].push([skinName, [`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/skin/image/${character}/${file}`]]);
+						lib.config.skin[skinName] = 1;
+					}
 				}
 			}
 		}
