@@ -1423,7 +1423,7 @@ export async function precontent(config, originalPack) {
 					for (let file of files) {
 						let skinName = `${character}_${get.pinyin(file.slice(0, -4), false).join("")}`;
 						pack.characterSubstitute[character].push([skinName, [`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/skin/image/${character}/${file}`]]);
-						lib.config.skin[skinName] = 1;
+						//lib.config.skin[skinName] = 1;
 					}
 				}
 			}

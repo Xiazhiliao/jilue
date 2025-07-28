@@ -3981,7 +3981,7 @@ export default {
 					return;
 				}
 				const group = trigger.player.group;
-				const list = jlsg.characterList.filter(c => get.character(c, 1) == group);
+				let list = jlsg.characterList.filter(c => get.character(c, 1) == group);
 				var players = game.players.concat(game.dead);
 				for (var i = 0; i < players.length; i++) {
 					list.remove(players[i].name);
