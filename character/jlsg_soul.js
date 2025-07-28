@@ -3901,10 +3901,12 @@ export default {
 			filterTarget(card, player, target) {
 				return target != player;
 			},
+			multitarget: true,
+			multiline: true,
 			async content(event, trigger, player) {
 				await player.loseHp(1);
 				event.targets.sortBySeat();
-				for (const target of event.target) {
+				for (const target of event.targets) {
 					const cards = target.getGainableCards(player, "he", card => card.name == "tao");
 					if (cards.length) {
 						await target
