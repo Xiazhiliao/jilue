@@ -5127,7 +5127,7 @@ export default {
 			async content(event, trigger, player) {
 				let storage = player.getStorage(event.name, { list: [], num: 2 });
 				event.num = storage.num;
-				const characterlist = lib.jlsg.characterList.slice(),
+				const characterlist = lib.jlsg.characterList.slice().randomSort(),
 					map = {};
 				for (const current of game.filterPlayer2(() => true, undefined, true)) {
 					characterlist.removeArray(get.nameList(current));
