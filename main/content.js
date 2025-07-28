@@ -101,19 +101,22 @@ const b = 1;
 			}
 		};
 	for (let packName of ["jlsg_sr", "jlsg_sk", "jlsg_soul", "jlsg_skpf", "jlsg_sy"]) {
-		const characterPack = lib.characterPack[packName];
+		const list = Object.keys(lib.characterPack[packName] || {});
+		if (!list.length) {
+			continue;
+		}
 		if (packName != "jlsg_sy") {
 			if (packName == "jlsg_soul") {
-				for (let name of Object.keys(characterPack)) {
+				for (let name of list) {
 					trivialSolveCharacterReplace(name, "shen_");
 				}
 			} else {
-				for (let name of Object.keys(characterPack)) {
+				for (let name of list) {
 					trivialSolveCharacterReplace(name);
 				}
 			}
 		} else {
-			for (let name of Object.keys(characterPack)) {
+			for (let name of list) {
 				if (!lib.config.forbidai_user.includes(name) && name.includes("baonu")) lib.config.forbidai.remove(name);
 			}
 		}
