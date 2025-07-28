@@ -3999,7 +3999,7 @@ export default {
 					})
 					.set("createDialog", ["将武将牌替换为一名角色", [list, "character"]]);
 				if (result.bool) {
-					trigger.player.reinit(trigger.player.name, result.links[0]);
+					trigger.player.reinit(trigger.player.name, result.links[0], false);
 				}
 			},
 		},
