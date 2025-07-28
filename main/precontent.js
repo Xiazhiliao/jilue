@@ -1382,13 +1382,13 @@ export async function precontent(config, originalPack) {
 	//因本体资料卡换肤只停留于表层，故这部分无法实现
 	//需本体PR-202507276及以上版本
 	lib.arenaReady.push(function () {
-		if (!lib.hooks.refreshSkin?.some(i => i.name == "changeSkin")) {
+		if (lib.hooks.refreshSkin && !lib.hooks.refreshSkin.some(i => i.name == "changeSkin")) {
 			const changeSkin = function (name, skin) {
 				if ((get.nameList(game.me) || []).includes(name)) {
 					game.me.changeSkin({ characterName: name }, skin);
 				}
 			};
-			if (lib.hooks.refreshSkin) lib.hooks.refreshSkin.push(changeSkin);
+			lib.hooks.refreshSkin.push(changeSkin);
 		}
 	});
 	const [list1] = await game.promises.getFileList(`extension/极略/skin/image`);
@@ -1423,72 +1423,4 @@ export async function precontent(config, originalPack) {
 	game.import("card", function () {
 		return jlsg_qs;
 	});
-
-	lib.element.content.waitForPlayer = function () {
-		"step 0"
-		ui.auto.hide();
-		ui.pause.hide();
-		game.createServer();
-		if (!lib.translate.zhu) {
-			lib.translate.zhu = "主";
-		}
-		if (event.func) {
-			event.func();
-		}
-		if (!lib.configOL.number) {
-			lib.configOL.number = parseInt(lib.configOL.player_number);
-		}
-		if (game.onlineroom) {
-			game.send("server", "config", lib.configOL);
-		}
-		ui.create.connectPlayers(game.ip);
-		if (!window.isNonameServer) {
-			var me = game.connectPlayers[0];
-			me.setIdentity("zhu");
-			me.initOL(get.connectNickname(), lib.config.connect_avatar);
-			me.playerid = "1";
-			game.onlinezhu = "1";
-		}
-		_status.waitingForPlayer = true;
-		if (window.isNonameServer) {
-			document.querySelector("#server_status").innerHTML = "等待中";
-		}
-		game.pause();
-		"step 1"
-		_status.waitingForPlayer = false;
-		lib.configOL.gameStarted = true;
-		if (window.isNonameServer) {
-			document.querySelector("#server_status").innerHTML = "游戏中";
-		}
-		if (game.onlineroom) {
-			game.send("server", "config", lib.configOL);
-		}
-		for (var i = 0; i < game.connectPlayers.length; i++) {
-			game.connectPlayers[i].delete();
-		}
-		delete game.connectPlayers;
-		if (ui.roomInfo) {
-			ui.roomInfo.remove();
-			delete ui.roomInfo;
-		}
-		if (ui.exitroom) {
-			ui.exitroom.remove();
-			delete ui.exitroom;
-		}
-		game.broadcast(function (postReconnect, pack) {
-			postReconnect = get.parsedResult(postReconnect);
-			for (var i in postReconnect) {
-				if (Array.isArray(postReconnect[i])) {
-					postReconnect[i].shift().apply(this, postReconnect[i]);
-				}
-			}
-		}, _status.postReconnect);
-		game.broadcast("gameStart");
-		game.delay(2);
-		ui.auto.show();
-		ui.pause.show();
-		if (lib.config.show_cardpile) {
-			ui.cardPileButton.style.display = "";
-		}
-	};
 }

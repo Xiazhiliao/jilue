@@ -3785,7 +3785,7 @@ export default {
 							if (o == "pile") {
 								card = get.cardPile(i => get.subtype(i) == "equip1");
 								if (card) {
-									player.gain(card, "gain2");
+									await player.gain(card, "gain2");
 									bool = true;
 									break;
 								}
@@ -3795,7 +3795,7 @@ export default {
 								});
 								if (targets.length) {
 									var target = targets.randomGet();
-									player.gain(target.getEquips(1)[0], target, "give", "bySelf");
+									await player.gain(target.getEquips(1)[0], target, "give", "bySelf");
 									bool = true;
 									break;
 								}
