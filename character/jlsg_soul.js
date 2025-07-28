@@ -3924,7 +3924,11 @@ export default {
 			ai: {
 				order: 12,
 				result: {
-					player: function (player) {
+					player(player) {
+						const cardPile = [...ui.cardPile.childNodes, ...ui.discardPile.childNodes].filter(card => card.name == "tao");
+						if (!cardPile.length) {
+							return 0;
+						}
 						return player.hp > 1 || player.canSave(player) ? 1 : 0;
 					},
 				},
