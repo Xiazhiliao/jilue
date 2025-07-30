@@ -2737,7 +2737,7 @@ export default {
 			subSkill: {
 				draw: {
 					sub: true,
-					subSkill: "jlsgsy_moce",
+					sourceSkill: "jlsgsy_moce",
 					audio: false,
 					trigger: { player: "useCardAfter" },
 					filter(event, player) {
@@ -2982,7 +2982,7 @@ export default {
 			subSkill: {
 				ai: {
 					sub: true,
-					subSkill: "jlsgsy_jinmie",
+					sourceSkill: "jlsgsy_jinmie",
 					charlotte: true,
 					ai: {
 						effect: {

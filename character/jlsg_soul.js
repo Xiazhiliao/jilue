@@ -1405,7 +1405,7 @@ export default {
 					return promise;
 				};
 				const ai = function () {
-					return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")) };
+					return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")).slice(0, 1) };
 				};
 				let next;
 				if (event.isMine()) {
@@ -3785,7 +3785,7 @@ export default {
 							if (o == "pile") {
 								card = get.cardPile(i => get.subtype(i) == "equip1");
 								if (card) {
-									player.gain(card, "gain2");
+									await player.gain(card, "gain2");
 									bool = true;
 									break;
 								}
@@ -3795,7 +3795,7 @@ export default {
 								});
 								if (targets.length) {
 									var target = targets.randomGet();
-									player.gain(target.getEquips(1)[0], target, "give", "bySelf");
+									await player.gain(target.getEquips(1)[0], target, "give", "bySelf");
 									bool = true;
 									break;
 								}
@@ -3863,69 +3863,72 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			mark: true,
 			intro: {
-				content: "发动元化移出游戏了#张牌",
+				content: "已移出游戏#张【桃】",
 			},
-			init: function (player) {
+			init(player) {
 				player.setStorage("jlsg_yuanhua", 0, true);
 			},
-			locked: true,
-			direct: true,
-			trigger: { player: "gainAfter" },
-			filter: function (event, player) {
-				return event.cards && event.cards.some(c => c.name == "tao");
+			trigger: {
+				player: "gainAfter",
+				global: "loseAsyncAfter",
 			},
-			content: function () {
-				"step 0"
-				event.cards = trigger.cards.filter(c => c.name == "tao");
-				"step 1"
-				event.card = event.cards.pop();
-				player.logSkill(event.name);
+			getIndex(event, player) {
+				if (event.getg && typeof event.getg === "function") {
+					return event.getg(player);
+				}
+				return event.cards;
+			},
+			filter(event, player, triggername, card) {
+				return card.name == "tao";
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				const card = event.indexedData;
 				if (player.isDamaged()) {
-					player.recover();
+					await player.recover();
 				}
-				"step 2"
-				player.draw(2, "nodelay");
-				"step 3"
-				game.log(player, "将", event.card, "移出游戏");
-				player.lose(event.card, ui.special);
+				await player.draw(2, "nodelay");
+				game.log(player, "将", card, "移出游戏");
+				await player.lose(card, ui.special);
 				player.addMark("jlsg_yuanhua", 1, false);
-				"step 4"
-				if (event.cards.length) {
-					event.goto(1);
-				}
 			},
 		},
 		jlsg_guiyuan: {
 			audio: "ext:极略/audio/skill:1",
-			global: "jlsg_guiyuan_ai",
 			enable: "phaseUse",
 			usable: 1,
-			content: function () {
-				"step 0"
-				player.loseHp();
-				event.targets = game.filterPlayer(p => p != player);
+			selectTarget: -1,
+			filterTarget(card, player, target) {
+				return target != player;
+			},
+			multitarget: true,
+			multiline: true,
+			async content(event, trigger, player) {
+				await player.loseHp(1);
 				event.targets.sortBySeat();
-				player.line(event.targets, "green");
-				event.gained = false;
-				"step 1"
-				event.target = event.targets.shift();
-				if (event.target.countCards("h", "tao")) {
-					var card = event.target.getCards("h", "tao").randomGet();
-					player.gain(event.target, card, "visible", "give");
-					event.gained = true;
+				for (const target of event.targets) {
+					const cards = target.getGainableCards(player, "he", card => card.name == "tao");
+					if (cards.length) {
+						await target
+							.chooseToGive(player, `请交给${get.translation(player)}一张【桃】`, true)
+							.set("filterCard", card => get.event("tao").includes(card))
+							.set("tao", cards);
+					}
 				}
-				"step 2"
-				if (event.targets.length) {
-					event.goto(1);
-				} else {
-					var card = get.cardPile(c => c.name == "tao");
-					if (card) player.gain(card, "gain2");
+				let card = get.cardPile("tao");
+				if (card) {
+					await player.gain(card, "gain2", "log");
 				}
 			},
+			global: "jlsg_guiyuan_ai",
 			ai: {
 				order: 12,
 				result: {
-					player: function (player) {
+					player(player) {
+						const cardPile = [...ui.cardPile.childNodes, ...ui.discardPile.childNodes].filter(card => card.name == "tao");
+						if (!cardPile.length) {
+							return 0;
+						}
 						return player.hp > 1 || player.canSave(player) ? 1 : 0;
 					},
 				},
@@ -3935,16 +3938,18 @@ export default {
 			charlotte: true,
 			ai: {
 				nokeep: true,
-				skillTagFilter: function (player) {
+				skillTagFilter(player) {
 					if (!game.hasPlayer(p => p.hasSkill("jlsg_guiyuan") && get.attitude(player, p) < 2)) return false;
 				},
 			},
 		},
 		jlsg_chongsheng: {
-			audio: "ext:极略/audio/skill:1",
+			skillAnimation: true,
+			animationColor: "gray",
 			limited: true,
+			audio: "ext:极略/audio/skill:1",
 			trigger: { global: "dying" },
-			check: function (event, player) {
+			check(event, player) {
 				if (get.attitude(player, event.player) < 4) return false;
 				if (
 					player.countCards("h", function (card) {
@@ -3962,28 +3967,25 @@ export default {
 				if (event.player == player || event.player == get.zhu(player)) return true;
 				return !player.hasUnknown();
 			},
-			filter: function (event, player) {
+			filter(event, player) {
 				return event.player.hp <= 0;
 			},
-			skillAnimation: true,
-			animationColor: "gray",
 			logTarget: "player",
-			content: function () {
-				"step 0"
-				player.awakenSkill("jlsg_chongsheng");
-				"step 1"
-				var num = player.setStorage("jlsg_yuanhua", 1);
-				trigger.player.maxHp = num;
-				trigger.player.recover(trigger.player.maxHp - trigger.player.hp);
-
-				"step 2"
+			async content(event, trigger, player) {
+				player.awakenSkill(event.name);
+				let num = player.getStorage("jlsg_yuanhua", 1);
+				let gainMaxHp = num - trigger.player.maxHp;
+				if (num > 0) {
+					await trigger.player.gainMaxHp(gainMaxHp);
+				} else if (num < 0) {
+					await trigger.player.loseMaxHp(-gainMaxHp);
+				}
+				await trigger.player.recoverTo(trigger.player.maxHp);
 				if (!trigger.player.isAlive() || !trigger.player.group || trigger.player.group == "unknown" || trigger.player.isUnseen(0)) {
-					event.finish();
 					return;
 				}
-				var group = trigger.player.group;
-				var list = jlsg.characterList.filter(c => get.character(c, 1) == group);
-
+				const group = trigger.player.group;
+				let list = jlsg.characterList.filter(c => get.character(c, 1) == group);
 				var players = game.players.concat(game.dead);
 				for (var i = 0; i < players.length; i++) {
 					list.remove(players[i].name);
@@ -3992,18 +3994,16 @@ export default {
 				}
 				list = list.randomGets(3);
 				if (!list.length) {
-					event.finish();
 					return;
 				}
-				trigger.player
+				const { result } = await trigger.player
 					.chooseButton()
 					.set("ai", function (button) {
 						return get.rank(button.link, true) - get.character(button.link, 2) - (get.rank(trigger.player.name1, true) - get.character(trigger.player.name1, 2));
 					})
 					.set("createDialog", ["将武将牌替换为一名角色", [list, "character"]]);
-				"step 3"
 				if (result.bool) {
-					trigger.player.reinit(trigger.player.name, result.links[0]);
+					trigger.player.reinit(trigger.player.name, result.links[0], false);
 				}
 			},
 		},
@@ -5488,6 +5488,7 @@ export default {
 				return [event.player];
 			},
 			filter(event, player, triggername, target) {
+				if (!get.info("jlsg_wangyue")?.trigger.global?.includes(triggername)) return false;
 				const name = event.name == "loseAsync" ? "lose" : event.name;
 				if (player.hasStorage("jlsg_wangyue_used", name)) {
 					return false;
@@ -7290,7 +7291,7 @@ export default {
 						next.set("selectButton", [1, trigger.removeSkill.length]);
 					}
 					const { result: chooseRemove } = await next;
-					if (!chooseRemove.bool) return;
+					if (!chooseRemove?.bool) return;
 					removeSkill = chooseRemove.links;
 				}
 				await target.removeSkills(removeSkill);
@@ -7304,7 +7305,7 @@ export default {
 				else {
 					const next = player.chooseButton([`玲珑:请选择${get.translation(removeSkill.length)}个技能不被失去`, [trigger.removeSkill.map(s => [s, get.translation(s)]), "tdnodes"]]);
 					next.set("forced", true);
-					next.set("selectButton", chooseRemove.links.length);
+					next.set("selectButton", removeSkill.length);
 					const { result: chooseRetain } = await next;
 					if (!chooseRetain.bool) return;
 					retainSkill = chooseRetain.links;
