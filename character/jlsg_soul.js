@@ -5488,6 +5488,7 @@ export default {
 				return [event.player];
 			},
 			filter(event, player, triggername, target) {
+				if (!get.info("jlsg_wangyue")?.trigger.global?.includes(triggername)) return false;
 				const name = event.name == "loseAsync" ? "lose" : event.name;
 				if (player.hasStorage("jlsg_wangyue_used", name)) {
 					return false;
