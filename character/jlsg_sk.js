@@ -11938,7 +11938,7 @@ export default {
 			},
 			async content(event, trigger, player) {
 				const target = trigger.source;
-				await target.viewCards(event.name, event.cards);
+				await target.viewCards("贿生", event.cards);
 				if (target.countDiscardableCards(target, "he") >= event.cards.length) {
 					let { result } = await target
 						.chooseToDiscard(event.cards.length, "he")
