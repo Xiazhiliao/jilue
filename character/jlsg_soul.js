@@ -2285,16 +2285,35 @@ export default {
 			audio: "ext:极略/audio/skill:1",
 			enable: "phaseUse",
 			usable: 1,
+			onChooseToUse(event) {
+				if (game.online) {
+					return;
+				}
+				const phaseUse = event.getParent(evt => evt.name == "phaseUse" && evt.player == event.player);
+				const lastPhaseUse = game
+					.getAllGlobalHistory("everything", evt => {
+						if (evt.name != "phaseUse" || evt.player != event.player) {
+							return false;
+						}
+						return evt != phaseUse;
+					})
+					.at(-1);
+				const previous_jlsg_zhiming = lastPhaseUse?.jlsg_zhiming?.slice() || [false, false, false];
+				event.set("previous_jlsg_zhiming", previous_jlsg_zhiming);
+			},
+			filter(event) {
+				return event.previous_jlsg_zhiming?.some(i => i === false);
+			},
+			filterTarget: lib.filter.notMe,
 			selectTarget() {
 				return [1, _status.event.player.hp];
 			},
-			filterTarget: lib.filter.notMe,
 			multitarget: true,
 			multiline: true,
 			async content(event, trigger, player) {
 				const targets = event.targets.sortBySeat(),
-					record = _status.jlsg_zhiming?.[player.playerid];
-				let info = record?.at(-2)?.[event.name] || [false, false, false];
+					phaseUse = event.getParent(evtx => evtx.name == "phaseUse" && evtx.player == player);
+				let info = phaseUse.previous_jlsg_zhiming || [false, false, false];
 				if (info[0]) {
 					info[0] = false;
 				} else {
@@ -2360,36 +2379,7 @@ export default {
 						}
 					}
 				}
-				record[record.length - 1][event.name] = info;
-				game.broadcastAll(
-					function (player, record) {
-						_status.jlsg_zhiming[player.playerid] = record;
-					},
-					player,
-					record
-				);
-			},
-			group: "jlsg_zhiming_phaseUseInit",
-			subSkill: {
-				phaseUseInit: {
-					charlotte: true,
-					firstDo: true,
-					trigger: { player: "phaseUseBegin" },
-					forced: true,
-					popup: false,
-					silent: true,
-					async content(event, trigger, player) {
-						game.broadcastAll(
-							function (player, event) {
-								_status.jlsg_zhiming ??= {};
-								_status.jlsg_zhiming[player.playerid] ??= [];
-								_status.jlsg_zhiming[player.playerid].push(event);
-							},
-							player,
-							trigger
-						);
-					},
-				},
+				phaseUse.jlsg_zhiming = info;
 			},
 			ai: {
 				expose: 0.4,
