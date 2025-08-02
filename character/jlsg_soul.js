@@ -2285,74 +2285,111 @@ export default {
 			audio: "ext:极略/audio/skill:1",
 			enable: "phaseUse",
 			usable: 1,
-			filterTarget: lib.filter.notMe,
 			selectTarget() {
 				return [1, _status.event.player.hp];
 			},
+			filterTarget: lib.filter.notMe,
 			multitarget: true,
 			multiline: true,
-			content: function () {
-				"step 0"
-				targets.sortBySeat();
-				if (player.getStorage("jlsg_zhiming1")) {
-					player.setStorage("jlsg_zhiming1", false, true);
-					event.goto(2);
+			async content(event, trigger, player) {
+				const targets = event.targets.sortBySeat(),
+					record = _status.jlsg_zhiming?.[player.playerid];
+				let info = record?.at(-2)?.[event.name] || [false, false, false];
+				if (info[0]) {
+					info[0] = false;
 				} else {
-					player.chooseBool(`###是否失去1点体力？###令${get.translation(targets)}失去1点体力`, true);
-				}
-				"step 1"
-				player.setStorage("jlsg_zhiming1", result.bool, true);
-				if (result.bool) {
-					player.loseHp();
-					targets.forEach(p => p.loseHp());
-				}
-				"step 2"
-				if (!player.isIn()) {
-					event.finish();
-					return;
-				}
-				if (player.getStorage("jlsg_zhiming2")) {
-					player.setStorage("jlsg_zhiming2", false, true);
-					event.goto(4);
-				} else {
-					player.chooseBool(`###是否翻面？###令${get.translation(targets)}翻面`, true);
-				}
-				"step 3"
-				player.setStorage("jlsg_zhiming2", result.bool, true);
-				if (result.bool) {
-					player.turnOver();
-					targets.filter(p => p.isIn()).forEach(p => p.turnOver());
-				}
-				"step 4"
-				if (!player.isIn()) {
-					event.finish();
-					return;
-				}
-				if (player.getStorage("jlsg_zhiming3")) {
-					player.setStorage("jlsg_zhiming3", false, true);
-					event.finish();
-				} else {
-					let targetMax = Math.max(...targets.map(p => p.countCards("he")));
-					let cards;
-					if (targetMax + 3 >= player.countCards("h")) {
-						cards = player.getCards("h");
-					} else {
-						cards = player.getCards("h").sort((a, b) => get.value(b) - get.value(a));
-						if (cards.length > targetMax) {
-							cards.length = targetMax;
+					const { result } = await player.chooseBool(`###是否失去1点体力？###令${get.translation(targets)}失去1点体力`, true);
+					if (result.bool) {
+						info[0] = true;
+						await player.loseHp(1);
+						for (let target of targets) {
+							if (target.isIn()) {
+								await target.loseHp(1);
+							}
 						}
 					}
-					player
+				}
+				if (!player.isIn()) {
+					return;
+				}
+				if (info[1]) {
+					info[1] = false;
+				} else {
+					const { result } = await player.chooseBool(`###是否翻面？###令${get.translation(targets)}翻面`, true);
+					if (result.bool) {
+						info[1] = true;
+						await player.turnOver();
+						for (let target of targets) {
+							if (target.isIn()) {
+								await target.turnOver();
+							}
+						}
+					}
+				}
+				if (!player.isIn()) {
+					return;
+				}
+				if (info[2]) {
+					info[2] = false;
+				} else {
+					let targetMax = Math.max(...targets.map(p => p.countDiscardableCards(p, "he")));
+					let cards = [];
+					if (targetMax + 3 >= player.countDiscardableCards(player, "h")) {
+						cards = player.getDiscardableCards(player, "h");
+					} else {
+						cards = player.getDiscardableCards(player, "h").sort((a, b) => get.value(b) - get.value(a));
+						if (cards.length > targetMax) {
+							cards = cards.slice(0, targetMax);
+						}
+					}
+					const { result } = await player
 						.chooseToDiscard([1, Infinity], "he")
 						.set("prompt2", `令${get.translation(targets)}弃置等量的牌`)
-						.set("ai", c => _status.event.cards.includes(c))
-						.set("cards", cards);
+						.set("ai", c => _status.event.cardsx?.includes(c))
+						.set("cardsx", cards);
+					if (result.bool) {
+						info[2] = true;
+						const num = result.cards.length;
+						for (let target of targets) {
+							if (target.isIn()) {
+								let cards = target.getDiscardableCards(target, "he");
+								if (cards.length) {
+									await target.chooseToDiscard(num, "he", true);
+								}
+							}
+						}
+					}
 				}
-				"step 5"
-				player.setStorage("jlsg_zhiming3", result.bool, true);
-				if (result.bool) {
-					targets.filter(p => p.isIn()).forEach(p => p.chooseToDiscard(result.cards.length, "he", true));
-				}
+				record[record.length - 1][event.name] = info;
+				game.broadcastAll(
+					function (player, record) {
+						_status.jlsg_zhiming[player.playerid] = record;
+					},
+					player,
+					record
+				);
+			},
+			group: "jlsg_zhiming_phaseUseInit",
+			subSkill: {
+				phaseUseInit: {
+					charlotte: true,
+					firstDo: true,
+					trigger: { player: "phaseUseBegin" },
+					forced: true,
+					popup: false,
+					silent: true,
+					async content(event, trigger, player) {
+						game.broadcastAll(
+							function (player, event) {
+								_status.jlsg_zhiming ??= {};
+								_status.jlsg_zhiming[player.playerid] ??= [];
+								_status.jlsg_zhiming[player.playerid].push(event);
+							},
+							player,
+							trigger
+						);
+					},
+				},
 			},
 			ai: {
 				expose: 0.4,
@@ -2368,34 +2405,37 @@ export default {
 				player: "loseAfter",
 				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 			},
-			direct: true,
-			filter: function (event, player) {
-				if (player.countCards("h")) return false;
+			filter(event, player) {
+				if (player.countCards("h")) {
+					return false;
+				}
 				var evt = event.getl(player);
 				return evt && evt.player == player && evt.hs && evt.hs.length > 0;
 			},
-			content: function () {
-				"step 0"
-				player.chooseTarget(`###${get.prompt(event.name)}###令一名角色翻面`).ai = function (target) {
-					//if(target.isTurnedOver()&&get.attitude(player,target)>0) return 10;
-					if (!target.isTurnedOver() && get.attitude(player, target) < 0) return target.countCards("h");
-					return (get.attitude(_status.event.player, target) - 1) * (target.isTurnedOver() ? 4 + 2 * (target.maxHp - target.hp) : -4);
-				};
-				"step 1"
-				if (!result.bool) {
-					event.finish();
-					return;
-				}
-				let target = result.targets[0];
-				event.target = target;
-				player.logSkill(event.name, target);
-				target.turnOver();
-				if (!target.isTurnedOver()) {
-					event.finish();
-				}
-				"step 2"
-				if (event.target.isDamaged()) {
-					event.target.recover(event.target.maxHp - event.target.hp);
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseTarget(`###${get.prompt(event.skill)}###令一名角色翻面`)
+					.set("ai", target => {
+						if (target.hasSkillTag("noTurnover")) {
+							return 0;
+						}
+						const player = get.player();
+						const att = get.attitude(player, target);
+						if (target.isTurnedOver()) {
+							if (target.isDamaged()) {
+								return get.recoverEffect(target, player, player) + att;
+							}
+							return att;
+						}
+						return -att;
+					})
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				let target = event.targets[0];
+				await target.turnOver();
+				if (!target.isTurnedOver() && target.isDamaged()) {
+					await target.recoverTo(target.maxHp);
 				}
 			},
 			ai: {
