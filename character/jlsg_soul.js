@@ -9404,7 +9404,6 @@ export default {
 							return true;
 						})
 						.randomGet();
-				if (name !== "disableSkill") key = "disableSkill";
 				if (!key) return;
 				game.log(player, "将", `#y${lib.skill.jlsg_qianyuan.getInfo(event, player, name, number).str}`, "改为", `#y${lib.skill.jlsg_qianyuan.getInfo(null, player, key, 1, nature).str}`);
 				if (key == "damage") next = player.damage(1, nature);
