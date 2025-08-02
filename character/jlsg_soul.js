@@ -9567,12 +9567,11 @@ export default {
 					else if (key == "discard") await target.discard(target.getDiscardableCards(target, "he").randomGets(number));
 					else if (key == "loseSkill") await target.removeSkills(target.getSkills(null, false, false).randomGets(number));
 					else if (key == "disableSkill")
-						await target.tempBanSkill(
+						await target.awakenSkill(
 							target
 								.getSkills(null, false, false)
 								?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
-								?.randomGets(number),
-							"forever"
+								?.randomGets(number)
 						);
 					else if (key == "link") await target.link();
 					else if (key == "turnOver") await target.turnOver();
