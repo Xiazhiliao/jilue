@@ -9183,8 +9183,8 @@ export default {
 				event.triggerSkills = trigger.triggerSkills;
 				if (!event.triggerSkills) return;
 				event.disableSkills ??= [];
-				if (player.disabledSkill) {
-					event.disableSkills.add(Object.keys(player.disabledSkill));
+				if (player.disabledSkills) {
+					event.disableSkills.addArray(Object.keys(player.disabledSkills));
 				}
 				let skills = player.getSkills(null, false, false);
 				for (let i of skills) {
@@ -9353,7 +9353,11 @@ export default {
 					if (!trigger.cards.length) trigger.cancel();
 				} else if (key == "disableSkill") {
 					for (let skill of trigger.disableSkills) {
-						player.enableSkill(skill);
+						if (skill in player.disabledSkills) {
+							for (let i of player.disabledSkills[skill]) {
+								player.enableSkill(i);
+							}
+						}
 						delete player.storage[`temp_ban_${skill}`];
 						player.unmarkAuto(event.name + "_hasDisabled", skill);
 					}
@@ -12736,7 +12740,11 @@ export default {
 					if (!trigger.cards.length) trigger.cancel();
 				} else if (key == "disableSkill") {
 					for (let skill of trigger.disableSkills) {
-						player.enableSkill(skill);
+						if (skill in player.disabledSkills) {
+							for (let i of player.disabledSkills[skill]) {
+								player.enableSkill(i);
+							}
+						}
 						delete player.storage[`temp_ban_${skill}`];
 						player.unmarkAuto(event.name + "_hasDisabled", skill);
 					}

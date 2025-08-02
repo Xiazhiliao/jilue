@@ -2518,7 +2518,11 @@ export default {
 							if (!trigger.cards.length) trigger.cancel();
 						} else if (key == "disableSkill") {
 							for (let skill of trigger.disableSkills) {
-								player.enableSkill(skill);
+								if (skill in player.disabledSkills) {
+									for (let i of player.disabledSkills[skill]) {
+										player.enableSkill(i);
+									}
+								}
 								delete player.storage[`temp_ban_${skill}`];
 								player.unmarkAuto("jlsgsy_moshou_disableSkill_hasDisabled", skill);
 							}
