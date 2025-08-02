@@ -9169,14 +9169,14 @@ export default {
 					return str;
 				},
 			},
-			filter: function(event, player) {
+			filter: function (event, player) {
 				let skill = get.sourceSkillFor(event);
 				if (skill == "_disableSkills") return false;
 				event.triggerSkills = player.getSkills(null, false, false)?.filter(sk => {
 					if (typeof lib.skill[sk]?.trigger?.player == "string") return lib.skill[sk]?.trigger?.player == "_disableSkillsAfter";
 					return lib.skill[sk]?.trigger?.player?.includes("_disableSkillsAfter");
 				});
-				if (event.triggerSkills?.includes(skill)|| event.triggerSkills?.some(sk => lib.skill[sk].sourceSkill == skill)) return false;
+				if (event.triggerSkills?.includes(skill) || event.triggerSkills?.some(sk => lib.skill[sk].sourceSkill == skill)) return false;
 				return event.triggerSkills?.length > 0;
 			},
 			async content(event, trigger, player) {
@@ -9357,9 +9357,9 @@ export default {
 						delete player.storage[`temp_ban_${skill}`];
 						player.unmarkAuto(event.name + "_hasDisabled", skill);
 					}
-					for (let skill of (player.storage?.skill_blocker ?? [])) {
+					for (let skill of player.storage?.skill_blocker ?? []) {
 						player.removeSkillBlocker(skill);
-						for (let i of (player.storage?.[event.name + "_disableSkill_hasDisabled"] ?? [])) {
+						for (let i of player.storage?.[event.name + "_hasDisabled"] ?? []) {
 							//真不会弄获取原先截止的时机，就这样吧
 							player.tempBanSkill(skill);
 						}
@@ -9412,7 +9412,13 @@ export default {
 				else if (key == "loseMaxHp") next = player.loseMaxHp(1);
 				else if (key == "discard") next = player.discard(player.getDiscardableCards(player, "he").randomGets(1));
 				else if (key == "loseSkill") next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
-				else if (key == "disableSkill") next = player.tempBanSkill(player.getSkills(null, false, false)?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)?.randomGets(1));
+				else if (key == "disableSkill")
+					next = player.tempBanSkill(
+						player
+							.getSkills(null, false, false)
+							?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
+							?.randomGets(1)
+					);
 				else if (key == "link") next = player.link();
 				else if (key == "turnOver") next = player.turnOver();
 				return next;
@@ -9483,14 +9489,15 @@ export default {
 					trigger: {
 						player: "_disableSkillsAfter",
 					},
-					filter: function(event, player) {
+					filter: function (event, player) {
 						return event.disableSkills?.length;
 					},
 					async cost(event, trigger, player) {
 						let bool = get.info("jlsg_qianyuan").filter(trigger, player);
 						player.markAuto("jlsg_qianyuan_disableSkill_hasDisabled", trigger.disableSkills);
 						if (bool) {
-							let result = await player.chooseBool()
+							let result = await player
+								.chooseBool()
 								.set("prompt", get.info("jlsg_qianyuan").prompt(trigger, player))
 								.set("prompt2", get.info("jlsg_qianyuan").prompt2(trigger, player))
 								//AI不会写，等人
@@ -9559,7 +9566,14 @@ export default {
 					else if (key == "loseMaxHp") await target.loseMaxHp(number);
 					else if (key == "discard") await target.discard(target.getDiscardableCards(target, "he").randomGets(number));
 					else if (key == "loseSkill") await target.removeSkills(target.getSkills(null, false, false).randomGets(number));
-					else if (key == "disableSkill") await target.tempBanSkill(target.getSkills(null, false, false)?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)?.randomGets(number), "forever");
+					else if (key == "disableSkill")
+						await target.tempBanSkill(
+							target
+								.getSkills(null, false, false)
+								?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
+								?.randomGets(number),
+							"forever"
+						);
 					else if (key == "link") await target.link();
 					else if (key == "turnOver") await target.turnOver();
 				}
@@ -12689,7 +12703,7 @@ export default {
 			},
 			init(player) {
 				//解释一下不用group的原因，因为主技能失效group也相应失效，所以必须用addSkill
-				player.addSkill("jlsg_zhanhun_disableSkill")
+				player.addSkill("jlsg_zhanhun_disableSkill");
 			},
 			filter(event, player) {
 				let key = lib.skill.jlsg_qianyuan.translate[event.name];
@@ -12728,9 +12742,9 @@ export default {
 						delete player.storage[`temp_ban_${skill}`];
 						player.unmarkAuto(event.name + "_hasDisabled", skill);
 					}
-					for (let skill of (player.storage?.skill_blocker ?? [])) {
+					for (let skill of player.storage?.skill_blocker ?? []) {
 						player.removeSkillBlocker(skill);
-						for (let i of (player.storage?.[event.name + "_disableSkill_hasDisabled"] ?? [])) {
+						for (let i of player.storage?.[event.name + "_hasDisabled"] ?? []) {
 							//真不会弄获取原先截止的时机，就这样吧
 							player.tempBanSkill(skill);
 						}
@@ -12808,7 +12822,7 @@ export default {
 					trigger: {
 						player: "_disableSkillsAfter",
 					},
-					filter: function(event, player) {
+					filter: function (event, player) {
 						return event.disableSkills?.length;
 					},
 					async content(event, trigger, player) {
