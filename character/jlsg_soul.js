@@ -12814,7 +12814,6 @@ export default {
 					async content(event, trigger, player) {
 						let bool = get.info("jlsg_zhanhun").filter(trigger, player);
 						player.markAuto("jlsg_zhanhun_disableSkill_hasDisabled", trigger.disableSkills);
-						debugger;
 						if (bool) await get.info("jlsg_zhanhun").content(event, trigger, player);
 					},
 				},
