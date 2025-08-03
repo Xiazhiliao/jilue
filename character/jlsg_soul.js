@@ -9180,8 +9180,11 @@ export default {
 				return event.triggerSkills?.length > 0;
 			},
 			async content(event, trigger, player) {
-				event.triggerSkills = trigger.triggerSkills;
-				if (!event.triggerSkills) return;
+				event.triggerSkills = player.getSkills(null, false, false)?.filter(sk => {
+					if (typeof lib.skill[sk]?.trigger?.player == "string") return lib.skill[sk]?.trigger?.player == "_disableSkillsAfter";
+					return lib.skill[sk]?.trigger?.player?.includes("_disableSkillsAfter");
+				});
+				if (event.triggerSkills?.length == 0) return;
 				event.disableSkills ??= [];
 				if (player.disabledSkills) {
 					event.disableSkills.addArray(Object.keys(player.disabledSkills));
@@ -9486,6 +9489,7 @@ export default {
 			},
 			subSkill: {
 				disableSkill: {
+					audio: "ext:极略/audio/skill:2",
 					sourceSkill: "jlsg_qianyuan",
 					sub: true,
 					charlotte: true,
@@ -12821,6 +12825,7 @@ export default {
 					},
 				},
 				disableSkill: {
+					audio: "ext:极略/audio/skill:2",
 					sourceSkill: "jlsg_zhanhun",
 					sub: true,
 					charlotte: true,
