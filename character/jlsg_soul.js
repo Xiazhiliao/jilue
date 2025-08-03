@@ -9160,7 +9160,7 @@ export default {
 				get global() {
 					let strList = ["", "After", "Begin", "End"],
 						triggerList = ["useSkill", "logSkill", "changeSkills", "useCard"],
-						str = ["phaseBegin", "phaseEnd", "chooseToDiscardBegin"];
+						str = ["phaseBegin", "phaseEnd", "chooseToDiscardBegin", "phaseChange"];
 					for (let i of triggerList) {
 						for (let j of strList) {
 							str.push(i + j);
