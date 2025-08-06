@@ -155,115 +155,117 @@ const b = 1;
 	}
 
 	//失效技能时机创建
-	lib.disable1 = lib.element.player.tempBanSkill;
-	lib.disable2 = lib.element.player.disableSkill;
-	lib.disable3 = lib.element.player.addSkillBlocker;
-	lib.element.player.tempBanSkill = function (...args) {
-		let str = "disableSkill";
-		if (!_status.disableSkills && Array.isArray(args[0])) {
-			game.broadcastAll(
-				function(skills) {
-					_status.disableSkills = skills;
-				},
-				args[0]
-			);
-		} else {
-			if (_status.disableSkills.slice(-1)[0] == args[0]) {
-				game.broadcastAll(() => delete _status.disableSkills);
-			}
-			str += "Sub";
-		}
-		let evt = game.createEvent(str),
-			content = function () {
-				"step 0"
-				event.trigger(event.name);
-				"step 1"
-				if (event.disableSkills.length && !event.cancel) {
-					lib.disable1.apply(event.player, event.args);
+	lib.arenaReady.push(() => {
+		lib.disable1 = lib.element.player.tempBanSkill;
+		lib.disable2 = lib.element.player.disableSkill;
+		lib.disable3 = lib.element.player.addSkillBlocker;
+		lib.element.player.tempBanSkill = function (...args) {
+			let str = "disableSkill";
+			if (!_status.disableSkills && Array.isArray(args[0])) {
+				game.broadcastAll(
+					function(skills) {
+						_status.disableSkills = skills;
+					},
+					args[0]
+				);
+			} else {
+				if (_status.disableSkills.slice(-1)[0] == args[0]) {
+					game.broadcastAll(() => delete _status.disableSkills);
 				}
-			};
-		evt.player = this;
-		evt.num = Array.isArray(args[0]) ? args[0].length : 1;
-		evt.disableSkills = args[0];
-		evt.args = args;
-		evt.cancel = false;
-		evt.setContent(content);
-	};
-	lib.element.player.disableSkill = function (...args) {
-		let str = "disableSkill";
-		if (!_status.disableSkills && Array.isArray(args[1])) {
-			game.broadcastAll(
-				function(skills) {
-					_status.disableSkills = skills;
-				},
-				args[1]
-			);
-		} else {
-			if (_status.disableSkills.slice(-1)[0] == args[1]) {
-				game.broadcastAll(() => delete _status.disableSkills);
+				str += "Sub";
 			}
-			str += "Sub";
-		}
-		let evt = game.createEvent(str),
-			content = function () {
-				"step 0"
-				event.trigger(event.name);
-				"step 1"
-				if (event.disableSkills.length && !event.cancel) {
-					lib.disable2.apply(event.player, event.args);
+			let evt = game.createEvent(str),
+				content = function () {
+					"step 0"
+					event.trigger(event.name);
+					"step 1"
+					if (event.disableSkills.length && !event.cancel) {
+						lib.disable1.apply(event.player, event.args);
+					}
+				};
+			evt.player = this;
+			evt.num = Array.isArray(args[0]) ? args[0].length : 1;
+			evt.disableSkills = args[0];
+			evt.args = args;
+			evt.cancel = false;
+			evt.setContent(content);
+		};
+		lib.element.player.disableSkill = function (...args) {
+			let str = "disableSkill";
+			if (!_status.disableSkills && Array.isArray(args[1])) {
+				game.broadcastAll(
+					function(skills) {
+						_status.disableSkills = skills;
+					},
+					args[1]
+				);
+			} else {
+				if (_status.disableSkills.slice(-1)[0] == args[1]) {
+					game.broadcastAll(() => delete _status.disableSkills);
 				}
-			};
-		evt.player = this;
-		evt.num = Array.isArray(args[1]) ? args[1].length : 1;
-		evt.disableSkills = args[1];
-		evt.args = args;
-		evt.cancel = false;
-		evt.setContent(content);
-	};
-	lib.element.player.addSkillBlocker = function (...args) {
-		//addSkillBlocker不会自己调用自己所以无须_status
-		//筛选出含skillBlocker的技能
-		let list = [],
-			skills = args[0];
-		if (this.getSkills(null, false, false)) {
-			if (!Array.isArray(skills)) skills = [skills];
+				str += "Sub";
+			}
+			let evt = game.createEvent(str),
+				content = function () {
+					"step 0"
+					event.trigger(event.name);
+					"step 1"
+					if (event.disableSkills.length && !event.cancel) {
+						lib.disable2.apply(event.player, event.args);
+					}
+				};
+			evt.player = this;
+			evt.num = Array.isArray(args[1]) ? args[1].length : 1;
+			evt.disableSkills = args[1];
+			evt.args = args;
+			evt.cancel = false;
+			evt.setContent(content);
+		};
+		lib.element.player.addSkillBlocker = function (...args) {
+			//addSkillBlocker不会自己调用自己所以无须_status
+			//筛选出含skillBlocker的技能
+			let list = [],
+				skills = args[0];
+			if (this.getSkills(null, false, false)) {
+				if (!Array.isArray(skills)) skills = [skills];
+				for (let sk of skills) {
+					if (!lib.skill[sk]?.skillBlocker) {
+						list.add(sk);
+						continue;
+					}
+					for (let sk2 of this.getSkills(null, false, false)) {
+						if (lib.skill[sk]?.skillBlocker(sk2, this)) {
+							list.remove(sk);
+							break;
+						} else list.add(sk);
+					}
+				}
+				skills.removeArray(list);
+			}
+			let str = "disableSkill";
+			let evt = game.createEvent(str),
+				content = function () {
+					"step 0"
+					event.trigger(event.name);
+					"step 1"
+					if (event.disableSkills.length && !event.cancel) {
+						lib.disable3.apply(event.player, event.args);
+					}
+				};
+			evt.player = this;
+			list = [];
 			for (let sk of skills) {
-				if (!lib.skill[sk]?.skillBlocker) {
-					list.add(sk);
-					continue;
-				}
 				for (let sk2 of this.getSkills(null, false, false)) {
-					if (lib.skill[sk]?.skillBlocker(sk2, this)) {
-						list.remove(sk);
-						break;
-					} else list.add(sk);
+					if (lib.skill[sk].skillBlocker(sk2, this)) list.add(sk2);
 				}
 			}
-			skills.removeArray(list);
-		}
-		let str = "disableSkill";
-		let evt = game.createEvent(str),
-			content = function () {
-				"step 0"
-				event.trigger(event.name);
-				"step 1"
-				if (event.disableSkills.length && !event.cancel) {
-					lib.disable3.apply(event.player, event.args);
-				}
-			};
-		evt.player = this;
-		list = [];
-		for (let sk of skills) {
-			for (let sk2 of this.getSkills(null, false, false)) {
-				if (lib.skill[sk].skillBlocker(sk2, this)) list.add(sk2);
-			}
-		}
-		evt.disableSkills = list;
-		evt.num = list.length;
-		evt.args = args;
-		evt.cancel = false;
-		evt.setContent(content);
-	};
+			evt.disableSkills = list;
+			evt.num = list.length;
+			evt.args = args;
+			evt.cancel = false;
+			evt.setContent(content);
+		};
+	});
 
 	// 评级
 	if (lib.rank) {
