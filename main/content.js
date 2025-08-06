@@ -174,6 +174,12 @@ const b = 1;
 			evt.player = this;
 			if (Array.isArray(args[0])) {
 				evt.disableSkills = args[0];
+				game.broadcastAll(
+					function(skills) {
+						_status.disableSkills = skills;
+					},
+					args[0]
+				);
 				_status.disableSkills = args[0];
 			} else evt.disableSkills = [args[0]];
 			evt.num = evt.disableSkills.length;
@@ -183,7 +189,7 @@ const b = 1;
 			return evt;
 		} else {
 			if (typeof args[0] == "string" && _status.disableSkills.slice(-1)[0] == args[0]) {
-				delete _status.disableSkills;
+				game.broadcastAll(() => delete _status.disableSkills);
 			}
 			const result = lib.disable1.apply(this, args);
 			return result;
@@ -204,7 +210,12 @@ const b = 1;
 			evt.player = this;
 			if (Array.isArray(args[1])) {
 				evt.disableSkills = args[1];
-				_status.disableSkills = args[1];
+				game.broadcastAll(
+					function(skills) {
+						_status.disableSkills = skills;
+					},
+					args[1]
+				);
 			} else evt.disableSkills = [args[1]];
 			evt.num = evt.disableSkills.length;
 			evt.args = args;
@@ -213,7 +224,7 @@ const b = 1;
 			return evt;
 		} else {
 			if (typeof args[0] == "string" && _status.disableSkills.slice(-1)[0] == args[0]) {
-				delete _status.disableSkills;
+				game.broadcastAll(() => delete _status.disableSkills);
 			}
 			const result = lib.disable2.apply(this, args);
 			return result;
@@ -263,9 +274,14 @@ const b = 1;
 				return evt;
 			}
 			if (skills.length > 1) {
-				_status.blockerSkills = skills;
+				game.broadcastAll(
+					function(skills) {
+						_status.blockerSkills = skills;
+					},
+					skills
+				);
 			} else if (_status.blockerSkills?.slice(-1)[0] == skills[0]) {
-				delete _status.blockerSkills;
+				game.broadcastAll(() => delete _status.disableSkills);
 			}
 		}
 		const result = lib.disable3.apply(this, args);
