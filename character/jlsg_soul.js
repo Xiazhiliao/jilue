@@ -9205,11 +9205,8 @@ export default {
 					}
 				},
 			},
-			locked(skill, player) {
-				return lib.config.extension_极略测试_jlsgsoul_sp_zhaoyun;
-			},
 			trigger: {
-				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore"],
+				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkill"],
 			},
 			filter(event, player) {
 				let storage = player.storage.jlsg_qianyuan,
@@ -9291,6 +9288,8 @@ export default {
 						return !["h", "e"].includes(get.position(card));
 					});
 					if (!trigger.cards.length) trigger.cancel();
+				} else if (key == "disableSkill") {
+					trigger.cancel = true;
 				} else trigger.cancel();
 				if (player.storage.jlsg_qianyuan[key] === true) {
 					event.getParent().jlsg_qianyuan = true;
@@ -9337,7 +9336,13 @@ export default {
 				else if (key == "loseMaxHp") next = player.loseMaxHp(1);
 				else if (key == "discard") next = player.discard(player.getDiscardableCards(player, "he").randomGets(1));
 				else if (key == "loseSkill") next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
-				else if (key == "disableSkill") next = player.storage.jlsg_qianyuan.disableSkill = true;
+				else if (key == "disableSkill")
+					next = player.tempBanSkill(
+						player
+							.getSkills(null, false, false)
+							?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
+							?.randomGets(1)
+					);
 				else if (key == "link") next = player.link();
 				else if (key == "turnOver") next = player.turnOver();
 				return next;
@@ -9365,8 +9370,8 @@ export default {
 					if (event) {
 						bool = event.removeSkill.length;
 						if (!num) num = event.removeSkill.length;
-					}
-					str = `失去${num}个技能`;
+						str = `失去${num}个技能：` + get.translation(event.removeSkill);
+					} else str = `失去${num}个技能`;
 				} else if (key == "link") {
 					if (event) {
 						bool = !player.isLinked();
@@ -9379,6 +9384,12 @@ export default {
 						num = true;
 					}
 					str = `翻面`;
+				} else if (key == "disableSkill") {
+					if (event) {
+						bool = event.disableSkills.length;
+						num = event.num;
+						str = `失效${num}个技能：` + get.translation(event.disableSkills);
+					} else str = `失效${num}个技能`;
 				} else {
 					if (event) num = event.num;
 					if (key == "damage") {
@@ -9386,7 +9397,6 @@ export default {
 						str = `受到${num}点${nature ? get.translation(nature) : ""}伤害`;
 					} else if (key == "loseHp") str = `失去${num}点体力`;
 					else if (key == "loseMaxHp") str = `减少${num}点体力上限`;
-					else if (key == "disableSkill") str = "失效技能";
 				}
 				return {
 					bool: bool,
@@ -9450,7 +9460,13 @@ export default {
 					else if (key == "loseMaxHp") await target.loseMaxHp(number);
 					else if (key == "discard") await target.discard(target.getDiscardableCards(target, "he").randomGets(number));
 					else if (key == "loseSkill") await target.removeSkills(target.getSkills(null, false, false).randomGets(number));
-					else if (key == "disableSkill") await target.addTempSkill("baiban");
+					else if (key == "disableSkill")
+						await target.awakenSkill(
+							target
+								.getSkills(null, false, false)
+								?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
+								?.randomGets(number)
+						);
 					else if (key == "link") await target.link();
 					else if (key == "turnOver") await target.turnOver();
 				}
@@ -12576,7 +12592,7 @@ export default {
 		jlsg_zhanhun: {
 			audio: "ext:极略/audio/skill:2",
 			trigger: {
-				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore"],
+				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkill"],
 			},
 			filter(event, player) {
 				let key = lib.skill.jlsg_qianyuan.translate[event.name];
@@ -12606,6 +12622,8 @@ export default {
 						return !["h", "e"].includes(get.position(card));
 					});
 					if (!trigger.cards.length) trigger.cancel();
+				} else if (key == "disableSkill") {
+					trigger.cancel = true;
 				} else trigger.cancel();
 				game.log(player, "取消了", `#y${str}`);
 				player.addTempSkill("jlsg_zhanhun_used");

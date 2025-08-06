@@ -2520,6 +2520,8 @@ export default {
 								return !["h", "e"].includes(get.position(card));
 							});
 							if (!trigger.cards.length) trigger.cancel();
+						} else if (key == "disableSkill") {
+							trigger.cancel = true;
 						} else trigger.cancel();
 						game.log(player, "取消了", `#y${str}`);
 					},
