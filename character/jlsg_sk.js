@@ -2527,37 +2527,27 @@ export default {
 		jlsg_shiyong: {
 			trigger: { player: "damageEnd" },
 			audio: "ext:极略/audio/skill:1",
-			filter: function (event) {
-				if (event.card && event.card.name == "sha") {
+			filter(event) {
+				if (event.card?.name == "sha") {
 					if (get.color(event.card) == "red") return true;
-					if (event.source && event.source.hasSkill("jiu")) return true;
+					if (event.getParent(2).jiu == true) return true;
 				}
 				return false;
 			},
 			forced: true,
-			content: function () {
-				"step 0"
-				player.loseMaxHp();
-				"step 1"
-				if (player.maxHp <= 1) {
-					player.storage.shiyongEndLife = trigger.source;
-				}
+			async content(event, trigger, player) {
+				await player.loseMaxHp();
 			},
 			ai: {
+				neg: true,
 				effect: {
 					target: function (card, player, target, current) {
 						if (card.name == "sha") {
 							if (get.color(card) == "red") return [1, -2];
 							if (player.hasSkill("jiu")) return [1, -1.5];
 						}
-						if (get.tag(card, "save") && target.isDying() && target.storage.shiyongEndLife) {
-							var source = target.storage.shiyongEndLife;
-							if (get.attitude(source, target) < 0 && target.identity == "fan") return;
-							return "zeroplayertarget";
-						}
 					},
 				},
-				neg: true,
 			},
 		},
 		jlsg_angyang: {
