@@ -103,7 +103,7 @@ export default {
 										delete _status.currentPhase;
 									}
 								}, evtx.player);
-							})
+							});
 						}
 						evt.finish();
 						evt._triggered = null;
