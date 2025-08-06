@@ -33,7 +33,7 @@ let block = {
 			intro: "开启后SP神赵云，神周泰，魔孟获的负面效果中将包含失效技能",
 			init: false,
 			onclick: function() {
-				alert("该功能并未测试联机或AI是否适用<br>出bug概不由@虫豸负责<br>出事请找@时机已到，今日起兵");
+				alert("该功能并未测试联机或AI是否适用\n出bug概不由@虫豸负责\n出事请找@时机已到，今日起兵");
 			},
 		},
 		oldCharacterReplace: {
