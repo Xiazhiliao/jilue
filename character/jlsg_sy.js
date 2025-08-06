@@ -63,9 +63,6 @@ export default {
 				return player.hp <= least;
 			},
 			async content(event, trigger, player) {
-				game.broadcastAll(ui.clear);
-				game.resetSkills();
-				await game.delay();
 				if (get.mode() == "boss") {
 					if (player.isLinked()) await player.link();
 					if (player.isTurnedOver()) await player.turnOver();
@@ -86,27 +83,34 @@ export default {
 				}
 				player.update();
 				await event.trigger("jlsgsy_baonuAfter");
+				const cards = Array.from(ui.ordering.childNodes);
+				while (cards.length) {
+					cards.shift().discard();
+				}
+				game.resetSkills();
+				game.broadcastAll(ui.clear);
 				let evt = trigger.getParent(1, true);
 				while (evt?.name != "phaseLoop") {
 					if (evt) {
 						if (evt.name == "phase") {
-							evt.pushHandler("onPhase", (event, option) => {
-								if (event.step != 13) {
-									event.step = 13;
-									game.broadcastAll(function (player) {
-										player.classList.remove("glow_phase");
-										if (_status.currentPhase) {
-											game.log(_status.currentPhase, "结束了回合");
-											delete _status.currentPhase;
-										}
-									}, event.player);
-								}
+							evt.pushHandler("onPhase", (evtx, option) => {
+								evtx.step = 13;
+								evtx.num = evtx.phaseList.length;
+								game.broadcastAll(function (player) {
+									player.classList.remove("glow_phase");
+									if (_status.currentPhase) {
+										game.log(_status.currentPhase, "结束了回合");
+										delete _status.currentPhase;
+									}
+								}, evtx.player);
 							});
 						}
 						evt.finish();
 						evt._triggered = null;
 						evt = evt.getParent(1, true);
-					} else break;
+					} else {
+						break;
+					}
 				}
 				_status.paused = false;
 				player.insertPhase(event.name);
@@ -1114,39 +1118,43 @@ export default {
 			forced: true,
 			priority: 100,
 			async content(event, trigger, player) {
+				const cards = Array.from(ui.ordering.childNodes);
+				while (cards.length) {
+					cards.shift().discard();
+				}
 				game.broadcastAll(ui.clear);
 				let evt = trigger.getParent(1, true);
 				while (evt?.name != "phaseLoop") {
 					if (evt) {
 						if (evt.name == "phase") {
-							evt.pushHandler("onPhase", (event, option) => {
-								if (event.step != 13) {
-									event.step = 13;
-									game.broadcastAll(function (player) {
-										player.classList.remove("glow_phase");
-										if (_status.currentPhase) {
-											game.log(_status.currentPhase, "结束了回合");
-											delete _status.currentPhase;
-										}
-									}, event.player);
-								}
+							evt.pushHandler("onPhase", (evtx, option) => {
+								evtx.step = 13;
+								evtx.num = evtx.phaseList.length;
+								game.broadcastAll(function (player) {
+									player.classList.remove("glow_phase");
+									if (_status.currentPhase) {
+										game.log(_status.currentPhase, "结束了回合");
+										delete _status.currentPhase;
+									}
+								}, evtx.player);
 							});
 						}
 						evt.finish();
 						evt._triggered = null;
 						evt = evt.getParent(1, true);
-					} else break;
+					} else {
+						break;
+					}
 				}
 				//也不知道为啥能触发结束阶段的技能，还原就是了
 				//沟槽的，只触发结束阶段，而且能反复触发
 				evt = trigger.getParent("phase", true, true);
-				if (evt.phaseList.some(i => i.startsWith("phaseJieshu"))) {
+				if (evt?.phaseList?.some(i => i.startsWith("phaseJieshu"))) {
 					await evt.player.phaseJieshu();
 				}
 				_status.paused = false;
 				player.insertPhase(event.name);
 			},
-			_priority: 10000,
 		},
 		jlsgsy_canlue: {
 			audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_canlue'],
