@@ -154,6 +154,124 @@ const b = 1;
 		});
 	}
 
+	//失效技能时机创建
+	lib.disable1 = lib.element.player.tempBanSkill;
+	lib.disable2 = lib.element.player.disableSkill;
+	lib.disable3 = lib.element.player.addSkillBlocker;
+	lib.element.player.tempBanSkill = function (...args) {
+		if (!_status.disableSkills) {
+			let evt = game.createEvent("disableSkill");
+			//不知道这个能不能改成异步，就先用step了
+			let content = function () {
+				"step 0"
+				event.trigger("disableSkill");
+				"step 1"
+				if (event.disableSkills.length && !event.cancel) {
+					event.args[0] = event.disableSkills;
+					lib.disable1.apply(event.player, event.args);
+				}
+			};
+			evt.player = this;
+			if (Array.isArray(args[0])) {
+				evt.disableSkills = args[0];
+				_status.disableSkills = args[0];
+			} else evt.disableSkills = [args[0]];
+			evt.num = evt.disableSkills.length;
+			evt.args = args;
+			evt.cancel = false;
+			evt.setContent(content);
+			return evt;
+		} else {
+			if (typeof args[0] == "string" && _status.disableSkills.slice(-1)[0] == args[0]) {
+				delete _status.disableSkills;
+			}
+			const result = lib.disable1.apply(this, args);
+			return result;
+		}
+	};
+	lib.element.player.disableSkill = function (...args) {
+		if (!_status.disableSkills) {
+			let evt = game.createEvent("disableSkill");
+			let content = function () {
+				"step 0"
+				event.trigger("disableSkill");
+				"step 1"
+				if (event.disableSkills.length && !event.cancel) {
+					event.args[1] = event.disableSkills;
+					lib.disable1.apply(event.player, event.args);
+				}
+			};
+			evt.player = this;
+			if (Array.isArray(args[1])) {
+				evt.disableSkills = args[1];
+				_status.disableSkills = args[1];
+			} else evt.disableSkills = [args[1]];
+			evt.num = evt.disableSkills.length;
+			evt.args = args;
+			evt.cancel = false;
+			evt.setContent(content);
+			return evt;
+		} else {
+			if (typeof args[0] == "string" && _status.disableSkills.slice(-1)[0] == args[0]) {
+				delete _status.disableSkills;
+			}
+			const result = lib.disable2.apply(this, args);
+			return result;
+		}
+	};
+	lib.element.player.addSkillBlocker = function (...args) {
+		//筛选出含skillBlocker的技能
+		if (this.getSkills(null, false, false)) {
+			let skills = args[0];
+			if (!Array.isArray(skills)) skills = [skills];
+			let list = [];
+			for (let sk of skills) {
+				if (!lib.skill[sk]?.skillBlocker) {
+					list.add(sk);
+					continue;
+				}
+				for (let sk2 of this.getSkills(null, false, false)) {
+					if (lib.skill[sk]?.skillBlocker(sk2, this)) {
+						list.remove(sk);
+						break;
+					} else list.add(sk);
+				}
+			}
+			skills.removeArray(list);
+			if (skills.length && !_status.blockerSkills) {
+				let evt = game.createEvent("disableSkill");
+				let content = function () {
+					"step 0"
+					event.trigger("disableSkill");
+					"step 1"
+					if (event.disableSkills.length && !event.cancel) {
+						lib.disable1.apply(event.player, event.args);
+					}
+				};
+				evt.player = this;
+				list = [];
+				for (let sk of skills) {
+					for (let sk2 of this.getSkills(null, false, false)) {
+						if (lib.skill[sk].skillBlocker(sk2, this)) list.add(sk2);
+					}
+				}
+				evt.disableSkills = list;
+				evt.num = evt.disableSkills.length;
+				evt.args = args;
+				evt.cancel = false;
+				evt.setContent(content);
+				return evt;
+			}
+			if (skills.length > 1) {
+				_status.blockerSkills = skills;
+			} else if (_status.blockerSkills?.slice(-1)[0] == skills[0]) {
+				delete _status.blockerSkills;
+			}
+		}
+		const result = lib.disable3.apply(this, args);
+		return result;
+	};
+
 	// 评级
 	if (lib.rank) {
 		var retrieveFromTierMaker = function () {

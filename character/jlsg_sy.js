@@ -2348,8 +2348,6 @@ export default {
 		jlsgsy_moshou: {
 			audio: "ext:极略/audio/skill:3",
 			init(player) {
-				//解释一下不用group的原因，因为主技能失效group也相应失效，所以必须用addSkill
-				player.addSkill("jlsgsy_moshou_disableSkill");
 				player.storage.jlsgsy_moshou = {
 					1: 0,
 					2: 0,
@@ -2500,8 +2498,6 @@ export default {
 							let discarder = event.discarder || event.getParent().player;
 							if (discarder && discarder == player) return false;
 							if (!discarder) return false;
-						} else if (key == "disableSkill") {
-							if (!event.disableSkills?.some(sk => !player.storage["jlsgsy_moshou_disableSkill_hasDisabled"]?.includes(sk))) return false;
 						}
 						return true;
 					},
@@ -2517,22 +2513,7 @@ export default {
 							});
 							if (!trigger.cards.length) trigger.cancel();
 						} else if (key == "disableSkill") {
-							for (let skill of trigger.disableSkills) {
-								if (skill in player.disabledSkills) {
-									for (let i of player.disabledSkills[skill]) {
-										player.enableSkill(i);
-									}
-								}
-								delete player.storage[`temp_ban_${skill}`];
-								player.unmarkAuto("jlsgsy_moshou_disableSkill_hasDisabled", skill);
-							}
-							for (let skill of player.storage?.skill_blocker ?? []) {
-								player.removeSkillBlocker(skill);
-								for (let i of player.storage?.["jlsgsy_moshou_disableSkill_hasDisabled"] ?? []) {
-									//真不会弄获取原先截止的时机，就这样吧
-									player.tempBanSkill(skill);
-								}
-							}
+							trigger.cancel = true;
 						} else trigger.cancel();
 						game.log(player, "取消了", `#y${str}`);
 					},
@@ -2549,23 +2530,6 @@ export default {
 								else if (get.name(card) == "tiesuo" && !target.isLinked()) return "zerotarget";
 							},
 						},
-					},
-				},
-				disableSkill: {
-					sourceSkill: "jlsgsy_moshou",
-					sub: true,
-					charlotte: true,
-					forced: true,
-					trigger: {
-						player: "_disableSkillsAfter",
-					},
-					filter: function (event, player) {
-						return event.disableSkills?.length;
-					},
-					async content(event, trigger, player) {
-						let bool = get.info("jlsgsy_moshou_3").filter(trigger, player);
-						player.markAuto("jlsgsy_moshou_disableSkill_hasDisabled", trigger.disableSkills);
-						if (bool) await get.info("jlsgsy_moshou_3").content(event, trigger, player);
 					},
 				},
 			},

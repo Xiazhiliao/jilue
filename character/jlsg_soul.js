@@ -9152,72 +9152,9 @@ export default {
 				expose: 0.25,
 			},
 		},
-		_disableSkills: {
-			charlotte: true,
-			direct: true,
-			lastDo: true,
-			trigger: {
-				get global() {
-					let strList = ["", "After", "Begin", "End"],
-						triggerList = ["useSkill", "logSkill", "changeSkills", "useCard"],
-						str = ["phaseBegin", "phaseEnd", "chooseToDiscardBegin", "phaseChange"];
-					for (let i of triggerList) {
-						for (let j of strList) {
-							str.push(i + j);
-						}
-					}
-					return str;
-				},
-			},
-			filter: function (event, player) {
-				let skill = get.sourceSkillFor(event);
-				if (skill == "_disableSkills") return false;
-				event.triggerSkills = player.getSkills(null, false, false)?.filter(sk => {
-					if (typeof lib.skill[sk]?.trigger?.player == "string") return lib.skill[sk]?.trigger?.player == "_disableSkillsAfter";
-					return lib.skill[sk]?.trigger?.player?.includes("_disableSkillsAfter");
-				});
-				if (event.triggerSkills?.includes(skill) || event.triggerSkills?.some(sk => lib.skill[sk].sourceSkill == skill)) return false;
-				return event.triggerSkills?.length > 0;
-			},
-			async content(event, trigger, player) {
-				event.triggerSkills = player.getSkills(null, false, false)?.filter(sk => {
-					if (typeof lib.skill[sk]?.trigger?.player == "string") return lib.skill[sk]?.trigger?.player == "_disableSkillsAfter";
-					return lib.skill[sk]?.trigger?.player?.includes("_disableSkillsAfter");
-				});
-				if (event.triggerSkills?.length == 0) return;
-				event.disableSkills ??= [];
-				if (player.disabledSkills) {
-					event.disableSkills.addArray(Object.keys(player.disabledSkills));
-				}
-				let skills = player.getSkills(null, false, false);
-				for (let i of skills) {
-					if (get.is.blocked(i, player)) event.disableSkills.add(i);
-					if (player.isTempBanned(i)) event.disableSkills.add(i);
-				}
-				for (let sk of event.triggerSkills) {
-					let list = [];
-					if (player.storage?.[sk + "_hasDisabled"]?.length) {
-						for (let i of player.storage[sk + "_hasDisabled"]) {
-							if (event.disableSkills?.includes(i)) event.disableSkills.remove(i);
-							else list.add(i);
-						}
-						for (let i of list) {
-							player.unmarkAuto(sk + "_hasDisabled", i);
-						}
-					}
-				}
-				if (event.disableSkills?.length == 0) {
-					delete event.disableSkills;
-					return;
-				}
-				event.num = event.disableSkills.length;
-			},
-		},
 		jlsg_qianyuan: {
 			audio: "ext:极略/audio/skill:2",
 			init(player) {
-				//解释一下不用group的原因，因为主技能失效group也相应失效，所以必须用addSkill
-				player.addSkill("jlsg_qianyuan_disableSkill");
 				player.storage.jlsg_qianyuan = {
 					damage: false,
 					loseHp: false,
@@ -9269,7 +9206,7 @@ export default {
 				},
 			},
 			trigger: {
-				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore"],
+				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkill"],
 			},
 			filter(event, player) {
 				let storage = player.storage.jlsg_qianyuan,
@@ -9278,13 +9215,10 @@ export default {
 					bool2 = true;
 				if (storage[key] === true) {
 					let used = player.getHistory("useSkill", evt => {
-						if (!["jlsg_qianyuan", "jlsg_qianyuan_disableSkill"].includes(evt.skill)) return false;
+						if (evt.skill != "jlsg_qianyuan") return false;
 						return evt.event.jlsg_qianyuan;
 					});
 					bool2 = used.length < game.countPlayer();
-				}
-				if (key == "disableSkill") {
-					if (!event.disableSkills?.some(sk => !player.storage["jlsg_qianyuan_disableSkill_hasDisabled"]?.includes(sk))) return false;
 				}
 				return storage && key in storage && bool1 && bool2;
 			},
@@ -9304,7 +9238,7 @@ export default {
 					num2 = game.countPlayer();
 				if (storage[key] === true) {
 					num1 = player.getHistory("useSkill", evt => {
-						if (!["jlsg_qianyuan", "jlsg_qianyuan_disableSkill"].includes(evt.skill)) return false;
+						if (evt.skill != "jlsg_qianyuan") return false;
 						return evt.event.jlsg_qianyuan;
 					}).length;
 					return `<span class='center text'>已转化次数（${num1}/${num2}） </span>`;
@@ -9315,7 +9249,7 @@ export default {
 				var key = lib.skill.jlsg_qianyuan.translate[event.name];
 				if (player.storage.jlsg_qianyuan[key] === false) return true;
 				var num1 = player.getHistory("useSkill", evt => {
-					if (!["jlsg_qianyuan", "jlsg_qianyuan_disableSkill"].includes(evt.skill)) return false;
+					if (evt.skill != "jlsg_qianyuan") return false;
 					return evt.event.jlsg_qianyuan;
 				}).length;
 				var num2 = game.countPlayer();
@@ -9355,22 +9289,7 @@ export default {
 					});
 					if (!trigger.cards.length) trigger.cancel();
 				} else if (key == "disableSkill") {
-					for (let skill of trigger.disableSkills) {
-						if (skill in player.disabledSkills) {
-							for (let i of player.disabledSkills[skill]) {
-								player.enableSkill(i);
-							}
-						}
-						delete player.storage[`temp_ban_${skill}`];
-						player.unmarkAuto(event.name + "_hasDisabled", skill);
-					}
-					for (let skill of player.storage?.skill_blocker ?? []) {
-						player.removeSkillBlocker(skill);
-						for (let i of player.storage?.[event.name + "_hasDisabled"] ?? []) {
-							//真不会弄获取原先截止的时机，就这样吧
-							player.tempBanSkill(skill);
-						}
-					}
+					trigger.cancel = true;
 				} else trigger.cancel();
 				if (player.storage.jlsg_qianyuan[key] === true) {
 					event.getParent().jlsg_qianyuan = true;
@@ -9390,12 +9309,11 @@ export default {
 					lose: "discard",
 					loseAsync: "discard",
 					changeSkills: "loseSkill",
-					//disableSkill: "disableSkill",
+					disableSkill: "disableSkill",
 					linkBefore: "link",
 					link: "link",
 					turnOverBefore: "turnOver",
 					turnOver: "turnOver",
-					_disableSkills: "disableSkill",
 				};
 				delete this.translation;
 				this.translation = result;
@@ -9486,37 +9404,6 @@ export default {
 					nature: nature,
 					str: str,
 				};
-			},
-			subSkill: {
-				disableSkill: {
-					audio: "ext:极略/audio/skill:2",
-					sourceSkill: "jlsg_qianyuan",
-					sub: true,
-					charlotte: true,
-					trigger: {
-						player: "_disableSkillsAfter",
-					},
-					filter: function (event, player) {
-						return event.disableSkills?.length;
-					},
-					async cost(event, trigger, player) {
-						let bool = get.info("jlsg_qianyuan").filter(trigger, player);
-						player.markAuto("jlsg_qianyuan_disableSkill_hasDisabled", trigger.disableSkills);
-						if (bool) {
-							let result = await player
-								.chooseBool()
-								.set("prompt", get.info("jlsg_qianyuan").prompt(trigger, player))
-								.set("prompt2", get.info("jlsg_qianyuan").prompt2(trigger, player))
-								//AI不会写，等人
-								.set("ai", () => true)
-								.forResult();
-							if (result.bool) event.result = result;
-						}
-					},
-					async content(event, trigger, player) {
-						await get.info("jlsg_qianyuan").content(event, trigger, player);
-					},
-				},
 			},
 			ai: {
 				//@.修改
@@ -12705,11 +12592,7 @@ export default {
 		jlsg_zhanhun: {
 			audio: "ext:极略/audio/skill:2",
 			trigger: {
-				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore"],
-			},
-			init(player) {
-				//解释一下不用group的原因，因为主技能失效group也相应失效，所以必须用addSkill
-				player.addSkill("jlsg_zhanhun_disableSkill");
+				player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkill"],
 			},
 			filter(event, player) {
 				let key = lib.skill.jlsg_qianyuan.translate[event.name];
@@ -12725,9 +12608,6 @@ export default {
 					let discarder = event.discarder || event.getParent().player;
 					if (discarder && discarder == player) return false;
 					if (!discarder) return false;
-				} else if (key == "disableSkill") {
-					//燃尽了，为了整这个伪时机我调试了100多次，这个来源整不动了
-					if (!event.disableSkills?.some(sk => !player.storage["jlsg_zhanhun_disableSkill_hasDisabled"]?.includes(sk))) return false;
 				}
 				return true;
 			},
@@ -12743,22 +12623,7 @@ export default {
 					});
 					if (!trigger.cards.length) trigger.cancel();
 				} else if (key == "disableSkill") {
-					for (let skill of trigger.disableSkills) {
-						if (skill in player.disabledSkills) {
-							for (let i of player.disabledSkills[skill]) {
-								player.enableSkill(i);
-							}
-						}
-						delete player.storage[`temp_ban_${skill}`];
-						player.unmarkAuto(event.name + "_hasDisabled", skill);
-					}
-					for (let skill of player.storage?.skill_blocker ?? []) {
-						player.removeSkillBlocker(skill);
-						for (let i of player.storage?.[event.name + "_hasDisabled"] ?? []) {
-							//真不会弄获取原先截止的时机，就这样吧
-							player.tempBanSkill(skill);
-						}
-					}
+					trigger.cancel = true;
 				} else trigger.cancel();
 				game.log(player, "取消了", `#y${str}`);
 				player.addTempSkill("jlsg_zhanhun_used");
@@ -12822,24 +12687,6 @@ export default {
 							else if (player.isHealthy()) return;
 							return [1, 2];
 						},
-					},
-				},
-				disableSkill: {
-					audio: "ext:极略/audio/skill:2",
-					sourceSkill: "jlsg_zhanhun",
-					sub: true,
-					charlotte: true,
-					forced: true,
-					trigger: {
-						player: "_disableSkillsAfter",
-					},
-					filter: function (event, player) {
-						return event.disableSkills?.length;
-					},
-					async content(event, trigger, player) {
-						let bool = get.info("jlsg_zhanhun").filter(trigger, player);
-						player.markAuto("jlsg_zhanhun_disableSkill_hasDisabled", trigger.disableSkills);
-						if (bool) await get.info("jlsg_zhanhun").content(event, trigger, player);
 					},
 				},
 			},
