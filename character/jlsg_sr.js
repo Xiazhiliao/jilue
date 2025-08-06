@@ -2124,16 +2124,16 @@ export default {
 			},
 			getCheck(event, player) {
 				if (event.name == "cardsDiscard") {
-					// judge
+					//useCard,judge
 					const evt = event.getParent();
-					if (!(evt.name == "orderingDiscard" && evt.relatedEvent?.player === player)) {
+					if (evt.name != "orderingDiscard" || evt.relatedEvent?.player != player) {
 						return [];
 					}
 					const relatedEvent = evt.relatedEvent;
 					let loses = player
-						.getHistory("lose", evt => relatedEvent == (evt.relatedEvent || evt.getParent()))
-						.map(evt => {
-							const getl = evt.getl(player);
+						.getHistory("lose", evtx => relatedEvent == (evtx.relatedEvent || evtx.getParent()))
+						.map(evtx => {
+							const getl = evtx.getl(player);
 							if (!getl) {
 								return [];
 							}
