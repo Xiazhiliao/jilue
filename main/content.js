@@ -169,7 +169,7 @@ const b = 1;
 						},
 						args[0]
 					);
-				} else {
+				} else if (_status.disableSkills) {
 					if (_status.disableSkills.slice(-1)[0] == args[0]) {
 						game.broadcastAll(() => delete _status.disableSkills);
 					}
@@ -200,7 +200,7 @@ const b = 1;
 						},
 						args[1]
 					);
-				} else {
+				} else if (_status.disableSkills) {
 					if (_status.disableSkills.slice(-1)[0] == args[1]) {
 						game.broadcastAll(() => delete _status.disableSkills);
 					}
