@@ -423,38 +423,38 @@ export default {
 		jlsg_yanmie: {
 			audio: "ext:极略/audio/skill:2",
 			enable: "phaseUse",
-			filter: function (event, player) {
-				return player.countCards("he", { suit: "spade" }) > 0;
+			filter(event, player) {
+				return player.countDiscardableCards(player, "he", { suit: "spade" });
 			},
 			check(card) {
 				return 7 - get.value(card);
 			},
-			filterCard(card) {
-				return get.suit(card) == "spade";
-			},
 			position: "he",
-			filterTarget(card, player, target) {
-				return player != target && target.countCards("he");
-			},
-			content() {
-				"step 0"
-				var cards = target.getCards("he");
-				target.discard(cards);
-				target.draw(cards.length);
-				target.showHandcards();
-				"step 1"
-				event.cards = target.getCards("h", function (card) {
-					return get.type(card) != "basic";
-				});
-				if (cards.length) {
-					player.chooseBool("湮灭：是否令" + get.translation(target) + "弃置非基本牌并受到" + get.translation(event.cards.length) + "点伤害？").set("ai", (event, player) => {
-						return get.damageEffect(target, player, player) > 0;
-					});
+			filterCard(card, player) {
+				if (get.suit(card) != "spade") {
+					return false;
 				}
-				"step 2"
-				if (result.bool) {
-					target.discard(event.cards, player);
-					target.damage(event.cards.length);
+				return lib.filter.cardDiscardable(card, player, "jlsg_yanmie");
+			},
+			filterTarget(card, player, target) {
+				return player != target && target.countDiscardableCards(target, "he");
+			},
+			async content(event, trigger, player) {
+				const { target } = event,
+					num = target.countDiscardableCards(target, "he");
+				await target.chooseToDiscard(num, true);
+				await target.draw(num);
+				await target.showHandcards();
+				const cards = target.getDiscardableCards(target, "h", card => get.type(card) != "basic");
+				if (cards.length) {
+					const { result } = await player
+						.chooseBool()
+						.set("createDialog", [`###湮灭###是否令${get.translation(target)}弃置非基本牌并受到${cards.length}点伤害？`, cards])
+						.set("ai", (event, player) => get.damageEffect(event.target, player, player) > 0);
+					if (result.bool) {
+						await target.discard(cards);
+						await target.damage(cards.length);
+					}
 				}
 			},
 			ai: {
@@ -471,33 +471,38 @@ export default {
 		jlsg_shunshi: {
 			audio: "ext:极略/audio/skill:2",
 			trigger: {
-				target: "useCardToBegin",
+				target: "useCardToTarget",
 			},
-			filter: function (event, player) {
+			filter(event, player) {
 				return event.player != player && ["basic", "trick"].includes(get.type(event.card)) && event.targets.length == 1 && game.hasPlayer(p => p != player);
 			},
-			direct: true,
-			content: function () {
-				"step 0"
-				player
-					.chooseTarget("###是否发动【顺世】?###令至多三名其他角色也成为此牌(" + get.translation(trigger.card) + ")的目标", [1, 3])
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseTarget(`###${get.prompt(event.skill)}###令至多三名其他角色也成为此牌${get.translation(trigger.card)}的目标`, [1, 3])
 					.set("filterTarget", (card, player, target) => {
-						if (player == target) return false;
-						if (game.checkMod(trigger.card, trigger.player, target, "unchanged", "playerEnabled", trigger.player) == false) return false;
-						if (game.checkMod(trigger.card, trigger.player, target, "unchanged", "targetEnabled", target) == false) return false;
+						if (player == target) {
+							return false;
+						}
+						const trigger = get.event().getParent().getTrigger();
+						if (game.checkMod(trigger.card, trigger.player, target, "unchanged", "playerEnabled", trigger.player) == false) {
+							return false;
+						}
+						if (game.checkMod(trigger.card, trigger.player, target, "unchanged", "targetEnabled", target) == false) {
+							return false;
+						}
 						return true;
 					})
-					.set("ai", target => get.effect(target, trigger.card, trigger.player, player) > 0);
-				"step 1"
-				if (result.bool) {
-					result.targets.sortBySeat();
-					player.logSkill("jlsg_shunshi", result.targets);
-					for (var i = 0; i < result.targets.length; i++) {
-						trigger.targets.push(result.targets[i]);
-						game.log(result.targets[i], "成为了额外目标");
-					}
-					player.draw(result.targets.length);
-				}
+					.set("ai", target => {
+						const trigger = get.event().getParent().getTrigger();
+						return get.effect(target, trigger.card, trigger.player, player);
+					})
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				event.targets.sortBySeat();
+				game.log(event.targets, "成为了", trigger.card, "的额外目标");
+				trigger.getParent().targets.addArray(event.targets);
+				await player.draw(event.targets.length);
 			},
 			ai: {
 				effect: {
