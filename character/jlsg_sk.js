@@ -15879,7 +15879,7 @@ export default {
 		jlsg_tongxin: "同心",
 		jlsg_tongxin_info: "限定技，当你处于濒死状态时，你可以回复体力至2点，然后若关索或鲍三娘不在场，你可以将武将牌替换为其中之一。",
 		jlsg_zhengnan: "征南",
-		jlsg_zhengnan_info: "出牌阶段限一次，你可以选则一名角色，视为其使用【南蛮入侵】，当此牌每造成一次伤害，你与其各摸一张牌。",
+		jlsg_zhengnan_info: "出牌阶段限一次，你可以选择一名角色，视为其使用【南蛮入侵】，当此牌每造成一次伤害，你与其各摸一张牌。",
 		jlsg_jianwu: "剑舞",
 		jlsg_jianwu2: "剑舞",
 		jlsg_jianwu_info: "锁定技，若你使用的上一张牌为基本牌，你使用【杀】时无距离和次数限制，且目标上限+1",
