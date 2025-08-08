@@ -9341,13 +9341,15 @@ export default {
 				else if (key == "loseMaxHp") next = player.loseMaxHp(1);
 				else if (key == "discard") next = player.discard(player.getDiscardableCards(player, "he").randomGets(1));
 				else if (key == "loseSkill") next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
-				else if (key == "disableSkill")
-					next = player.tempBanSkill(
+				else if (key == "disableSkill") {
+					if (!lib.config.extension_极略_jlsg_disableSkill && player.storage.jlsg_qianyuan.disableSkill != true) player.storage.jlsg_qianyuan.disableSkill = true;
+					else next = player.tempBanSkill(
 						player
 							.getSkills(null, false, false)
 							?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
 							?.randomGets(1)
 					);
+				}
 				else if (key == "link") next = player.link();
 				else if (key == "turnOver") next = player.turnOver();
 				return next;
