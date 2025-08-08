@@ -7493,91 +7493,98 @@ export default {
 		},
 		jlsg_zhidi: {
 			audio: "ext:极略/audio/skill:2",
-			trigger: { player: "phaseZhunbeiBegin" },
-			shaRelated: true,
-			init: function (player) {
-				player.storage.jlsg_zhidi = [false, false, false, false];
-			},
-			forced: true,
-			filter: function (event, player) {
-				return player.storage.jlsg_zhidi.reduce((a, b) => a + b) < 4;
-			},
-			content: function () {
-				var candidates = Array.from(Array(4).keys());
-				candidates = candidates.filter(c => !player.storage.jlsg_zhidi[c]);
-				var candidate = candidates.randomGet();
-				player.storage[event.name][candidate] = true;
-				game.log(player, `获得了〖制敌〗效果${get.cnNumber(candidate + 1)}`);
-				player.addSkill(event.name + (candidate + 1));
-				player.markSkill(event.name);
-			},
 			intro: {
-				content: function (storage, player, skill) {
+				content(storage, player, skill) {
 					return (
 						"已经获得效果: " +
 						storage
-							.map((f, i) => (f ? i + 1 : null))
-							.filter(i => i)
-							.reduce((a, b) => a + " " + b, "")
+							.sort()
+							.map(i => get.cnNumber(i, true))
+							.join("、")
 					);
 				},
-				markcount: function (storage, player, skill) {
-					return storage.reduce((a, b) => a + b);
+				markcount(storage, player, skill) {
+					return storage.length;
 				},
 			},
-		},
-		jlsg_zhidi1: {
-			sub: true,
+			trigger: { player: "phaseZhunbeiBegin" },
+			filter(event, player) {
+				return ["1", "2", "3", "4"].some(i => !player.hasStorage("jlsg_zhidi", i));
+			},
 			forced: true,
-			trigger: {
-				source: "damageSource",
+			async content(event, trigger, player) {
+				const storage = player.getStorage(event.name),
+					candiDates = Array.from({ length: 4 }, (v, i) => String(i + 1)).filter(i => !storage.includes(i));
+				const candiDate = candiDates.randomGet();
+				storage.add(candiDate);
+				player.setStorage(event.name, storage, true);
+				game.log(player, `获得了〖制敌〗效果${get.cnNumber(candiDate, true)}`);
+				player.addSkill(`${event.name}_buff`);
 			},
-			filter: function (event, player) {
-				return event.card && event.card.name == "sha";
-			},
-			content: function () {
-				player.draw();
-			},
-		},
-		jlsg_zhidi2: {
-			sub: true,
-			trigger: { player: "useCard" },
-			forced: true,
-			filter: function (event, player) {
-				return event.card.name == "sha";
-			},
-			content: function () {
-				trigger.directHit.addArray(game.players);
-			},
-			ai: {
-				unequip: true,
-				unequip_ai: true,
-				directHit_ai: true,
-				skillTagFilter: function (player, tag, arg) {
-					if (tag === "directHit_ai") {
-						return arg.card.name == "sha";
-					}
-					// console.log(tag, arg);
-					return arg && arg.card.name == "sha";
-				},
-			},
-		},
-		jlsg_zhidi3: {
-			mod: {
-				targetInRange: function (card, player) {
-					if (card.name == "sha") return true;
-				},
-				cardUsable: function (card, player, num) {
-					if (card.name == "sha") return num + player.storage.jlsg_zhidi.reduce((a, b) => a + b);
-				},
-			},
-		},
-		jlsg_zhidi4: {
-			mod: {
-				selectTarget: function (card, player, range) {
-					if (card.name != "sha") return;
-					if (range[1] == -1) return;
-					range[1] += player.storage.jlsg_zhidi.reduce((a, b) => a + b);
+			subSkill: {
+				buff: {
+					sub: true,
+					sourceSkill: "jlsg_zhidi",
+					audio: "jlsg_zhidi",
+					mod: {
+						targetInRange(card, player) {
+							if (card.name == "sha" && player.hasStorage("jlsg_zhidi", "3")) {
+								return true;
+							}
+						},
+						cardUsable(card, player, num) {
+							if (card.name == "sha" && player.hasStorage("jlsg_zhidi", "3")) {
+								return num + player.getStorage("jlsg_zhidi").length;
+							}
+						},
+						selectTarget(card, player, range) {
+							if (!player.hasStorage("jlsg_zhidi", "4")) {
+								return;
+							}
+							if (card?.name != "sha") {
+								return;
+							}
+							if (range[1] == -1) {
+								return;
+							}
+							range[1] += player.getStorage("jlsg_zhidi").length;
+						},
+					},
+					trigger: {
+						player: "useCard",
+						source: "damageSource",
+					},
+					filter(event, player) {
+						if (event.card?.name != "sha") {
+							return false;
+						}
+						if (event.name == "damage") {
+							return player.hasStorage("jlsg_zhidi", "1");
+						}
+						return player.hasStorage("jlsg_zhidi", "2");
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						if (trigger.name == "damage") {
+							await player.draw();
+						} else {
+							trigger.directHit.addArray(game.players);
+						}
+					},
+					ai: {
+						unequip: true,
+						unequip_ai: true,
+						directHit_ai: true,
+						skillTagFilter: function (player, tag, arg) {
+							if (!player.hasStorage("jlsg_zhidi", "2")) {
+								return false;
+							}
+							if (tag === "directHit_ai") {
+								return arg?.card?.name == "sha";
+							}
+							return arg?.card?.name == "sha";
+						},
+					},
 				},
 			},
 		},
@@ -16302,19 +16309,18 @@ export default {
 		jlsg_shanshen_info: "当任意角色失去体力后，你可以获得两张不计入手牌上限的临时基本牌。",
 	},
 	dynamicTranslate: {
-		jlsg_zhidi: function (player) {
-			var flags = player?.storage?.jlsg_zhidi || [false, false, false, false];
-			var cnt = flags.reduce((a, b) => a + b);
-			var result = "锁定技，准备阶段，你随机获得以下一项你还未获得的效果：";
-			var effects = [`1.你使用【杀】造成伤害后，你摸一张牌；`, `2.你使用【杀】无视防具且不能被【闪】相应；`, `3.你使用【杀】无距离限制且次数上限+X；`, `4.你使用【杀】可以额外指定X个目标`];
-			for (var i = 0; i != 4; ++i) {
-				if (flags[i]) {
+		jlsg_zhidi(player) {
+			let storage = player?.getStorage("jlsg_zhidi") || [];
+			let result = "锁定技，准备阶段，你随机获得以下一项你还未获得的效果：";
+			let effects = [`1.你使用【杀】造成伤害后，你摸一张牌；`, `2.你使用【杀】无视防具且不能被【闪】相应；`, `3.你使用【杀】无距离限制且次数上限+X；`, `4.你使用【杀】可以额外指定X个目标`];
+			for (let i = 0; i < 4; i++) {
+				if (storage.includes(String(i+1))) {
 					result += `<span class="bluetext">${effects[i]}</span>`;
 				} else {
 					result += effects[i];
 				}
 			}
-			result += `（X为你以此法获得的效果数<span class="legendtext">(${cnt})</span>）`;
+			result += `（X为你以此法获得的效果数<span class="legendtext">(${storage.length})</span>）`;
 			return result;
 		},
 		jlsg_tiandao(player) {
@@ -16333,7 +16339,6 @@ export default {
 					return lib.translate["jlsg_guolun_info"];
 			}
 		},
-
 		jlsg_guanxu: function (player) {
 			if (!("jlsg_guanxu" in player.storage) || typeof player.storage.jlsg_guanxu != "number") return "任意角色的回合开始时，你可以观看其手牌，然后你可以。。。";
 			let map = new Map([
