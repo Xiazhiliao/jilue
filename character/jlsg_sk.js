@@ -7514,11 +7514,11 @@ export default {
 			forced: true,
 			async content(event, trigger, player) {
 				const storage = player.getStorage(event.name),
-					candiDates = Array.from({ length: 4 }, (v, i) => String(i + 1)).filter(i => !storage.includes(i));
-				const candiDate = candiDates.randomGet();
-				storage.add(candiDate);
+					candidates = ["1", "2", "3", "4"].filter(i => !storage.includes(i));
+				const candidate = candidates.randomGet();
+				storage.add(candidate);
 				player.setStorage(event.name, storage, true);
-				game.log(player, `获得了〖制敌〗效果${get.cnNumber(candiDate, true)}`);
+				game.log(player, `获得了〖制敌〗效果${get.cnNumber(candidate, true)}`);
 				player.addSkill(`${event.name}_buff`);
 			},
 			subSkill: {
@@ -7541,10 +7541,7 @@ export default {
 							if (!player.hasStorage("jlsg_zhidi", "4")) {
 								return;
 							}
-							if (card?.name != "sha") {
-								return;
-							}
-							if (range[1] == -1) {
+							if (card?.name != "sha" || range[1] == -1) {
 								return;
 							}
 							range[1] += player.getStorage("jlsg_zhidi").length;
@@ -16314,7 +16311,7 @@ export default {
 			let result = "锁定技，准备阶段，你随机获得以下一项你还未获得的效果：";
 			let effects = [`1.你使用【杀】造成伤害后，你摸一张牌；`, `2.你使用【杀】无视防具且不能被【闪】相应；`, `3.你使用【杀】无距离限制且次数上限+X；`, `4.你使用【杀】可以额外指定X个目标`];
 			for (let i = 0; i < 4; i++) {
-				if (storage.includes(String(i+1))) {
+				if (storage.includes(String(i + 1))) {
 					result += `<span class="bluetext">${effects[i]}</span>`;
 				} else {
 					result += effects[i];
