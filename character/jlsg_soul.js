@@ -6123,11 +6123,11 @@ export default {
 				},
 				effect: {
 					trigger: {
-						player: ["useSkill", "logSkill"],
+						player: ["useSkill", "logSkillBegin"],
 					},
 					filter(event, player) {
 						let skill = event.sourceSkill || event.skill;
-						if (skill != "jlsg_xingwu" && !event.targets) return false;
+						if (skill != "jlsg_xingwu" || !event.targets?.length) return false;
 						if (event.skillstop) return false;
 						for (let i of event.targets) {
 							let num = player.storage.jlsg_xingwu_mark[i.playerid];
@@ -6165,22 +6165,29 @@ export default {
 				player: ["phaseJieshuBegin", "damageEnd"],
 			},
 			forced: true,
-			content() {
-				"step 0"
-				event.targets = game.filterPlayer(p => p != player).sortBySeat();
-				"step 1"
-				let target = event.targets.shift();
-				if (!target) {
-					game.delayx();
-					event.finish();
-					return;
+			logTarget(event, player) {
+				return game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
+			},
+			async content(event, trigger, player) {
+				const cards = [];
+				for (let target of event.targets) {
+					let gainableCards = target.getGainableCards(player, "h", card => get.suit(card) == "heart");
+					if (gainableCards.length) {
+						target.$give(gainableCards, player);
+						cards.addArray(gainableCards);
+					}
 				}
-				let cards = target.getCards("h", c => get.suit(c) == "heart");
 				if (cards.length) {
-					player.gain(cards, target, "bySelf");
-					target.$giveAuto(cards, player);
+					await game
+						.loseAsync({
+							gain_list: [[player, cards]],
+							cards,
+							visible: true,
+						})
+						.setContent("gaincardMultiple");
+				} else {
+					await game.delay();
 				}
-				event.redo();
 			},
 		},
 		jlsg_tiangong: {
@@ -9336,22 +9343,32 @@ export default {
 						.randomGet();
 				if (!key) return;
 				game.log(player, "将", `#y${lib.skill.jlsg_qianyuan.getInfo(event, player, name, number).str}`, "改为", `#y${lib.skill.jlsg_qianyuan.getInfo(null, player, key, 1, nature).str}`);
-				if (key == "damage") next = player.damage(1, nature);
-				else if (key == "loseHp") next = player.loseHp(1);
-				else if (key == "loseMaxHp") next = player.loseMaxHp(1);
-				else if (key == "discard") next = player.discard(player.getDiscardableCards(player, "he").randomGets(1));
-				else if (key == "loseSkill") next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
-				else if (key == "disableSkill") {
-					if (!lib.config.extension_极略_jlsg_disableSkill && player.storage.jlsg_qianyuan.disableSkill != true) player.storage.jlsg_qianyuan.disableSkill = true;
-					else next = player.tempBanSkill(
-						player
-							.getSkills(null, false, false)
-							?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
-							?.randomGets(1)
-					);
+				if (key == "damage") {
+					next = player.damage(1, nature);
+				} else if (key == "loseHp") {
+					next = player.loseHp(1);
+				} else if (key == "loseMaxHp") {
+					next = player.loseMaxHp(1);
+				} else if (key == "discard") {
+					next = player.discard(player.getDiscardableCards(player, "he").randomGets(1));
+				} else if (key == "loseSkill") {
+					next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
+				} else if (key == "disableSkill") {
+					if (!lib.config.extension_极略_jlsg_disableSkill && player.storage.jlsg_qianyuan.disableSkill != true) {
+						player.storage.jlsg_qianyuan.disableSkill = true;
+					} else {
+						next = player.tempBanSkill(
+							player
+								.getSkills(null, false, false)
+								?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
+								?.randomGets(1)
+						);
+					}
+				} else if (key == "link") {
+					next = player.link();
+				} else if (key == "turnOver") {
+					next = player.turnOver();
 				}
-				else if (key == "link") next = player.link();
-				else if (key == "turnOver") next = player.turnOver();
 				return next;
 			},
 			getInfo(event, player, name, num, nature = null) {
