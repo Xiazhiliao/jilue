@@ -28,6 +28,15 @@ let block = {
 			intro: "极略武将做主公时从三个随机极略主公技中选择并获得一个",
 			init: false,
 		},
+		jlsg_disableSkill: {
+			name: "失效技能时机",
+			intro: "开启后SP神赵云，神周泰，魔孟获的负面效果中将包含失效技能",
+			init: false,
+			onclick: function(item) {
+				alert("该功能并未测试联机或AI是否适用\n出bug概不由@虫豸负责\n出事请找@时机已到，今日起兵");
+				game.saveExtensionConfig("极略", "jlsg_disableSkill", item);
+			},
+		},
 		oldCharacterReplace: {
 			clear: true,
 			name: "<li>技能替换（点击后折叠）▽",
