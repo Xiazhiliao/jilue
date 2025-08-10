@@ -11782,7 +11782,9 @@ export default {
 				let str = "###才遇：是否减1点体力上限，随机获得一个诸葛亮";
 				if (["skills", "all"].includes(configx)) str += "的全部技能";
 				else str += "的一个技能";
-				if (!Object.keys(list).length) str += "###<div class='center text'>（已经获得全部技能了）</div>";
+				if (!Object.keys(list).length) {
+					str += "###<div class='center text'>（已经获得全部技能了）</div>";
+				}
 				const { result } = await player
 					.chooseBool(str)
 					.set("list", list)
@@ -11802,9 +11804,15 @@ export default {
 					info = event.cost_data;
 				const name = Object.keys(info).randomGet();
 				const skills = ["skills", "all"].includes(configx) ? info[name] : info[name]?.randomGets(1);
-				if (!skills) return;
-				if (!player.storage.jlsg_caiyu[name]) player.storage.jlsg_caiyu[name] = [];
-				if (skills.some(i => !player.storage.jlsg_caiyu[name].includes(i))) player.storage.jlsg_caiyu[name].push(...skills);
+				if (!skills?.length) {
+					return;
+				}
+				if (!player.storage.jlsg_caiyu[name]) {
+					player.storage.jlsg_caiyu[name] = [];
+				}
+				if (skills.some(i => !player.storage.jlsg_caiyu[name].includes(i))) {
+					player.storage.jlsg_caiyu[name].push(...skills);
+				}
 				player.flashAvatar(event.name, name);
 				await player.addSkills(skills);
 			},
@@ -14226,7 +14234,7 @@ export default {
 				return arg[arg.length - 1];
 			},
 			checkList(event) {
-				const list = [null, null, null],
+				const list = [0, 0, 0],
 					player = event.player;
 				player.storage.jlsg_jingce ??= { draw: 0, sha: 0 };
 				const num = player.getHistory("useCard", evt => {
@@ -14817,52 +14825,57 @@ export default {
 		},
 		jlsg_juyi: {
 			audio: "ext:极略/audio/skill:2",
-			onremove: true,
-			mod: {
-				maxHandcard: function (player, num) {
-					return num + player.countMark("jlsg_juyi");
-				},
-				attackRange(player, num) {
-					return num + player.countMark("jlsg_juyi");
-				},
-				cardUsable: function (card, player, num) {
-					if (get.name(card, player) == "sha") return num + player.countMark("jlsg_juyi");
-				},
-			},
-			marktext: "举",
-			intro: {
-				content(storage, player) {
-					return "摸牌数、手牌上限、攻击范围、使用【杀】的次数上限+" + storage;
-				},
-			},
-			trigger: { player: ["phaseZhunbeiBegin", "phaseDrawBegin1"] },
-			filter(event, player) {
-				if (event.name == "phaseZhunbei") return true;
-				return !event.numFixed && player.storage?.jlsg_juyi > 0;
-			},
-			locked: false,
+			trigger: { player: "phaseZhunbeiBegin" },
 			async cost(event, trigger, player) {
-				if (trigger.name == "phaseZhunbei") {
-					event.result = await player
-						.chooseBool("###功獒：是否减1点体力上限并获得以下效果？###摸牌数、手牌上限、攻击范围、使用【杀】的次数上限+1")
-						.set("ai", (event, player) => {
-							if (player.maxHp > game.countPlayer(true, undefined, true)) return player.isDamaged();
-							return player.isDamaged() && player.maxHp > 3;
-						})
-						.forResult();
-				} else
-					event.result = {
-						bool: true,
-						skill_popup: false,
-					};
+				event.result = await player
+					.chooseBool("###功獒：是否减1点体力上限并获得以下效果？###摸牌数、手牌上限、攻击范围、使用【杀】的次数上限+1")
+					.set("ai", (event, player) => {
+						if (player.maxHp > game.countPlayer(true, undefined, true)) {
+							return player.isDamaged();
+						}
+						return player.isDamaged() && player.maxHp > 3;
+					})
+					.forResult();
 			},
 			async content(event, trigger, player) {
-				if (trigger.name == "phaseZhunbei") {
-					await player.loseMaxHp(1);
-					player.storage.jlsg_juyi ??= 0;
-					player.storage.jlsg_juyi++;
-					player.markSkill("jlsg_juyi");
-				} else trigger.num += player.storage.jlsg_juyi;
+				await player.loseMaxHp(1);
+				player.addMark(event.name, 1, false);
+				if (!player.hasSkill(`${event.name}_buff`)) {
+					player.addSkill(`${event.name}_buff`);
+				}
+			},
+			subSkill: {
+				buff: {
+					sub: true,
+					sourceSkill: "jlsg_juyi",
+					charlotte: true,
+					mod: {
+						maxHandcard: function (player, num) {
+							return num + player.countMark("jlsg_juyi");
+						},
+						attackRange(player, num) {
+							return num + player.countMark("jlsg_juyi");
+						},
+						cardUsable: function (card, player, num) {
+							if (get.name(card, player) == "sha") return num + player.countMark("jlsg_juyi");
+						},
+					},
+					marktext: "举",
+					intro: {
+						content(storage, player) {
+							return "摸牌数、手牌上限、攻击范围、使用【杀】的次数上限+" + storage;
+						},
+					},
+					trigger: { player: "phaseDrawBegin1" },
+					filter(event, player) {
+						return event.num > 0 && !event.numFixed && player.countMark("jlsg_juyi");
+					},
+					forced: true,
+					popup: false,
+					async content(event, trigger, player) {
+						trigger.num += player.countMark("jlsg_juyi");
+					},
+				},
 			},
 			ai: {
 				effect: {
