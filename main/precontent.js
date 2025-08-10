@@ -79,12 +79,9 @@ export async function precontent(config, originalPack) {
 			lib.element.player.tempBanSkill = function (...args) {
 				let str = "disableSkill";
 				if (!_status.disableSkills && Array.isArray(args[0])) {
-					game.broadcastAll(
-						function(skills) {
-							_status.disableSkills = skills;
-						},
-						args[0]
-					);
+					game.broadcastAll(function (skills) {
+						_status.disableSkills = skills;
+					}, args[0]);
 				} else if (_status.disableSkills) {
 					if (_status.disableSkills.slice(-1)[0] == args[0]) {
 						game.broadcastAll(() => delete _status.disableSkills);
@@ -110,12 +107,9 @@ export async function precontent(config, originalPack) {
 			lib.element.player.disableSkill = function (...args) {
 				let str = "disableSkill";
 				if (!_status.disableSkills && Array.isArray(args[1])) {
-					game.broadcastAll(
-						function(skills) {
-							_status.disableSkills = skills;
-						},
-						args[1]
-					);
+					game.broadcastAll(function (skills) {
+						_status.disableSkills = skills;
+					}, args[1]);
 				} else if (_status.disableSkills) {
 					if (_status.disableSkills.slice(-1)[0] == args[1]) {
 						game.broadcastAll(() => delete _status.disableSkills);
@@ -163,8 +157,30 @@ export async function precontent(config, originalPack) {
 				let evt = game.createEvent(str),
 					content = function () {
 						"step 0"
-						event.trigger(event.name);
+						//适配神皇甫嵩和黄承彦先加技能后标记失效技能的写法
+						//希望本体能改一下这个写法，神皇甫嵩改的时候记得把init里面storage的重置删掉
+						event.special = [];
+						if (Array.isArray(event.args[0])) {
+							for (let i of event.args[0]) {
+								if (["hm_podai_sb", "dcjiezhen_blocker"].includes(i)) event.special.add(i);
+							}
+						} else if (["hm_podai_sb", "dcjiezhen_blocker"].includes(event.args[0])) event.special = event.args[0];
+						if (event.special.includes("dcjiezhen_blocker")) {
+							let skills = event.player.getSkills(null, false, false).filter(function (i) {
+								if (i == "bazhen") {
+									return;
+								}
+								var info = get.info(i);
+								return info && !get.is.locked(i) && !info.limited && !info.juexingji && !info.zhuSkill && !info.charlotte && !info.persevereSkill;
+							});
+							event.disableSkills.addArray(skills);
+						} else if (event.special.includes("hm_podai_sb")) {
+							event.disableSkills.add("未知");
+						}
+						event.num = event.disableSkills.length;
 						"step 1"
+						event.trigger(event.name);
+						"step 2"
 						if (event.disableSkills.length && !event.cancel) {
 							lib.disable3.apply(event.player, event.args);
 						}
