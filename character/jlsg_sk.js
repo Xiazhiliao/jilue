@@ -11801,7 +11801,8 @@ export default {
 				const configx = lib.config.extension_极略_jlsgsk_jiangwei,
 					info = event.cost_data;
 				const name = Object.keys(info).randomGet();
-				const skills = ["skills", "all"].includes(configx) ? info[name] : info[name].randomGets(1);
+				const skills = ["skills", "all"].includes(configx) ? info[name] : info[name]?.randomGets(1);
+				if (!skills) return;
 				if (!player.storage.jlsg_caiyu[name]) player.storage.jlsg_caiyu[name] = [];
 				if (skills.some(i => !player.storage.jlsg_caiyu[name].includes(i))) player.storage.jlsg_caiyu[name].push(...skills);
 				player.flashAvatar(event.name, name);
@@ -14819,13 +14820,13 @@ export default {
 			onremove: true,
 			mod: {
 				maxHandcard: function (player, num) {
-					return num + player.storage?.jlsg_juyi;
+					return num + player.countMark("jlsg_juyi");
 				},
 				attackRange(player, num) {
-					return num + player.storage?.jlsg_juyi;
+					return num + player.countMark("jlsg_juyi");
 				},
 				cardUsable: function (card, player, num) {
-					if (get.name(card, player) == "sha") return num + player.storage?.jlsg_juyi;
+					if (get.name(card, player) == "sha") return num + player.countMark("jlsg_juyi");
 				},
 			},
 			marktext: "举",
