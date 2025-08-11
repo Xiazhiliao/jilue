@@ -4598,9 +4598,7 @@ export default {
 					game.log(player, "选择了", result.control);
 					let map = Array.from({ length: 4 }, (v, i) => `选项${get.cnNumber(Number(i) + 1, true)}`);
 					let num = map.indexOf(result.control);
-					console.log(choiced.slice());
 					choiced[num] = false;
-					console.log(choiced.slice());
 					if (!choiced.filter(i => i).length) {
 						for (let i in choiced) {
 							choiced[i] = true;

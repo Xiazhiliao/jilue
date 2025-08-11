@@ -6,7 +6,7 @@ export default {
 		jlsg_sk: {
 			jlsg_tiangang: ["jlsgsk_xuyou", "jlsgsk_dengzhi", "jlsgsk_dongyun", "jlsgsk_kuaiyue", "jlsgsk_yuji", "jlsgsk_panshu", "jlsgsk_zhangrang", "jlsgsk_xinxianying", "jlsgsk_wuxian", "jlsgsk_jushou", "jlsgsk_wenyang", "jlsgsk_zhugezhan", "jlsgsk_sunru", "jlsgsk_liuyan", "jlsgsk_guohuanghou", "jlsgsk_zhaoxiang", "jlsgsk_lvfan", "jlsgsk_hetaihou", "jlsgsk_zhangyi", "jlsgsk_caochun", "jlsgsk_shamoke", "jlsgsk_lingcao", "jlsgsk_zhaoyan", "jlsgsk_beimihu", "jlsgsk_wutugu", "jlsgsk_caoying"],
 			jlsg_disha: ["jlsgsk_sunce", "jlsgsk_caoren", "jlsgsk_gongsunzan", "jlsgsk_huaxiong", "jlsgsk_zumao", "jlsgsk_miheng", "jlsgsk_zhangbu", "jlsgsk_guonvwang", "jlsgsk_quancong", "jlsgsk_mateng", "jlsgsk_zhoufei", "jlsgsk_liuchen", "jlsgsk_xiahoushi", "jlsgsk_yanyan", "jlsgsk_panzhang", "jlsgsk_gongsunyuan", "jlsgsk_chenqun"],
-			jlsg_renjie: ["jlsgsk_wangping", "jlsgsk_buzhi", "jlsgsk_maliang", "jlsgsk_sunqian", "jlsgsk_dongxi", "jlsgsk_luzhi", "jlsgsk_mifuren", "jlsgsk_xizhicai", "jlsgsk_zhangliang", "jlsgsk_caorui", "jlsgsk_sunxiu", "jlsgsk_sundeng", "jlsgsk_zhuzhi", "jlsgsk_wanglang", "jlsgsk_sunliang", "jlsgsk_mayunlu", "jlsgsk_zhongyao", "jlsgsk_nanhualaoxian", "jlsgsk_jiangwei", "jlsgsk_huanghao", "jlsgsk_huaman", "jlsgsk_pangtong", "jlsgsk_lvdai", "jlsgsk_wangyuanji", "jlsgsk_zhangchangpu", "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan", "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan", "jlsgsk_tadun", "jlsgsk_yanghuiyu", "jlsgsk_caojinyu"],
+			jlsg_renjie: ["jlsgsk_wangping", "jlsgsk_buzhi", "jlsgsk_maliang", "jlsgsk_sunqian", "jlsgsk_dongxi", "jlsgsk_luzhi", "jlsgsk_mifuren", "jlsgsk_xizhicai", "jlsgsk_zhangliang", "jlsgsk_caorui", "jlsgsk_sunxiu", "jlsgsk_sundeng", "jlsgsk_zhuzhi", "jlsgsk_wanglang", "jlsgsk_sunliang", "jlsgsk_mayunlu", "jlsgsk_zhongyao", "jlsgsk_nanhualaoxian", "jlsgsk_jiangwei", "jlsgsk_huanghao", "jlsgsk_huaman", "jlsgsk_pangtong", "jlsgsk_lvdai", "jlsgsk_wangyuanji", "jlsgsk_zhangchangpu", "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan", "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan", "jlsgsk_tadun", "jlsgsk_yanghuiyu", "jlsgsk_caojinyu", "jlsgsk_haozhao"],
 			jlsg_pojun: ["jlsgsk_zhuran", "jlsgsk_yanliang", "jlsgsk_chendao", "jlsgsk_dingfeng", "jlsgsk_dongzhuo", "jlsgsk_yujin", "jlsgsk_panfeng", "jlsgsk_jiangqin", "jlsgsk_guanxing", "jlsgsk_guansuo", "jlsgsk_baosanniang", "jlsgsk_dongbai", "jlsgsk_xushi", "jlsgsk_caoxiu", "jlsgsk_caojie"],
 			jlsg_yinyang: ["jlsgsk_zuoci", "jlsgsk_guanlu", "jlsgsk_wangyi", "jlsgsk_zhanglu", "jlsgsk_kongrong", "jlsgsk_zhoucang", "jlsgsk_zhoutai", "jlsgsk_lvlingqi", "jlsgsk_lukang", "jlsgsk_luji", "jlsgsk_xianglang", "jlsgsk_zoushi", "jlsgsk_zhugeguo"],
 			jlsg_tanlang: ["jlsgsk_zhangxiu", "jlsgsk_zhugejin", "jlsgsk_liyan", "jlsgsk_jiping", "jlsgsk_sunhao", "jlsgsk_yangxiu", "jlsgsk_simazhao", "jlsgsk_simashi", "jlsgsk_zhangning", "jlsgsk_feiyi", "jlsgsk_wuyi"],
@@ -153,6 +153,7 @@ export default {
 		jlsgsk_yanghuiyu: ["female", "qun", 3, ["jlsg_ciwei", "jlsg_caiyuan"], ["name:羊|徽瑜"]],
 		jlsgsk_tadun: ["male", "qun", 6, ["jlsg_luanzhan"], ["name:null|null"]],
 		jlsgsk_caojinyu: ["female", "wei", 3, ["jlsg_yuqi", "jlsg_shanshen"], ["name:曹|null"]],
+		jlsgsk_haozhao: ["male", "wei", 4, ["jlsg_zhengu"], []],
 	},
 	characterIntro: {
 		jlsgsk_kuaiyue: "蒯越（？－214年），字异度，襄阳中庐（今湖北襄阳西南）人。东汉末期人物，演义中为蒯良之弟。原本是荆州牧刘表的部下，曾经在刘表初上任时帮助刘表铲除荆州一带的宗贼（以宗族、乡里关系组成的武装集团）。刘表病逝后与刘琮一同投降曹操，后来官至光禄勋。",
@@ -10535,12 +10536,12 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			mod: {
 				globalFrom(from, to, distance) {
-					if (from.hasEmptySlot(4)){
+					if (from.hasEmptySlot(4)) {
 						return distance - 2;
 					}
 				},
 				globalTo(from, to, distance) {
-					if (to.hasEmptySlot(3)){
+					if (to.hasEmptySlot(3)) {
 						return distance + 2;
 					}
 				},
@@ -10555,7 +10556,7 @@ export default {
 				}
 				return true;
 			},
-			async content(event,trigger,player) {
+			async content(event, trigger, player) {
 				trigger.effectCount += 2;
 			},
 			ai: {
@@ -15616,6 +15617,62 @@ export default {
 				},
 			},
 		},
+		jlsg_zhengu: {
+			audio: "ext:极略/audio/skill:2",
+			trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
+			async cost(event, trigger, player) {
+				let num = player.isDamaged() ? 2 : 1;
+				let min = Math.max(0, player.countCards("h") - num),
+					max = player.countCards("h") + num;
+				event.result = await player
+					.chooseTarget(`###${get.prompt(event.skill)}###你可以令一名角色将手牌数调整至${min}或${max}`)
+					.set("ai", target => {
+						const player = get.player(),
+							min = get.event("numberList")[0],
+							max = get.event("numberList")[1];
+						let hs = target.countDiscardableCards(target, "h"),
+							att = get.attitude(player, target);
+						return Math.max(att * Math.max(0, min - hs), att * (max - hs));
+					})
+					.set("numberList", [min, max])
+					.forResult();
+				if (event.result?.bool) {
+					event.result.cost_data = [min, max];
+				}
+			},
+			async content(event, trigger, player) {
+				const {
+					targets: [target],
+					cost_data: [min, max],
+				} = event;
+				const hs = target.countDiscardableCards(target, "h"),
+					choiceList = [`由${hs}调整为${min}`, `由${hs}调整为${max}`];
+				const { result } = await player
+					.chooseControlList(choiceList)
+					.set("prompt", `###镇骨###将${get.translation(target)}手牌数`)
+					.set("ai", (event, player) => {
+						const {
+							targets: [target],
+							cost_data: [min, max],
+						} = event;
+						let att = get.attitude(player, target);
+						let num1 = att * Math.max(0, min - hs),
+							num2 = att * (max - hs);
+						return num1 > num2 ? 0 : 1;
+					});
+				if (result && result.control != "cancel2") {
+					let num = [min, max][result.index];
+					if (hs == num) {
+						return;
+					}
+					if (hs > num) {
+						await target.chooseToDiscard(true, hs - num, "h");
+					} else {
+						await target.drawTo(num);
+					}
+				}
+			},
+		},
 	},
 	translate: {
 		jlsg_sk: "SK武将",
@@ -15767,6 +15824,7 @@ export default {
 		jlsgsk_yanghuiyu: "SK羊徽瑜",
 		jlsgsk_tadun: "SK蹋顿",
 		jlsgsk_caojinyu: "SK曹金玉",
+		jlsgsk_haozhao: "SK郝昭",
 
 		jlsg_hemeng: "和盟",
 		jlsg_sujian: "素检",
@@ -16320,6 +16378,8 @@ export default {
 		jlsg_yuqi_info: "准备阶段，或结束阶段，你可以令你与另一名男性角色各失去1点体力。当你受到伤害后，你可以令一名角色失去1点体力。",
 		jlsg_shanshen: "善身",
 		jlsg_shanshen_info: "当任意角色失去体力后，你可以获得两张不计入手牌上限的临时基本牌。",
+		jlsg_zhengu: "镇骨",
+		jlsg_zhengu_info: "准备阶段或结束阶段，你可以令任意名角色将手牌数调整至X-1或X+1，若你已受伤，改为X-2或X+2（X为你的手牌数）。",
 	},
 	dynamicTranslate: {
 		jlsg_zhidi(player) {
