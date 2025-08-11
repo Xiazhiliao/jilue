@@ -1410,7 +1410,7 @@ export default {
 					return promise;
 				};
 				const ai = function () {
-					return { bool: true, skills: skills.sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")).slice(0, 1) };
+					return { bool: true, skills: skills.slice().sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")).slice(0, 1) };
 				};
 				let next;
 				if (event.isMine()) {
