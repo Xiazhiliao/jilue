@@ -9641,9 +9641,13 @@ export default {
 				}
 				if (trigger.player.ai.shown > player.ai.shown) player.addExpose(0.2);
 				const card = get.autoViewAs({ name: event.cardName, isCard: trigger.player.isHealthy() }, event.cards);
-				const next = trigger.player.chooseUseTarget(card, true, "noTargetDelay", "nodelayx").set("oncard", function (c, p) {
-					this.noai = true;
-				});
+				const next = trigger.player
+					.chooseUseTarget(true, "noTargetDelay", "nodelayx")
+					.set("card", card)
+					.set("cards", event.cards)
+					.set("oncard", function (c, p) {
+						this.noai = true;
+					});
 				await next;
 			},
 		},
