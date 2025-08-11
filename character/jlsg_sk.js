@@ -10534,13 +10534,15 @@ export default {
 		jlsg_shanjia: {
 			audio: "ext:极略/audio/skill:2",
 			mod: {
-				globalFrom: function (from, to, distance) {
-					if (!from.hasEmptySlot(4)) return false;
-					return distance - 2;
+				globalFrom(from, to, distance) {
+					if (from.hasEmptySlot(4)){
+						return distance - 2;
+					}
 				},
-				globalTo: function (from, to, distance) {
-					if (!to.hasEmptySlot(3)) return false;
-					return distance + 2;
+				globalTo(from, to, distance) {
+					if (to.hasEmptySlot(3)){
+						return distance + 2;
+					}
 				},
 			},
 			forced: true,
@@ -10553,12 +10555,12 @@ export default {
 				}
 				return true;
 			},
-			content() {
-				trigger.effectCount = 2;
+			async content(event,trigger,player) {
+				trigger.effectCount += 2;
 			},
 			ai: {
 				effect: {
-					target: function (card, player, target) {
+					target(card, player, target) {
 						let subtype = get.subtype(card);
 						if (player == target) {
 							if ((["equip3", "equip6"].includes(subtype) && target.hasEmptySlot(3)) || (["equip4", "equip6"].includes(subtype) && target.hasEmptySlot(4))) {

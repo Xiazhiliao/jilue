@@ -4851,7 +4851,7 @@ export default {
 			sub: true,
 			unique: true,
 			thundertext: true,
-			init: function (player) {
+			init(player) {
 				player.addMark("jlsg_jiyang", 3);
 			},
 			onremove(player, skill) {
@@ -4859,10 +4859,10 @@ export default {
 					num = player.storage[skill];
 				player.clearMark(skill);
 				while (num > 0) {
-					let card = get.cardPile(function (card) {
+					let card = get.cardPile2(function (card) {
 						if (cards.includes(card)) return false;
 						return get.color(card, false) == "red";
-					});
+					}, "random");
 					num--;
 					if (card) cards.add(card);
 					else break;
@@ -4917,7 +4917,7 @@ export default {
 			sub: true,
 			unique: true,
 			thundertext: true,
-			init: function (player) {
+			init(player) {
 				player.addMark("jlsg_jiyin", 3);
 			},
 			onremove(player, skill) {
@@ -4925,10 +4925,10 @@ export default {
 					num = player.storage[skill];
 				player.clearMark(skill);
 				while (num > 0) {
-					let card = get.cardPile(function (card) {
+					let card = get.cardPile2(function (card) {
 						if (cards.includes(card)) return false;
 						return get.color(card, false) == "black";
-					});
+					}, "random");
 					num--;
 					if (card) cards.add(card);
 					else break;
@@ -4983,7 +4983,7 @@ export default {
 			sub: true,
 			unique: true,
 			thundertext: true,
-			init: function (player) {
+			init(player) {
 				player.addMark("jlsg_xiangsheng", 6);
 			},
 			onremove(player, skill) {
@@ -5024,7 +5024,7 @@ export default {
 				player.removeMark(event.name);
 				const card = get.cardPile2(function (card) {
 					return get.color(card, false) == color;
-				});
+				}, "random");
 				if (card) await player.gain(card, "gain2");
 			},
 		},
