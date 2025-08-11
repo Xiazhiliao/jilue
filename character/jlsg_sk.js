@@ -9572,8 +9572,7 @@ export default {
 				const cards = [wugu, tao].filter(card => trigger.player.hasUseTarget(card));
 				let str = `${num == 0 ? `令${get.translation(trigger.player)}视为使用` : `选择${get.translation(trigger.player)}的${get.cnNumber(num)}张牌当作`}一张`,
 					str2 = cards.map(card => card.name);
-				if (str.length == 1) str += lib.translate[str2[0]] + "使用";
-				else str += str2.map(card => lib.translate[card]).join("或") + "使用";
+				str += str2.map(card => lib.translate[card]).join("或") + (num == 0 ? "" : "使用");
 				let keys = ["effect", "canUse", "effect_use", "getUseValue"],
 					value = 0,
 					choice,
