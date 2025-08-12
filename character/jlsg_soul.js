@@ -4320,90 +4320,86 @@ export default {
 		},
 		jlsg_qianqi: {
 			audio: "ext:极略/audio/skill:2",
-			trigger: {
-				player: "enterGame",
-				global: "phaseBefore",
-			},
-			forced: true,
-			filter: function (event) {
-				return event.name != "phase" || game.phaseNumber == 0;
-			},
-			content: function () {
-				"step 0"
-				var defend = lib.inpile.filter(c => lib.card[c].toself && lib.card[c].subtype == "equip3");
-				defend = defend.randomGet();
-				if (defend) {
-					var card = game.createCard(defend);
-					player.$gain2(card);
-					player.equip(card);
-				}
-				game.delayx();
-				"step 1"
-				var attack = lib.inpile.filter(c => lib.card[c].toself && lib.card[c].subtype == "equip4");
-				attack = attack.randomGet();
-				if (attack) {
-					var card = game.createCard(attack);
-					player.$gain2(card);
-					player.equip(card);
-				}
+			mod: {
+				targetInRange(card) {
+					if (card?.storage?.jlsg_qianqi) return true;
+				},
+				cardUsable(card, player) {
+					if (card?.storage?.jlsg_qianqi) return Infinity;
+				},
 			},
 			marktext: "骑",
 			intro: {
 				content: "mark",
 			},
-			group: ["jlsg_qianqi_gain", "jlsg_qianqi2"],
-			subSkill: {
-				gain: {
-					audio: "jlsg_qianqi",
-					trigger: {
-						global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-					},
-					forced: true,
-					filter: function (event, player) {
-						return game.hasPlayer(p => {
-							var evt = event.getl(p);
-							return evt && evt.es && evt.es.some(c => ["equip3", "equip4", "equip6"].includes(get.subtype(c, p)));
-						});
-					},
-					content: function () {
-						var cnt = game.countPlayer(p => {
-							var evt = trigger.getl(p);
-							return evt && evt.es && evt.es.some(c => ["equip3", "equip4", "equip6"].includes(get.subtype(c, p)));
-						});
-						player.addMark("jlsg_qianqi", 2 * cnt);
-					},
-				},
-			},
-		},
-		jlsg_qianqi2: {
-			audio: "ext:极略/audio/skill:2",
-			prompt: "弃置一枚「千骑」标记，视为使用一张杀",
 			enable: "chooseToUse",
+			viewAsFilter(player) {
+				return player.countMark("jlsg_qianqi") > 0;
+			},
 			viewAs: {
 				name: "sha",
 				storage: { jlsg_qianqi: true },
 			},
-			viewAsFilter: function (player) {
-				return player.countMark("jlsg_qianqi") != 0;
-			},
-			filterCard: function () {
+			selectCard: -1,
+			filterCard() {
 				return false;
 			},
-			selectCard: -1,
-			precontent: function () {
+			prompt: "弃置一枚「千骑」标记，视为使用一张无距离次数限制且不计入次数的【杀】",
+			async precontent(event, trigger, player) {
+				if (event.getParent().addCount != false) {
+					event.getParent().addCount = false;
+				}
 				player.removeMark("jlsg_qianqi", 1);
 			},
-			mod: {
-				targetInRange: function (card) {
-					if (card.storage && card.storage.jlsg_qianqi) return true;
+			group: ["jlsg_qianqi_start", "jlsg_qianqi_lose"],
+			subSkill: {
+				start: {
+					audio: "ext:极略/audio/skill:2",
+					trigger: {
+						player: "enterGame",
+						global: "phaseBefore",
+					},
+					forced: true,
+					filter(event) {
+						return event.name != "phase" || game.phaseNumber == 0;
+					},
+					async content(event, trigger, player) {
+						let defend = get.cardPile(card => get.subtype(card, player) == "equip3"),
+							attack = get.cardPile(card => get.subtype(card, player) == "equip4");
+						if (defend || attack) {
+							const { cards } = await player.gain([defend, attack], "gain2");
+							for (let card of cards) {
+								player.$give(card, player, false);
+								await player.equip(card);
+							}
+						}
+					},
 				},
-				cardUsable: function (card, player) {
-					if (card.storage && card.storage.jlsg_qianqi) return Infinity;
+				lose: {
+					audio: "jlsg_qianqi_start",
+					trigger: {
+						global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+					},
+					getIndex(event, player) {
+						return game
+							.filterPlayer(current => {
+								let evt = event.getl?.(current);
+								return evt?.es?.some(card => ["equip3", "equip4", "equip6"].includes(get.subtype(card, current)));
+							})
+							.sortBySeat();
+					},
+					filter(event, player, triggername, target) {
+						return target;
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						player.addMark("jlsg_qianqi", 2);
+					},
 				},
 			},
 			ai: {
 				respondSha: true,
-				skillTagFilter: function (player) {
+				skillTagFilter(player) {
 					return player.countMark("jlsg_qianqi");
 				},
 			},
@@ -4411,33 +4407,50 @@ export default {
 		jlsg_juechen: {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { source: "damageBegin2" },
-			direct: true,
-			shaRelated: true,
-			filter: function (event, player) {
-				return event.card && event.card.name == "sha" && event.player != player;
+			filter(event, player) {
+				return event.card?.name == "sha" && event.player != player;
 			},
-			content: function () {
-				"step 0"
-				player
-					.chooseControlList(get.prompt(event.name, trigger.player), [`改为其失去${trigger.num}点体力`, `改为其失去1点体力上限`], function () {
-						if (get.attitude(_status.event.player, _status.event.target) < 0) {
-							return _status.event.target.isDamaged ? 0 : 1;
+			async cost(event, trigger, player) {
+				const { result } = await player
+					.chooseControlList(`改为其失去${trigger.num}点体力`, `改为其失去1点体力上限`, "cancel2")
+					.set("prompt", get.prompt(event.skill, trigger.player))
+					.set("ai", (event, player) => {
+						const trigger = event.getTrigger(),
+							target = trigger.player;
+						const loseHpEffect = get.effect(target, { name: "losehp" }, player, player),
+							damageEffect = get.damageEffect(target, player, player, trigger.nature);
+						if (loseHpEffect > 0 || damageEffect > 0) {
+							return loseHpEffect > damageEffect ? 0 : 2;
+						}
+						if (get.attitude(player, target) < 0) {
+							return 1;
 						}
 						return 2;
 					})
-					.set("target", trigger.player);
-				"step 1"
-				if (result.control == "cancel2") {
-					event.finish();
-					return;
-				}
-				player.logSkill(event.name, trigger.player);
+				event.result = {
+					bool: result && result.control != "cancel2",
+					cost_data: result?.index,
+				};
+			},
+			async content(event, trigger, player) {
 				trigger.cancel();
-				if (result.index == 0) {
-					trigger.player.loseHp(trigger.num);
+				const { cost_data: index } = event;
+				if (index == 0) {
+					await trigger.player.loseHp(trigger.num);
 				} else {
-					trigger.player.loseMaxHp();
+					await trigger.player.loseMaxHp();
 				}
+			},
+			ai: {
+				ignoreSkill: true,
+				skillTagFilter(player, tag, arg) {
+					if (!arg || arg.isLink || !arg.card || arg.card.name != "sha") {
+						return false;
+					}
+					if (!arg.target || get.attitude(player, arg.target) >= 0) {
+						return false;
+					}
+				},
 			},
 		},
 		jlsg_luocha: {
@@ -12841,8 +12854,7 @@ export default {
 		jlsg_dingming2: "定命",
 		jlsg_dingming_info: "准备阶段，或当你受到其他角色造成的伤害后，你可以交换体力与已损失体力并摸X张牌，然后若你的体力多于已损失体力，你减1点体力上限；当你对其他角色造成伤害后，你可以令其交换体力与已损失体力且你摸X张牌，然后若其体力少于已损失体力，你减1点体力上限。（X为此次体力值变化量）",
 		jlsg_qianqi: "千骑",
-		jlsg_qianqi2: "千骑",
-		jlsg_qianqi_info: "游戏开始时，你装备随机+1与-1坐骑牌。当一名角色从装备区里失去坐骑牌后，你获得2枚「千骑」标记。出牌阶段，你可以弃置一枚「千骑」标记，视为使用一张无距离与次数限制的【杀】。",
+		jlsg_qianqi_info: "游戏开始时，你装备随机+1与-1坐骑牌。当一名角色从装备区里失去坐骑牌后，你获得2枚「千骑」标记。出牌阶段，你可以弃置一枚「千骑」标记，视为使用一张无距离次数限制且不计入次数的【杀】。",
 		jlsg_juechen: "绝尘",
 		jlsg_juechen_info: "当你使用【杀】对其他角色造成伤害时，你可以防止此伤害，改为令其失去X点体力（X为伤害值），或减一点体力上限。",
 		jlsg_shenfu: "神赋",
