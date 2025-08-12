@@ -7588,87 +7588,67 @@ export default {
 		},
 		jlsg_jijun: {
 			audio: "ext:极略/audio/skill:2",
-			usable: 1,
-			enable: "phaseUse",
-			complexCard: true,
-			selectCard: [1, 4],
-			check: function (card) {
-				var player = _status.event.player;
-				var cards = _status.event.player.getExpansions("jlsg_jijun").filter(c => c.suit == get.suit(card, player));
-				if (cards.length != 0 && cards[0].number > get.number(card, player)) return -1;
-				return get.number(card, player) - get.value(card) + 1;
-			},
-			filterCard: function (card) {
-				var suit = get.suit(card);
-				for (var i = 0; i < ui.selected.cards.length; i++) {
-					if (get.suit(ui.selected.cards[i]) == suit) return false;
-				}
-				return true;
-			},
-			discard: false,
-			lose: false,
-			// delay: false,
-			onremove: function (player, skill) {
+			onremove(player, skill) {
 				var cards = player.getExpansions(skill);
-				if (cards.length) player.loseToDiscardpile(cards);
+				if (cards.length) {
+					player.loseToDiscardpile(cards);
+				}
 			},
 			marktext: "军",
 			intro: {
 				content: "expansion",
 				markcount: "expansion",
 			},
-			content: function () {
-				"step 0"
-				var suits = cards.map(c => get.suit(c, player));
-				event.cards = player.getExpansions(event.name).filter(c => suits.includes(c.suit));
-				player.addToExpansion(player, cards, "give").gaintag.add(event.name);
-				"step 1"
-				player.gain(event.cards, "gain2");
-				"step 2"
-				var list = [];
-				for (var name of lib.inpile) {
-					var type = get.type(name);
-					if (type != "basic") {
-						continue;
-					}
-					if (lib.filter.cardEnabled({ name: name }, player)) {
-						list.push([type, "", name]);
-					}
-					if (name == "sha") {
-						for (var j of lib.inpile_nature) {
-							if (lib.filter.cardEnabled({ name: name, nature: j }, player)) list.push([type, "", name, j]);
-						}
+			enable: "phaseUse",
+			usable: 1,
+			selectCard: [1, 4],
+			complexCard: true,
+			filterCard(card, player) {
+				let suit = get.suit(card);
+				for (var i = 0; i < ui.selected.cards.length; i++) {
+					if (get.suit(ui.selected.cards[i]) == suit) {
+						return false;
 					}
 				}
-				var next = player.chooseButton(["集军", [list, "vcard"]]);
-				var choice,
-					value = 0;
-				for (let [_, __, cardName, nature] of list) {
-					// choose button ai
-					let card = { name: cardName, nature: nature };
-					let newV = player.getUseValue(card);
-					if (newV > value) {
-						choice = [cardName, nature];
-						value = newV;
+				return true;
+			},
+			check(card) {
+				const player = get.player();
+				const cards = player.getExpansions("jlsg_jijun").filter(c => c.suit == get.suit(card, player));
+				if (cards.length != 0 && cards[0].number > get.number(card, player)) {
+					return -1;
+				}
+				return get.number(card, player) - get.value(card) + 1;
+			},
+			discard: false,
+			lose: false,
+			async content(event, trigger, player) {
+				const { cards } = event,
+					suits = cards.map(card => get.suit(card)).unique(),
+					gainCards = player.getExpansions(event.name).filter(c => suits.includes(c.suit));
+				const next = player.addToExpansion(player, cards, "give");
+				next.gaintag.add(event.name);
+				await next;
+				if (gainCards.length) {
+					await player.gain(gainCards, "gain2");
+				}
+				const vcards = get.inpileVCardList(info => info[0] == "basic");
+				if (vcards?.length) {
+					const { result } = await player
+						.chooseButton(["集军", [vcards, "vcard"]])
+						.set("filterButton", ({ link: [_, __, name, nature] }, player) => {
+							const card = get.autoViewAs({ name, nature }, []);
+							return player.hasUseTarget(card, false, false);
+						})
+						.set("ai", ({ link: [_, __, name, nature] }) => {
+							const card = get.autoViewAs({ name, nature }, []);
+							return player.getUseValue(card, false, false);
+						});
+					if (result?.bool) {
+						const card = { name: result.links[0][2], nature: result.links[0][3], isCard: true };
+						await player.chooseUseTarget(card, true, false, "nodistance");
 					}
 				}
-				next.filterButton = function (button, player) {
-					return true;
-				};
-				next.ai = function (button) {
-					if (!_status.event.choice) {
-						return -1;
-					}
-					return button.link[2] === _status.event.choice[0] && (button.link[3] || true) === (_status.event.choice[1] || true) ? 1 : 0;
-				};
-				next.choice = choice;
-				"step 3"
-				if (!result.bool) {
-					event.finish();
-					return;
-				}
-				event.card = { name: result.links[0][2], nature: result.links[0][3] };
-				player.chooseUseTarget(event.card, true, "nodistance");
 			},
 			ai: {
 				order: 8,
@@ -7681,65 +7661,47 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			derivation: ["leiji", "jlsg_zhoufu", "jlsg_shendao", "jlsgsy_biantian"],
 			trigger: {
-				player: ["addToExpansionAfter", "gainAfter"],
+				player: ["addToExpansionAfter", "gainAfter", "phaseJieshuBegin"],
 			},
-			forced: true,
-			filter: function (event, player) {
-				if (event.name == "addToExpansion") {
+			filter(event, player) {
+				let list = lib.skill.jlsg_fangtong.getValid(player);
+				if (event.name == "phaseJieshu") {
+					return player.countCards("h") < list.length;
+				} else if (event.name == "addToExpansion") {
 					if (!event.gaintag.includes("jlsg_jijun")) {
 						return false;
 					}
 				} else {
-					var evt = event.getl(player);
-					if (!(evt && evt.xs && evt.xs.length > 0)) {
+					let evt = event.getl(player);
+					if (!evt?.xs?.length) {
 						return false;
 					}
 				}
-				var list = lib.skill.jlsg_fangtong.getValid(player);
-				var current = player.additionalSkills.jlsg_fangtong || [];
-				return current.length != list.length;
+				let currentList = player.additionalSkills.jlsg_fangtong || [];
+				return currentList.length != list.length;
 			},
-			content: function () {
-				var list = lib.skill.jlsg_fangtong.getValid(player);
-				player.removeAdditionalSkill(event.name);
-				if (list.length) {
-					player.addAdditionalSkill(event.name, list);
+			forced: true,
+			async content(event, trigger, player) {
+				let list = lib.skill.jlsg_fangtong.getValid(player);
+				if (trigger.name == "phaseJieshu") {
+					await player.drawTo(list.length);
+				} else {
+					player.removeAdditionalSkill(event.name);
+					if (list.length) {
+						player.addAdditionalSkill(event.name, list);
+					}
 				}
 			},
 			getValid(player) {
-				var cnt = player.getExpansions("jlsg_jijun").reduce((a, b) => a + b.number, 0);
-				var list = [];
-				if (cnt >= 9) {
-					list.push("leiji");
-				}
-				if (cnt >= 18) {
-					list.push("jlsg_zhoufu");
-				}
-				if (cnt >= 27) {
-					list.push("jlsg_shendao");
-				}
-				if (cnt >= 36) {
-					list.push("jlsgsy_biantian");
-				}
-				return list;
+				let cnt = player.getExpansions("jlsg_jijun").reduce((a, b) => a + b.number, 0),
+					list = this.derivation;
+				return list.slice(0, Math.min(4, Math.floor(cnt / 9)));
 			},
-			group: "jlsg_fangtong2",
 			ai: {
 				result: {
 					player: 1,
 				},
 				combo: "jlsg_jijun",
-			},
-		},
-		jlsg_fangtong2: {
-			audio: "jlsg_fangtong",
-			trigger: { player: "phaseJieshuBegin" },
-			forced: true,
-			filter: function (event, player) {
-				return player.additionalSkills.jlsg_fangtong && player.additionalSkills.jlsg_fangtong.length > player.countCards("h");
-			},
-			content: function () {
-				player.drawTo(player.additionalSkills.jlsg_fangtong.length);
 			},
 		},
 		jlsg_jinzhi: {
@@ -15984,9 +15946,8 @@ export default {
 		jlsg_zhidi: "制敌",
 		jlsg_zhidi_info: "锁定技，准备阶段，你随机获得以下一项你还未获得的效果：1.你使用【杀】造成伤害后，你摸一张牌；2.你使用【杀】无视防具且不能被【闪】相应；3.你使用【杀】无距离限制且次数上限+X；4.你使用【杀】可以额外指定X个目标（X为你以此法获得的效果数）",
 		jlsg_jijun: "集军",
-		jlsg_jijun_info: "出牌阶段限一次，你可以将任意张不同花色的手牌置于武将牌上，称为「兵」,然后获得其中其余与你本次放入的牌同花色的牌，并可视为使用一张基本牌（无距离和次数限制）。",
+		jlsg_jijun_info: "出牌阶段限一次，你可以将任意张不同花色的手牌置于武将牌上，称为「兵」,然后获得其中其余与你本次放入的牌同花色的牌，并可视为使用一张基本牌（无距离次数限制且不计入次数限制）。",
 		jlsg_fangtong: "方统",
-		jlsg_fangtong2: "方统",
 		jlsg_fangtong_info: "锁定技，若你的「兵」的点数之和不小于：9，你拥有技能〖雷击〗；18，你拥有技能〖咒缚〗；27，你拥有技能〖神道〗；36，你拥有技能〖变天〗。结束阶段，你将手牌数补至X张（X为你因〖方统〗激活的技能数）",
 		jlsg_jinzhi: "锦织",
 		jlsg_jinzhi2: "锦织",
