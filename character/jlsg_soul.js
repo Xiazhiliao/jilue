@@ -5909,116 +5909,106 @@ export default {
 		},
 		jlsg_liegong: {
 			audio: "ext:极略/audio/skill:2",
-			enable: "chooseToUse",
-			complexCard: true,
 			locked: false,
-			filterCard: function (card) {
-				var suit = get.suit(card);
-				for (var i = 0; i < ui.selected.cards.length; i++) {
-					if (get.suit(ui.selected.cards[i]) == suit) return false;
-				}
-				return true;
-			},
-			viewAsFilter: function (player) {
+			enable: "chooseToUse",
+			viewAsFilter(player) {
 				let cnt = player.storage.jlsg_liegong_used ?? 0;
 				return player.countCards("h") && cnt < (player.isDamaged() ? 2 : 1);
 			},
-			selectCard: [1, 4],
 			viewAs: {
 				name: "sha",
 				nature: "fire",
 				jlsg_liegong: true,
 			},
-			check: function (card) {
-				var val = get.value(card);
+			selectCard: [1, 4],
+			complexCard: true,
+			filterCard(card, player) {
+				let suit = get.suit(card);
+				for (var i = 0; i < ui.selected.cards.length; i++) {
+					if (get.suit(ui.selected.cards[i], player) == suit) return false;
+				}
+				return true;
+			},
+			check(card) {
+				let val = get.value(card);
 				return 10 - val;
 			},
-			precontent() {
-				"step 0"
+			async precontent(event, trigger, player) {
+				if (event.getParent().addCount !== false) {
+					event.getParent().addCount = false;
+				}
 				player.addTempSkill("jlsg_liegong_used");
 				player.storage.jlsg_liegong_used++;
+				player.markSkill("jlsg_liegong_used");
 			},
 			mod: {
-				targetInRange: function (card, player) {
+				targetInRange(card, player) {
 					if (card.jlsg_liegong) return true;
 				},
-				cardUsable: function (card, player) {
+				cardUsable(card, player) {
 					if (card.jlsg_liegong) return Infinity;
 				},
 			},
-			group: ["jlsg_liegong2", "jlsg_liegong3"],
+			group: ["jlsg_liegong_effect"],
 			subSkill: {
 				used: {
-					init(player) {
-						player.storage.jlsg_liegong_used = 0;
+					init(player, skill) {
+						player.setStorage(skill, 0);
 					},
 					onremove: true,
 					charlotte: true,
 					sub: true,
 				},
+				effect: {
+					sub: true,
+					sourceSkill: "jlsg_liegong",
+					silent: true,
+					charlotte: true,
+					trigger: {
+						player: ["useCard", "useCardToAfter"],
+						source: "damageSource",
+					},
+					filter(event, player, name) {
+						if (event.card?.name != "sha" || !event.card?.jlsg_liegong || !event.card?.cards) {
+							return false;
+						}
+						const cnt = event.card.cards.length;
+						if (name == "useCard") {
+							return cnt >= 1;
+						} else if (name == "useCardToAfter") {
+							return cnt >= 2 && !event.card.jlsg_liegong_effect;
+						}
+						let skills = event.player.getSkills(null, false, false).filter(skill => {
+							let info = get.info(skill);
+							return info && !get.is.empty(info) && !info.charlotte;
+						});
+						return cnt >= 4 && skills.length;
+					},
+					async content(event, trigger, player) {
+						if (event.triggername == "useCard") {
+							trigger.directHit.addArray(game.players);
+							if (trigger.card.cards.length >= 3) {
+								trigger.baseDamage++;
+							}
+						} else if (event.triggername == "useCardToAfter") {
+							trigger.card.jlsg_liegong_effect = true;
+							await player.draw(3);
+						} else {
+							let skill = trigger.player
+								.getSkills(null, false, false)
+								.filter(skill => {
+									let info = get.info(skill);
+									return info && !get.is.empty(info) && !info.charlotte;
+								})
+								.randomGet();
+							await trigger.player.removeSkills(skill);
+						}
+					},
+				},
 			},
 			ai: {
 				fireDamage: true,
 				directHit_ai: true,
-			},
-		},
-		jlsg_liegong2: {
-			sourceSkill: "jlsg_liegong",
-			silent: true,
-			charlotte: true,
-			trigger: {
-				player: "useCard",
-			},
-			filter(event, player) {
-				return event.card.name == "sha" && event.card.jlsg_liegong && event.cards;
-			},
-			content() {
-				let cnt = trigger.cards.length;
-				if (cnt >= 1) {
-					trigger.directHit.addArray(game.players);
-				}
-				if (cnt >= 2) {
-					player
-						.when({ player: "useCardToAfter" })
-						.filter(evt => evt.parent == trigger)
-						.then(() => {
-							if (trigger.card.name == "sha" && trigger.card.jlsg_liegong && trigger.cards.length >= 2) {
-								player.draw(3);
-							}
-						});
-				}
-				if (cnt >= 3) {
-					trigger.baseDamage++;
-				}
-			},
-		},
-		jlsg_liegong3: {
-			sourceSkill: "jlsg_liegong",
-			silent: true,
-			charlotte: true,
-			trigger: {
-				source: "damageSource",
-			},
-			filter(event, player) {
-				let skills = event.player.getSkills(null, false, false).filter(skill => {
-					var info = get.info(skill);
-					if (!info || get.is.empty(info) || info.charlotte) return false;
-					return true;
-				});
-				return event.card && event.card.name == "sha" && event.card.jlsg_liegong && event.notLink() && event.cards.length >= 4 && skills.length;
-			},
-			content() {
-				let skill = trigger.player
-					.getSkills(null, false, false)
-					.filter(skill => {
-						var info = get.info(skill);
-						if (!info || get.is.empty(info) || info.charlotte) return false;
-						return true;
-					})
-					.randomGet();
-				// TODO: make popup synced
-				trigger.player.popup(skill, "gray");
-				trigger.player.removeSkills(skill);
 			},
 		},
 		jlsg_xingwu: {
@@ -12896,9 +12886,7 @@ export default {
 		jlsg_jinlong_info: "锁定技，当装备牌被你获得或不因判定而进入弃牌堆后，将之置于你的武将牌上，然后你摸一张牌。你视为拥有这些装备牌的技能。",
 		jlsg_jinlong_append: '<span style="font-family:yuanli">无法获得武器的攻击范围。坐骑的距离结算效果相加后结算。</span>',
 		jlsg_liegong: "烈弓",
-		jlsg_liegong2: "烈弓",
-		jlsg_liegong3: "烈弓",
-		jlsg_liegong_info: "你可以将任意花色各不相同的手牌当无距离和次数限制的火【杀】使用，若以此法使用的转化前的牌数不小于：1,此【杀】不能被【闪】响应；2,使用此【杀】后，你摸三张牌;3，此【杀】的伤害+1;4,此【杀】对目标角色造成伤害后，令其随机失去一个技能。每回合限一次，若你已受伤，改为每回合限两次。",
+		jlsg_liegong_info: "每回合限一次，若你已受伤，改为每回合限两次，你可以将任意花色各不相同的手牌当无距离次数限制且不计入次数的火【杀】使用，若以此法使用的转化前的牌数不小于：1.此【杀】不能被【闪】响应；2.此【杀】生效后，你摸三张牌：3.此【杀】的伤害+1：4.此【杀】对目标角色造成伤害后，令其随机失去一个技能。",
 		jlsg_xingwu: "星舞",
 		jlsg_xingwu2: "星舞",
 		jlsg_xingwu_info: "游戏开始时，你可以令所有角色各获得一枚「星舞」标记，你可以重复此流程至多X次(X为你的体力)。一名角色的回合开始时，你可以弃置一张红桃牌，然后移动该角色的一枚「星舞」标记，或令其获得一枚「星舞」标记，若如此做，你可以令其失去所有因「星舞」获得的技能并重新获得。当角色获得“星舞”标记后，你令其回复1点体力，然后其随机获得一个与其性别不同的武将的技能。当角色失去「星舞」标记后，你令其失去1点体力，然后其随机失去一个与其性别相同的武将的技能。",
