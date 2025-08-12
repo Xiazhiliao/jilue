@@ -10560,7 +10560,7 @@ export default {
 				return true;
 			},
 			async content(event, trigger, player) {
-				trigger.effectCount += 2;
+				trigger.effectCount += 1;
 			},
 			ai: {
 				effect: {
