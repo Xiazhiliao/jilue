@@ -2017,6 +2017,9 @@ export default {
 		},
 		jlsg_longhun: {
 			audio: "ext:极略/audio/skill:4",
+			logAudio(event, player) {
+				return "ext:极略/audio/skill/jlsg_longhun" + (4 - lib.suit.indexOf(get.suit(event.cards[0], player))) + ".mp3";
+			},
 			mod: {
 				aiValue(player, card, num) {
 					if (!card || (card.cards && card.cards.length != 1)) return;
