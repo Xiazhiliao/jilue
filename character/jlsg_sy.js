@@ -412,7 +412,7 @@ export default {
 					return;
 				}
 				let card = list.randomGet();
-				await player.chooseUseTarget(card, true, false, "nodistance");
+				await player.chooseUseTarget(card.name, true, false, "nodistance");
 			},
 			ai: {
 				order(item, player) {

@@ -4561,9 +4561,11 @@ export default {
 				const choiceList = ["令此【杀】不能被响应", "令此【杀】无效", "将此【杀】的目标改为你"],
 					choiced = player.getStorage(event.name, [true, true, true]),
 					list = [];
-				if (_status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2] && choiced.length < 4) {
-					choiceList.add("令目标角色于此【杀】结算后回复1点体力");
-					choiced.push(true);
+				if (_status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2]) {
+					choiceList.push("令目标角色于此【杀】结算后回复1点体力");
+					if (choiced.length < 4) {
+						choiced.push(true);
+					}
 				}
 				for (let i in choiced) {
 					if (!choiced[i]) {
@@ -4596,7 +4598,7 @@ export default {
 					);
 				if (result) {
 					game.log(player, "选择了", result.control);
-					let map = Array.from({ length: 4 }, (v, i) => `选项${get.cnNumber(Number(i) + 1, true)}`);
+					let map = ["选项一", "选项二", "选项三", "选项四"];
 					let num = map.indexOf(result.control);
 					choiced[num] = false;
 					if (!choiced.filter(i => i).length) {
@@ -4638,7 +4640,7 @@ export default {
 				if (upgrade) {
 					return result;
 				}
-				return result.slice(1, -1);
+				return result.slice(0, -1);
 			},
 			ai: {
 				expose: 0.5,
@@ -5142,7 +5144,7 @@ export default {
 		jlsg_tianshang_info: "限定技，你死亡时，可令一名其他角色获得你此武将牌上拥有的其他技能，然后其增加1点体力上限并恢复1点体力。",
 		jlsg_yiji_info: "每当你受到一点伤害，可以观看牌堆顶的两张牌，并将其交给任意1~2名角色。",
 		jlsg_huiqu_info: "准备阶段，你可以弃置一张手牌进行一次判定，若结果为红色，你将场上的一张牌移动到一个合理的位置；若结果为黑色，你对一名角色造成1点伤害，然后你摸一张牌。",
-		jlsg_zhaoxiang_info: "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；2．将此【杀】的目标改为你。当所有选项执行后，重置此技能",
+		jlsg_zhaoxiang_info: "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；3．将此【杀】的目标改为你。当所有选项执行后，重置此技能",
 		jlsg_zhishi_info: "当任意角色受到伤害后，你可以令其从随机两个能在此时机发动的技能中选择一个并发动。",
 		jlsg_jianxiong_info: "主公技。每当其他魏势力受到不为你的一次伤害后，该角色可以弃置一张手牌，然后令你获得对其造成伤害的牌。",
 		jlsg_jiuzhu_info: "每当一张非转化的【闪】进入弃牌堆时，你可以用一张不为【闪】的牌替换之。若此时不是你的回合，你可以视为对当前回合角色使用一张无视防具的【杀】。",
@@ -5197,11 +5199,21 @@ export default {
 	},
 	dynamicTranslate: {
 		jlsg_zhaoxiang(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};
+			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {},
+				storage = player?.getStorage?.("jlsg_zhaoxiang", [true, true, true]) || [true, true, true];
+			let str = "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：",
+				list = ["1．令此【杀】不能被响应", "2．令此【杀】无效", "3．将此【杀】的目标改为你"];
 			if (upgrade["jlsgsr_caocao"]?.[2] || player?.index) {
-				return "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；3．将此【杀】的目标改为你；4．令目标角色于此【杀】结算后回复1点体力。当所有选项执行后，重置此技能";
+				list.push("4．令目标角色于此【杀】结算后回复1点体力");
+				storage.push(true);
 			}
-			return lib.translate.jlsg_zhaoxiang_info;
+			for (let i in storage) {
+				if (!storage[i]) {
+					list[i] = `<span style="text-decoration: line-through;">${list[i]}</span>`;
+				}
+			}
+			str += list.join("；") + "。当所有选项执行后，重置此技能。";
+			return str;
 		},
 		jlsg_zhishi(player) {
 			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};

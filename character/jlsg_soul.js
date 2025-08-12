@@ -1300,8 +1300,8 @@ export default {
 		},
 		jlsg_xingyun: {
 			audio: "ext:极略/audio/skill:2",
-			forced: true,
 			trigger: { player: "phaseEnd" },
+			forced: true,
 			async content(event, trigger, player) {
 				await player.loseMaxHp();
 				const storage = player.getStorage("jlsg_yaozhi", {});
