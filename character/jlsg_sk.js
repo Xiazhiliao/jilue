@@ -7642,7 +7642,7 @@ export default {
 						})
 						.set("ai", ({ link: [_, __, name, nature] }) => {
 							const card = get.autoViewAs({ name, nature }, []);
-							return player.getUseValue(card, false, false);
+							return get.player().getUseValue(card, false, false);
 						});
 					if (result?.bool) {
 						const card = { name: result.links[0][2], nature: result.links[0][3], isCard: true };
