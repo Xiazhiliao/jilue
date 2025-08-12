@@ -1017,13 +1017,10 @@ export default {
 					}
 					characterList = _status.characterlist.slice().randomSort();
 				} else {
-					characterList = [];
-					for (let i in lib.character) {
-						characterList.push(i);
-					}
-					characterList = characterList.randomSort();
+					characterList = Object.keys(lib.character).randomSort();
 				}
-				const triggername = event.triggername == "phaseBegin" ? ["phaseBegin", "phaseZhunbeiBegin"] : [event.triggername],
+				const storage = player.getStorage(event.name, {}),
+					triggername = event.triggername == "phaseBegin" ? ["phaseBegin", "phaseZhunbeiBegin"] : [event.triggername],
 					list = {};
 				let packList = ["jlsg_sr", "jlsg_sk", "jlsg_soul"];
 				for (let name of characterList) {
@@ -1031,13 +1028,21 @@ export default {
 						continue;
 					} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false" && packList.every(pack => !(name in lib.characterPack[pack]))) {
 						continue;
+					} else if (Object.keys(list).some(i => get.translation(i) == get.translation(name))) {
+						//防重名
+						continue;
 					}
-					let skills = get.character(name).skills;
+					let skills = get.character(name).skills,
+						record = Object.values(list).flat();
 					for (let skill of skills) {
-						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
+						if (player.hasSkill(skill, null, false, false) || Object.values(storage).flat().includes(skill) || record.includes(skill)) {
 							continue;
 						}
 						if (["jlsg_xianshou"].includes(skill)) {
+							continue;
+						}
+						//防技能重名
+						if (record.some(i => get.translation(i) == get.translation(skill))) {
 							continue;
 						}
 						const skills2 = game.expandSkills([skill]);
@@ -1064,7 +1069,6 @@ export default {
 															try {
 																const bool = info.filter(trigger, player, triggername2, target);
 																if (bool) return true;
-																return false;
 															} catch (e) {
 																return false;
 															}
@@ -1101,7 +1105,7 @@ export default {
 							}
 						}
 					}
-					if (Object.values(list).flat().length > 2) {
+					if (Object.keys(list).length > 2) {
 						break;
 					}
 				}
@@ -1117,7 +1121,11 @@ export default {
 					.forResultControl();
 				const flashName = Object.entries(list).find(i => i[1].includes(control))[0];
 				player.flashAvatar(null, flashName);
-				player.markAuto(event.name, [control]);
+				if (!storage[flashName]) {
+					storage[flashName] = [];
+				}
+				storage[flashName].add(control);
+				player.setStorage(event.name, storage);
 				let expire = "damageAfter";
 				if (event.triggername == "phaseJieshuBegin") {
 					expire = "phaseJieshuEnd";
@@ -1163,26 +1171,27 @@ export default {
 					}
 					characterList = _status.characterlist.slice().randomSort();
 				} else {
-					characterList = [];
-					for (let i in lib.character) {
-						characterList.push(i);
-					}
-					characterList = characterList.randomSort();
+					characterList = Object.keys(lib.character).randomSort();
 				}
-				const list = {};
+				const storage = player.getStorage("jlsg_yaozhi", {}),
+					list = {};
 				let packList = ["jlsg_sr", "jlsg_sk", "jlsg_soul"];
 				for (let name of characterList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 						continue;
 					} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false" && packList.every(pack => !(name in lib.characterPack[pack]))) {
 						continue;
+					} else if (Object.keys(list).some(i => get.translation(i) == get.translation(name))) {
+						//防重名
+						continue;
 					}
-					let skills = get.character(name).skills;
+					let skills = get.character(name).skills,
+						record = Object.values(list).flat();
 					for (let skill of skills) {
 						if (["jlsg_xianshou"].includes(skill)) {
 							continue;
 						}
-						if (player.hasSkill(skill, null, false, false) || player.hasStorage(event.name, skill) || Object.values(list).flat().includes(skill)) {
+						if (player.hasSkill(skill, null, false, false) || Object.values(storage).flat().includes(skill) || record.includes(skill)) {
 							continue;
 						}
 						if (get.is.locked(skill, player)) {
@@ -1241,7 +1250,7 @@ export default {
 							}
 						}
 					}
-					if (Object.values(list).flat().length > 2) {
+					if (Object.keys(list).length > 2) {
 						break;
 					}
 				}
@@ -1257,7 +1266,11 @@ export default {
 					.forResultControl();
 				const flashName = Object.entries(list).find(i => i[1].includes(control))[0];
 				player.flashAvatar(null, flashName);
-				player.markAuto("jlsg_yaozhi", [control]);
+				if (!storage[flashName]) {
+					storage[flashName] = [];
+				}
+				storage[flashName].add(control);
+				player.setStorage(event.name, storage);
 				player.addTempSkill(control, "phaseUseEnd");
 				player.addTempSkill("jlsg_yaozhi_temp", "phaseUseEnd");
 				player.markAuto("jlsg_yaozhi_temp", [control]);
@@ -1291,160 +1304,202 @@ export default {
 			trigger: { player: "phaseEnd" },
 			async content(event, trigger, player) {
 				await player.loseMaxHp();
-				if (!player.getStorage("jlsg_yaozhi").length) return;
-				let characters = [],
-					leftSkills = player.getStorage("jlsg_yaozhi").randomGets(16),
-					skills = [];
-				for (let pack in lib.characterPack) {
-					for (let c in lib.characterPack[pack]) {
-						var info = lib.characterPack[pack][c];
-						if (info[3].some(s => leftSkills.includes(s))) {
-							characters.push(c);
-							skills.push(...leftSkills.filter(s => info[3].includes(s)));
-							leftSkills.remove(info[3]);
-							if (!leftSkills.length) break;
-						}
-					}
+				const storage = player.getStorage("jlsg_yaozhi", {});
+				if (!Object.keys(storage).length) {
+					return;
 				}
-				var list = characters;
-				await Promise.all(event.next);
-				event.videoId = lib.status.videoId++;
-				if (player.isUnderControl()) {
-					game.swapPlayerAuto(player);
+				_status.noclearcountdown = true;
+				const id = lib.status.videoId++,
+					prompt = `星陨：请选择获得一个技能`;
+				if (player.isOnline2()) {
+					player.send(
+						(cards, prompt, id) => {
+							const dialog = ui.create.dialog(prompt, [cards, lib.skill.jlsg_xingyun.$createButton]);
+							dialog.videoId = id;
+						},
+						Object.entries(storage),
+						prompt,
+						id
+					);
 				}
-				const chooseCharacterSkills = function (player, list, skills, force = false, num, ai = { bool: false }) {
-					const { promise, resolve } = Promise.withResolvers();
-					const event = _status.event;
-					//初始化result
-					event._result ??= {};
-					event._result.skills = [];
-					event.selectedSkills ??= event._result.skills;
-					//创建对话框
-					let dialog = ui.create.dialog(`请选择获得至多${get.cnNumber(num)}个技能`, [list, "character"], "hidden");
-					event.dialog = dialog;
-					//创建确定按钮
-					event.control_ok = ui.create.control("ok", link => {
-						_status.imchoosing = false;
-						event.dialog.close();
-						event.control_ok?.close();
-						event.control_cancel?.close();
-						event._result = {
-							bool: true,
-							skills: event.selectedSkills,
-						};
-						resolve(event._result);
-						game.resume();
+				const dialog = ui.create.dialog(prompt, [Object.entries(storage), lib.skill.jlsg_xingyun.$createButton]);
+				dialog.videoId = id;
+				if (!event.isMine()) {
+					dialog.style.display = "none";
+				}
+				const buttons = dialog.content.querySelector(".buttons");
+				const array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== "none");
+				const groups = array
+					.map(i => get.character(i.link).group)
+					.unique()
+					.sort((a, b) => {
+						const getNum = g => (lib.group.includes(g) ? lib.group.indexOf(g) : lib.group.length);
+						return getNum(a) - getNum(b);
 					});
-					//event.control_ok.classList.add("disabled");
-					//如果是非强制的，才创建取消按钮
-					if (!force) {
-						event.control_cancel = ui.create.control("cancel", link => {
-							_status.imchoosing = false;
-							event.dialog.close();
-							event.control_ok?.close();
-							event.control_cancel?.close();
-							event._result = {
-								bool: false,
-							};
-							resolve(event._result);
-							game.resume();
-						});
+				if (groups.length > 1) {
+					dialog.style.bottom = (parseInt(dialog.style.top || "0", 10) + get.is.phoneLayout() ? 230 : 220) + "px";
+					dialog.addPagination({
+						data: array,
+						totalPageCount: groups.length,
+						container: dialog.content,
+						insertAfter: buttons,
+						onPageChange(state) {
+							const { pageNumber, data, pageElement } = state;
+							const { groups } = pageElement;
+							data.forEach(item => {
+								item.classList[
+									(() => {
+										const group = get.character(item.link).group;
+										return groups.indexOf(group) + 1 === pageNumber;
+									})()
+										? "remove"
+										: "add"
+								]("nodisplay");
+							});
+							ui.update();
+						},
+						pageLimitForCN: ["←", "→"],
+						pageNumberForCN: groups.map(i => {
+							const isChineseChar = char => {
+								const regex = /[\u4e00-\u9fff\u3400-\u4dbf\ud840-\ud86f\udc00-\udfff\ud870-\ud87f\udc00-\udfff\ud880-\ud88f\udc00-\udfff\ud890-\ud8af\udc00-\udfff\ud8b0-\ud8bf\udc00-\udfff\ud8c0-\ud8df\udc00-\udfff\ud8e0-\ud8ff\udc00-\udfff\ud900-\ud91f\udc00-\udfff\ud920-\ud93f\udc00-\udfff\ud940-\ud97f\udc00-\udfff\ud980-\ud9bf\udc00-\udfff\ud9c0-\ud9ff\udc00-\udfff]/u;
+								return regex.test(char);
+							}; //友情提醒：regex为基本汉字区间到扩展G区的Unicode范围的正则表达式，非加密/混淆
+							const str = get.plainText(lib.translate[i + "2"] || lib.translate[i] || "无");
+							return isChineseChar(str.slice(0, 1)) ? str.slice(0, 1) : str;
+						}),
+						changePageEvent: "click",
+						pageElement: { groups: groups },
+					});
+				}
+				const finish = () => {
+					if (player.isOnline2()) {
+						player.send("closeDialog", id);
 					}
-					event.switchToAuto = function () {
-						_status.imchoosing = false;
-						event.dialog?.close();
-						event.control_ok?.close();
-						event.control_cancel?.close();
-						event._result = ai;
-						resolve(event._result);
-						game.resume();
-					};
-					//创建用于选择的技能按钮（tdnodes样式）
-					const table = document.createElement("div");
-					table.classList.add("add-setting");
-					table.style.margin = "0";
-					table.style.width = "100%";
-					table.style.position = "relative";
-					for (let i = 0; i < skills.length; i++) {
-						const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-						td.link = skills[i];
-						table.appendChild(td);
-						td.innerHTML = "<span>" + get.translation(skills[i]) + "</span>";
-						//给按钮添加监听
-						td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-							if (_status.dragged) {
-								return;
-							}
-							if (_status.justdragged) {
-								return;
-							}
-							_status.tempNoButton = true;
-							setTimeout(function () {
-								_status.tempNoButton = false;
-							}, 500);
-							const link = this.link;
-							if (!this.classList.contains("bluebg")) {
-								//限制选择数量
-								if (event.selectedSkills.length >= num) {
-									return;
-								}
-								event.selectedSkills.add(link);
-								this.classList.add("bluebg");
-							} else {
-								this.classList.remove("bluebg");
-								event.selectedSkills.remove(link);
-							}
-							//event.control_ok.classList[event.selectedSkills.length >= 0 ? "remove" : "add"]("disabled");
-						});
+					dialog.close();
+					delete _status.noclearcountdown;
+					if (!_status.noclearcountdown) {
+						game.stopCountChoose();
 					}
-					dialog.content.appendChild(table);
-					dialog.add("　　");
-					dialog.open();
+				};
+				while (true) {
+					const next = player.chooseButton(true).set("dialog", id);
+					next.set("ai", ({ link }) => {
+						const { player, cond } = get.event();
+						const storage = player.getStorage("jlsg_yaozhi", {});
+						let skills = Object.values(storage).flat();
+						skills.sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
+						let name = Object.keys(storage).find(i => storage[i].includes(skills[0]));
+						return name == link;
+					});
+					next.set("cond", event.triggername);
 
-					//点亮所有按钮（包括角色的）
-					for (let i = 0; i < event.dialog.buttons.length; i++) {
-						event.dialog.buttons[i].classList.add("selectable");
+					const result = await next.forResult();
+					const name = result.links[0],
+						func = function (card, id) {
+							const dialog = get.idDialog(id);
+							if (dialog) {
+								//禁止翻页
+								const paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
+								if (paginationInstance?.state) {
+									paginationInstance.state.pageRefuseChanged = true;
+								}
+								for (let i = 0; i < dialog.buttons.length; i++) {
+									if (dialog.buttons[i].link == card) {
+										dialog.buttons[i].classList.add("selectedx");
+									} else {
+										dialog.buttons[i].classList.add("unselectable");
+									}
+								}
+							}
+						};
+					if (player.isOnline2()) {
+						player.send(func, name, id);
+					} else if (event.isMine()) {
+						func(name, id);
 					}
-					game.pause();
-					_status.imchoosing = true;
-					return promise;
-				};
-				const ai = function () {
-					return { bool: true, skills: skills.slice().sort((a, b) => get.skillRank(b, "inout") - get.skillRank(a, "inout")).slice(0, 1) };
-				};
-				let next;
-				if (event.isMine()) {
-					next = chooseCharacterSkills(player, list, skills, true, 1, ai());
-				} else if (player.isOnline()) {
-					let { promise, resolve } = Promise.withResolvers();
-					player.send(chooseCharacterSkills, player, list, skills, true, 1, ai());
-					player.wait(result => {
-						if (result == "ai") {
-							result = ai();
-						}
-						resolve(result);
-					});
-					next = promise;
-				} else {
-					next = Promise.resolve(ai());
-				}
-				const result = await next;
-				if (result?.skills?.length) {
-					await player.addSkills(result.skills);
-					game.broadcastAll(function (list) {
-						game.expandSkills(list);
-						for (const i of list) {
-							var info = lib.skill[i];
-							if (!info) {
-								continue;
+					const result2 = await player
+						.chooseControl(storage[name], "返回")
+						.set("ai", () => {
+							const { cond, controls } = get.event();
+							controls.slice().sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
+							return controls[0];
+						})
+						.set("cond", event.triggername)
+						.forResult();
+					const control = result2.control;
+					if (control === "返回") {
+						const func2 = function (card, id) {
+							const dialog = get.idDialog(id);
+							if (dialog) {
+								//允许翻页
+								const paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
+								if (paginationInstance?.state) {
+									paginationInstance.state.pageRefuseChanged = false;
+								}
+								for (let i = 0; i < dialog.buttons.length; i++) {
+									dialog.buttons[i].classList.remove("selectedx");
+									dialog.buttons[i].classList.remove("unselectable");
+								}
 							}
-							if (!info.audioname2) {
-								info.audioname2 = {};
-							}
-							info.audioname2.old_yuanshu = "weidi";
+						};
+						if (player.isOnline2()) {
+							player.send(func2, name, id);
+						} else if (event.isMine()) {
+							func2(name, id);
 						}
-					}, result.skills);
+					} else {
+						finish();
+						await player.addSkills([control]);
+						return;
+					}
 				}
+			},
+			$createButton(item, type, position, noclick, node) {
+				const [name, skills] = item;
+				node = ui.create.buttonPresets.character(name, "character", position, noclick);
+				const info = lib.character[name];
+				if (skills.length) {
+					const skillstr = skills.map(i => `[${get.translation(i)}]`).join("<br>");
+					const skillnode = ui.create.caption(`<div class="text" data-nature=${get.groupnature(info[1], "raw")}m style="font-family: ${lib.config.name_font || "xinwei"},xinwei">${skillstr}</div>`, node);
+					skillnode.style.left = "2px";
+					skillnode.style.bottom = "2px";
+				}
+				node.link = name;
+				node._customintro = function (uiintro, evt) {
+					const character = node.link,
+						characterInfo = get.character(node.link);
+					let capt = get.translation(character);
+					if (characterInfo) {
+						capt += `&nbsp;&nbsp;${get.translation(characterInfo.sex)}`;
+						let charactergroup;
+						const charactergroups = get.is.double(character, true);
+						if (charactergroups) {
+							charactergroup = charactergroups.map(i => get.translation(i)).join("/");
+						} else {
+							charactergroup = get.translation(characterInfo.group);
+						}
+						capt += `&nbsp;&nbsp;${charactergroup}`;
+					}
+					uiintro.add(capt);
+
+					if (lib.characterTitle[node.link]) {
+						uiintro.addText(get.colorspan(lib.characterTitle[node.link]));
+					}
+					for (let i = 0; i < skills.length; i++) {
+						if (lib.translate[skills[i] + "_info"]) {
+							let translation = lib.translate[skills[i] + "_ab"] || get.translation(skills[i]).slice(0, 2);
+							if (lib.skill[skills[i]] && lib.skill[skills[i]].nobracket) {
+								uiintro.add('<div><div class="skilln">' + get.translation(skills[i]) + "</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+							} else {
+								uiintro.add('<div><div class="skill">【' + translation + "】</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+							}
+							if (lib.translate[skills[i] + "_append"]) {
+								uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skills[i] + "_append"] + "</div>");
+							}
+						}
+					}
+				};
+				return node;
 			},
 			ai: {
 				halfneg: true,
