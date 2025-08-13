@@ -1518,6 +1518,7 @@ export default {
 					return;
 				}
 				player.line(toTargets);
+				useCards.randomSort();
 				while (useCards.length) {
 					if (!target.isIn()) {
 						break;
