@@ -4412,7 +4412,7 @@ export default {
 			},
 			async cost(event, trigger, player) {
 				const { result } = await player
-					.chooseControlList(`改为其失去${trigger.num}点体力`, `改为其失去1点体力上限`, "cancel2")
+					.chooseControlList([`改为其失去${trigger.num}点体力`, `改为其失去1点体力上限`])
 					.set("prompt", get.prompt(event.skill, trigger.player))
 					.set("ai", (event, player) => {
 						const trigger = event.getTrigger(),
@@ -4426,7 +4426,7 @@ export default {
 							return 1;
 						}
 						return 2;
-					})
+					});
 				event.result = {
 					bool: result && result.control != "cancel2",
 					cost_data: result?.index,
@@ -5914,7 +5914,8 @@ export default {
 					cards
 						.addArray(gain)
 						.map(c => get.info(c).skills || [])
-						.flat(),
+						.flat()
+						.filter(i => lib.translate[i]),
 					true
 				);
 				player.draw(cards.concat(gain).unique().length);
