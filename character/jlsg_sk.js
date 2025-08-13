@@ -9425,35 +9425,53 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { global: "useCardAfter" },
 			filter(event, player) {
+				if (!player.hasUsableCard("sha")) {
+					return false;
+				}
 				return event.player != player && _status.currentPhase != player && get.color(event.card, event.player) == "red";
 			},
-			direct: true,
-			content() {
-				"step 0"
-				player.chooseToUse({
-					logSkill: "jlsg_jiejun",
-					preTarget: trigger.player,
-					prompt: `截军：是否对${get.translation(trigger.player)}使用一张【杀】？`,
-					prompt2: `若此【杀】造成伤害，你获得其所有牌`,
-					filterCard: function (card, player) {
-						return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
-					},
-					filterTarget: function (card, player, target) {
-						return target == _status.event.preTarget && lib.filter.targetEnabled.apply(this, arguments);
-					},
-					addCount: false,
-				});
-				"step 1"
-				if (!result.bool) {
-					event.finish();
-					return;
-				}
-				let evts = player.getHistory("sourceDamage", function (evt) {
-					return evt.getParent(4) == event;
-				});
-
-				if (evts.length) {
-					player.gain(trigger.player, trigger.player.getGainableCards(player, "he"), "giveAuto");
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseToUse({
+						prompt: `截军：是否对${get.translation(trigger.player)}使用一张【杀】？`,
+						prompt2: `若此【杀】造成伤害，你获得其所有牌`,
+						filterCard(card, player) {
+							return get.name(card) == "sha" && lib.filter.filterCard.apply(this, arguments);
+						},
+						complexTarget: true,
+						filterTarget(card, player, target) {
+							if (!lib.filter.targetEnabled.apply(this, arguments)) {
+								return false;
+							}
+							if (ui.selected.targets.length) {
+								return ui.selected.targets.includes(get.event().preTarget);
+							}
+							return target == get.event().preTarget;
+						},
+						ai2(target) {
+							const player = get.player();
+							const shaEff = get.effect(target, get.autoViewAs({ name: "sha", isCard: false }, ui.selected.cards), player, player),
+								shunshouEff = get.effect(target, { name: "shunshou_copy2" }, player, player);
+							return shaEff + shunshouEff;
+						},
+						filterOk: () => ui.selected.targets.includes(get.event().preTarget),
+						logSkill: ["jlsg_jiejun", trigger.player],
+						addCount: false,
+						chooseonly: true,
+						preTarget: trigger.player,
+					})
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				const { ResultEvent } = event.cost_data;
+				event.next.push(ResultEvent);
+				await ResultEvent;
+				let damage = player.hasHistory("sourceDamage", evt => evt.getParent("useCard") == ResultEvent);
+				if (damage && trigger.player.isIn()) {
+					const cards = trigger.player.getGainableCards(player, "he");
+					if (cards.length) {
+						player.gain(trigger.player, cards, "giveAuto");
+					}
 				}
 			},
 		},
