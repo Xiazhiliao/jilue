@@ -2897,32 +2897,29 @@ export default {
 			filter: function (event, player) {
 				return event.player != player && player.countCards("h") > 0;
 			},
-			direct: true,
-			content: function () {
-				"step 0"
-				var next = player.chooseToDiscard("是否发动对" + get.translation(trigger.player) + "【折节】？");
-				next.ai = function (card) {
-					if (get.attitude(player, trigger.player) < 0 && trigger.player.countCards("he")) return 5.5 - get.value(card);
-					return 0;
-				};
-				next.logSkill = ["jlsg_zhejie", trigger.player];
-				"step 1"
-				if (result.bool && trigger.player.countCards("he") > 0) {
-					trigger.player
-						.chooseToDiscard("he", true)
-						.set("ai", function (card) {
-							var att = get.attitude(_status.event.player, _status.event.target) / get.attitude(_status.event.player, _status.event.player);
-							var eff = -get.value(card);
-							if (get.type(card) == "equip") {
-								eff *= 1 - att;
-							}
-							return eff;
-						})
-						.set("target", player);
-				} else {
-					event.finish();
-				}
-				"step 2"
+			async cost(event, trigger, player) {
+				event.result = await player.chooseToDiscard("是否对" + get.translation(trigger.player) + "发动【折节】？<br>（你弃置一张手牌并令其弃置一张牌，若其弃置牌为装备牌，你可以将之交给另一名角色）")
+					.set("ai", (card) => {
+						if (get.attitude(player, trigger.player) < 0 && trigger.player.countCards("he")) return 5.5 - get.value(card);
+						return 0;
+					})
+					.set("logSkill", ["jlsg_zhejie", trigger.player])
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				if (trigger.player.countCards("he") == 0) return;
+				let result = await trigger.player
+					.chooseToDiscard("he", true)
+					.set("ai", function (card) {
+						var att = get.attitude(_status.event.player, _status.event.target) / get.attitude(_status.event.player, _status.event.player);
+						var eff = -get.value(card);
+						if (get.type(card) == "equip") {
+							eff *= 1 - att;
+						}
+						return eff;
+					})
+					.set("target", player)
+					.forResult();
 				if (get.type(result.cards[0]) == "equip") {
 					if (trigger.player.countDiscardableCards(trigger.player, "he", c => get.type(c) != "equip") && trigger.player.ai.shown < player.ai.shown) {
 						var attSum = Math.sign(get.attitude(trigger.player, player)) + Math.sign(get.attitude(player, trigger.player));
@@ -2933,19 +2930,11 @@ export default {
 							trigger.player.addExpose(-0.1);
 						}
 					}
-					event.card = result.cards[0];
-					player.chooseTarget("选择一名目标获得" + get.translation(event.card), function (card, player, target) {
-						return trigger.player != target;
-					}).ai = function (target) {
-						if (get.attitude(player, target) <= 0) return -5;
-						return 6 - target.countCards("e");
-					};
-				} else {
-					event.finish();
-				}
-				"step 3"
-				if (result.bool) {
-					result.targets[0].gain(event.card, "gain2");
+					let next = await player.chooseTarget("是否令一名角色获得" + get.translation(result.cards[0]))
+						.set("filterCard", (card, player, target) => trigger.player != target)
+						.set("ai", (target) => get.attitude(player, target) > 0 ? 6 - target.countCards("e") : -114)
+						.forResult();
+					if (next.bool) await next.targets[0].gain(result.cards[0], "gain2");
 				}
 			},
 			ai: {
@@ -2956,22 +2945,20 @@ export default {
 			audio: "ext:极略/audio/skill:1",
 			trigger: { player: "damageBegin3" },
 			frequent: true,
-			filter: function (event) {
-				return event.source != undefined;
-			},
 			check: function () {
 				return 1;
 			},
-			content: function () {
-				"step 0"
-				player.draw();
-				trigger.source.chooseBool("是否摸一张牌并令此伤害-1?").ai = function () {
-					if (get.attitude(trigger.source, player) == 0 && trigger.num <= 1) return 2;
-					return get.attitude(trigger.source, player) > 0;
-				};
-				"step 1"
+			async content(event, trigger, player) {
+				await player.draw();
+				if (!trigger.source) return;
+				let result = await trigger.source.chooseBool("是否摸一张牌并令此伤害-1?")
+					.set("ai", () => {
+						if (get.attitude(trigger.source, player) == 0 && trigger.num <= 1) return 2;
+						return get.attitude(trigger.source, player) > 0;
+					})
+					.forResult();
 				if (result.bool) {
-					trigger.source.draw();
+					await trigger.source.draw();
 					trigger.num--;
 				}
 			},
