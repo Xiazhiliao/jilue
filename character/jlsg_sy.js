@@ -1493,9 +1493,6 @@ export default {
 					}
 					return target.hasUseTarget(c, false, false);
 				});
-				if (!useCards.length) {
-					return;
-				}
 				const {
 					result: { targets: toTargets },
 				} = await player
@@ -1514,7 +1511,8 @@ export default {
 					})
 					.set("preTarget", target)
 					.set("useCards", useCards);
-				if (!toTargets?.length) {
+				if (!useCards.length || !toTargets?.length) {
+					await game.delay()
 					return;
 				}
 				player.line(toTargets);
@@ -1635,7 +1633,7 @@ export default {
 						gain_list.push([targets.randomRemove(), cards.randomRemove(1)]);
 					}
 				} else {
-					let giveNum = cards.length - event.targets.length;
+					let giveNum = cards.length;
 					for (let target of event.targets) {
 						let num = Math.floor(Math.random() * giveNum);
 						giveNum -= num;
