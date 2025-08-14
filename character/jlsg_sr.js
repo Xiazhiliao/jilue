@@ -2124,16 +2124,16 @@ export default {
 			},
 			getCheck(event, player) {
 				if (event.name == "cardsDiscard") {
-					// judge
+					//useCard,judge
 					const evt = event.getParent();
-					if (!(evt.name == "orderingDiscard" && evt.relatedEvent?.player === player)) {
+					if (evt.name != "orderingDiscard" || evt.relatedEvent?.player != player) {
 						return [];
 					}
 					const relatedEvent = evt.relatedEvent;
 					let loses = player
-						.getHistory("lose", evt => relatedEvent == (evt.relatedEvent || evt.getParent()))
-						.map(evt => {
-							const getl = evt.getl(player);
+						.getHistory("lose", evtx => relatedEvent == (evtx.relatedEvent || evtx.getParent()))
+						.map(evtx => {
+							const getl = evtx.getl(player);
 							if (!getl) {
 								return [];
 							}
@@ -4530,6 +4530,11 @@ export default {
 				return event.player.countGainableCards(player, "h");
 			},
 			async cost(event, trigger, player) {
+				const upgrade = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2];
+				const storage = player.getStorage(
+					event.skill,
+					Array.from({ length: upgrade ? 4 : 3 }, () => true)
+				);
 				event.result = await player
 					.gainPlayerCard(get.prompt2("jlsg_zhaoxiang", trigger.player), trigger.player, "h")
 					.set("ai", button => {
@@ -4540,8 +4545,8 @@ export default {
 						"check",
 						(function () {
 							const gainEff = get.effect(trigger.player, { name: "shunshou_copy2" }, player, player),
-								resultList = lib.skill.jlsg_zhaoxiang.getCheck(trigger, player, _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2]);
-							return resultList.some(i => i + gainEff > 0);
+								resultList = lib.skill.jlsg_zhaoxiang.getCheck(trigger, player, upgrade);
+							return resultList.some((v, i) => storage[i] && v + gainEff > 0);
 						})()
 					)
 					.set("logSkill", ["jlsg_zhaoxiang", trigger.player])
@@ -4550,23 +4555,23 @@ export default {
 				if (event.result?.bool) {
 					event.result.skill_popup = false;
 					event.result.targets = [trigger.player];
+					event.result.cost_data = { storage, upgrade };
 				}
 			},
 			async content(event, trigger, player) {
 				const {
 					cards,
 					targets: [target],
+					cost_data: { storage, upgrade },
 				} = event;
 				await player.gain(cards, target).set("ainimate", false);
 				const choiceList = ["令此【杀】不能被响应", "令此【杀】无效", "将此【杀】的目标改为你"],
-					choiced = player.getStorage(event.name, [true, true, true]),
 					list = [];
-				if (_status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2] && choiced.length < 4) {
-					choiceList.add("令目标角色于此【杀】结算后回复1点体力");
-					choiced.push(true);
+				if (upgrade) {
+					choiceList.push("令目标角色于此【杀】结算后回复1点体力");
 				}
-				for (let i in choiced) {
-					if (!choiced[i]) {
+				for (let i in storage) {
+					if (!storage[i]) {
 						choiceList[i] = '<span style="opacity:0.5">' + choiceList[i] + "</span>";
 					} else {
 						list.add(`选项${get.cnNumber(Number(i) + 1, true)}`);
@@ -4580,34 +4585,35 @@ export default {
 					.set(
 						"choice",
 						(function () {
-							const resultList = lib.skill.jlsg_zhaoxiang.getCheck(trigger, player, _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2]);
+							const resultList = lib.skill.jlsg_zhaoxiang
+									.getCheck(trigger, player, storage.length == 4)
+									.map((v, i) => (storage[i] ? v : null))
+									.filter(i => i !== null),
+								choiceList = storage.filter(i => i);
 							let max = 0,
 								choice = 0;
-							for (let i in choiced) {
-								if (choiced[i]) {
-									if (resultList[i] > max) {
-										max = resultList[i];
-										choice = i;
-									}
+							for (let i in choiceList) {
+								if (resultList[i] > max) {
+									max = resultList[i];
+									choice = i;
 								}
 							}
-							return `选项${get.cnNumber(choice + 1, true)}`;
+							return Number(choice);
 						})()
 					);
 				if (result) {
 					game.log(player, "选择了", result.control);
-					let map = Array.from({ length: 4 }, (v, i) => `选项${get.cnNumber(Number(i) + 1, true)}`);
+					let map = ["选项一", "选项二", "选项三", "选项四"];
 					let num = map.indexOf(result.control);
-					console.log(choiced.slice());
-					choiced[num] = false;
-					console.log(choiced.slice());
-					if (!choiced.filter(i => i).length) {
-						for (let i in choiced) {
-							choiced[i] = true;
+					storage[num] = false;
+					if (storage.every(i => i === false)) {
+						for (let i in storage) {
+							storage[i] = true;
 						}
 					}
-					player.setStorage(event.name, choiced);
+					player.setStorage(event.name, storage);
 				}
+				await game.delay();
 				if (result?.control == "选项一") {
 					game.log(player, "令", trigger.card, "不能被响应");
 					trigger.getParent().directHit.addArray(game.players);
@@ -4616,10 +4622,6 @@ export default {
 					trigger.getParent().all_excluded = true;
 				} else if (result?.control == "选项三") {
 					game.log(player, "将", trigger.card, "的目标", trigger.target, "改为", player);
-					trigger.targets.remove(trigger.target);
-					trigger.targets.add(player);
-					trigger.getParent().triggeredTargets1.remove(trigger.target);
-					trigger.getParent().triggeredTargets1.add(player);
 					trigger.getParent().targets.remove(trigger.target);
 					trigger.getParent().targets.add(player);
 				} else if (result?.control == "选项四") {
@@ -4640,7 +4642,7 @@ export default {
 				if (upgrade) {
 					return result;
 				}
-				return result.slice(1, -1);
+				return result.slice(0, -1);
 			},
 			ai: {
 				expose: 0.5,
@@ -5144,7 +5146,7 @@ export default {
 		jlsg_tianshang_info: "限定技，你死亡时，可令一名其他角色获得你此武将牌上拥有的其他技能，然后其增加1点体力上限并恢复1点体力。",
 		jlsg_yiji_info: "每当你受到一点伤害，可以观看牌堆顶的两张牌，并将其交给任意1~2名角色。",
 		jlsg_huiqu_info: "准备阶段，你可以弃置一张手牌进行一次判定，若结果为红色，你将场上的一张牌移动到一个合理的位置；若结果为黑色，你对一名角色造成1点伤害，然后你摸一张牌。",
-		jlsg_zhaoxiang_info: "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；2．将此【杀】的目标改为你。当所有选项执行后，重置此技能",
+		jlsg_zhaoxiang_info: "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；3．将此【杀】的目标改为你。当所有选项执行后，重置此技能",
 		jlsg_zhishi_info: "当任意角色受到伤害后，你可以令其从随机两个能在此时机发动的技能中选择一个并发动。",
 		jlsg_jianxiong_info: "主公技。每当其他魏势力受到不为你的一次伤害后，该角色可以弃置一张手牌，然后令你获得对其造成伤害的牌。",
 		jlsg_jiuzhu_info: "每当一张非转化的【闪】进入弃牌堆时，你可以用一张不为【闪】的牌替换之。若此时不是你的回合，你可以视为对当前回合角色使用一张无视防具的【杀】。",
@@ -5199,11 +5201,23 @@ export default {
 	},
 	dynamicTranslate: {
 		jlsg_zhaoxiang(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};
+			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {},
+				storage = player?.getStorage?.("jlsg_zhaoxiang", [true, true, true]) || [true, true, true];
+			let str = "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：",
+				list = ["1．令此【杀】不能被响应", "2．令此【杀】无效", "3．将此【杀】的目标改为你"];
 			if (upgrade["jlsgsr_caocao"]?.[2] || player?.index) {
-				return "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：1．令此【杀】不能被响应；2．令此【杀】无效；3．将此【杀】的目标改为你；4．令目标角色于此【杀】结算后回复1点体力。当所有选项执行后，重置此技能";
+				list.push("4．令目标角色于此【杀】结算后回复1点体力");
+				if (storage.length < 4) {
+					storage.push(true);
+				}
 			}
-			return lib.translate.jlsg_zhaoxiang_info;
+			for (let i in storage) {
+				if (!storage[i]) {
+					list[i] = `<span style="text-decoration: line-through;">${list[i]}</span>`;
+				}
+			}
+			str += list.join("；") + "。当所有选项执行后，重置此技能。";
+			return str;
 		},
 		jlsg_zhishi(player) {
 			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};

@@ -63,9 +63,6 @@ export default {
 				return player.hp <= least;
 			},
 			async content(event, trigger, player) {
-				game.broadcastAll(ui.clear);
-				game.resetSkills();
-				await game.delay();
 				if (get.mode() == "boss") {
 					if (player.isLinked()) await player.link();
 					if (player.isTurnedOver()) await player.turnOver();
@@ -86,27 +83,34 @@ export default {
 				}
 				player.update();
 				await event.trigger("jlsgsy_baonuAfter");
+				const cards = Array.from(ui.ordering.childNodes);
+				while (cards.length) {
+					cards.shift().discard();
+				}
+				game.resetSkills();
+				game.broadcastAll(ui.clear);
 				let evt = trigger.getParent(1, true);
 				while (evt?.name != "phaseLoop") {
 					if (evt) {
 						if (evt.name == "phase") {
-							evt.pushHandler("onPhase", (event, option) => {
-								if (event.step != 13) {
-									event.step = 13;
-									game.broadcastAll(function (player) {
-										player.classList.remove("glow_phase");
-										if (_status.currentPhase) {
-											game.log(_status.currentPhase, "结束了回合");
-											delete _status.currentPhase;
-										}
-									}, event.player);
-								}
+							evt.pushHandler("onPhase", (evtx, option) => {
+								evtx.step = 13;
+								evtx.num = evtx.phaseList.length;
+								game.broadcastAll(function (player) {
+									player.classList.remove("glow_phase");
+									if (_status.currentPhase) {
+										game.log(_status.currentPhase, "结束了回合");
+										delete _status.currentPhase;
+									}
+								}, evtx.player);
 							});
 						}
 						evt.finish();
 						evt._triggered = null;
 						evt = evt.getParent(1, true);
-					} else break;
+					} else {
+						break;
+					}
 				}
 				_status.paused = false;
 				player.insertPhase(event.name);
@@ -408,7 +412,7 @@ export default {
 					return;
 				}
 				let card = list.randomGet();
-				await player.chooseUseTarget(card, true, false, "nodistance");
+				await player.chooseUseTarget(card.name, true, false, "nodistance");
 			},
 			ai: {
 				order(item, player) {
@@ -1114,39 +1118,43 @@ export default {
 			forced: true,
 			priority: 100,
 			async content(event, trigger, player) {
+				const cards = Array.from(ui.ordering.childNodes);
+				while (cards.length) {
+					cards.shift().discard();
+				}
 				game.broadcastAll(ui.clear);
 				let evt = trigger.getParent(1, true);
 				while (evt?.name != "phaseLoop") {
 					if (evt) {
 						if (evt.name == "phase") {
-							evt.pushHandler("onPhase", (event, option) => {
-								if (event.step != 13) {
-									event.step = 13;
-									game.broadcastAll(function (player) {
-										player.classList.remove("glow_phase");
-										if (_status.currentPhase) {
-											game.log(_status.currentPhase, "结束了回合");
-											delete _status.currentPhase;
-										}
-									}, event.player);
-								}
+							evt.pushHandler("onPhase", (evtx, option) => {
+								evtx.step = 13;
+								evtx.num = evtx.phaseList.length;
+								game.broadcastAll(function (player) {
+									player.classList.remove("glow_phase");
+									if (_status.currentPhase) {
+										game.log(_status.currentPhase, "结束了回合");
+										delete _status.currentPhase;
+									}
+								}, evtx.player);
 							});
 						}
 						evt.finish();
 						evt._triggered = null;
 						evt = evt.getParent(1, true);
-					} else break;
+					} else {
+						break;
+					}
 				}
 				//也不知道为啥能触发结束阶段的技能，还原就是了
 				//沟槽的，只触发结束阶段，而且能反复触发
 				evt = trigger.getParent("phase", true, true);
-				if (evt.phaseList.some(i => i.startsWith("phaseJieshu"))) {
+				if (evt?.phaseList?.some(i => i.startsWith("phaseJieshu"))) {
 					await evt.player.phaseJieshu();
 				}
 				_status.paused = false;
 				player.insertPhase(event.name);
 			},
-			_priority: 10000,
 		},
 		jlsgsy_canlue: {
 			audio: "ext:极略/audio/skill:1", // audio: ['jlsgsy_canlue'],
@@ -1440,17 +1448,22 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			enable: "phaseUse",
 			usable: 1,
-			filterCard: true,
-			selectCard: [1, Infinity],
-			discard: false,
-			lose: false,
-			delay: false,
-			filterTarget: function (card, player, target) {
+			filter(event, player) {
+				if (!player.countCards("h")) {
+					return false;
+				}
+				return game.countPlayer(current => current != player && current.hasSex("male"));
+			},
+			filterTarget(card, player, target) {
 				return player != target && target.hasSex("male");
 			},
-			check: function (card) {
-				if (card.name == "du") return 20;
-				var player = get.owner(card);
+			selectCard: [1, Infinity],
+			filterCard: true,
+			check(card) {
+				if (card.name == "du") {
+					return 20;
+				}
+				const player = get.owner(card);
 				if (card.name != "sha" && get.type(card) != "trick") {
 					return 0;
 				}
@@ -1458,143 +1471,185 @@ export default {
 				if (info.singleCard || info.notarget) {
 					return 0;
 				}
-				if (get.effect(player, card, game.filterPlayer().randomGet()) > 0) {
-					return 0;
-				}
-				return 10 - 3 * Math.random();
+				const users = game.filterPlayer(current => current != player);
+				return users.some(user => {
+					const att = get.sgnAttitude(player, user),
+						eff = user.getUseValue(card, false, false);
+					return att * eff > 0;
+				});
 			},
-			content() {
-				"step 0"
-				player.give(cards, target);
-				"step 1"
-				event.cards = target.getCards("h", c => {
+			discard: false,
+			lose: false,
+			delay: false,
+			async content(event, trigger, player) {
+				const {
+					targets: [target],
+					cards,
+				} = event;
+				await player.give(cards, target);
+				const useCards = target.getCards("h", c => {
 					if (c.name != "sha" && get.type(c) != "trick") {
 						return false;
 					}
-					let info = get.info(c);
-					return !info.singleCard && !info.notarget;
+					return target.hasUseTarget(c, false, false);
 				});
-				player
-					.chooseTarget([1, Infinity], `请选择${get.translation(target)}使用牌的目标"`, (_, player, target) => target != _status.event.target, true)
-					.set("ai", p => -get.attitude(_status.event.player, p) - Math.random())
-					.set("target", target);
-				"step 2"
-				if (!result.bool) {
-					event.finish();
+				const {
+					result: { targets: toTargets },
+				} = await player
+					.chooseTarget([1, Infinity], `请选择${get.translation(target)}使用牌的目标"`, true)
+					.set("filterTarget", (_, player, target) => target != get.event().preTarget)
+					.set("ai", target => {
+						const player = get.player(),
+							preTarget = get.event().preTarget,
+							useCards = get.event().useCards;
+						return useCards.reduce((sum, card) => {
+							if (!preTarget.canUse(card, target, false, false)) {
+								return sum;
+							}
+							return sum + get.effect(target, card, preTarget, player);
+						}, 0);
+					})
+					.set("preTarget", target)
+					.set("useCards", useCards);
+				if (!useCards.length || !toTargets?.length) {
+					await game.delay()
 					return;
 				}
-				event.targets = result.targets;
-				"step 3"
-				if (!event.cards.length || !target.isIn()) {
-					event.finish();
-					return;
+				player.line(toTargets);
+				useCards.randomSort();
+				while (useCards.length) {
+					if (!target.isIn()) {
+						break;
+					}
+					let card = useCards.shift();
+					if (!target.getCards("h").includes(card)) {
+						continue;
+					}
+					let targets = toTargets.filter(current => target.canUse(card, current, false, false) && current.isIn());
+					if (targets.length) {
+						await target.useCard(card, targets, "noai");
+					}
 				}
-				let card = event.cards.pop();
-				if (!target.getCards("h").includes(card)) {
-					event.redo();
-					return;
-				}
-				let targets = event.targets.filter(p => target.canUse(card, p, false) && p.isIn());
-				if (!targets.length) {
-					event.redo();
-					return;
-				}
-				target.useCard(card, targets, "noai");
-				event.redo();
 			},
 			ai: {
 				order: 10,
 				result: {
-					target: function (player, target) {
-						return Math.random() - 0.5;
+					target(player, target) {
+						if (ui.selected.cards.some(card => card.name == "du")) {
+							return -0.5;
+						}
+						if (player.storage.jlsgsy_meihuo) {
+							return;
+						}
+						player.setStorage("jlsgsy_meihuo", true);
+						const useEff = ui.selected.cards.reduce((sum, card) => target.getUseValue(card, false, false), 0);
+						player.setStorage("jlsgsy_meihuo", undefined);
+						return Math.log(useEff);
 					},
-					player: 1,
 				},
 			},
 		},
 		jlsgsy_yaoyan: {
 			audio: "ext:极略/audio/skill:2",
-			trigger: {
-				target: "useCardToTarget",
-			},
-			forced: true,
-			direct: true,
-			filter: function (event, player) {
+			trigger: { target: "useCardToTarget" },
+			filter(event, player) {
+				const info = get.info(event.card);
+				if (info.multitarget) {
+					return false;
+				}
 				return event.player != player && ["basic", "trick"].includes(get.type(event.card)) && !event.targets.includes(event.player);
 			},
+			forced: true,
 			logTarget: "player",
-			content() {
-				"step 0"
+			async content(event, trigger, player) {
+				game.log(trigger.player, "成为", trigger.card, "的额外目标");
 				trigger.getParent().targets.push(trigger.player);
 				trigger.getParent().triggeredTargets2.push(trigger.player);
-				game.delayx();
-				"step 1"
-				player.logSkill(event.name, trigger.player);
-				game.log(trigger.player, "成为", trigger.card, "的额外目标");
+				await game.delayx();
+			},
+			ai: {
+				effect: {
+					target_use(card, player, target) {
+						if (player == target) {
+							return;
+						}
+						const info = get.info(card);
+						if (["basic", "trick"].includes(get.type(card)) || info.multitarget) {
+							return;
+						}
+						if (target.storage.jlsgsy_yaoyan) {
+							return;
+						}
+						target.setStorage("jlsgsy_yaoyan", true);
+						let result = [1, 0, 1, get.effect(player, card, player, player) / 2];
+						target.setStorage("jlsgsy_yaoyan", undefined);
+						return result;
+					},
+				},
 			},
 		},
 		jlsgsy_miluan: {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { player: "damageEnd" },
 			filter(event, player) {
-				return game.filterPlayer(p => p != player).some(p => p.countCards("h"));
+				return game.filterPlayer(current => current != player).some(current => current.countDiscardableCards(player, "h"));
 			},
 			check(event, player) {
-				let gain = game.filterPlayer(p => p != player).reduce((a, b) => a + b.countCards("h"), 0);
+				let gain = game.filterPlayer(current => current != player).reduce((a, b) => a + b.countDiscardableCards(player, "h"), 0);
 				let lose = Math.floor((gain + player.countCards("h")) / 2);
 				return gain * 1.2 > lose;
 			},
-			content() {
-				"step 0"
-				event.targets = game.filterPlayer(p => p != player);
-				"step 1"
-				var target = event.targets.shift();
-				let cards = target.getCards("h");
-				if (!cards.length) {
-					event.redo();
+			logTarget(event, player) {
+				return game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
+			},
+			async content(event, trigger, player) {
+				const gainCards = [];
+				for (let target of event.targets) {
+					let gainableCards = target.getGainableCards(player, "h");
+					if (gainableCards.length) {
+						target.$give(gainableCards, player);
+						gainCards.addArray(gainableCards);
+					}
+				}
+				if (gainCards.length) {
+					await game
+						.loseAsync({
+							gain_list: [[player, gainCards]],
+							animate: "gain",
+						})
+						.setContent("gaincardMultiple");
+				} else {
+					await game.delay();
+				}
+				if (!player.getCards("h").length) {
 					return;
 				}
-				player.gain(target, cards, "bySelf");
-				target.$give(cards.length, player);
-				game.delayx(0.3);
-				if (event.targets.length) {
-					event.redo();
+				const giveCards = await player.chooseCard(true, "h", Math.floor(player.countCards("h") / 2)).forResultCards();
+				const gain_list = [];
+				let cards = giveCards.slice().randomSort();
+				if (giveCards.length <= event.targets.length) {
+					let targets = event.targets.slice().randomSort();
+					while (cards.length) {
+						gain_list.push([targets.randomRemove(), cards.randomRemove(1)]);
+					}
+				} else {
+					let giveNum = cards.length;
+					for (let target of event.targets) {
+						let num = Math.floor(Math.random() * giveNum);
+						giveNum -= num;
+						let cardsx = cards.randomRemove(num + 1);
+						gain_list.push([target, cardsx]);
+					}
 				}
-				"step 2"
-				let cnt = Math.floor(player.countCards("h") / 2);
-				player.chooseCard(cnt, true);
-				"step 3"
-				if (!result.bool) {
-					event.finish();
-					return;
-				}
-				let dis = [];
-				let len = game.filterPlayer(p => p != player).length;
-				let base = Math.floor(result.cards.length / len);
-				let i = 0,
-					iMax = result.cards.length % len;
-				for (; i != iMax; ++i) {
-					dis.push(result.cards.randomRemove(base + 1));
-				}
-				while (dis.length < len) {
-					dis.push(result.cards.randomRemove(base));
-				}
-				dis.randomSort();
-				event.dis = dis;
-				event.targets = game.filterPlayer(p => p != player).sortBySeat();
-				"step 4"
-				if (!event.targets.length) {
-					event.finish();
-					return;
-				}
-				{
-					let target = event.targets.shift();
-					let cards = event.dis.shift();
-					target.gain(cards, player);
-					player.$giveAuto(cards, target);
-					// game.delayx(0.3);
-					event.redo();
-				}
+				await game
+					.loseAsync({
+						gain_list,
+						cards: giveCards,
+						player,
+						giver: player,
+						animate: "giveAuto",
+					})
+					.setContent("gaincardMultiple");
 			},
 			ai: {
 				maixie: true,
@@ -2512,6 +2567,8 @@ export default {
 								return !["h", "e"].includes(get.position(card));
 							});
 							if (!trigger.cards.length) trigger.cancel();
+						} else if (key == "disableSkill") {
+							trigger.cancel = true;
 						} else trigger.cancel();
 						game.log(player, "取消了", `#y${str}`);
 					},
