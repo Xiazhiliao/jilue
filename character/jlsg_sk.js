@@ -2904,9 +2904,11 @@ export default {
 						return 0;
 					})
 					.set("logSkill", ["jlsg_zhejie", trigger.player])
+					.set("chooseonly", true)
 					.forResult();
 			},
 			async content(event, trigger, player) {
+				await player.discard(event.cards);
 				if (trigger.player.countCards("he") == 0) return;
 				let result = await trigger.player
 					.chooseToDiscard("he", true)
@@ -2932,7 +2934,7 @@ export default {
 					}
 					let next = await player.chooseTarget("是否令一名角色获得" + get.translation(result.cards[0]))
 						.set("filterCard", (card, player, target) => trigger.player != target)
-						.set("ai", (target) => get.attitude(player, target) > 0 ? 6 - target.countCards("e") : -114)
+						.set("ai", (target) => get.attitude(_status.event.player, target) > 0 ? 6 - target.countCards("e") : -114)
 						.forResult();
 					if (next.bool) await next.targets[0].gain(result.cards[0], "gain2");
 				}
@@ -2953,9 +2955,10 @@ export default {
 				if (!trigger.source) return;
 				let result = await trigger.source.chooseBool("是否摸一张牌并令此伤害-1?")
 					.set("ai", () => {
-						if (get.attitude(trigger.source, player) == 0 && trigger.num <= 1) return 2;
-						return get.attitude(trigger.source, player) > 0;
+						if (get.attitude(_status.event.player, _status.event.current) == 0 && trigger.num <= 1) return 2;
+						return get.attitude(_status.event.player, _status.event.current) > 0;
 					})
+					.set("current", player)
 					.forResult();
 				if (result.bool) {
 					await trigger.source.draw();
