@@ -2894,13 +2894,17 @@ export default {
 		jlsg_zhejie: {
 			audio: "ext:极略/audio/skill:1",
 			trigger: { global: "phaseDiscardEnd" },
-			filter: function (event, player) {
-				return event.player != player && player.countCards("h") > 0;
+			filter(event, player) {
+				return event.player != player && player.countDiscardableCards(player, "h") > 0;
 			},
 			async cost(event, trigger, player) {
-				event.result = await player.chooseToDiscard("是否对" + get.translation(trigger.player) + "发动【折节】？<br>（你弃置一张手牌并令其弃置一张牌，若其弃置牌为装备牌，你可以将之交给另一名角色）")
-					.set("ai", (card) => {
-						if (get.attitude(player, trigger.player) < 0 && trigger.player.countCards("he")) return 5.5 - get.value(card);
+				event.result = await player
+					.chooseToDiscard(`###${get.prompt2(event.skill, trigger.player)}###你弃置一张手牌并令其弃置一张牌，若其弃置牌为装备牌，你可以将之交给另一名角色`)
+					.set("ai", card => {
+						const target = get.event().getParent().getTrigger().player;
+						if (get.attitude(player, target) < 0 && target.countDiscardableCards(target, "he")) {
+							return 5.5 - get.value(card);
+						}
 						return 0;
 					})
 					.set("logSkill", ["jlsg_zhejie", trigger.player])
@@ -2909,22 +2913,24 @@ export default {
 			},
 			async content(event, trigger, player) {
 				await player.discard(event.cards);
-				if (trigger.player.countCards("he") == 0) return;
-				let result = await trigger.player
+				if (!trigger.player.isIn() || !trigger.player.countDiscardableCards(trigger.player, "he")) {
+					return;
+				}
+				const cards = await trigger.player
 					.chooseToDiscard("he", true)
 					.set("ai", function (card) {
-						var att = get.attitude(_status.event.player, _status.event.target) / get.attitude(_status.event.player, _status.event.player);
-						var eff = -get.value(card);
+						let att = get.attitude(get.player(), get.event().target) / 10,
+							eff = -get.value(card);
 						if (get.type(card) == "equip") {
 							eff *= 1 - att;
 						}
 						return eff;
 					})
 					.set("target", player)
-					.forResult();
-				if (get.type(result.cards[0]) == "equip") {
+					.forResultCards();
+				if (get.type(cards[0]) == "equip") {
 					if (trigger.player.countDiscardableCards(trigger.player, "he", c => get.type(c) != "equip") && trigger.player.ai.shown < player.ai.shown) {
-						var attSum = Math.sign(get.attitude(trigger.player, player)) + Math.sign(get.attitude(player, trigger.player));
+						let attSum = get.sgnAttitude(trigger.player, player) + get.sgnAttitude(player, trigger.player);
 						if (attSum > 0) {
 							trigger.player.addExpose(0.1);
 						}
@@ -2932,11 +2938,18 @@ export default {
 							trigger.player.addExpose(-0.1);
 						}
 					}
-					let next = await player.chooseTarget("是否令一名角色获得" + get.translation(result.cards[0]))
-						.set("filterCard", (card, player, target) => trigger.player != target)
-						.set("ai", (target) => get.attitude(_status.event.player, target) > 0 ? 6 - target.countCards("e") : -114)
-						.forResult();
-					if (next.bool) await next.targets[0].gain(result.cards[0], "gain2");
+					const targets = await player
+						.chooseTarget("是否令一名角色获得" + get.translation(cards[0]))
+						.set("filterTarget", (card, player, target) => target != get.event().preTarget)
+						.set("ai", target => {
+							return get.sgnAttitude(get.player(), target) * target.getUseValue(get.event("card"));
+						})
+						.set("preTarget", trigger.player)
+						.set("card", cards[0])
+						.forResultTargets();
+					if (targets?.length) {
+						await targets[0].gain(cards, "gain2");
+					}
 				}
 			},
 			ai: {
@@ -2946,19 +2959,23 @@ export default {
 		jlsg_fengya: {
 			audio: "ext:极略/audio/skill:1",
 			trigger: { player: "damageBegin3" },
-			frequent: true,
-			check: function () {
-				return 1;
+			frequent: "check",
+			check(event, player) {
+				return get.effect(player, { name: "draw" }, player, player) > 0;
 			},
 			async content(event, trigger, player) {
 				await player.draw();
-				if (!trigger.source) return;
-				let result = await trigger.source.chooseBool("是否摸一张牌并令此伤害-1?")
-					.set("ai", () => {
-						if (get.attitude(_status.event.player, _status.event.current) == 0 && trigger.num <= 1) return 2;
-						return get.attitude(_status.event.player, _status.event.current) > 0;
+				if (!trigger.source || !trigger.source.isIn()) {
+					return;
+				}
+				const result = await trigger.source
+					.chooseBool(`###${get.prompt(event.name, player)}###是否令其摸一张牌并令此伤害-1？${trigger.num}`)
+					.set("ai", (event, player) => {
+						const target = event.player,
+							nature = get.event().nature;
+						return get.effect(player, { name: "draw" }, target, player) - get.damageEffect(target, player, player, nature) > 0;
 					})
-					.set("current", player)
+					.set("nature", trigger.nature)
 					.forResult();
 				if (result.bool) {
 					await trigger.source.draw();
@@ -2969,8 +2986,10 @@ export default {
 				maixie: true,
 				maixie_hp: true,
 				effect: {
-					target: function (card, player, target) {
-						if (get.attitude(target, player) < 0) return;
+					target(card, player, target) {
+						if (get.attitude(target, player) < 0) {
+							return;
+						}
 						if (get.tag(card, "damage")) {
 							return [1, 0.3, 1, 0.9];
 						}
