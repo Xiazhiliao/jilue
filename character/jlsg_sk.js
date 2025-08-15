@@ -2899,7 +2899,7 @@ export default {
 			},
 			async cost(event, trigger, player) {
 				event.result = await player
-					.chooseToDiscard(`###${get.prompt2(event.skill, trigger.player)}###你弃置一张手牌并令其弃置一张牌，若其弃置牌为装备牌，你可以将之交给另一名角色`)
+					.chooseToDiscard(`###${get.prompt(event.skill, trigger.player)}###你弃置一张手牌并令其弃置一张牌，若其弃置牌为装备牌，你可以将之交给另一名角色`)
 					.set("ai", card => {
 						const target = get.event().getParent().getTrigger().player;
 						if (get.attitude(player, target) < 0 && target.countDiscardableCards(target, "he")) {
@@ -2948,6 +2948,7 @@ export default {
 						.set("card", cards[0])
 						.forResultTargets();
 					if (targets?.length) {
+						player.line(targets[0]);
 						await targets[0].gain(cards, "gain2");
 					}
 				}
