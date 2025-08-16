@@ -2196,7 +2196,7 @@ export default {
 					} else if (suit == "spade") {
 						if (event.getTrigger()?.card?.cards?.length) {
 							const gainCardsValue = event.getTrigger()?.card?.cards.reduce((sum, card) => get.value(card), 0),
-								useCardValue = cards.concat([card]).reduce((sum, card) => get.value(card), 0);
+								useCardValue = cards.concat([card]).reduce((sum, card) => sum + get.value(card), 0);
 							if (gainCardsValue < useCardValue) {
 								return 0;
 							}
