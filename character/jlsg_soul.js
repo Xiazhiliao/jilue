@@ -2021,16 +2021,40 @@ export default {
 				return "ext:极略/audio/skill/jlsg_longhun" + (4 - lib.suit.indexOf(get.suit(event.cards[0], player))) + ".mp3";
 			},
 			mod: {
+				aiOrder(player, card, num) {
+					if (num <= 0 || !player.isPhaseUsing() || player.needsToDiscard() < 2) {
+						return num;
+					}
+					let suit = get.suit(card, player);
+					if (suit === "heart") {
+						return num - 3.6;
+					}
+				},
 				aiValue(player, card, num) {
-					if (!card || (card.cards && card.cards.length != 1)) return;
-					const cn = player.countCards("hse", i => get.tag(i, "save") || get.suit(i, player) == "heart");
-					if ((player.isPhaseUsing() ? true : cn > 0) && card.name == "shan") return num - 2;
+					if (num <= 0) {
+						return num;
+					}
+					let suit = get.suit(card, player);
+					if (suit === "heart") {
+						return num + 3.6;
+					} else if (suit === "club") {
+						return num + 1;
+					} else if (suit === "spade") {
+						return num + 1.8;
+					}
 				},
 				aiUseful(player, card, num) {
-					if (!card || (card.cards && card.cards.length != 1)) return;
-					if (get.suit(card, player) == "heart") return num + 2;
-					const cn = player.countCards("hse", i => get.tag(i, "save") || get.suit(i, player) == "heart");
-					if (cn > 0 && card.name == "shan") return num - 2;
+					if (num <= 0) {
+						return num;
+					}
+					let suit = get.suit(card, player);
+					if (suit === "heart") {
+						return num + 3;
+					} else if (suit === "club") {
+						return num + 1;
+					} else if (suit === "spade") {
+						return num + 1;
+					}
 				},
 			},
 			locked: false,
@@ -2038,122 +2062,158 @@ export default {
 			prompt: "将♦牌当做杀，♥牌当做桃，♣牌当做闪，♠牌当做无懈可击使用或打出",
 			viewAs(cards, player) {
 				if (cards.length) {
-					var name = false,
-						nature = null;
-					switch (get.suit(cards[0], player)) {
-						case "club":
-							name = "shan";
-							break;
-						case "diamond":
-							name = "sha";
-							nature = "fire";
-							break;
-						case "spade":
-							name = "wuxie";
-							break;
-						case "heart":
-							name = "tao";
-							break;
+					const suit = get.suit(cards[0], player);
+					let name = lib.skill.jlsg_longhun.map2[suit];
+					if (name) {
+						return { name, nature: name == "sha" ? "fire" : null };
 					}
-					if (name) return { name: name, nature: nature };
 				}
 				return null;
 			},
-			check(card) {
-				const event = get.event(),
-					player = get.player();
-				const value = function (cardx, player) {
-					if (Array.isArray(cardx)) return cardx.reduce((t, v) => t + value(v), 0);
-					return get[get.type(cardx, null, player) != "equip" ? "value" : "equipValue"](cardx, player);
-				};
-				const map = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" },
-					map2 = { diamond: "sha", club: "shan", heart: "tao", spade: "wuxie" };
-				const cards = ui.selected.cards;
-				const val1 = cards.length ? value(cards[0], player) : undefined,
-					val2 = value(card, player);
-				const val = val1 ? (val1 + val2) / 2 : val2;
-				var suit = cards.length ? get.suit(cards[0], player) : null;
-				if (!suit) {
-					var max = 0;
-					for (var name in map) {
-						if (!event._backup.filterCard(get.autoViewAs({ name: name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) continue;
-						if (!player.countCards("hes", i => get.suit(i, player) == map[name])) continue;
-						var temp = name == "wuxie" ? 2 : name == "shan" ? 3 : get.order({ name: name, nature: name == "sha" ? "fire" : null }, player);
-						if (temp <= max) continue;
-						suit = map[name];
-						max = temp;
+			filter(event, player) {
+				const filter = event.filterCard;
+				const map = lib.skill.jlsg_longhun.map;
+				for (let name of Object.keys(map)) {
+					if (filter(get.autoViewAs({ name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) {
+						return player.countCards("hes", { suit: map[name] });
 					}
-					if (!suit) return 0;
 				}
-				const hes = player
-					.getCards("hes", i => {
-						if (cards.length && i == cards[0]) return false;
-						return get.suit(i, player) == suit;
-					})
-					.sort((a, b) => value(a, player) - value(b, player));
-				var filter = hes[0] == card;
-				if (cards.length) {
-					if (event.name != "chooseToUse") return 0;
-					if (suit == "club") {
-						const evt = event.getParent();
-						if (evt && evt.player) filter = get.attitude(player, evt.player) <= 0 && evt.player.countCards("he");
-					} else if (suit == "heart") {
-						if (player.countCards("hse", i => get.tag(i, "save") || get.suit(i, player) == "heart") < 3) return 0;
-						if (event.getTrigger() && event.getTrigger().player && event.getTrigger().player != player) filter = val2 < 8;
-						else filter = player.isPhaseUsing() ? player.needsToDiscard() : player.hp > -1;
-					} else if (suit == "spade") {
-						if (event.getParent(4).name == "phaseJudge") return 0;
-						if (event.getTrigger() && event.getTrigger().card && event.getTrigger().card.cards.length) filter = val1 + val2 <= value(event.getTrigger().card.cards, player);
-					} else filter = player.getUseValue({ name: "sha", nature: "fire" }) > 0;
-				}
-				if (!cards.length && suit == "heart") return hes[0] == card;
-				if (cards.length && suit == "spade") return filter && hes[0] == card;
-				return filter && hes[0] == card && val <= get.value({ name: map2[suit] }, player);
+				return false;
 			},
 			selectCard: [1, 2],
-			complexCard: true,
 			position: "hes",
-			filter(event, player) {
-				var filter = event.filterCard;
-				if (filter(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event) && player.countCards("hes", { suit: "diamond" })) return true;
-				if (filter(get.autoViewAs({ name: "shan" }, "unsure"), player, event) && player.countCards("hes", { suit: "club" })) return true;
-				if (filter(get.autoViewAs({ name: "tao" }, "unsure"), player, event) && player.countCards("hes", { suit: "heart" })) return true;
-				if (filter(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event) && player.countCards("hes", { suit: "spade" })) return true;
+			complexCard: true,
+			filterCard(card, player, event) {
+				if (ui.selected.cards.length) {
+					return get.suit(card, player) == get.suit(ui.selected.cards[0], player);
+				}
+				event = event || get.event();
+				const filter = event._backup.filterCard,
+					suit = get.suit(card, player);
+				const name = lib.skill.jlsg_longhun.map2[suit];
+				if (name) {
+					return filter(get.autoViewAs({ name }, "unsure"), player, event);
+				}
 				return false;
 			},
-			filterCard(card, player, event) {
-				if (ui.selected.cards.length) return get.suit(card, player) == get.suit(ui.selected.cards[0], player);
-				event = event || get.event();
-				var filter = event._backup.filterCard;
-				var name = get.suit(card, player);
-				if (name == "club" && filter(get.autoViewAs({ name: "shan" }, "unsure"), player, event)) return true;
-				if (name == "diamond" && filter(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event)) return true;
-				if (name == "spade" && filter(get.autoViewAs({ name: "wuxie" }, "unsure"), player, event)) return true;
-				if (name == "heart" && filter(get.autoViewAs({ name: "tao" }, "unsure"), player, event)) return true;
-				return false;
+			getValueList(event) {
+				const player = event.player;
+				const list = {};
+				for (let card of player.getCards("hes")) {
+					const suit = get.suit(card, player);
+					if (!list[suit]?.length) {
+						list[suit] = [];
+					}
+					list[suit].add(card);
+				}
+				for (let i in list) {
+					list[i].sort((a, b) => get.value(b) - get.value(a));
+				}
+				return list;
+			},
+			getCheck(event) {
+				const player = event.player,
+					map = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
+				event.valueList ??= lib.skill.jlsg_longhun.getValueList(event);
+				let suit = null,
+					double = false,
+					max = 0;
+				for (let name in map) {
+					if (!event._backup.filterCard(get.autoViewAs({ name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) {
+						continue;
+					} else if (!event.valueList[map[name]]?.length) {
+						continue;
+					}
+					let temp = name == "wuxie" ? 2 : name == "shan" ? 3 : get.order({ name, nature: name == "sha" ? "fire" : null }, player);
+					if (temp <= max) {
+						continue;
+					}
+					suit = map[name];
+					max = temp;
+				}
+				if (suit) {
+					if (event.name != "chooseToUse") {
+						double = false;
+					} else if (suit == "club") {
+						const evt = event.getParent();
+						if (evt && evt.player) {
+							double = get.effect(evt.player, { name: "guohe_copy2" }, evt.player, player) > 0;
+						}
+					} else if (suit == "heart") {
+						if (player.countCards("hse", i => get.tag(i, "save") || get.suit(i, player) == "heart") < 3) {
+							double = false;
+						} else {
+							double = player.isPhaseUsing() ? player.needsToDiscard() : player.hp > -1;
+						}
+					} else if (suit == "spade") {
+						if (event.getParent(4).name == "phaseJudge") {
+							double = false;
+						}
+					} else if (suit == "diamond") {
+						const card = get.autoViewAs({ name: "sha", nature: "fire" }, "unsure");
+						const filterTarget = event._backup.filterTarget,
+							range = get.select(event._backup.selectTarget);
+						game.checkMod(card, player, range, "selectTarget", player);
+						const targets = game.filterPlayer(current => {
+							if (typeof filterTarget == "function") {
+								return filterTarget(card, player, current);
+							} else if (typeof filterTarget == "boolean") {
+								return filterTarget;
+							}
+							return false;
+						});
+						if (range[1] < 0 || range[0] == targets.length) {
+							double = targets.reduce((eff, target) => eff + get.effect(target, card, player, player), 0);
+						}
+						double = targets.some(target => get.effect(target, card, player, player) > 0);
+					}
+				}
+				return [suit, double];
+			},
+			check(card) {
+				const event = get.event(),
+					player = get.player(),
+					cards = ui.selected.cards?.slice();
+				event.getCheck ??= lib.skill.jlsg_longhun.getCheck(event);
+				const [suit, double] = event.getCheck;
+				if (!suit) {
+					return 0;
+				} else if (cards?.length) {
+					if (!double) {
+						return 0;
+					} else if (suit == "heart") {
+						if (event.getTrigger()?.player != player) {
+							if (get.attitude(player, event.getTrigger().player) < 0) {
+								return 0;
+							} else if (
+								(function () {
+									return 8 > cards.concat([card]).reduce((sum, card) => get.value(card), 0);
+								})()
+							) {
+								return 0;
+							}
+						}
+					} else if (suit == "spade") {
+						if (event.getTrigger()?.card?.cards?.length) {
+							const gainCardsValue = event.getTrigger()?.card?.cards.reduce((sum, card) => get.value(card), 0),
+								useCardValue = cards.concat([card]).reduce((sum, card) => get.value(card), 0);
+							if (gainCardsValue < useCardValue) {
+								return 0;
+							}
+						}
+					}
+				}
+				return event.valueList[suit].indexOf(card) + 1;
 			},
 			hiddenCard(player, name) {
-				if (name == "wuxie" && _status.connectMode && player.countCards("hs") > 0) return true;
-				var suit;
-				switch (name) {
-					case "sha":
-						suit = "diamond";
-						break;
-					case "shan":
-						suit = "club";
-						break;
-					case "tao":
-						suit = "heart";
-						break;
-					case "wuxie":
-						suit = "spade";
-						break;
-					default:
-						suit = undefined;
-						break;
+				if (_status.connectMode && name == "wuxie" && player.countCards("hes") > 0) {
+					return true;
 				}
-				if (name) return player.countCards("hes", { suit: suit }) > 0;
+				let suit = lib.skill.jlsg_longhun.map[name];
+				return name && player.countCards("hes", { suit: suit }) > 0;
 			},
+			map: { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" },
+			map2: { diamond: "sha", club: "shan", heart: "tao", spade: "wuxie" },
 			ai: {
 				respondSha: true,
 				respondShan: true,
@@ -2175,17 +2235,24 @@ export default {
 				order(item, player) {
 					const event = get.event();
 					if (player && event.name == "chooseToUse") {
-						var max = 0;
+						let max = 0;
 						const map = { sha: "diamond", shan: "club", tao: "heart" };
-						for (var name in map) {
-							if (!event.filterCard(get.autoViewAs({ name: name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) continue;
-							if (!player.countCards("hes", i => get.suit(i, player) == map[name])) continue;
-							var temp = get.order({ name: name, nature: name == "sha" ? "fire" : null });
-							if (temp > max) max = temp;
+						for (let name in map) {
+							if (!event.filterCard(get.autoViewAs({ name: name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) {
+								continue;
+							} else if (!player.countCards("hes", i => get.suit(i, player) == map[name])) {
+								continue;
+							}
+							let temp = get.order({ name: name, nature: name == "sha" ? "fire" : null });
+							if (temp > max) {
+								max = temp;
+							}
 						}
-						if (max > 0) return max * 1.2;
+						if (max > 0) {
+							return max * 1.2;
+						}
 					}
-					return 2;
+					return 1;
 				},
 			},
 			group: ["jlsg_longhun_effect"],
@@ -2211,6 +2278,10 @@ export default {
 								}
 								break;
 							case "wuxie":
+								if (!trigger.card.storage) {
+									trigger.card.storage = {};
+								}
+								trigger.card.storage.nowuxie = true;
 								trigger.directHit.addArray(game.players);
 								player
 									.when({ global: "eventNeutralized" })
