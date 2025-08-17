@@ -105,7 +105,7 @@ export default {
 				}
 				str = str.length == 1 ? str[0] : str.join("，");
 				event.result = await player
-					.chooseBool(`###get.prompt("jlsg_jdjg_xiaoji")###${str}`)
+					.chooseBool(`###${get.prompt("jlsg_jdjg_xiaoji")}###${str}`)
 					.set("ai", (event, player) => get.effect(player, { name: "draw" }, player, player) > 0)
 					.forResult();
 				if (event.result?.bool) {
