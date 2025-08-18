@@ -2182,7 +2182,7 @@ export default {
 					if (!double) {
 						return 0;
 					} else if (suit == "heart") {
-						if (event.getTrigger()?.player != player) {
+						if (event.getTrigger()?.player && event.getTrigger()?.player != player) {
 							if (get.attitude(player, event.getTrigger().player) < 0) {
 								return 0;
 							} else if (
