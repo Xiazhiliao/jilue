@@ -2063,7 +2063,7 @@ export default {
 			viewAs(cards, player) {
 				if (cards.length) {
 					const suit = get.suit(cards[0], player);
-					let name = lib.skill.jlsg_longhun.map2[suit];
+					let name = { diamond: "sha", club: "shan", heart: "tao", spade: "wuxie" }[suit];
 					if (name) {
 						return { name, nature: name == "sha" ? "fire" : null };
 					}
@@ -2072,7 +2072,7 @@ export default {
 			},
 			filter(event, player) {
 				const filter = event.filterCard;
-				const map = lib.skill.jlsg_longhun.map;
+				const map = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
 				for (let name of Object.keys(map)) {
 					if (filter(get.autoViewAs({ name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) {
 						return player.countCards("hes", { suit: map[name] });
@@ -2090,7 +2090,7 @@ export default {
 				event = event || get.event();
 				const filter = event._backup.filterCard,
 					suit = get.suit(card, player);
-				const name = lib.skill.jlsg_longhun.map2[suit];
+				const name = { diamond: "sha", club: "shan", heart: "tao", spade: "wuxie" }[suit];
 				if (name) {
 					return filter(get.autoViewAs({ name }, "unsure"), player, event);
 				}
@@ -2187,7 +2187,7 @@ export default {
 								return 0;
 							} else if (
 								(function () {
-									return 8 > cards.concat([card]).reduce((sum, card) => get.value(card), 0);
+									return get.value({ name: "tao" }, player) > get.value(cards.concat([card]), player);
 								})()
 							) {
 								return 0;
@@ -2195,8 +2195,8 @@ export default {
 						}
 					} else if (suit == "spade") {
 						if (event.getTrigger()?.card?.cards?.length) {
-							const gainCardsValue = event.getTrigger()?.card?.cards.reduce((sum, card) => get.value(card), 0),
-								useCardValue = cards.concat([card]).reduce((sum, card) => sum + get.value(card), 0);
+							const gainCardsValue = get.value(event.getTrigger().card.cards, player),
+								useCardValue = get.value(cards.concat([card]), player);
 							if (gainCardsValue < useCardValue) {
 								return 0;
 							}
@@ -2209,11 +2209,9 @@ export default {
 				if (_status.connectMode && name == "wuxie" && player.countCards("hes") > 0) {
 					return true;
 				}
-				let suit = lib.skill.jlsg_longhun.map[name];
+				let suit = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" }[name];
 				return name && player.countCards("hes", { suit: suit }) > 0;
 			},
-			map: { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" },
-			map2: { diamond: "sha", club: "shan", heart: "tao", spade: "wuxie" },
 			ai: {
 				respondSha: true,
 				respondShan: true,
