@@ -1962,7 +1962,7 @@ export default {
 				global: "phaseBefore",
 				player: ["changeHpAfter", "enterGame"],
 			},
-			filter: (event, player) => event.name != "phase" || game.phaseNumber == 0 || player.hp > 1,
+			filter: (event, player) => (event.name != "phase" || game.phaseNumber == 0) && player.hp > 1,
 			forced: true,
 			popup: false,
 			content: () => {
@@ -1973,11 +1973,32 @@ export default {
 				}
 			},
 			ai: {
+				maixie: true,
+				maixue_hp: true,
+				skillTagFilter(player) {
+					if (player.hasSkill("jlsg_longhun")) {
+						return player.hasCard(card => {
+							return get.suit(card, player) == "heart" || get.tag(card, "save");
+						}, "hes");
+					}
+					return player.hasCard(card => get.tag(card, "save"), "hes");
+				},
 				effect: {
-					target: function (card, player, target) {
-						if (get.tag(card, "recover") && target.hp > 0) {
-							if (player.hasSkill("jlsg_longhun") && card.cards.length == 2) return [1, 2];
-							return 0;
+					target(card, player, target) {
+						if (get.tag(card, "damage")) {
+							if (target.getHp() > 1) {
+								return;
+							}
+							if (get.tag(card, "damage") || get.tag(card, "losehp")) {
+								return [1, 2];
+							}
+						} else if (get.tag(card, "recover")) {
+							if (target.getHp() > 0) {
+								if (player.hasSkill("jlsg_longhun") && card.cards.length > 1) {
+									return [1, 2];
+								}
+								return 0;
+							}
 						}
 					},
 				},
@@ -1990,27 +2011,8 @@ export default {
 						player: ["dying", "dyingAfter"],
 					},
 					forced: true,
-					content: () => {
-						player.draw(2);
-					},
-					ai: {
-						maixie: true,
-						maixue_hp: true,
-						skillTagFilter: function (player) {
-							if (player.hasSkill("jlsg_longhun"))
-								return player.hasCard(card => {
-									return get.suit(card, player) == "heart" || get.tag(card, "save");
-								}, "hes");
-							return player.hasCard(card => get.tag(card, "save"), "hes");
-						},
-						effect: {
-							target: function (card, player, target) {
-								if (get.tag(card, "damage")) {
-									if (get.attitude(player, target) > 0) return;
-									return [1, 2];
-								}
-							},
-						},
+					async content(event, trigger, player) {
+						await player.draw(2);
 					},
 				},
 			},
