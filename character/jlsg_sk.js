@@ -8307,7 +8307,7 @@ export default {
 				global: "phaseEnd",
 			},
 			filter: function (event, player) {
-				if (!ui.cardPile.childNodes.length) {
+				if (!ui.discardPile.childNodes.length) {
 					return false;
 				}
 				return event.player.getHistory("useCard", e => e.card.name == "sha").length != 0;
@@ -8315,7 +8315,7 @@ export default {
 			frequent: true,
 			content: function () {
 				var cnt = trigger.player.getHistory("useCard", e => e.card.name == "sha").length;
-				var cards = Array.from(ui.cardPile.childNodes).randomGets(cnt);
+				var cards = Array.from(ui.discardPile.childNodes).randomGets(cnt);
 				player.gain(cards, "gain2");
 			},
 			ai: {
