@@ -8313,10 +8313,10 @@ export default {
 				return event.player.getHistory("useCard", e => e.card.name == "sha").length != 0;
 			},
 			frequent: true,
-			content: function () {
+			async content(event, trigger, player) {
 				var cnt = trigger.player.getHistory("useCard", e => e.card.name == "sha").length;
 				var cards = Array.from(ui.discardPile.childNodes).randomGets(cnt);
-				player.gain(cards, "gain2");
+				await player.gain(cards, "gain2");
 			},
 			ai: {
 				threaten: 0.2,
@@ -8331,8 +8331,7 @@ export default {
 				return player.countCards("h");
 			},
 			direct: true,
-			content: function () {
-				"step 0"
+			async content(event, trigger, player) {
 				let target = trigger.player;
 				let num1 = target.getCardUsable("sha");
 				let validCardsNumber = new Set(player.getDiscardableCards(player, "h").map(c => c.number));
@@ -8340,7 +8339,6 @@ export default {
 				let att = get.attitude(player, target) / get.attitude(player, player);
 				let valueMap = {};
 				for (let num of validCardsNumber) {
-					// console.log(`${get.translation(target.name)} @ ${num}`);
 					let shaCount = (target.countCards("h") * (14 - num)) / 13;
 					if (target == player || player.hasSkillTag("viewHandcard", null, target, true)) {
 						shaCount = target.countCards("h", c => get.number(c) >= num);
@@ -8353,25 +8351,30 @@ export default {
 					if (disCount > target.getHandcardLimit()) {
 						disValue += ((-(disCount - target.getHandcardLimit()) * att) / 3) * 2;
 					}
-					// console.log("disable value:", disValue);
 					let shaValue = (1 / 3 + att) * shaCount;
-					// console.log("sha value:", shaValue);
 					valueMap[num] = disValue + shaValue;
 				}
-				player
+				let result = await player
 					.chooseToDiscard(get.prompt2(event.name, target))
 					.set("logSkill", [event.name, target])
+					.set("target", target)
 					.set("ai", function (card) {
+						const { player, target } = get.event();
+						let att = get.attitude(player, target);
+						//防止忠臣开局丢主公但主公不知道打谁浪费一张牌，不过这样好像算透（
+						if (!game.players.some(current => get.attitude(target, current) < 0) && att > 0) return -114514;
+						if (att < 0) {
+							if (card.number = 13) return 114514;
+							if (target.countCards("h") >= card.number * 10) return 13 - card.number;
+						}
 						return -get.value(card) / 2 + _status.event.valueMap[card.number];
 					})
-					.set("valueMap", valueMap);
-				"step 1"
-				if (!result.bool) {
-					event.finish();
-					return;
+					.set("valueMap", valueMap)
+					.forResult();
+				if (result.bool) {
+					trigger.player.storage.jlsg_yingge2 = result.cards[0].number;
+					trigger.player.addTempSkill("jlsg_yingge2", "phaseUseAfter");
 				}
-				trigger.player.storage.jlsg_yingge2 = result.cards[0].number;
-				trigger.player.addTempSkill("jlsg_yingge2", "phaseUseAfter");
 			},
 			ai: {
 				expose: 0.1,
@@ -8380,6 +8383,7 @@ export default {
 		},
 		jlsg_yingge2: {
 			sourceSkill: "jlsg_yingge",
+			onremove: true,
 			mark: true,
 			intro: {
 				name: "莺歌",
