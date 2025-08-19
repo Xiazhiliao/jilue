@@ -2118,7 +2118,7 @@ export default {
 					map = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
 				event.valueList ??= lib.skill.jlsg_longhun.getValueList(event);
 				let suit = null,
-					double = false,
+					double = true,
 					max = 0;
 				for (let name in map) {
 					if (!event._backup.filterCard(get.autoViewAs({ name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) {
@@ -2138,14 +2138,17 @@ export default {
 						double = false;
 					} else if (suit == "club") {
 						const evt = event.getParent();
-						if (evt && evt.player) {
+						if (evt?.player && evt?.player?.isIn()) {
 							double = get.effect(evt.player, { name: "guohe_copy2" }, evt.player, player) > 0;
 						}
 					} else if (suit == "heart") {
+						if (event.type == "dying" && event.dying.hp < 0) {
+							double = false;
+						}
 						if (player.countCards("hse", i => get.tag(i, "save") || get.suit(i, player) == "heart") < 3) {
 							double = false;
 						} else {
-							double = player.isPhaseUsing() ? player.needsToDiscard() : player.hp > -1;
+							double = player.isPhaseUsing() ? player.needsToDiscard() > 0 : player.hp > -1;
 						}
 					} else if (suit == "spade") {
 						if (event.getParent(4).name == "phaseJudge") {
@@ -2165,7 +2168,7 @@ export default {
 							return false;
 						});
 						if (range[1] < 0 || range[0] == targets.length) {
-							double = targets.reduce((eff, target) => eff + get.effect(target, card, player, player), 0);
+							double = targets.reduce((eff, target) => eff + get.effect(target, card, player, player), 0) > 0;
 						}
 						double = targets.some(target => get.effect(target, card, player, player) > 0);
 					}
