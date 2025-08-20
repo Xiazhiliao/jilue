@@ -1002,7 +1002,7 @@ export default {
 		jlsg_yaozhi: {
 			audio: "ext:极略/audio/skill:2",
 			init(player, skill) {
-				player.setStorage(skill, [], true);
+				player.setStorage(skill, {}, true);
 			},
 			trigger: {
 				player: ["phaseBegin", "damageEnd", "phaseJieshuBegin"],
@@ -6145,8 +6145,8 @@ export default {
 						},
 					})
 					.forResult();
-				event.result.skill_popup = false;
 			},
+			popup: false,
 			async content(event, trigger, player) {
 				event.skillstop = true;
 				await player.logSkill("jlsg_xingwu", trigger.player);

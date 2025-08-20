@@ -2911,6 +2911,7 @@ export default {
 					.set("chooseonly", true)
 					.forResult();
 			},
+			popup: false,
 			async content(event, trigger, player) {
 				await player.discard(event.cards);
 				if (!trigger.player.isIn() || !trigger.player.countDiscardableCards(trigger.player, "he")) {
@@ -8303,19 +8304,17 @@ export default {
 		},
 		jlsg_shiqiao: {
 			audio: "ext:极略/audio/skill:2",
-			trigger: {
-				global: "phaseEnd",
-			},
-			filter: function (event, player) {
+			trigger: { global: "phaseEnd" },
+			filter(event, player) {
 				if (!ui.discardPile.childNodes.length) {
 					return false;
 				}
-				return event.player.getHistory("useCard", e => e.card.name == "sha").length != 0;
+				return event.player.hasHistory("useCard", evt => evt.card.name == "sha");
 			},
 			frequent: true,
 			async content(event, trigger, player) {
-				var cnt = trigger.player.getHistory("useCard", e => e.card.name == "sha").length;
-				var cards = Array.from(ui.discardPile.childNodes).randomGets(cnt);
+				let cnt = trigger.player.getHistory("useCard", e => e.card.name == "sha").length;
+				let cards = Array.from(ui.discardPile.childNodes).randomGets(cnt);
 				await player.gain(cards, "gain2");
 			},
 			ai: {
@@ -8324,27 +8323,23 @@ export default {
 		},
 		jlsg_yingge: {
 			audio: "ext:极略/audio/skill:2",
-			trigger: {
-				global: "phaseUseBegin",
-			},
-			filter: function (event, player) {
+			trigger: { global: "phaseUseBegin" },
+			filter(event, player) {
 				return player.countCards("h");
 			},
-			direct: true,
-			async content(event, trigger, player) {
-				let target = trigger.player;
-				let num1 = target.getCardUsable("sha");
-				let validCardsNumber = new Set(player.getDiscardableCards(player, "h").map(c => c.number));
-				let hasEnemy = game.hasPlayer(p => get.attitude(target, p) < 0);
-				let att = get.attitude(player, target) / get.attitude(player, player);
-				let valueMap = {};
-				for (let num of validCardsNumber) {
-					let shaCount = (target.countCards("h") * (14 - num)) / 13;
+			async cost(event, trigger, player) {
+				const target = trigger.player;
+				const num = target.getCardUsable("sha"),
+					hs = player.getDiscardableCards(player, "h"),
+					att = get.attitude(player, target) / get.attitude(player, player);
+				const valueMap = hs.reduce((list, card) => {
+					const number = get.number(card);
+					let shaCount = (target.countCards("h") * (14 - number)) / 13;
 					if (target == player || player.hasSkillTag("viewHandcard", null, target, true)) {
-						shaCount = target.countCards("h", c => get.number(c) >= num);
+						shaCount = target.countCards("h", c => get.number(c) >= number);
 					}
-					if (shaCount > num + num1) {
-						shaCount = num + num1;
+					if (shaCount > number + num) {
+						shaCount = number + num;
 					}
 					let disCount = target.countCards("h") - shaCount;
 					let disValue = ((-disCount * att) / 3) * 2;
@@ -8352,69 +8347,95 @@ export default {
 						disValue += ((-(disCount - target.getHandcardLimit()) * att) / 3) * 2;
 					}
 					let shaValue = (1 / 3 + att) * shaCount;
-					valueMap[num] = disValue + shaValue;
-				}
-				let result = await player
-					.chooseToDiscard(get.prompt2(event.name, target))
-					.set("logSkill", [event.name, target])
-					.set("target", target)
+					list[number] = disValue + shaValue;
+					return list;
+				}, {});
+				event.result = await player
+					.chooseToDiscard(get.prompt2("jlsg_yingge", target))
 					.set("ai", function (card) {
-						const { player, target } = get.event();
+						const { player, target, valueMap } = get.event();
 						let att = get.attitude(player, target);
 						//防止忠臣开局丢主公但主公不知道打谁浪费一张牌，不过这样好像算透（
-						if (!game.players.some(current => get.attitude(target, current) < 0) && att > 0) return -114514;
-						if (att < 0) {
-							if (card.number = 13) return 114514;
-							if (target.countCards("h") >= card.number * 10) return 13 - card.number;
+						if (!game.players.some(current => get.attitude(target, current) < 0) && att > 0) {
+							return 0;
 						}
-						return -get.value(card) / 2 + _status.event.valueMap[card.number];
+						if (att < 0) {
+							if ((card.number = 13)) {
+								return 114514;
+							}
+							if (target.countCards("h") >= card.number * 10) {
+								return 13 - card.number;
+							}
+						}
+						return -get.value(card) / 2 + valueMap[card.number];
 					})
+					.set("chooseonly", true)
+					.set("logSkill", ["jlsg_yingge", target])
+					.set("target", target)
 					.set("valueMap", valueMap)
 					.forResult();
-				if (result.bool) {
-					trigger.player.storage.jlsg_yingge2 = result.cards[0].number;
-					trigger.player.addTempSkill("jlsg_yingge2", "phaseUseAfter");
-				}
+			},
+			popup: false,
+			async content(event, trigger, player) {
+				await player.discard(event.cards);
+				trigger.player.storage.jlsg_yingge_buff = event.cards[0].number;
+				trigger.player.addTempSkill("jlsg_yingge_buff", "phaseUseAfter");
+			},
+			subSkill: {
+				buff: {
+					sub: true,
+					sourceSkill: "jlsg_yingge",
+					charlotte: true,
+					onremove: true,
+					mark: true,
+					intro: {
+						name: "莺歌",
+						content(event, player) {
+							return `圣数：<b>${Number(player.storage.jlsg_yingge_buff)}`;
+						},
+					},
+					mod: {
+						cardEnabled(card, player) {
+							let number = get.number(card, player);
+							if (!number || typeof number != "number") {
+								return;
+							}
+							if (get.is.virtualCard(card) || get.is.convertedCard(card)) {
+								return;
+							}
+							if (number < Number(player.storage.jlsg_yingge_buff)) {
+								return false;
+							}
+						},
+						cardSavable() {
+							return lib.skill.jlsg_yingge_buff.mod.cardEnabled.apply(this, arguments);
+						},
+						cardname(card, player, name) {
+							if (name == "sha") {
+								return;
+							}
+							let number = get.number(card, player);
+							if (!number || typeof number != "number") {
+								return;
+							}
+							if (number >= Number(player.storage.jlsg_yingge_buff)) {
+								return "sha";
+							}
+						},
+						cardUsable(card, player, num) {
+							if (get.name(card, player) == "sha") {
+								return num + Number(player.storage.jlsg_yingge_buff);
+							}
+						},
+						attackRange(player, num) {
+							return num + Number(player.storage.jlsg_yingge_buff);
+						},
+					},
+				},
 			},
 			ai: {
 				expose: 0.1,
 				threaten: 0.4,
-			},
-		},
-		jlsg_yingge2: {
-			sourceSkill: "jlsg_yingge",
-			onremove: true,
-			mark: true,
-			intro: {
-				name: "莺歌",
-				content: function (event, player) {
-					return `圣数：<b>${Number(player.storage.jlsg_yingge2)}`;
-				},
-			},
-			mod: {
-				cardEnabled: function (card, player) {
-					let number = get.number(card, player);
-					if (!number || typeof number != "number") return;
-					if (get.is.virtualCard(card) || get.is.convertedCard(card)) return;
-					if (number < Number(player.storage.jlsg_yingge2)) return false;
-				},
-				cardSavable: function (card, player) {
-					let number = get.number(card, player);
-					if (!number || typeof number != "number") return;
-					if (get.is.virtualCard(card) || get.is.convertedCard(card)) return;
-					if (number < Number(player.storage.jlsg_yingge2)) return false;
-				},
-				cardname: function (card, player, name) {
-					let number = get.number(card, player);
-					if (!number || typeof number != "number") return;
-					if (number >= Number(player.storage.jlsg_yingge2)) return "sha";
-				},
-				cardUsable: function (card, player, num) {
-					if (get.name(card, player) == "sha") return num + Number(player.storage.jlsg_yingge2);
-				},
-				attackRange: function (player, num) {
-					return num + Number(player.storage.jlsg_yingge2);
-				},
 			},
 		},
 		jlsg_kuangbi: {
@@ -16002,7 +16023,6 @@ export default {
 		jlsg_shiqiao: "拾樵",
 		jlsg_shiqiao_info: "一名角色的回合结束时，你可以从弃牌堆随机获得X张牌（X为该角色于此回合内使用杀的次数）",
 		jlsg_yingge: "莺歌",
-		jlsg_yingge2: "莺歌",
 		jlsg_yingge_info: "一名角色的出牌阶段开始时，你可以弃置一张手牌，令其不能使用点数小于X的非转化非虚拟牌、点数不小于X的手牌均视为【杀】、攻击范围和【杀】的使用次数上限+X，直到该阶段结束。（X为你弃置牌的点数）",
 		jlsg_kuangbi: "匡弼",
 		jlsg_kuangbi_info: "每回合限一次，当一名角色使用基本牌或普通锦囊牌时，你可以取消所有目标；然后你可以选择任意名角色，令这些角色成为此牌的目标（无距离限制）。",

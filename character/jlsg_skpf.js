@@ -776,12 +776,12 @@ export default {
 					.set("logSkill", ["jlsg_gygs_angyang", giver])
 					.set("chooseonly", true)
 					.forResult();
-				if (event.result) {
+				if (event.result?.bool) {
 					event.result.targets = [giver];
-					event.result.skill_popup = false;
 					event.result.cost_data = { card };
 				}
 			},
+			popup: false,
 			async content(event, trigger, player) {
 				const {
 					targets: [target],

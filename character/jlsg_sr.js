@@ -4553,11 +4553,11 @@ export default {
 					.set("chooseonly", true)
 					.forResult();
 				if (event.result?.bool) {
-					event.result.skill_popup = false;
 					event.result.targets = [trigger.player];
 					event.result.cost_data = { storage, upgrade };
 				}
 			},
+			popup: false,
 			async content(event, trigger, player) {
 				const {
 					cards,
