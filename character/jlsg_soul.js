@@ -527,20 +527,19 @@ export default {
 			trigger: { player: "phaseUseBegin" },
 			filter: (event, player) => player.countCards("h"),
 			async cost(event, trigger, player) {
-				const hs = player.getCards("h");
+				const hs = player.getCards("h").slice();
 				const given = [],
 					given_map = {};
+				let node = get.is.singleHandcard() ? player.node.handcards1 : player.node.handcards2;
 				while (hs.length) {
-					const { result } = await player.chooseCardTarget({
-						complexCard: true,
-						complexSelect: true,
+					const {
+						result: { targets, cards },
+					} = await player.chooseCardTarget({
+						selectCard: [1, hs.length],
 						filterCard(card) {
 							return get.event("hs").includes(card);
 						},
-						hs: hs,
-						given: given,
 						filterTarget: lib.filter.notMe,
-						selectCard: [1, hs.length],
 						prompt: "激诏：是否将手牌牌分配给其他角色？",
 						prompt2: "获得牌的角色获得一枚“激诏”标记",
 						ai1(card) {
@@ -548,25 +547,29 @@ export default {
 								hs = get.event("hs"),
 								given = get.event("given");
 							if (!ui.selected.cards.length && get.name(card) == "du") return 20;
-							if (ui.selected.cards.length) return 0;
-							if (given.length && get.value(hs) < get.value(given) / Object.keys(given_map).length) return 0;
+							if (ui.selected.cards.length) {
+								return 0;
+							}
+							if (given.length && get.value(hs) < get.value(given)) {
+								return 0;
+							}
+							const plaUseValue = player.getUseValue(card);
 							if (player.hasUseTarget(card) && get.type(card) != "equip") {
-								return game.filterPlayer(current => {
-									if (current == player) return false;
-									if (get.attitude(player, current) > 1) return false;
-									if (current.getUseValue(card) > 0 && current.getUseValue(card) > player.getUseValue(card)) return 10 > get.value(card);
+								return game.hasPlayer(current => {
+									if (current == player || get.attitude(player, current) < 0) {
+										return false;
+									}
+									if (current.getUseValue(card) > plaUseValue) {
+										return 10 > get.value(card);
+									}
+									return false;
 								});
 							} else if (!player.hasUseTarget(card)) {
-								if (get.useful(card) < 5)
+								if (get.useful(card) < 5) {
 									return game.hasPlayer(current => {
-										return get.attitude(player, current) < 1 && get.value(card) < 5;
+										return get.attitude(player, current) < 0 && get.value(card) < 5;
 									});
-								return game.filterPlayer(current => {
-									if (current == player) return false;
-									if (get.attitude(player, current) > 1) return false;
-									if (current.getUseValue(card) > 0 && current.getUseValue(card) > player.getUseValue(card)) return true;
-									return get.useful(card, current) > get.useful(card, player);
-								});
+								}
 							}
 							return 0;
 						},
@@ -574,111 +577,121 @@ export default {
 							const card = ui.selected.cards[0];
 							const player = get.owner(card),
 								att = get.attitude(player, target);
-							if (!card) return false;
+							if (!card) {
+								return 0;
+							}
 							if (get.name(card, player) == "du") {
-								if (target.hasSkillTag("nodu")) return att < 0;
-								if (target.hasSkillTag("usedu")) return att > 0;
+								if (target.hasSkillTag("nodu")) {
+									return att < 0;
+								} else if (target.hasSkillTag("usedu")) {
+									return att > 0;
+								}
 								return att < 0;
 							}
-							if (att > 1) {
+							if (att > 0) {
 								let add;
-								if (given_map[target.playerid] && given_map[target.playerid].length) add = given_map[target.playerid];
-								if (target.hasJudge("lebu")) return target.needsToDiscard(add) < 3;
-								else if (target.isTurnedOver()) return get.useful(card, target) >= get.useful(card, player) || target.getUseValue(card) > 0;
+								if (given_map[target.playerid]?.length) {
+									add = given_map[target.playerid];
+								}
+								if (target.hasJudge("lebu")) {
+									return target.needsToDiscard(add) < 3;
+								} else if (target.isTurnedOver()) {
+									return get.value(card, target) >= get.value(card, player) || target.getUseValue(card) > 0;
+								}
 								if (target.getUseValue(card) > 0 && target.getUseValue(card) > player.getUseValue(card)) {
 									if (!target.isTurnedOver() && !target.hasJudge("lebu")) {
-										if (get.attitude(target, player) >= 3 && get.attitude(player, target) >= 3) return 11 > get.value(card);
-									} else return target.needsToDiscard(add) < 1;
+										if (get.attitude(target, player) >= 3 && get.attitude(player, target) >= 3) {
+											return 11 > get.value(card);
+										}
+									}
+									return target.needsToDiscard(add) < 1;
 								}
 								return target.needsToDiscard() < 3 && 8 > get.value(card);
 							} else {
-								if (given_map[target.playerid] && given_map[target.playerid].length) return 0;
-								if (target.hasJudge("lebu")) return get.value(card, player) <= 5 && card.name != "wuxie";
-								else if (target.hasSkillTag("nogain")) return get.useful(card, player) <= 5;
-								else return !get.tag(card, "damage") && !get.tag(card, "save") && !get.tag(card, "recover") && get.useful(card, player) <= 5;
+								if (given_map[target.playerid]?.length) {
+									return 0;
+								} else if (target.hasJudge("lebu")) {
+									return get.value(card, player) <= 5 && card.name != "wuxie";
+								} else if (target.hasSkillTag("nogain")) {
+									return get.value(card, player) <= 5;
+								}
+								return !get.tag(card, "damage") && !get.tag(card, "save") && !get.tag(card, "recover") && get.value(card, player) <= 5;
 							}
 						},
+						hs: hs,
+						given: given,
 					});
-					if (!result.bool) break;
-					const res = result.cards,
-						target = result.targets[0].playerid;
-					const tag = `jlsg_jizhao_g${target}`;
-					if (!lib.translate[tag]) {
-						game.broadcastAll(
-							function (tag, name) {
-								lib.translate[tag] = `激诏(${get.translation(name)})`;
-							},
-							tag,
-							result.targets[0].name
-						);
+					if (!targets?.length || !cards?.length) {
+						break;
 					}
-					player.addGaintag(res, tag);
-					hs.removeArray(res);
-					given.addArray(res);
-					if (!given_map[target]) given_map[target] = [];
-					given_map[target].addArray(res);
+					player.addGaintag(hs, "jlsg_jizhao");
+					const target = targets[0].playerid;
+					hs.removeArray(cards);
+					given.addArray(cards);
+					if (!given_map[target]) {
+						given_map[target] = [];
+					}
+					given_map[target].addArray(cards);
 				}
+				const gain_list = Object.entries(given_map)
+					.map(i => [(_status.connectMode ? lib.playerOL : game.playerMap)[i[0]], i[1]])
+					.sort(([a], [b]) => {
+						return lib.sort.seat.apply(this, [a, b]);
+					});
 				event.result = {
-					bool: Object.keys(given_map).length,
-					cost_data: given_map,
+					bool: !!gain_list.length,
+					targets: gain_list.map(i => i[0]),
+					cost_data: gain_list,
 				};
 			},
 			async content(event, trigger, player) {
-				const given_map = {},
-					players = game.filterPlayer().sortBySeat(player);
-				for (let i = 0; i < players.length; i++) {
-					const id = players[i].playerid;
-					if (event.cost_data[id]) given_map[id] = event.cost_data[id];
-				}
-				const map = Object.entries(given_map).map(i => [(_status.connectMode ? lib.playerOL : game.playerMap)[i[0]], i[1]]),
-					cards = Object.entries(given_map)
-						.map(i => i[1])
-						.flat();
-				if (map.length) {
-					await player.addExpose(0.3);
-					await game
-						.loseAsync({
-							gain_list: map,
-							player: player,
-							cards: cards,
-							giver: player,
-							animate: "giveAuto",
-						})
-						.setContent(async function (event, trigger, player) {
-							event.type = "gain";
-							await player.lose(cards, ui.special).set("type", "gain").set("forceDie", true).set("getlx", false);
-							var evt = event.getl(player);
-							await game.asyncDelay(0, get.delayx(500, 500));
-							for (var i = 0; i < event.gain_list.length; i++) {
-								const info = event.gain_list[i];
-								if (get.itemtype(i[1]) == "card") info[1] = [info[1]];
-								info[1] = info[1].filter(card => {
-									return !cards.includes(card) || !player.getCards("hejsx").includes(card);
-								});
-								var shown = info[1].slice(0),
-									hidden = [];
-								for (var card of info[1]) {
-									if (evt.hs.includes(card)) {
-										shown.remove(card);
-										hidden.push(card);
-									}
-								}
-								if (shown.length > 0) await player.$give(shown, info[0]);
-								if (hidden.length > 0) await player.$giveAuto(hidden, info[0]);
-								await info[0].addMark("jlsg_jizhao", 1);
-							}
-							for (var i = 0; i < event.gain_list.length; i++) {
-								const info = event.gain_list[i];
-								if (info[1].length > 0) {
-									const next = info[0].gain(info[1]);
-									next.getlx = false;
-									next.giver = event.giver;
-									await next;
+				const { cost_data: gain_list } = event;
+				const cards = gain_list.map(i => i[1]).flat();
+				player.addExpose(0.3);
+				await game
+					.loseAsync({
+						gain_list,
+						player,
+						cards,
+						giver: player,
+						animate: "giveAuto",
+					})
+					.setContent(async function (event, trigger, player) {
+						event.type = "gain";
+						await player.lose(cards, ui.special).set("type", "gain").set("forceDie", true).set("getlx", false);
+						let evt = event.getl(player);
+						await game.delay(0, get.delayx(500, 500));
+						for (let i = 0; i < event.gain_list.length; i++) {
+							const info = event.gain_list[i];
+							info[1] = info[1].filter(card => {
+								return !cards.includes(card) || !player.getCards("hejsx").includes(card);
+							});
+							let shown = info[1].slice(0),
+								hidden = [];
+							for (let card of info[1]) {
+								if (evt.hs.includes(card)) {
+									shown.remove(card);
+									hidden.push(card);
 								}
 							}
-						});
-					await game.asyncDelay();
-				}
+							if (shown.length > 0) {
+								player.$give(shown, info[0]);
+							}
+							if (hidden.length > 0) {
+								player.$giveAuto(hidden, info[0]);
+							}
+							info[0].addMark("jlsg_jizhao", 1);
+						}
+						for (let i = 0; i < event.gain_list.length; i++) {
+							const info = event.gain_list[i];
+							if (info[1].length > 0) {
+								const next = info[0].gain(info[1]);
+								next.getlx = false;
+								next.giver = event.giver;
+								await next;
+							}
+						}
+					});
 			},
 			group: ["jlsg_jizhao_damage", "jlsg_jizhao_remove"],
 			subSkill: {
@@ -686,46 +699,59 @@ export default {
 					audio: "jlsg_jizhao",
 					trigger: { global: "damageBegin1" },
 					filter: event => event.source && event.source.hasMark("jlsg_jizhao"),
-					prompt: event => `是否对${get.translation(event.source)}发动“激诏”？`,
+					prompt: event => get.prompt("jlsg_jizhao", event.source),
 					prompt2: event => `移去${get.translation(event.source)}的一个“激诏”标记，并令此次伤害+1`,
-					check: function (event, player) {
-						var att = get.attitude(event.player, player);
+					check(event, player) {
+						const att = get.attitude(event.player, player);
 						if (att > 0) {
-							if (get.attitude(event.source, player) < 0) return false;
-							if (event.player.hasSkillTag("filterDamage", null, { player: event.source })) return event.player.hp > 1;
-							else return event.player.hasSkillTag("maixie", null, { player: event.source });
-						} else return !event.player.hasSkillTag("filterDamage", null, { player: event.source }) && att < 0;
+							if (get.attitude(event.source, player) < 0) {
+								return false;
+							}else if (event.player.hasSkillTag("filterDamage", null, { player: event.source })) {
+								return event.player.hp > 1;
+							}else if (event.player.hasSkillTag("maixie", null, { player: event.source })) {
+								return event.num + 1 < event.player.hp;
+							}
+						}
+						return !event.player.hasSkillTag("filterDamage", null, { player: event.source }) && att < 0;
 					},
-					content: function () {
+					logTarget: "source",
+					async content(event, trigger, player) {
 						trigger.source.removeMark("jlsg_jizhao", 1);
 						trigger.num++;
 					},
 				},
 				remove: {
-					audio: "ext:极略/audio/skill:2",
+					audio: "jlsg_jizhao",
 					trigger: { player: "phaseBegin" },
 					filter: () => game.hasPlayer(current => current.hasMark("jlsg_jizhao")),
 					prompt: `激诏：你可以移去场上所有角色的“激诏”标记`,
 					prompt2: `这些角色失去等量体力`,
-					check: function (event, player) {
-						var targets = game.filterPlayer(current => current.hasMark("jlsg_jizhao"));
-						var eff = 0;
-						for (var target of targets) {
+					check(event, player) {
+						const targets = game.filterPlayer(current => current.hasMark("jlsg_jizhao"));
+						let eff = 0;
+						for (let target of targets) {
 							if (get.attitude(target, player) > 0) {
-								if (get.effect(target, { name: "losehp" }, player, target) > 0 && target.hp > target.countMark("jlsg_jizhao")) eff += 2;
-								else eff--;
+								if (get.effect(target, { name: "losehp" }, player, target) > 0 && target.hp > target.countMark("jlsg_jizhao")) {
+									eff += 2;
+								} else {
+									eff--;
+								}
 							} else {
-								if (get.effect(target, { name: "losehp" }, player, target) > 0 && target.hp > target.countMark("jlsg_jizhao")) eff--;
-								else eff += 2;
+								if (get.effect(target, { name: "losehp" }, player, target) > 0 && target.hp > target.countMark("jlsg_jizhao")) {
+									eff--;
+								} else {
+									eff += 2;
+								}
 							}
 						}
 						return eff > 0;
 					},
-					content() {
-						for (var i of game.filterPlayer(current => current.hasMark("jlsg_jizhao"))) {
-							const num = i.countMark("jlsg_jizhao");
-							i.removeMark("jlsg_jizhao", num);
-							i.loseHp(num);
+					logTarget: () => game.filterPlayer(current => current.hasMark("jlsg_jizhao")).sortBySeat(),
+					async content(event, trigger, player) {
+						for (let target of event.targets) {
+							const num = target.countMark("jlsg_jizhao");
+							target.removeMark("jlsg_jizhao", num);
+							await target.loseHp(num);
 						}
 					},
 				},
