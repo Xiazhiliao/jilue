@@ -12763,13 +12763,13 @@ export default {
 			intro: {
 				noucount: true,
 				mark(dialog, content, player) {
-					var content = Object.entries(player.storage.jlsg_xinghan).slice(1);
-					if (content && content.length) {
+					let storage = Array.from(player.getStorage("jlsg_xinghan", new Map()).values()).slice(1);
+					if (storage?.length) {
 						if (player == game.me || player.isUnderControl()) {
 							dialog.addText("已招募武将：");
-							dialog.add([content, lib.skill.jlsg_xinghan.characterInfo]);
+							dialog.add([storage.map(i => [i[0], i.slice(1)]), lib.skill.jlsg_xinghan.characterInfo]);
 						} else {
-							return "共有" + get.cnNumber(content.length) + "名招募武将";
+							return "共有" + get.cnNumber(storage.length) + "名招募武将";
 						}
 					}
 				},
@@ -12787,22 +12787,26 @@ export default {
 					if (
 						![
 							//"standard", "refresh", "shiji", "shenhua", "mobile",
+							"jlsg_sr",
 							"jlsg_sk",
 							"jlsg_skpf",
-							"jlsg_sr",
 							"jlsg_soul",
 							"jlsg_sy",
-							"jlAddition",
 						].includes(pack)
-					)
+					) {
 						continue;
+					}
 					for (const name in lib.characterPack[pack]) {
-						if (name.startsWith("jlsgsy_") && !name.endsWith("baonu")) continue;
+						if (name.startsWith("jlsgsy_") && !name.endsWith("baonu")) {
+							continue;
+						}
 						if (_status.characterlist.includes(name) || name.startsWith("jlsgsy_")) {
 							if (lib.translate[name] && get.character(name)) {
 								if (get.character(name, 1)) {
 									const group = get.character(name, 1);
-									if (!list[group]) list[group] = [];
+									if (!list[group]) {
+										list[group] = [];
+									}
 									list[group].add(name);
 								}
 							}
@@ -12813,167 +12817,199 @@ export default {
 				this.getCharacters = list;
 				return list;
 			},
-			init(player) {
-				if (!get.nameList(player).includes("jlsgsk_wanniangongzhu")) {
-					//防获取
-					player.removeSkill("jlsg_xinghan");
-					player.unmarkSkill("jlsg_xinghan");
-					player.update();
-					return;
-				}
+			init(player, skill) {
 				if (!player.invisibleSkills.includes("jlsg_xinghan_turn")) {
+					let nameIndex = null,
+						nameList = ["name1", "name2"].filter(prop => player[prop]).map(prop => player[prop]);
+					for (let name in nameList) {
+						const skills = get.character(nameList[name])?.skills || [];
+						if (skills.includes(skill)) {
+							nameIndex = `name${Number(name) + 1}`;
+						}
+					}
+					player.setStorage("jlsg_xinghan_turn", {
+						nameIndex, //主副将位置
+						dead: [], //阵亡招募武将的势力
+					});
+					if (!nameIndex) {
+						return;
+					}
 					player.addInvisibleSkill("jlsg_xinghan_turn");
-					let names = ["name1", "name2"],
-						num = 0;
-					for (let i in names) {
-						//此处用于获取万年公主在双将的位置
-						if (player[names[i]] == "jlsgsk_wanniangongzhu") {
-							num = i;
-							break;
-						}
-					}
-					if (!player.storage.jlsg_xinghan_turn)
-						player.storage.jlsg_xinghan_turn = {
-							num: num, //主副将位置
-							dead: [], //阵亡招募武将的势力
-						};
-					const name = player[`name${Number(player.storage.jlsg_xinghan_turn.num) + 1}`];
-					let info = [player.hp, player.maxHp, player.hujia];
+					const name = player[nameIndex];
+					const info = get.character(name);
+					let { hp = 1, maxHp = 1, hujia = 0 } = info;
+					//主公/地主加成
 					if (player.isZhu2()) {
-						//主公/地主加成
-						let bool = false;
-						if (Array.isArray(get.character(name))) bool = get.character(name)[4] && !get.character(name)[4].includes("noZhuHp");
-						else bool = !get.character(name).initFilters.includes("noZhuHp");
-						if (bool) {
-							info[0]++;
-							info[1]++;
+						if (!info.initFilters?.includes("noZhuHp")) {
+							hp++;
+							maxHp++;
 						}
 					}
-					if (!player.storage.jlsg_xinghan) player.storage.jlsg_xinghan = {};
-					player.storage.jlsg_xinghan[name] = [null, info, get.character(name)[3]];
+					player.setStorage(skill, new Map([[0, [name, info.group, [hp, maxHp, hujia], info.skills]]]), true);
 				}
 			},
-			onremove(player) {
-				delete player.storage.jlsg_xinghan;
-				if (player.invisibleSkills.includes("jlsg_xinghan_turn")) player.removeInvisibleSkill("jlsg_xinghan_turn");
+			onremove(player, skill) {
+				player.setStorage(skill, undefined);
+				if (player.invisibleSkills.includes("jlsg_xinghan_turn")) {
+					player.removeInvisibleSkill("jlsg_xinghan_turn");
+				}
 			},
 			trigger: {
 				global: "gameDrawBegin",
 				player: "phaseEnd",
 			},
 			filter(event, player, name) {
-				let filterx = true;
-				if (name == "phaseEnd") filterx = !event.skill || event.skill != "jlsg_xinghan_turn";
-				return filterx;
+				if (!player.getStorage("jlsg_xinghan_turn")?.nameIndex) {
+					return false;
+				}
+				if (name == "phaseEnd") {
+					return !event.skill || event.skill != "jlsg_xinghan_turn";
+				}
+				return true;
 			},
 			async cost(event, trigger, player) {
-				const dead = player.storage.jlsg_xinghan_turn.dead;
+				const dead = player.getStorage("jlsg_xinghan_turn").dead,
+					storage = Array.from(player.getStorage("jlsg_xinghan", new Map([])).values()).slice(1);
 				let group = ["wei", "shu", "wu", "qun", "shen", "jlsgsy"]
-					.filter(i => {
-						if (!lib.skill.jlsg_xinghan.getCharacters[i]) return false;
-						return lib.skill.jlsg_xinghan.getCharacters[i].filter(j => {
-							return !Object.keys(player.storage.jlsg_xinghan).includes(j);
+					.filter(group => {
+						return lib.skill.jlsg_xinghan.getCharacters[group]?.filter(name => {
+							return !storage.some(info => info[0].includes(name));
 						}).length;
 					})
-					.filter(i => !dead.includes(i));
-				if (!group.length) return;
-				let storageGroups = Object.values(player.storage.jlsg_xinghan).map(i => i[0]);
-				if (Object.keys(player.storage.jlsg_xinghan).length == 4) {
+					.filter(group => !dead.includes(group));
+				if (!group.length) {
+					return;
+				}
+				let storageGroups = storage.map(info => info[1]);
+				if (storage.length == 3) {
 					group = group.filter(i => storageGroups.includes(i));
 				}
 				const { result } = await player
 					.chooseControl(group, "cancel2")
 					.set("prompt", "兴汉：请选择一个势力")
-					.set("ai", function () {
-						if (!storageGroups.includes("shen") && group.includes("shen")) return "shen";
-						return group.randomGet();
-					});
-				if (result.control != "cancel2") {
-					event.result = {
-						bool: true,
-						cost_data: { control: result.control },
-					};
-				} else event.result = { bool: false };
+					.set(
+						"choice",
+						(function () {
+							if (!storageGroups.includes("shen") && group.includes("shen")) {
+								return "shen";
+							}
+							return group.randomGet();
+						})()
+					);
+				event.result = {
+					bool: result.control != "cancel2",
+					cost_data: { control: result.control },
+				};
 			},
 			async content(event, trigger, player) {
-				const gro = event.cost_data.control,
-					storage = Object.entries(player.storage.jlsg_xinghan).map(i => [i[0], i[1][0], i[1][1][0]]),
-					list = lib.skill.jlsg_xinghan.getCharacters[gro].filter(i => !storage.map(i => i[0]).includes(i)).randomGets(3);
-				if (!list.length) return;
+				const control = event.cost_data.control,
+					storage = player.getStorage(event.name, new Map([]));
+				const storagex = Array.from(storage.entries()),
+					characterList = lib.skill.jlsg_xinghan.getCharacters[control].filter(i => !storagex.map(i => i[1][0]).includes(i)).randomGets(3);
+				if (!characterList.length) {
+					return;
+				}
 				let str = "";
-				if (storage.length > 1) {
+				if (storagex.length > 1) {
 					str = "<br>已招募武将：";
-					const org = Object.keys(player.storage.jlsg_xinghan)[0];
-					for (let i in player.storage.jlsg_xinghan) {
-						if (i == org) continue;
-						let info = player.storage.jlsg_xinghan[i][1];
-						let str2 = `(${info[0]}/${info[1]}${info[3] ? `/${info[3]}` : ""})，`;
-						str += get.translation(i) + str2;
+					for (let info of storagex) {
+						if (info[0] == 0) {
+							continue;
+						}
+						let hpInfo = info[1][2];
+						let str2 = `(${hpInfo[0]}/${hpInfo[1]}${hpInfo[3] ? `/${hpInfo[3]}` : ""})`;
+						str += get.translation(info[0]) + str2 + "<br>";
 					}
 				}
-				let { result } = await player.chooseButton(true, ["兴汉：请选择一名武将加入我方阵营" + str, [list, "character"]]).set("ai", function (button) {
-					return get.rank(button.link, true) - get.character(button.link)[2];
+				let { result } = await player.chooseButton(true, [`###兴汉：请选择一名武将加入我方阵营###${str}`, [characterList, "character"]]).set("ai", function (button) {
+					return get.rank(button.link, true) - get.character(button.link).hp;
 				});
 				if (result.bool) {
-					let info;
 					const name = result.links[0];
-					if (Array.isArray(get.character(name))) {
-						//适配旧版本武将格式
-						let [sex, group, hp, skills = []] = get.character(name);
-						skills = skills.filter(i => {
-							const info = get.info(i);
-							if (!info) return false;
-							return !info.zhuSkill || (info.zhuSkill && player.isZhu2());
-						});
-						info = [group, [get.infoHp(hp), get.infoMaxHp(hp), get.infoHujia(hp)], skills];
-					} else {
-						let { hp, maxHp, hujia, group, skills = [] } = get.character(name);
-						skills = skills.filter(i => {
-							const info = get.info(i);
-							if (!info) return false;
-							return !info.zhuSkill || (info.zhuSkill && player.isZhu2());
-						});
-						info = [group, [hp, maxHp, hujia], skills]; //招募武将存储格式
-					}
-					let same = storage.find(i => i[1] == info[0]);
-					if (same) {
-						//替换部分
-						let { result } = await player.chooseBool(`兴汉：是否将招募武将${get.translation(same[0])}替换为${get.translation(name)}？`).set("ai", function () {
-							//@.修改
-							return get.rank(name, true) - get.character(name)[2] - (get.rank(same[0], true) - get.character(same[0])[2]);
-						});
-						if (!result.bool) return;
-						else {
-							if (lib.config.extension_极略_jlsgsk_wanniangongzhu === "false") info[1][0] = same[2];
-							let list = {};
-							for (let i in player.storage.jlsg_xinghan) {
-								if (i == same[0]) list[name] = info;
-								else list[i] = player.storage.jlsg_xinghan[i];
-							}
-							if (!player.storage.jlsg_xinghan[name]) {
-								for (let i of player.storage.jlsg_xinghan[same[0]][2]) await player.removeSkill(i);
-							}
-							player.storage.jlsg_xinghan = list;
+					const info = get.character(name);
+					let { hp = 1, maxHp = 1, hujia = 0, group, skills = [] } = info;
+					//主公/地主加成
+					if (player.isZhu2()) {
+						if (!info.initFilters?.includes("noZhuHp")) {
+							hp++;
+							maxHp++;
 						}
 					}
-					if (!player.storage.jlsg_xinghan[name]) player.storage.jlsg_xinghan[name] = info;
-					if (_status.characterlist) _status.characterlist.remove(name);
-					if (event.triggername != "phaseEnd") await lib.skill.jlsg_xinghan.chooseCharacter(player);
-					player.markSkill("jlsg_xinghan");
+					let hpInfo = [hp, maxHp, hujia];
+					skills = skills.filter(skill => {
+						const skillInfo = get.info(skill);
+						if (!skillInfo) {
+							return false;
+						}
+						return !skillInfo.zhuSkill || (skillInfo.zhuSkill && player.isZhu2());
+					});
+					const same = storagex.find(i => i[0] != 0 && i[1][1] == group);
+					//替换部分
+					if (same) {
+						let { result } = await player
+							.chooseBool(`兴汉：是否将招募武将${get.translation(same[1][0])}替换为${get.translation(name)}？`)
+							.set("ai", () => get.event("check"))
+							.set(
+								"check",
+								(function () {
+									//@.修改
+									return get.rank(name, true) - get.character(name).hp - get.rank(same[1][0], true) + get.character(same[1][0]).hp > 0;
+								})()
+							);
+						if (!result.bool) {
+							return;
+						}
+						if (lib.config.extension_极略_jlsgsk_wanniangongzhu === "false") {
+							hpInfo = same[1][2];
+						}
+						let removeSkills = storage.get(same[0])[3];
+						for (let i of removeSkills) {
+							player.removeSkill(i);
+						}
+						storage.set(same[0], [name, control, hpInfo, skills]);
+					} else {
+						storage.set(storage.size, [name, control, hpInfo, skills]);
+					}
+					player.setStorage(event.name, storage, true);
+					game.broadcastAll(
+						function (name, info) {
+							if (_status.characterlist) {
+								_status.characterlist.remove(name);
+								if (info) {
+									_status.characterlist.add(info);
+								}
+							}
+						},
+						name,
+						same?.[1]?.[0]
+					);
+					if (event.triggername != "phaseEnd") {
+						await lib.skill.jlsg_xinghan.chooseCharacter(player);
+					}
 				}
 			},
 			reinitCharacters(player, to, insert = false) {
 				//切换角色的content
 				const rawPairs = [player.name1],
-					num = Number(player.storage.jlsg_xinghan_turn.num),
-					info = player.storage.jlsg_xinghan,
-					master = Object.entries(player.storage.jlsg_xinghan).find(i => i[1][0] === null)[0];
-				if (player.name2 && get.character(player.name2)) rawPairs.push(player.name2);
-				let from = rawPairs[num];
-				rawPairs[num] = to;
-				if (from == to) return;
-				const fromInfo = info[from],
-					toInfo = info[to];
+					nameIndex = player.getStorage("jlsg_xinghan_turn").nameIndex,
+					storage = Array.from(player.getStorage("jlsg_xinghan", new Map()).entries());
+				const master = storage[0][1][0];
+				if (player.name2 && get.character(player.name2)) {
+					rawPairs.push(player.name2);
+				}
+				const newPairs = rawPairs.reduce((list, name) => {
+					if (name == player[nameIndex]) {
+						list.push(to);
+					} else {
+						list.push(name);
+					}
+					return list;
+				}, []);
+				const fromInfo = storage.find(info => info[1][0] == player[nameIndex]),
+					toInfo = storage.find(info => info[1][0] == to);
+				if (fromInfo[1][0] == toInfo[1][0]) {
+					return;
+				}
 				let next,
 					evt = _status.event.getParent("phase");
 				if (insert && evt && evt.parent && evt.parent.next) {
@@ -12982,30 +13018,17 @@ export default {
 					next = game.createEvent("jlsg_xinghan_change", false);
 				}
 				next.player = player;
-				next.newPairs = rawPairs;
-				next.info = {
-					from: {
-						name: from,
-						hp: fromInfo[1][0],
-						maxHp: fromInfo[1][1],
-						hujia: fromInfo[1][2],
-						skills: fromInfo[2],
-					},
-					to: {
-						name: to,
-						hp: toInfo[1][0],
-						maxHp: toInfo[1][1],
-						hujia: toInfo[1][2],
-						skills: toInfo[2],
-					},
-				};
+				next.newPairs = newPairs;
+				next.info = { fromInfo, toInfo };
 				next.setContent(async function (event, trigger, player) {
 					const rawPairs = [player.name1];
-					if (player.name2 && get.character(player.name2)) rawPairs.push(player.name2);
+					if (player.name2 && get.character(player.name2)) {
+						rawPairs.push(player.name2);
+					}
 					event.rawPairs = rawPairs;
 					const newPairs = event.newPairs;
-					const removeSkills = event.info.from.skills,
-						addSkills = event.info.to.skills;
+					const removeSkills = event.info.fromInfo[1][3].slice(0),
+						addSkills = event.info.toInfo[1][3].slice(0);
 					for (let i = 0; i < Math.min(2, rawPairs.length); i++) {
 						let rawName = rawPairs[i],
 							newName = newPairs[i];
@@ -13014,10 +13037,10 @@ export default {
 						}
 					}
 					player.reinit2(newPairs);
-					event.addSkill = addSkills.slice(0).unique();
-					event.removeSkill = removeSkills.slice(0).unique();
+					event.addSkill = addSkills.unique();
+					event.removeSkill = removeSkills.unique().removeArray(event.addSkill);
 
-					//失去技能
+					//手动失去技能
 					if (event.removeSkill.length) {
 						for (let skill of event.removeSkill) {
 							_status.event.clearStepCache();
@@ -13043,42 +13066,54 @@ export default {
 								}
 							}
 							player.enableSkill(skill + "_awake");
+							game.callHook("removeSkillCheck", [skill, player]);
 						}
 					}
 					//获得技能
 					if (event.addSkill.length) {
 						player.addSkill(event.addSkill);
 					}
-
-					player.storage.jlsg_xinghan[event.info.from.name][1][0] = player.hp;
-					player.storage.jlsg_xinghan[event.info.from.name][1][1] = player.maxHp;
-					player.storage.jlsg_xinghan[event.info.from.name][1][2] = player.hujia;
-					player.hp = event.info.to.hp;
-					player.maxHp = event.info.to.maxHp;
-					player.hujia = event.info.to.hujia;
-					player.markSkill("jlsg_xinghan");
-					if (to == master) player.unmarkSkill("jlsg_xinghan_turn");
-					else player.markSkill("jlsg_xinghan_turn");
+					const storage = player.getStorage("jlsg_xinghan", new Map());
+					let fromInto2 = storage.get(event.info.fromInfo[0]);
+					fromInto2[2] = [player.hp, player.maxHp, player.hujia];
+					storage.set(event.info.fromInfo[0], fromInto2);
+					player.setStorage("jlsg_xinghan", storage, true);
+					game.broadcastAll(
+						function (player, event) {
+							player.hp = event.info.toInfo[1][2][0];
+							player.maxHp = event.info.toInfo[1][2][1];
+							player.hujia = event.info.toInfo[1][2][2];
+						},
+						player,
+						event
+					);
+					if (to == master) {
+						player.unmarkSkill("jlsg_xinghan_turn");
+					} else {
+						player.markSkill("jlsg_xinghan_turn");
+					}
 					player.update();
 				});
 				return next;
 			},
 			chooseCharacter(player, insert = false) {
 				//选择登场角色
-				const character = Object.entries(player.storage.jlsg_xinghan),
-					org = Object.keys(player.storage.jlsg_xinghan)[0];
+				const character = Array.from(player.getStorage("jlsg_xinghan", new Map()).values()),
+					master = character[0][0];
 				const next = game.createEvent("jlsg_xinghan_choose", false);
 				next.player = player;
+				next.master = master;
 				next.insert = insert;
 				next.setContent(async function (event, trigger, player) {
-					const { result } = await player.chooseButton(true, ["兴汉：请选择要上场的武将", [character, lib.skill.jlsg_xinghan.characterInfo]]).set("ai", function (button) {
-						if (get.event().getParent("phaseAfter") && button.link[0] == org) return -114514;
-						else return get.rank(button.link[0], true);
+					const { result } = await player.chooseButton(true, ["兴汉：请选择要上场的武将", [character.map(i => [i[0], i.slice(1)]), lib.skill.jlsg_xinghan.characterInfo]]).set("ai", function (button) {
+						const event = get.event();
+						if (event.getParent("phase") && button.link[0] == event.getParent().master) {
+							return -114514;
+						}
+						return get.rank(button.link[0], true);
 					});
 					if (result.bool) {
 						const name = result.links[0][0];
-
-						//这是个insertPhase，不用await
 						lib.skill.jlsg_xinghan.reinitCharacters(player, name, event.insert);
 					}
 				});
@@ -13185,95 +13220,141 @@ export default {
 				return node;
 			},
 		},
+		//切换角色
 		jlsg_xinghan_turn: {
-			//切换角色
-			priority: -114514,
-			trigger: { player: ["phaseBefore", "phaseAfter", "dieBefore", "changeSkillsEnd", "changeCharacterAfter"] },
 			unique: true,
 			locked: true,
 			charlotte: true,
 			lastDo: true,
-			popup: false,
+			priority: -114514,
+			trigger: { player: ["phaseBefore", "phaseAfter", "dieBefore", "changeSkillsEnd", "changeCharacterAfter"] },
 			marktext: "募",
 			intro: {
 				name: "兴汉",
 				content(storage, player) {
-					const master = Object.entries(player.storage.jlsg_xinghan).find(i => i[1][0] === null)[0];
+					const master = Array.from(player.getStorage("jlsg_xinghan", new Map()).values())[0][0];
 					return `此为${get.translation(master)}招募的武将`;
 				},
 			},
-			async cost(event, trigger, player) {
-				if (_status.over == true || !player.storage.jlsg_xinghan || Object.keys(player.storage.jlsg_xinghan).length < 2 || !String(player.storage.jlsg_xinghan_turn.num)) return;
-				const nameList = Object.keys(player.storage.jlsg_xinghan);
-				const name = player[`name${Number(player.storage.jlsg_xinghan_turn.num) + 1}`],
-					org = Object.keys(player.storage.jlsg_xinghan)[0];
-				let max = nameList.length - 1,
-					num = nameList.indexOf(name),
-					bool = false;
-				if (event.triggername == "dieBefore") bool = name != org;
-				else if (event.triggername == "phaseBefore") {
-					let bool2 = true;
-					if (player.isTurnedOver()) bool2 = trigger._noTurnOver;
-					bool = name != org && !trigger.skill && bool2;
-				} else if (event.triggername == "changeSkillsEnd") {
-					bool =
-						(trigger.removeSkill &&
-							trigger.removeSkill.some(i => {
-								let skills = player.storage.jlsg_xinghan[nameList[num]][2];
-								return skills.includes(i);
-							})) ||
-						(lib.config.extension_极略_jlsgsk_wanniangongzhu === "false" && trigger.addSkill?.length);
-				} else if (event.triggername == "changeCharacterAfter") bool = true;
-				else bool = max >= num && (trigger.skill == "jlsg_xinghan_turn" || (num == 0 && !trigger.skill));
-				event.result = {
-					bool: bool,
-					skill_popup: false,
-					cost_data: {
-						num: num,
-						max: max,
-					},
-				};
+			filter(event, player, name) {
+				if (player.getStorage("jlsg_xinghan", new Map()).size < 2) {
+					return false;
+				}
+				const storage = player.getStorage("jlsg_xinghan", new Map());
+				const nameIndex = player.getStorage("jlsg_xinghan_turn", { nameIndex: "name1" }).nameIndex;
+				const originName = player[nameIndex],
+					master = storage.get(0)?.[0] || originName;
+				const num = Array.from(storage.values()).findIndex(info => info[0] == originName),
+					max = storage.size - 1;
+				if (["phaseBefore", "dieBefore"].includes(name)) {
+					if (originName == master) {
+						return false;
+					}
+					if (name == "phaseBefore") {
+						if (player.isTurnedOver() && !event._noTurnOver) {
+							return false;
+						}
+						return !event.skill;
+					}
+				} else if (name == "phaseAfter") {
+					return max >= num && (event.skill == "jlsg_xinghan_turn" || (num == 0 && !event.skill));
+				} else if (name == "changeSkillsEnd") {
+					if (lib.config.extension_极略_jlsgsk_wanniangongzhu === "false" && event.addSkill?.length) {
+						return true;
+					}
+					return event.removeSkill?.some(i => {
+						let skills = storage.get(num)?.[3] || [];
+						return skills.includes(i);
+					});
+				}
+				return true;
 			},
+			forced: true,
+			popup: false,
 			async content(event, trigger, player) {
-				const { num, max } = event.cost_data,
-					nameList = Object.keys(player.storage.jlsg_xinghan),
-					org = Object.keys(player.storage.jlsg_xinghan)[0];
+				const storage = player.getStorage("jlsg_xinghan", new Map());
+				const nameIndex = player.getStorage("jlsg_xinghan_turn", { nameIndex: "name1" }).nameIndex;
+				const originName = player[nameIndex],
+					master = storage.get(0)?.[0] || originName;
+				const num = Array.from(storage.values()).findIndex(info => info[0] == originName),
+					max = storage.size - 1;
 				if (["phaseBefore", "dieBefore"].includes(event.triggername)) {
-					if (player[`name${Number(player.storage.jlsg_xinghan_turn.num) + 1}`] != org) {
-						await lib.skill.jlsg_xinghan.reinitCharacters(player, org);
-						if ("dieBefore" == event.triggername) {
-							if (player.storage.jlsg_xinghan[nameList[num]]) {
+					if (originName != master) {
+						await lib.skill.jlsg_xinghan.reinitCharacters(player, master);
+						if (event.triggername == "dieBefore") {
+							if (storage.get(num)?.length) {
+								let phase = trigger.getParent(event => {
+									if (event.name != "phase" || event.player != player) {
+										return false;
+									}
+									return event.skill == "jlsg_xinghan_turn";
+								}, true);
+								if (phase) {
+									phase.jlsg_xinghan_turn = num;
+								}
 								trigger.cancel();
-								let info = player.storage.jlsg_xinghan[nameList[num]];
-								for (let i of info[2]) await player.removeSkill(i);
-								player.storage.jlsg_xinghan_turn.dead.add(info[0]);
-								if (_status.characterlist) _status.characterlist.add(nameList[num]);
-								delete player.storage.jlsg_xinghan[nameList[num]];
+								let info = storage.get(num).slice();
+								storage.delete(num);
+								for (let i of info[3]) {
+									player.removeSkill(i);
+								}
+								let turnStorage = player.getStorage("jlsg_xinghan_turn");
+								turnStorage.dead.add(info[1]);
+								player.setStorage("jlsg_xinghan_turn", turnStorage);
+								game.broadcastAll(function (name) {
+									if (_status.characterlist) {
+										_status.characterlist.add(name);
+									}
+								}, info[0]);
+								info = Array.from(storage.entries());
+								info.forEach((v, i) => {
+									if (i >= num) {
+										v[0]--;
+									}
+								});
+								player.setStorage("jlsg_xinghan", new Map(info), true);
 							}
 						}
 					}
 				} else if (event.triggername == "changeSkillsEnd") {
-					let skills = player.storage.jlsg_xinghan[nameList[num]][2];
-					if (trigger.removeSkill) {
+					let info = storage.get(num);
+					if (trigger.removeSkill?.length) {
 						for (let i of trigger.removeSkill) {
-							if (skills.includes(i)) player.storage.jlsg_xinghan[nameList[num]][2].remove(i);
+							if (info[3].includes(i)) {
+								info[3].remove(i);
+							}
 						}
 					}
-					if (trigger.addSkill && lib.config.extension_极略_jlsgsk_wanniangongzhu === "false") {
-						for (let i of trigger.addSkill) {
-							if (!skills.includes(i)) player.storage.jlsg_xinghan[nameList[num]][2].add(i);
+					if ((lib.config.extension_极略_jlsgsk_wanniangongzhu === "false" || trigger.getParent().name == "changeCharacter") && trigger.addSkill?.length) {
+						let addSkill = trigger.addSkill;
+						if (trigger.getParent().name == "changeCharacter") {
+							const evt = trigger.getParent();
+							let skills = get.character(evt.newPairs[nameIndex == "name2" ? 1 : 0]).skills.filter(skill => {
+								return evt.addSkill.includes(skill);
+							});
+						}
+						for (let i of addSkill) {
+							if (!info[3].includes(i)) {
+								info[3].add(i);
+							}
 						}
 					}
+					storage.set(num, info);
+					player.setStorage("jlsg_xinghan", storage, true);
 				} else if (event.triggername == "changeCharacterAfter") {
-					player.storage.jlsg_xinghan[nameList[num]] = player[`name${Number(player.storage.jlsg_xinghan_turn.num) + 1}`];
+					let info = storage.get(num);
+					info[0] = trigger.newPairs[nameIndex == "name2" ? 1 : 0];
+					storage.set(num, info);
+					player.setStorage("jlsg_xinghan", storage, true);
 				} else {
-					if (num < max) {
-						const name = nameList[num + 1];
+					if (trigger.jlsg_xinghan_turn >= max || num >= max) {
+						await lib.skill.jlsg_xinghan.chooseCharacter(player, true);
+					} else {
+						let numx = trigger.jlsg_xinghan_turn || num + 1;
+						const name = storage.get(numx)[0];
 						lib.skill.jlsg_xinghan.reinitCharacters(player, name, true);
 						player.insertPhase("jlsg_xinghan_turn").set("_noTurnOver", true);
 						player.phaseNumber--;
-					} else {
-						await lib.skill.jlsg_xinghan.chooseCharacter(player, true);
 					}
 				}
 			},
