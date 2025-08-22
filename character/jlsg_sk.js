@@ -9484,7 +9484,10 @@ export default {
 							return target == get.event().preTarget;
 						},
 						ai2(target) {
-							const player = get.player();
+							if (!ui.selected.cards?.length) {
+								return 0;
+							}
+							const player = get.owner(ui.selected.cards[0]);
 							const shaEff = get.effect(target, get.autoViewAs({ name: "sha", isCard: false }, ui.selected.cards), player, player),
 								shunshouEff = get.effect(target, { name: "shunshou_copy2" }, player, player);
 							return shaEff + shunshouEff;
@@ -12608,25 +12611,25 @@ export default {
 				mod: {
 					charlotte: true,
 					mod: {
-						aiOrder: function (player, card, num) {
+						aiOrder(player, card, num) {
 							let cards = player.getCards("h", card => card.hasGaintag("jlsg_zhenge"));
 							if (cards.includes(card)) return num - 5;
 						},
-						aiValue: function (player, card, num) {
+						aiValue(player, card, num) {
 							let cards = player.getCards("h", card => card.hasGaintag("jlsg_zhenge"));
 							if (cards.includes(card)) return num + 5;
 						},
-						aiUseful: function (player, card, num) {
+						aiUseful(player, card, num) {
 							let cards = player.getCards("h", card => card.hasGaintag("jlsg_zhenge"));
 							if (cards.includes(card)) return num + 1;
 						},
-						ignoredHandcard: function (card, player) {
+						ignoredHandcard(card, player) {
 							if (card.hasGaintag("jlsg_zhenge")) return true;
 						},
-						cardDiscardable: function (card, player, name) {
+						cardDiscardable(card, player, name) {
 							if (name == "phaseDiscard" && card.hasGaintag("jlsg_zhenge")) return false;
 						},
-						cardUsable: function (card, player, num) {
+						cardUsable(card, player, num) {
 							if (!card.cards) return;
 							if (card.cards.some(i => i.hasGaintag("jlsg_zhenge"))) return Infinity;
 						},
@@ -12850,6 +12853,7 @@ export default {
 			},
 			onremove(player, skill) {
 				player.setStorage(skill, undefined);
+				player.unmarkSkill(skill);
 				if (player.invisibleSkills.includes("jlsg_xinghan_turn")) {
 					player.removeInvisibleSkill("jlsg_xinghan_turn");
 				}
@@ -12887,6 +12891,7 @@ export default {
 				const { result } = await player
 					.chooseControl(group, "cancel2")
 					.set("prompt", "兴汉：请选择一个势力")
+					.set("ai", () => get.event("choice"))
 					.set(
 						"choice",
 						(function () {
