@@ -964,7 +964,7 @@ export default {
 					},
 					prompt: (event, player, triggername, target) => get.prompt("jlsg_shhs_tiandu", target),
 					prompt2: "令其进行【闪电】判定",
-					frequent(event, player, triggername, target) {
+					check(event, player, triggername, target) {
 						if (get.attitude(player, target) > 0) {
 							if (target.hasSkillTag("rejudge") || get.damageEffect(target, target, target, "thunder") >= 0) {
 								return true;
@@ -973,12 +973,18 @@ export default {
 						}
 						return true;
 					},
-					check(event, player, triggername, target) {
-						return lib.skill.jlsg_shhs_tiandu_shandian.frequent.apply(this, arguments);
-					},
 					logTarget: (event, player, triggername, target) => target,
 					async content(event, trigger, player) {
 						await event.targets[0].executeDelayCardEffect("shandian");
+					},
+					ai: {
+						effect: {
+							target(card, player, target) {
+								if (get.type(card) == "delay") {
+									return [1, 1];
+								}
+							},
+						},
 					},
 				},
 			},
@@ -1118,6 +1124,39 @@ export default {
 					}
 					await next;
 				}
+			},
+			ai: {
+				maixie: true,
+				maixie_hp: true,
+				effect: {
+					target(card, player, target) {
+						if (get.tag(card, "damage")) {
+							if (player.hasSkillTag("jueqing", false, target)) {
+								return [1, -2];
+							}
+							if (!target.hasFriend()) {
+								return;
+							}
+							let num = 1;
+							if (get.attitude(player, target) > 0) {
+								if (player.needsToDiscard()) {
+									num = 0.7;
+								} else {
+									num = 0.5;
+								}
+							}
+							if (target.hp >= 4) {
+								return [1, num * 2];
+							}
+							if (target.hp == 3) {
+								return [1, num * 1.5];
+							}
+							if (target.hp == 2) {
+								return [1, num * 0.5];
+							}
+						}
+					},
+				},
 			},
 		},
 	},
