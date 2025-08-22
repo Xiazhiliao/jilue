@@ -10,6 +10,7 @@ export default {
 		jlsgsk_smdq_diaochan: ["female", "qun", 3, ["jlsg_smdq_lijian", "jlsg_smdq_biyue"], ["name:null|null"]],
 		jlsgsk_gygs_sunce: ["male", "wu", 4, ["jlsg_gygs_angyang", "jlsg_gygs_weifeng"], []],
 		jlsgsk_lffw_huangyueying: ["female", "shu", 3, ["jlsg_lffw_lingxin", "jlsg_lffw_jiqiao"], ["name:黄|null"]],
+		jlsgsk_shhs_guojia: ["male", "wei", 3, ["jlsg_shhs_tiandu", "jlsg_shhs_yiji"], []],
 	},
 	characterTitle: {
 		jlsgsk_jdjg_sunshangxiang: "绝代巾帼",
@@ -19,6 +20,7 @@ export default {
 		jlsgsk_smdq_diaochan: "水墨丹青",
 		jlsgsk_gygs_sunce: "冠勇盖世",
 		jlsgsk_lffw_huangyueying: "鸾飞凤舞",
+		jlsgsk_shhs_guojia: "神毫绘世",
 	},
 	skill: {
 		jlsg_jdjg_jieyin: {
@@ -927,6 +929,197 @@ export default {
 				}
 			},
 		},
+		jlsg_shhs_tiandu: {
+			audio: "ext:极略/audio/skill:2",
+			trigger: { player: ["phaseZhunbeiBegin", "judgeEnd"] },
+			filter(event, player) {
+				if (event.name == "judge") {
+					return get.position(event.result.card, true) == "o";
+				}
+				return true;
+			},
+			prompt: () => get.prompt("jlsg_shhs_tiandu"),
+			prompt2: "你可以随机摸一至三张牌",
+			frequent: "check",
+			check(event, player) {
+				return get.effect(player, { name: "draw" }, player, player) > 0;
+			},
+			async content(event, trigger, player) {
+				event.num = Math.floor(Math.random() * 3 + 1);
+				await player.draw(event.num);
+			},
+			group: "jlsg_shhs_tiandu_shandian",
+			subSkill: {
+				shandian: {
+					audio: "jlsg_shhs_tiandu",
+					trigger: { global: ["gainAfter", "loseAsyncAfter"] },
+					getIndex(event, player) {
+						if (typeof event.getg != "function") {
+							return [];
+						}
+						return game.filterPlayer(current => event.getg(current)?.length).sortBySeat();
+					},
+					filter(event, player, triggername, target) {
+						return event.getg(target).length >= 3;
+					},
+					prompt: (event, player, triggername, target) => get.prompt("jlsg_shhs_tiandu", target),
+					prompt2: "令其进行【闪电】判定",
+					frequent(event, player, triggername, target) {
+						if (get.attitude(player, target) > 0) {
+							if (target.hasSkillTag("rejudge") || get.damageEffect(target, target, target, "thunder") >= 0) {
+								return true;
+							}
+							return target.getSkills().some(skill => get.translation(skill).endsWith("遗计")) || player.hasUsableCard("tao");
+						}
+						return true;
+					},
+					check(event, player, triggername, target) {
+						return lib.skill.jlsg_shhs_tiandu_shandian.frequent.apply(this, arguments);
+					},
+					logTarget: (event, player, triggername, target) => target,
+					async content(event, trigger, player) {
+						await event.targets[0].executeDelayCardEffect("shandian");
+					},
+				},
+			},
+		},
+		jlsg_shhs_yiji: {
+			audio: "ext:极略/audio/skill:2",
+			trigger: { player: ["phaseJieshuBegin", "damageEnd"] },
+			getIndex(event, player) {
+				if (event.name == "phaseJieshu") {
+					return 1;
+				}
+				return event.num;
+			},
+			filter(event, player, triggername, num) {
+				return num;
+			},
+			async cost(event, trigger, player) {
+				const cardPile = ui.cardPile.childNodes,
+					targets = game.filterPlayer(current => current.countCards("h") && current.isMaxHandcard());
+				const list = ["牌堆", "角色"];
+				if (!cardPile?.length) {
+					list.remove("牌堆");
+				}
+				if (!targets.length) {
+					list.remove("角色");
+				}
+				if (!list.length) {
+					return;
+				}
+				const control = await player
+					.chooseControl(list, "cancel2")
+					.set("prompt", get.prompt("jlsg_shhs_yiji"))
+					.set("prompt2", "你可以观看牌堆顶的四张牌或手牌最多角色的手牌，然后可以将其中至多三张牌交给一名角色。")
+					.set("ai", () => get.event("choice"))
+					.set(
+						"choice",
+						(function () {
+							let roleEff = targets.map(target => target.countCards("h"))[0] || 0,
+								cardPileEff = 0;
+							if (list.includes("角色")) {
+								if (targets.every(target => get.attitude(player, target) > 1)) {
+									if (targets.length == 1 && !game.hasPlayer(current => get.attitude(targets[0], current) > 1)) {
+										cardPileEff = 0;
+									}
+								}
+							}
+							if (list.includes("牌堆")) {
+								cardPileEff = Math.min(4, cardPile.length);
+							}
+							return cardPileEff > roleEff ? "牌堆" : "角色";
+						})()
+					)
+					.forResultControl();
+				event.result = {
+					bool: control != "cancel2",
+					cost_data: { control },
+				};
+				if (control == "角色") {
+					const targets = await player
+						.chooseTarget("遗计：请选择要观看手牌的角色", true)
+						.set("filterTarget", (_, player, target) => target.countCards("h") && target.isMaxHandcard())
+						.set("ai", target => -get.attitude(get.player(), target))
+						.forResultTargets();
+					if (!targets?.length) {
+						return;
+					}
+					event.result.targets = targets;
+				}
+			},
+			async content(event, trigger, player) {
+				const { control } = event.cost_data;
+				const preTarget = event.targets?.[0];
+				if (control == "牌堆") {
+					const cards = get.cards(4, true);
+					if (!cards?.length) {
+						return;
+					}
+					await player.viewCards("牌堆顶的牌", cards);
+					event.cards = await player
+						.chooseButton(["遗计", "请选择要分配的牌", cards], [1, 3])
+						.set("ai", ({ link }) => get.value(link, get.player()))
+						.forResultLinks();
+				} else {
+					if (preTarget != player) {
+						await player.viewHandcards(preTarget);
+						event.cards = await player
+							.choosePlayerCard(preTarget, "h", [1, 3], "visible")
+							.set("ai", ({ link }) => {
+								const { player, target } = get.event();
+								if (get.attitude(player, target)) {
+									return 8 - get.value(link, target);
+								}
+								return get.value(link, target);
+							})
+							.forResultLinks();
+					} else {
+						event.cards = await player
+							.chooseCard("h", [1, 3])
+							.set(
+								"hasFriend",
+								game.hasPlayer(current => current != player && get.attitude(player, current) > 1)
+							)
+							.set("ai", card => {
+								const { player, hasFriend } = get.event();
+								if (hasFriend) {
+									return 8 - get.value(card, player);
+								}
+								return 5 - get.value(card, player);
+							})
+							.forResultCards();
+					}
+				}
+				if (!event.cards?.length) {
+					return;
+				}
+				const target = (
+					await player
+						.chooseTarget()
+						.set("createDialog", ["###遗计###请选择要获得牌的角色", event.cards])
+						.set("filterTarget", (_, player, target) => target != get.event().preTarget)
+						.set("ai", target => {
+							const { cards, player } = get.event();
+							return get.value(cards, target) * get.attitude(player, target);
+						})
+						.set("cards", event.cards)
+						.set("preTarget", preTarget)
+						.forResultTargets()
+				)?.[0];
+				if (target) {
+					const next = target.gain(event.cards, "log");
+					if (preTarget) {
+						next.set("source", preTarget).set("animate", "giveAuto");
+					} else {
+						next.set("animate", "draw2");
+						await game.cardsGotoOrdering(event.cards);
+						game.updateRoundNumber();
+					}
+					await next;
+				}
+			},
+		},
 	},
 	translate: {
 		jlsg_skpf: "极略皮肤",
@@ -969,6 +1162,12 @@ export default {
 		jlsg_lffw_lingxin_info: "当你使用锦囊牌时，你可以摸一张牌并从牌堆获得一张基本牌，你以此法获得的基本牌不计入手牌上限，且无使用次数限制。",
 		jlsg_lffw_jiqiao: "机巧",
 		jlsg_lffw_jiqiao_info: "锁定技，你使用锦囊牌无距离限制，不能被其他角色响应。摸牌阶段，你额外从牌堆获得不同牌名的非延时锦囊牌各一张。",
+		jlsgsk_shhs_guojia: "SPF郭嘉",
+		jlsgsk_shhs_guojia_ab: "郭嘉",
+		jlsg_shhs_tiandu: "天妒",
+		jlsg_shhs_tiandu_info: "准备阶段，或当你的判定牌生效后，你可以随机摸一至三张牌。当任意角色一次性获得至少三张牌后，你可以令其进行【闪电】判定。",
+		jlsg_shhs_yiji: "遗计",
+		jlsg_shhs_yiji_info: "结束阶段，或当你受到1点伤害后，你可以观看牌堆顶的四张牌或手牌最多角色的手牌，然后可以将其中至多三张牌交给一名角色。",
 	},
 
 	dynamicTranslate: {},
