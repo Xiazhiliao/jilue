@@ -965,13 +965,50 @@ export default {
 					prompt: (event, player, triggername, target) => get.prompt("jlsg_shhs_tiandu", target),
 					prompt2: "令其进行【闪电】判定",
 					check(event, player, triggername, target) {
-						if (get.attitude(player, target) > 0) {
-							if (target.hasSkillTag("rejudge") || get.damageEffect(target, target, target, "thunder") >= 0) {
+						let damageEffect = get.damageEffect(target, undefined, player, "thunder"),
+							att = get.attitude(player, target);
+						if (_status.pileTop?.isKnownBy(player)) {
+							let result = {
+								card: _status.pileTop,
+								name: _status.pileTop.name,
+								number: get.number(_status.pileTop),
+								suit: get.suit(_status.pileTop),
+								color: get.color(_status.pileTop),
+							};
+							if (lib.card.shandian.judge(_status.pileTop) < 0) {
+								result.bool = false;
+							} else if (lib.card.shandian.judge(_status.pileTop) > 0) {
+								result.bool = true;
+							} else {
+								result.bool = null;
+							}
+							_status.event.cardname = "shandian";
+							game.checkMod(target, result, "judge", target);
+							delete _status.event.cardname;
+							if (result.bool && damageEffect >= 0) {
+								if (att > 0) {
+									return true;
+								}
+								return damageEffect >= 0;
+							}
+							if (att < 0) {
 								return true;
 							}
-							return target.getSkills().some(skill => get.translation(skill).endsWith("遗计")) || player.hasUsableCard("tao");
 						}
-						return true;
+						if (att < 0) {
+							if (
+								player.getHistory("useSkill", evt => {
+									if (!evt.skill.startsWith("jlsg_shhs_tiandu_shandian")) {
+										return false;
+									}
+									return evt.targets?.includes(target);
+								}).length > 3
+							) {
+								return false;
+							}
+							return true;
+						}
+						return false;
 					},
 					logTarget: (event, player, triggername, target) => target,
 					async content(event, trigger, player) {
@@ -1026,9 +1063,7 @@ export default {
 								cardPileEff = 0;
 							if (list.includes("角色")) {
 								if (targets.every(target => get.attitude(player, target) > 1)) {
-									if (targets.length == 1 && !game.hasPlayer(current => get.attitude(targets[0], current) > 1)) {
-										cardPileEff = 0;
-									}
+									roleEff = 0;
 								}
 							}
 							if (list.includes("牌堆")) {
@@ -1107,22 +1142,20 @@ export default {
 						.set("filterTarget", (_, player, target) => target != get.event().preTarget)
 						.set("ai", target => {
 							const { cards, player } = get.event();
-							return get.value(cards, target) * get.attitude(player, target);
+							return get.value(cards, target) * get.sgnAttitude(player, target) * (10 - target.countCards("h"));
 						})
 						.set("cards", event.cards)
 						.set("preTarget", preTarget)
 						.forResultTargets()
 				)?.[0];
 				if (target) {
-					const next = target.gain(event.cards, "log");
 					if (preTarget) {
-						next.set("source", preTarget).set("animate", "giveAuto");
+						await target.gain(preTarget, event.cards, "giveAuto", "log");
 					} else {
-						next.set("animate", "draw2");
 						await game.cardsGotoOrdering(event.cards);
+						await target.gain(event.cards, "draw2", "log");
 						game.updateRoundNumber();
 					}
-					await next;
 				}
 			},
 			ai: {
