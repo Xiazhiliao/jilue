@@ -32,7 +32,7 @@ let block = {
 			name: "失效技能时机",
 			intro: "开启后SP神赵云，神周泰，魔孟获的负面效果中将包含失效技能",
 			init: false,
-			onclick: function(item) {
+			onclick: function (item) {
 				alert("该功能并未测试联机或AI是否适用\n出bug概不由@虫豸负责\n出事请找@时机已到，今日起兵");
 				game.saveExtensionConfig("极略", "jlsg_disableSkill", item);
 			},
@@ -139,6 +139,29 @@ let block = {
 						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_liubei")) {
 							let upgradeList = lib.config.extension_极略_upgradeList || [];
 							upgradeList.remove("jlsgsr_liubei");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
+			jlsgsr_sunquan: {
+				jlsg_upgrade: true,
+				name: "SR孙权",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_sunquan", item);
+					if (item == "false" || Boolean(item) > 1) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_sunquan");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_sunquan")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_sunquan");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
 					}
