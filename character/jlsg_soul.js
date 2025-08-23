@@ -5361,6 +5361,7 @@ export default {
 					sub: true,
 					sourceSkill: "jlsg_lianti",
 					charlotte: true,
+					forced: true,
 					mark: true,
 					intro: {
 						markcount(storage, player) {
