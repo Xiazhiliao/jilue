@@ -3249,11 +3249,31 @@ export default {
 			},
 			marktext: "略",
 			intro: {
-				content: "expansion",
 				markcount: "expansion",
+				mark(dialog, content, player) {
+					const cards = player.getExpansions("jlsg_xionglve"),
+						record = player.getStorage("jlsg_xionglve_record", { gain: 0, sourceDamage: 0 });
+					if (Object.values(record).some(i => i > 0)) {
+						dialog.addText("本回合记录", true);
+						if (record.gain > 0) {
+							dialog.addText(`获得牌数：${record.gain}`);
+						}
+						if (record.sourceDamage > 0) {
+							dialog.addText(`造成伤害：${record.sourceDamage}`);
+						}
+					}
+					if (cards?.length) {
+						dialog.addAuto(cards);
+					} else {
+						dialog.addText("没有卡牌");
+					}
+				},
 			},
 			usable: 1,
-			trigger: { global: ["gainAfter", "loseAsyncAfter"] },
+			trigger: {
+				player: "gainAfter",
+				global: "loseAsyncAfter",
+			},
 			filter(event, player) {
 				const cards = event.getg?.(player) || [];
 				if (player.countCards("h", card => cards.includes(card))) {
@@ -3304,6 +3324,7 @@ export default {
 				const next = player.addToExpansion(event.cards, "gain2", "log");
 				next.gaintag.add("jlsg_xionglve");
 				await next;
+				player.markSkill(event.name);
 				const improve = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_sunquan"]?.[2];
 				if (!improve) {
 					return;
@@ -3339,7 +3360,7 @@ export default {
 						.set("prompt", `雄略：视为使用${get.translation(card)}`);
 				}
 			},
-			group: "jlsg_xionglve_effect",
+			group: ["jlsg_xionglve_effect", "jlsg_xionglve_record"],
 			subSkill: {
 				used: {},
 				effect: {
@@ -3359,14 +3380,63 @@ export default {
 						return list.some(i => num == i);
 					},
 					prompt2: "获得所有“略”并于执行一个额外回合",
-					frequent: "check",
 					check(event, player) {
 						return true;
 					},
 					async content(event, trigger, player) {
 						player.addTempSkill("jlsg_xionglve_used", "roundEnd");
 						await player.gain(player.getExpansions("jlsg_xionglve"), "gain2", "fromStorage");
+						player.markSkill("jlsg_xionglve");
 						player.insertPhase();
+					},
+				},
+				record: {
+					charlotte: true,
+					firstDo: true,
+					onremove: true,
+					trigger: {
+						player: ["gainAfter", "phaseAfter"],
+						source: "damageSource",
+						global: "loseAsyncAfter",
+					},
+					filter(event, player) {
+						if (_status.currentPhase != player) {
+							return false;
+						}
+						if (event.name == "phase") {
+							return true;
+						} else if (event.name == "damage") {
+							return event.num > 0;
+						}
+						return event.getg?.(player)?.length;
+					},
+					forced: true,
+					popup: false,
+					async content(event, trigger, player) {
+						const storage = player.getStorage(event.name, { gain: 0, sourceDamage: 0 });
+						if (trigger.name == "phase") {
+							storage.gain = 0;
+							storage.sourceDamage = 0;
+						} else if (trigger.name == "damage") {
+							storage.sourceDamage += trigger.num;
+						} else {
+							storage.gain += trigger.getg(player).length;
+						}
+						player.setStorage(event.name, storage);
+						player.markSkill("jlsg_xionglve");
+					},
+				},
+			},
+			ai: {
+				effect: {
+					player(card, player, target) {
+						if (_status.current != player) {
+							return;
+						}
+						const check = get.info("jlsg_xionglve_effect").filter(null, player);
+						if (check) {
+							return [-2, -10];
+						}
 					},
 				},
 			},
