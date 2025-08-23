@@ -3250,6 +3250,7 @@ export default {
 						return !lib.card[name]?.notarget && lib.card[name]?.enable;
 					})
 					.reverse();
+				if (!useCards.length) return;
 				let result = await player
 					.chooseBool()
 					.set("ai", () => true)
