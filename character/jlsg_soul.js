@@ -706,9 +706,9 @@ export default {
 						if (att > 0) {
 							if (get.attitude(event.source, player) < 0) {
 								return false;
-							}else if (event.player.hasSkillTag("filterDamage", null, { player: event.source })) {
+							} else if (event.player.hasSkillTag("filterDamage", null, { player: event.source })) {
 								return event.player.hp > 1;
-							}else if (event.player.hasSkillTag("maixie", null, { player: event.source })) {
+							} else if (event.player.hasSkillTag("maixie", null, { player: event.source })) {
 								return event.num + 1 < event.player.hp;
 							}
 						}
@@ -6388,7 +6388,7 @@ export default {
 					},
 					async content(event, trigger, player) {
 						for (let target of event.targets) {
-							const next = game.createEvent("jlsg_tiangong_jiguan_event", false).set("player", target).setContent(lib.skill[event.name].effect);
+							const next = game.createEvent("jlsg_tiangong_jiguan_event", false).set("player", player).set("target", target).setContent(lib.skill[event.name].effect);
 							await next;
 						}
 					},
@@ -6765,7 +6765,7 @@ export default {
 				let result = {
 					翻面: {
 						content: async function (event, trigger, player) {
-							await player.turnOver();
+							await event.target.turnOver();
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => {
@@ -6785,7 +6785,7 @@ export default {
 					},
 					"进行【闪电】判定": {
 						content: async function (event, trigger, player) {
-							await player.executeDelayCardEffect("shandian");
+							await event.target.executeDelayCardEffect("shandian");
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.damageEffect(current, player, viewer, "thunder"), 0);
@@ -6794,7 +6794,7 @@ export default {
 					},
 					"手牌上限+1": {
 						content: async function (event, trigger, player) {
-							await lib.skill.jlsg_tiangong_handcard.change(player);
+							await lib.skill.jlsg_tiangong_handcard.change(event.target);
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -6804,7 +6804,7 @@ export default {
 					},
 					"使用【杀】的次数上限+1": {
 						content: async function (event, trigger, player) {
-							await lib.skill.jlsg_tiangong_useSha.change(player);
+							await lib.skill.jlsg_tiangong_useSha.change(event.target);
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -6814,8 +6814,10 @@ export default {
 					},
 					随机失去一个技能: {
 						content: async function (event, trigger, player) {
-							let skill = player.getSkills(null, false, false).randomGet();
-							if (skill) await player.removeSkills(skill);
+							let skill = event.target.getSkills(null, false, false).randomGet();
+							if (skill) {
+								await event.target.removeSkills(skill);
+							}
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -6825,7 +6827,7 @@ export default {
 					},
 					"视为使用【南蛮入侵】": {
 						content: async function (event, trigger, player) {
-							await player.chooseUseTarget({ name: "nanman" }, true);
+							await event.target.chooseUseTarget({ name: "nanman" }, true);
 						},
 						positive(targets, player, viewer) {
 							targets = game.filterPlayer(current => current != player);
@@ -6836,7 +6838,7 @@ export default {
 					},
 					"视为使用【桃园结义】": {
 						content: async function (event, trigger, player) {
-							await player.chooseUseTarget({ name: "taoyuan" }, true);
+							await event.target.chooseUseTarget({ name: "taoyuan" }, true);
 						},
 						positive(targets, player, viewer) {
 							targets = game.filterPlayer(current => current != player);
@@ -6847,7 +6849,7 @@ export default {
 					},
 					"视为使用【五谷丰登】": {
 						content: async function (event, trigger, player) {
-							await player.chooseUseTarget({ name: "wugu" }, true);
+							await event.target.chooseUseTarget({ name: "wugu" }, true);
 						},
 						positive(targets, player, viewer) {
 							targets = game.filterPlayer(current => current != player);
@@ -6858,7 +6860,7 @@ export default {
 					},
 					"视为使用【无中生有】": {
 						content: async function (event, trigger, player) {
-							await player.chooseUseTarget({ name: "wuzhong" }, true);
+							await event.target.chooseUseTarget({ name: "wuzhong" }, true);
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.effect(current, { name: "wuzhong" }, player, viewer), 0);
@@ -6867,7 +6869,7 @@ export default {
 					},
 					"视为使用【万箭齐发】": {
 						content: async function (event, trigger, player) {
-							await player.chooseUseTarget({ name: "wanjian" }, true);
+							await event.target.chooseUseTarget({ name: "wanjian" }, true);
 						},
 						positive(targets, player, viewer) {
 							targets = game.filterPlayer(current => current != player);
@@ -6878,7 +6880,7 @@ export default {
 					},
 					"视为使用【桃】": {
 						content: async function (event, trigger, player) {
-							await player.chooseUseTarget({ name: "tao" }, true);
+							await event.target.chooseUseTarget({ name: "tao" }, true);
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.effect(current, { name: "tao" }, player, viewer), 0);
@@ -6887,9 +6889,9 @@ export default {
 					},
 					"对所有其他角色使用【杀】": {
 						content: async function (event, trigger, player) {
-							await player.useCard(
+							await event.target.useCard(
 								{ name: "sha" },
-								game.filterPlayer(p => p != player)
+								game.filterPlayer(p => p != event.target)
 							);
 						},
 						positive(targets, player, viewer) {
@@ -6901,9 +6903,9 @@ export default {
 					},
 					"对所有其他角色使用火【杀】": {
 						content: async function (event, trigger, player) {
-							await player.useCard(
+							await event.target.useCard(
 								{ name: "sha", nature: "fire" },
-								game.filterPlayer(p => p != player)
+								game.filterPlayer(p => p != event.target)
 							);
 						},
 						positive(targets, player, viewer) {
@@ -6915,9 +6917,9 @@ export default {
 					},
 					"对所有其他角色使用雷【杀】": {
 						content: async function (event, trigger, player) {
-							await player.useCard(
+							await event.target.useCard(
 								{ name: "sha", nature: "thunder" },
-								game.filterPlayer(p => p != player)
+								game.filterPlayer(p => p != event.target)
 							);
 						},
 						positive(targets, player, viewer) {
@@ -6929,9 +6931,9 @@ export default {
 					},
 					"对所有其他角色使用【决斗】": {
 						content: async function (event, trigger, player) {
-							await player.useCard(
+							await event.target.useCard(
 								{ name: "juedou" },
-								game.filterPlayer(p => p != player)
+								game.filterPlayer(p => p != event.target)
 							);
 						},
 						positive(targets, player, viewer) {
@@ -6943,9 +6945,9 @@ export default {
 					},
 					"对所有其他角色使用【顺手牵羊】": {
 						content: async function (event, trigger, player) {
-							await player.useCard(
+							await event.target.useCard(
 								{ name: "shunshou" },
-								game.filterPlayer(p => p != player)
+								game.filterPlayer(p => p != event.target)
 							);
 						},
 						positive(targets, player, viewer) {
@@ -6962,7 +6964,7 @@ export default {
 								.filter(c => get.color(c) == "red")
 								.randomGets(2);
 							if (cards.length) {
-								await player.gain("gain2", cards);
+								await event.target.gain("gain2", cards);
 							}
 						},
 						positive(targets, player, viewer) {
@@ -6977,7 +6979,7 @@ export default {
 								.filter(c => get.color(c) == "black")
 								.randomGets(2);
 							if (cards.length) {
-								await player.gain("gain2", cards);
+								await event.target.gain("gain2", cards);
 							}
 						},
 						positive(targets, player, viewer) {
@@ -6993,7 +6995,7 @@ export default {
 								.filter(c => get.type(c) == "basic")
 								.randomGets(2);
 							if (cards.length) {
-								await player.gain("gain2", cards);
+								await event.target.gain("gain2", cards);
 							}
 						},
 						positive(targets, player, viewer) {
@@ -7009,7 +7011,7 @@ export default {
 								.filter(c => get.type2(c) == "trick")
 								.randomGets(2);
 							if (cards.length) {
-								await player.gain("gain2", cards);
+								await event.target.gain("gain2", cards);
 							}
 						},
 						positive(targets, player, viewer) {
@@ -7025,7 +7027,7 @@ export default {
 								.filter(c => get.type(c) == "equip")
 								.randomGets(2);
 							if (cards.length) {
-								await player.gain("gain2", cards);
+								await event.target.gain("gain2", cards);
 							}
 						},
 						positive(targets, player, viewer) {
@@ -7036,7 +7038,7 @@ export default {
 					},
 					受到1点伤害: {
 						content: async function (event, trigger, player) {
-							await player.damage("nosource");
+							await event.target.damage("nosource");
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => get.damageEffect(current, player, viewer), 0);
@@ -7045,7 +7047,7 @@ export default {
 					},
 					受到1点火焰伤害: {
 						content: async function (event, trigger, player) {
-							await player.damage("fire", "nosource");
+							await event.target.damage("fire", "nosource");
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.damageEffect(current, player, viewer, "fire"), 0);
@@ -7054,7 +7056,7 @@ export default {
 					},
 					受到1点雷电伤害: {
 						content: async function (event, trigger, player) {
-							await player.damage("thunder", "nosource");
+							await event.target.damage("thunder", "nosource");
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.damageEffect(current, player, viewer, "thunder"), 0);
@@ -7063,8 +7065,8 @@ export default {
 					},
 					对其他角色各造成1点伤害: {
 						content: async function (event, trigger, player) {
-							for (let target of game.filterPlayer(p => p != player).sortBySeat()) {
-								await target.damage(player);
+							for (let target of game.filterPlayer(p => p != event.target).sortBySeat()) {
+								await target.damage(event.target);
 							}
 						},
 						positive(targets, player, viewer) {
@@ -7076,7 +7078,7 @@ export default {
 					},
 					加1点体力上限: {
 						content: async function (event, trigger, player) {
-							await player.gainMaxHp();
+							await event.target.gainMaxHp();
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -7086,7 +7088,7 @@ export default {
 					},
 					减1点体力上限: {
 						content: async function (event, trigger, player) {
-							await player.loseMaxHp();
+							await event.target.loseMaxHp();
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -7096,7 +7098,9 @@ export default {
 					},
 					回复1点体力: {
 						content: async function (event, trigger, player) {
-							if (player.isDamaged()) await player.recover();
+							if (event.target.isDamaged()) {
+								await event.target.recover();
+							}
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.recoverEffect(current, player, viewer), 0);
@@ -7105,7 +7109,9 @@ export default {
 					},
 					回复2点体力: {
 						content: async function (event, trigger, player) {
-							if (player.isDamaged()) await player.recover(2);
+							if (event.target.isDamaged()) {
+								await event.target.recover(2);
+							}
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.recoverEffect(current, player, viewer) * 1.2, 0);
@@ -7114,7 +7120,7 @@ export default {
 					},
 					失去1点体力: {
 						content: async function (event, trigger, player) {
-							await player.loseHp();
+							await event.target.loseHp();
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.effect(current, { name: "losehp" }, player, viewer), 0);
@@ -7123,7 +7129,7 @@ export default {
 					},
 					失去2点体力: {
 						content: async function (event, trigger, player) {
-							await player.loseHp(2);
+							await event.target.loseHp(2);
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.effect(current, { name: "losehp" }, player, viewer) * 1.2, 0);
@@ -7132,8 +7138,10 @@ export default {
 					},
 					失去1点体力然后摸五张牌: {
 						content: async function (event, trigger, player) {
-							await player.loseHp();
-							if (player.isIn()) await player.draw(5);
+							await event.target.loseHp();
+							if (event.target.isIn()) {
+								await event.target.draw(5);
+							}
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => {
@@ -7146,7 +7154,7 @@ export default {
 					},
 					"摸牌阶段摸牌数+1": {
 						content: async function (event, trigger, player) {
-							await lib.skill.jlsg_tiangong_draw.change(player);
+							await lib.skill.jlsg_tiangong_draw.change(event.target);
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -7156,7 +7164,7 @@ export default {
 					},
 					摸两张牌: {
 						content: async function (event, trigger, player) {
-							await player.draw(2);
+							await event.target.draw(2);
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.effect(current, { name: "draw" }, player, viewer) * 1.1, 0);
@@ -7165,7 +7173,7 @@ export default {
 					},
 					摸三张牌: {
 						content: async function (event, trigger, player) {
-							await player.draw(3);
+							await event.target.draw(3);
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.effect(current, { name: "draw" }, player, viewer) * 1.2, 0);
@@ -7174,7 +7182,7 @@ export default {
 					},
 					摸四张牌: {
 						content: async function (event, trigger, player) {
-							await player.draw(4);
+							await event.target.draw(4);
 						},
 						positive(targets, player, viewer) {
 							let sumEff = targets.reduce((sum, current) => sum + get.effect(current, { name: "draw" }, player, viewer) * 1.3, 0);
@@ -7183,8 +7191,10 @@ export default {
 					},
 					随机弃置两张牌: {
 						content: async function (event, trigger, player) {
-							let num = player.countDiscardableCards(player, "he");
-							if (num > 0) await player.randomDiscard(Math.min(num, 2));
+							let num = event.target.countDiscardableCards(event.target, "he");
+							if (num > 0) {
+								await event.target.randomDiscard(Math.min(num, 2));
+							}
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -7194,8 +7204,10 @@ export default {
 					},
 					随机弃置三张牌: {
 						content: async function (event, trigger, player) {
-							let num = player.countDiscardableCards(player, "he");
-							if (num > 0) await player.randomDiscard(Math.min(num, 3));
+							let num = event.target.countDiscardableCards(event.target, "he");
+							if (num > 0) {
+								await event.target.randomDiscard(Math.min(num, 3));
+							}
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -7205,8 +7217,10 @@ export default {
 					},
 					随机弃置四张牌: {
 						content: async function (event, trigger, player) {
-							let num = player.countDiscardableCards(player, "he");
-							if (num > 0) await player.randomDiscard(Math.min(num, 4));
+							let num = playevent.targeter.countDiscardableCards(event.target, "he");
+							if (num > 0) {
+								await event.target.randomDiscard(Math.min(num, 4));
+							}
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -7216,10 +7230,12 @@ export default {
 					},
 					随机获得其他角色各一张牌: {
 						content: async function (event, trigger, player) {
-							const targets = game.filterPlayer(p => p != player).sortBySeat();
+							const targets = game.filterPlayer(p => p != event.target).sortBySeat();
 							for (let target of targets) {
-								const cards = target.getGainableCards(player, "he");
-								if (cards.length) await player.gain(cards.randomGets(1), target, "giveAuto");
+								const cards = target.getGainableCards(event.target, "he");
+								if (cards.length) {
+									await event.target.gain(cards.randomGets(1), target, "giveAuto");
+								}
 							}
 						},
 						positive(targets, player, viewer) {
@@ -7231,10 +7247,12 @@ export default {
 					},
 					随机将所有手牌分配给其他角色: {
 						content: async function (event, trigger, player) {
-							let players = game.filterPlayer(p => p != player);
-							if (!players.length) return;
+							let players = game.filterPlayer(p => p != event.target);
+							if (!players.length) {
+								return;
+							}
 							let dis = new Map();
-							let cards = player.getCards("h");
+							let cards = event.target.getCards("h");
 							for (let c of cards) {
 								let target = players.randomGet();
 								if (!dis.has(target)) {
@@ -7245,9 +7263,9 @@ export default {
 							await game
 								.loseAsync({
 									gain_list: Array.from(dis.entries()),
-									player: player,
+									player: event.target,
 									cards: cards,
-									giver: player,
+									giver: event.target,
 									animate: "giveAuto",
 								})
 								.setContent("gaincardMultiple");
@@ -7261,8 +7279,10 @@ export default {
 					},
 					与手牌数更少的随机角色交换手牌: {
 						content: async function (event, trigger, player) {
-							let target = game.filterPlayer(p => p.countCards("h") < player.countCards("h")).randomGet();
-							if (target) await player.swapHandcards(target);
+							let target = game.filterPlayer(p => p.countCards("h") < event.target.countCards("h")).randomGet();
+							if (target) {
+								await event.target.swapHandcards(target);
+							}
 						},
 						positive(targets, player, viewer) {
 							let att = Math.sign(get.attitude(viewer, player));
@@ -7273,9 +7293,9 @@ export default {
 					},
 					弃置所有牌并摸等量的牌: {
 						content: async function (event, trigger, player) {
-							let cards = player.getDiscardableCards(player, "he");
-							await player.discard(cards);
-							await player.draw(cards.length);
+							let cards = event.target.getDiscardableCards(event.target, "he");
+							await event.target.discard(cards);
+							await event.target.draw(cards.length);
 						},
 						positive(targets, player, viewer) {
 							return Math.sign(get.attitude(viewer, player));
@@ -7287,18 +7307,25 @@ export default {
 				for (let g of groups) {
 					result[`随机获得一个${lib.translate[g]}势力技能`] = {
 						content: async function (event, trigger, player) {
-							let skills = player.getSkills();
+							let skills = event.target.getSkills(null, false, false);
 							if (!_status.jlsgsy_bolue_list) {
 								lib.skill.jlsgsy_bolue.initList();
 							}
-							let skill = _status.jlsgsy_bolue_list[lib.skill[event.getParent().name]?.groupType];
-							skill.removeArray(game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), []));
-							skills = skills.filter(skill => {
+							let skillsList = _status.jlsgsy_bolue_list[lib.skill[event.getParent().name]?.groupType];
+							skillsList.removeArray(game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), []));
+							skillsList = skillsList.filter(skill => {
 								const info = lib.skill[skill];
-								if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+								if (lib.filter.skillDisabled(skill)) {
+									return false;
+								}
+								if (info.ai?.combo) {
+									return event.target.hasSkill(info.ai?.combo, null, false, false);
+								}
 								return true;
 							});
-							await player.addSkills(skill.randomGet());
+							if (skillsList.length) {
+								await event.target.addSkills(skillsList.randomGet());
+							}
 						},
 						positive(targets, player, viewer) {
 							return Math.sign(get.attitude(viewer, player));
@@ -7313,7 +7340,7 @@ export default {
 				if (jlsg_qs) {
 					result["视为使用【望梅止渴】"] = {
 						content: async function (event, trigger, player) {
-							await player.chooseUseTarget({ name: "jlsgqs_wangmeizhike" }, true);
+							await event.target.chooseUseTarget({ name: "jlsgqs_wangmeizhike" }, true);
 						},
 						positive(targets, player, viewer) {
 							targets = game.filterPlayer(current => current != player);
@@ -7324,7 +7351,7 @@ export default {
 					};
 					result["视为使用【草船借箭】"] = {
 						content: async function (event, trigger, player) {
-							await player.chooseUseTarget({ name: "jlsgqs_caochuanjiejian" }, true);
+							await event.target.chooseUseTarget({ name: "jlsgqs_caochuanjiejian" }, true);
 						},
 						positive(targets, player, viewer) {
 							targets = game.filterPlayer(current => current != player);
@@ -7335,7 +7362,7 @@ export default {
 					};
 					result["视为对自己使用【梅】"] = {
 						content: async function (event, trigger, player) {
-							await player.useCard({ name: "jlsgqs_mei" }, player);
+							await event.target.useCard({ name: "jlsgqs_mei" }, event.target);
 						},
 						positive(targets, player, viewer) {
 							targets = [player];
@@ -7345,7 +7372,7 @@ export default {
 					};
 					result["视为对所有角色使用【梅】"] = {
 						content: async function (event, trigger, player) {
-							await player.useCard({ name: "jlsgqs_mei" }, game.filterPlayer().sortBySeat(player));
+							await event.target.useCard({ name: "jlsgqs_mei" }, game.filterPlayer().sortBySeat(event.target));
 						},
 						positive(targets, player, viewer) {
 							targets = game.filterPlayer();
