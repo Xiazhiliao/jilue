@@ -83,9 +83,9 @@ for (let character in jlsg_sr.character) {
 			jlsg_sr.skill[skill].derivation = [jlsg_sr.skill[skill].derivation];
 		}
 		if (jlsg_sr?.dynamicTranslate?.[skill]) {
-			jlsg_sr.skill[skill].derivation.add(skill + "_improve");
-			jlsg_sr.translate[skill + "_improve"] = jlsg_sr.translate[skill];
-			jlsg_sr.translate[skill + "_improve_info"] = "突破后效果：" + jlsg_sr.dynamicTranslate[skill]({ index: true });
+			jlsg_sr.skill[skill].derivation.add(skill + "_upgrade");
+			jlsg_sr.translate[skill + "_upgrade"] = jlsg_sr.translate[skill];
+			jlsg_sr.translate[skill + "_upgrade_info"] = "突破后效果：" + jlsg_sr.dynamicTranslate[skill]({ index: true });
 		}
 	}
 }

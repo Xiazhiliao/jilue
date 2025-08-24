@@ -199,6 +199,33 @@ export default {
 					},
 				},
 			},
+			async extraUpgrade(event, trigger, player) {
+				const { skill } = event,
+					upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				if (!upgrade.other) {
+					upgrade.other = {};
+				}
+				const buttons = [skill, skill + "_upgrade"].map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + (i.endsWith("_upgrade") ? "突破" : "原始") + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
+				const { result } = await player
+					.chooseBool()
+					.set("createDialog", [`是否突破【${get.translation(skill)}】`, [buttons, "textbutton"]])
+					.set("ai", () => true);
+				if (result.bool) {
+					upgrade.other[skill] = true;
+				} else {
+					upgrade.other[skill] = false;
+				}
+				game.broadcastAll(
+					function (player, info) {
+						if (!_status._jlsgsr_upgrade) {
+							_status._jlsgsr_upgrade = {};
+						}
+						_status._jlsgsr_upgrade[player.playerid] = info;
+					},
+					player,
+					upgrade
+				);
+			},
 		},
 		_jlsgsr_upgrade_effect: {
 			charlotte: true,
@@ -3048,6 +3075,18 @@ export default {
 		jlsg_quanheng: {
 			srlose: true,
 			audio: "ext:极略/audio/skill:1",
+			init(player, skill) {
+				if (!_status.gameStarted) {
+					return;
+				}
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				if (!upgradeStorage?.["jlsgsr_sunquan"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+					const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+					next.set("player", player);
+					next.set("skill", skill);
+					next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+				}
+			},
 			enable: "phaseUse",
 			hiddenCard(player, name) {
 				const hs = player.getCards("h", card => {
@@ -3176,8 +3215,9 @@ export default {
 						global: "phaseAfter",
 					},
 					filter(event, player, name) {
-						const improve = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_sunquan"]?.[2];
-						if (!improve) {
+						const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+						const upgrade = upgradeStorage?.["jlsgsr_sunquan"]?.[2] || upgradeStorage?.other?.["jlsg_quanheng"];
+						if (!upgrade) {
 							return false;
 						}
 						const storage = player.getStorage("jlsg_quanheng_effect", { sha: 0, wuzhong: 0 });
@@ -3236,6 +3276,18 @@ export default {
 		jlsg_xionglve: {
 			srlose: true,
 			audio: "ext:极略/audio/skill:1",
+			init(player, skill) {
+				if (!_status.gameStarted) {
+					return;
+				}
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				if (!upgradeStorage?.["jlsgsr_sunquan"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+					const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+					next.set("player", player);
+					next.set("skill", skill);
+					next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+				}
+			},
 			mod: {
 				aiOrder(player, card, num) {
 					if (_status.current != player) {
@@ -4371,8 +4423,20 @@ export default {
 			},
 		},
 		jlsg_rende: {
-			audio: "ext:极略/audio/skill:1",
 			srlose: true,
+			init(player, skill) {
+				if (!_status.gameStarted) {
+					return;
+				}
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				if (!upgradeStorage?.["jlsgsr_liubei"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+					const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+					next.set("player", player);
+					next.set("skill", skill);
+					next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+				}
+			},
+			audio: "ext:极略/audio/skill:1",
 			trigger: { global: "phaseJieshuBegin" },
 			filter(event, player) {
 				return event.player.isAlive();
@@ -4381,8 +4445,9 @@ export default {
 				return get.attitude(player, event.player) > 0;
 			},
 			async content(event, trigger, player) {
-				const improve = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_liubei"]?.[2];
-				let num = improve ? 3 : 2;
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				const upgrade = upgradeStorage?.["jlsgsr_liubei"]?.[2] || upgradeStorage?.other?.[event.name];
+				let num = upgrade ? 3 : 2;
 				await player.draw(num);
 				let result = await player
 					.chooseCard("交给" + get.translation(trigger.player) + get.cnNumber(num) + "张牌", [num, num])
@@ -4407,7 +4472,7 @@ export default {
 				if (trigger.player != player) {
 					await player.give(result.cards, trigger.player);
 				}
-				if (improve) {
+				if (upgrade) {
 					trigger.player.addGaintag(result.cards, "jlsg_rende");
 					trigger.player.addTempSkill("jlsg_rende_effect", { player: "phaseUseEnd" });
 				}
@@ -4442,8 +4507,20 @@ export default {
 			},
 		},
 		jlsg_chouxi: {
-			audio: "ext:极略/audio/skill:2",
 			srlose: true,
+			init(player, skill) {
+				if (!_status.gameStarted) {
+					return;
+				}
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				if (!upgradeStorage?.["jlsgsr_liubei"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+					const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+					next.set("player", player);
+					next.set("skill", skill);
+					next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+				}
+			},
+			audio: "ext:极略/audio/skill:2",
 			enable: "phaseUse",
 			filter(event, player) {
 				return game.hasPlayer(current => current != player && !player.hasStorage("jlsg_chouxi", current));
@@ -4452,13 +4529,14 @@ export default {
 				return player != target && !player.hasStorage("jlsg_chouxi", target) && target.countCards("h");
 			},
 			async content(event, trigger, player) {
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				const upgrade = upgradeStorage?.["jlsgsr_liubei"]?.[2] || upgradeStorage?.other?.[event.name];
 				const target = event.targets[0];
 				if (!player.getStorage("jlsg_chouxi")?.length) {
 					player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
 				}
 				player.markAuto("jlsg_chouxi", [target]);
-				const improve = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_liubei"]?.[2];
-				let num = improve ? 3 : 2;
+				let num = upgrade ? 3 : 2;
 				let result = await player.gainPlayerCard(target, [1, num], false).forResult();
 				if (!result?.bool || !result?.cards?.length) {
 					return;
@@ -4555,6 +4633,18 @@ export default {
 		jlsg_zhaoxiang: {
 			srlose: true,
 			audio: "ext:极略/audio/skill:1",
+			init(player, skill) {
+				if (!_status.gameStarted) {
+					return;
+				}
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				if (!upgradeStorage?.["jlsgsr_caocao"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+					const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+					next.set("player", player);
+					next.set("skill", skill);
+					next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+				}
+			},
 			trigger: { global: "useCardToPlayer" },
 			filter(event, player) {
 				if (event.card.name != "sha") {
@@ -4565,7 +4655,9 @@ export default {
 				return event.player.countGainableCards(player, "h");
 			},
 			async cost(event, trigger, player) {
-				const upgrade = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2];
+				const skill = event.name.slice(0, -5);
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				const upgrade = upgradeStorage?.["jlsgsr_caocao"]?.[2] || upgradeStorage?.other?.[skill];
 				const storage = player.getStorage(
 					event.skill,
 					Array.from({ length: upgrade ? 4 : 3 }, () => true)
@@ -4685,6 +4777,18 @@ export default {
 		},
 		jlsg_zhishi: {
 			srlose: true,
+			init(player, skill) {
+				if (!_status.gameStarted) {
+					return;
+				}
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				if (!upgradeStorage?.["jlsgsr_caocao"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+					const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+					next.set("player", player);
+					next.set("skill", skill);
+					next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+				}
+			},
 			audio: "ext:极略/audio/skill:2",
 			trigger: { global: "damageEnd" },
 			filter(event, player) {
@@ -4694,7 +4798,9 @@ export default {
 				return get.prompt("jlsg_zhishi", event.player);
 			},
 			prompt2(event, player) {
-				let num = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2] ? "三" : "两";
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				const upgrade = upgradeStorage?.["jlsgsr_caocao"]?.[2] || upgradeStorage?.other?.["jlsg_zhishi"];
+				let num = upgrade ? "三" : "两";
 				return `令其从随机${num}个能在此时机发动的技能中选择一个并发动`;
 			},
 			check(event, player) {
@@ -4702,6 +4808,8 @@ export default {
 			},
 			logTarget: "player",
 			async content(event, trigger, player) {
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				const upgrade = upgradeStorage?.["jlsgsr_caocao"]?.[2] || upgradeStorage?.other?.[event.name];
 				if (!_status.characterlist) {
 					game.initCharacterList();
 				}
@@ -4715,7 +4823,7 @@ export default {
 					});
 				});
 				const skills = [],
-					max = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_caocao"]?.[2] ? 2 : 1;
+					max = upgrade ? 2 : 1;
 				allList.randomSort();
 				for (const name of allList) {
 					if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1) continue;
@@ -5236,11 +5344,11 @@ export default {
 	},
 	dynamicTranslate: {
 		jlsg_zhaoxiang(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {},
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player?.playerid] || {},
 				storage = player?.getStorage?.("jlsg_zhaoxiang", [true, true, true]) || [true, true, true];
 			let str = "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：",
 				list = ["1．令此【杀】不能被响应", "2．令此【杀】无效", "3．将此【杀】的目标改为你"];
-			if (upgrade["jlsgsr_caocao"]?.[2] || player?.index) {
+			if (upgradeStorage["jlsgsr_caocao"]?.[2] || upgradeStorage.other?.jlsg_zhaoxiang || player?.index) {
 				list.push("4．令目标角色于此【杀】结算后回复1点体力");
 				if (storage.length < 4) {
 					storage.push(true);
@@ -5255,33 +5363,33 @@ export default {
 			return str;
 		},
 		jlsg_zhishi(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player?.playerid] || {};
-			if (upgrade["jlsgsr_caocao"]?.[2] || player?.index) {
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player?.playerid] || {};
+			if (upgradeStorage["jlsgsr_caocao"]?.[2] || upgradeStorage.other?.jlsg_zhishi || player?.index) {
 				return "当任意角色受到伤害后，你可以令其从随机三个能在此时机发动的技能中选择一个并发动。";
 			}
 			return lib.translate.jlsg_zhishi_info;
 		},
 		jlsg_rende(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			let improve = upgrade["jlsgsr_liubei"]?.[2];
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			let improve = upgradeStorage["jlsgsr_liubei"]?.[2] || upgradeStorage.other?.jlsg_rende;
 			if (improve || player?.index) return "任意角色的回合结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
 			else return get.translation("jlsg_rende_info");
 		},
 		jlsg_chouxi(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			let improve = upgrade["jlsgsr_liubei"]?.[2];
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			let improve = upgradeStorage["jlsgsr_liubei"]?.[2] || upgradeStorage.other?.jlsg_chouxi;
 			if (improve || player?.index) return "出牌阶段每名角色限一次，你可以获得一名其他角色至多三张牌，然后交给其等量的牌，若如此做，你可以对其造成X点伤害（X为你以此法获得的牌与给出的牌的类别数之差）。";
 			else return get.translation("jlsg_chouxi_info");
 		},
 		jlsg_quanheng(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			let improve = upgrade["jlsgsr_sunquan"]?.[2];
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			let improve = upgradeStorage["jlsgsr_sunquan"]?.[2] || upgradeStorage.other?.jlsg_quanheng;
 			if (improve || player?.index) return "出牌阶段，你可以将X张手牌当【无中生有】或【杀】使用（X为你本回合先前发动此技能的次数）；当你使用【无中生有】后，你本回合使用的下一张【杀】的伤害+1；当你使用【杀】后，你本回合使用的下一张【无中生有】的摸牌数+1。";
 			else return get.translation("jlsg_quanheng_info");
 		},
 		jlsg_xionglve(player) {
-			const upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			let improve = upgrade["jlsgsr_sunquan"]?.[2];
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			let improve = upgradeStorage["jlsgsr_sunquan"]?.[2] || upgradeStorage.other?.jlsg_xionglve;
 			if (improve || player?.index) return "每回合限一次，当你获得牌后，你可以将其中至少一张牌置于你的武将牌上，称为“略”，若这些牌里有出牌阶段可以使用的基本牌或普通锦囊牌，你可以依次视为使用之；每轮限一次，回合结束时，若你有“略”且你本回合造成的伤害为X，或获得的牌数为2X（X为“略”数），你可以获得所有“略”，然后于本回合结束后执行一个额外回合。";
 			else return get.translation("jlsg_xionglve_info");
 		},
