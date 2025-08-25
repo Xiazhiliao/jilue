@@ -12071,6 +12071,7 @@ export default {
 					.set("prompt", get.prompt(event.name.slice(0, -5)))
 					.set("prompt2", cardname == "sha" ? "对一名角色造成1点伤害" : "令一名角色回复1点体力")
 					.set("ai", target => get[get.event("cardname") == "sha" ? "damageEffect" : "recoverEffect"](target, get.player(), get.player()))
+					.set("record", record)
 					.set("cardname", cardname)
 					.forResult();
 			},
