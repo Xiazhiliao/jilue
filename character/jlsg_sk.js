@@ -13146,6 +13146,8 @@ export default {
 				}
 				if (name == "useCardToTargeted" && event.player == player) {
 					return false;
+				} else if (name == "useCardToPlayered" && !event.isFirstTarget) {
+					return false;
 				}
 				return event.card.name == "sha" || get.type(event.card) == "trick";
 			},
@@ -13167,7 +13169,7 @@ export default {
 					eff1 += get.effect(target, card, source, player);
 					eff2 += get.effect(target, event.card, source, player);
 				}
-				return eff1 > eff2;
+				return eff1 + get.effect(player, { name: "draw" }, player, player) > eff2;
 			},
 			async content(event, trigger, player) {
 				game.log(player, "将", trigger.card, "的效果改为了【南蛮入侵】");
@@ -13196,7 +13198,7 @@ export default {
 					case "sha":
 						return game.hasPlayer(p => !record.sha.includes(p));
 						break;
-					case "sha":
+					case "shan":
 						return game.hasPlayer(p => !record.shan.includes(p) && p.isDamaged());
 						break;
 					default:
@@ -13245,7 +13247,7 @@ export default {
 							let str = ["sha", "shan"]
 								.map(i => {
 									if (storage?.[i]?.length) {
-										return `${get.translation(i)}：${get.translation(storage[i]).join("、")}`;
+										return `${get.translation(i)}：${get.translation(storage[i])}`;
 									}
 									return "";
 								})
