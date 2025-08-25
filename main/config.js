@@ -421,7 +421,9 @@ for (let packName in oldCharacterReplace) {
 			nameB = info[b].name;
 		return nameA.localeCompare(nameB);
 	});
-	for (let name of nameList) block[name] = info[name];
+	for (let name of nameList) {
+		block[name] = info[name];
+	}
 }
 block = {
 	...block,

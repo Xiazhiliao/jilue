@@ -117,7 +117,9 @@ const b = 1;
 			}
 		} else {
 			for (let name of list) {
-				if (!lib.config.forbidai_user.includes(name) && name.includes("baonu")) lib.config.forbidai.remove(name);
+				if (!lib.config.forbidai_user.includes(name) && name.includes("baonu")) {
+					lib.config.forbidai.remove(name);
+				}
 			}
 		}
 	}
@@ -357,9 +359,13 @@ const b = 1;
 			} // config.srlose
 		} // jlsg_sr
 		var addRank = function (rank) {
-			if (!lib.rank) return;
+			if (!lib.rank) {
+				return;
+			}
 			for (var i in rank) {
-				if (i == "rarity") continue;
+				if (i == "rarity") {
+					continue;
+				}
 				lib.rank[i].addArray(rank[i]);
 			}
 			if (rank.rarity && lib.rank.rarity) {

@@ -62,7 +62,9 @@ export default {
 			zhuSkill: true,
 			enable: ["chooseToUse", "chooseToRespond"],
 			filter(event, player) {
-				if (!game.hasPlayer(target => target != player && lib.skill._jlsg_buff.groupCheck(player, target))) return false;
+				if (!game.hasPlayer(target => target != player && lib.skill._jlsg_buff.groupCheck(player, target))) {
+					return false;
+				}
 				return !event.jlsg_zhugong_yuren && (event.type != "phase" || !player.hasSkill("jlsg_zhugong_yuren_ban"));
 			},
 			viewAs: { name: "sha" },
@@ -449,7 +451,9 @@ export default {
 						trigger.animate = false;
 						if (typeof event.current.ai.shown == "number" && event.current.ai.shown < 0.95) {
 							event.current.ai.shown += 0.3;
-							if (event.current.ai.shown > 0.95) event.current.ai.shown = 0.95;
+							if (event.current.ai.shown > 0.95) {
+								event.current.ai.shown = 0.95;
+							}
 						}
 						return;
 					} else {
@@ -460,8 +464,12 @@ export default {
 			ai: {
 				respondShan: true,
 				skillTagFilter(player) {
-					if (player.storage.hujiaing) return false;
-					if (!player.hasZhuSkill("jlsg_zhugong_hujia")) return false;
+					if (player.storage.hujiaing) {
+						return false;
+					}
+					if (!player.hasZhuSkill("jlsg_zhugong_hujia")) {
+						return false;
+					}
 					return game.hasPlayer(current => current != player && current.group == player.group);
 				},
 			},
@@ -473,7 +481,9 @@ export default {
 			zhuSkill: true,
 			trigger: { global: "damageEnd" },
 			filter(event, player) {
-				if (!get.itemtype(event.cards) == "cards") return false;
+				if (!get.itemtype(event.cards) == "cards") {
+					return false;
+				}
 				if (!event.cards?.someInD("od")) {
 					return false;
 				}
@@ -537,7 +547,9 @@ export default {
 			},
 			forced: true,
 			filter(event, player) {
-				if (event.player == player) return false;
+				if (event.player == player) {
+					return false;
+				}
 				return lib.skill._jlsg_buff.groupCheck(player, event.player);
 			},
 			async content(event, trigger, player) {
@@ -634,13 +646,17 @@ export default {
 					if (target.hasSha()) {
 						await target
 							.chooseToUse(function (card, player, event) {
-								if (get.name(card) != "sha") return false;
+								if (get.name(card) != "sha") {
+									return false;
+								}
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "协力：是否对" + get.translation(targetx) + "使用一张杀？")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
-								if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) return false;
+								if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
+									return false;
+								}
 								return lib.filter.targetEnabled.apply(this, arguments);
 							})
 							.set("sourcex", targetx)
@@ -664,7 +680,9 @@ export default {
 				let list = game.filterPlayer(function (target) {
 					return target != player && target.hasZhuSkill("jlsg_zhugong_huangtian", player);
 				});
-				if (!list.length) return false;
+				if (!list.length) {
+					return false;
+				}
 				return list.some(target => {
 					if (!lib.skill._jlsg_buff.groupCheck(target, player)) {
 						return false;
@@ -682,7 +700,9 @@ export default {
 					return target != player && target.hasZhuSkill("jlsg_zhugong_huangtian", player);
 				});
 				let str = "将一张【闪】或黑桃手牌交给" + get.translation(list);
-				if (list.length > 1) str += "中的一人";
+				if (list.length > 1) {
+					str += "中的一人";
+				}
 				event.result = await player
 					.chooseCardTarget({
 						prompt: "是否发动】【黄天】",

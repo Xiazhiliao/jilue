@@ -9,7 +9,9 @@ export default {
 					usable: 1,
 					unique: true,
 					filterTarget: function (card, player, target) {
-						if (player == target || !target.countCards("h")) return false;
+						if (player == target || !target.countCards("h")) {
+							return false;
+						}
 						if (ui.selected.targets.length) {
 							return !target.hasSkillTag("noCompareTarget");
 						} else {
@@ -30,20 +32,30 @@ export default {
 						"step 1"
 						if (result.bool) {
 							targets[0].useCard({ name: "juedou" }, targets[1]);
-							if (targets[1].isAlive()) player.discardPlayerCard(targets[1], "he", 2, true);
+							if (targets[1].isAlive()) {
+								player.discardPlayerCard(targets[1], "he", 2, true);
+							}
 						} else {
 							targets[1].useCard({ name: "juedou" }, targets[0]);
-							if (targets[0].isAlive()) player.discardPlayerCard(targets[0], "he", 2, true);
+							if (targets[0].isAlive()) {
+								player.discardPlayerCard(targets[0], "he", 2, true);
+							}
 						}
 					},
 					ai: {
 						order: 8,
 						result: {
 							target: function (player, target) {
-								if (game.players.length <= 2) return 0;
-								if (target.num("he") < 1) return 0;
+								if (game.players.length <= 2) {
+									return 0;
+								}
+								if (target.num("he") < 1) {
+									return 0;
+								}
 								var att = ai.get.attitude(player, target);
-								if (att < 0) return -target.num("he");
+								if (att < 0) {
+									return -target.num("he");
+								}
 							},
 						},
 					},
@@ -65,7 +77,9 @@ export default {
 						return att < 0 || (att < 1 && target.countGainableCards(player, "e"));
 					},
 					logTarget: function (event, player) {
-						if (event.player == player) return event.source;
+						if (event.player == player) {
+							return event.source;
+						}
 						return event.player;
 					},
 					content: function () {
@@ -115,8 +129,12 @@ export default {
 					direct: true,
 					filter: function (event, player) {
 						return game.hasPlayer(function (current) {
-							if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
-							if (event.name == "phaseZhunbei") return current.countCards("h") < player.countCards("h");
+							if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) {
+								return false;
+							}
+							if (event.name == "phaseZhunbei") {
+								return current.countCards("h") < player.countCards("h");
+							}
 							return current.countCards("h") > player.countCards("h");
 						});
 					},
@@ -124,8 +142,12 @@ export default {
 						await player
 							.chooseUseTarget(
 								game.filterPlayer(function (current) {
-									if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) return false;
-									if (event.name == "phaseZhunbei") return current.countCards("h") < player.countCards("h");
+									if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) {
+										return false;
+									}
+									if (event.name == "phaseZhunbei") {
+										return current.countCards("h") < player.countCards("h");
+									}
 									return current.countCards("h") > player.countCards("h");
 								}),
 								`###是否发动【恃傲】？###视为对一名手牌${trigger.name == "phaseZhunbei" ? "小于" : "大于"}你的角色使用一张【杀】`,

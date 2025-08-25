@@ -50,7 +50,9 @@ export default {
 								popname: true,
 								position: "hs",
 								ai1(card) {
-									if (ui.selected.cards.length > 0) return -1;
+									if (ui.selected.cards.length > 0) {
+										return -1;
+									}
 									return 5 - get.value(card);
 								},
 								viewAs: { name: links[0][2] },
@@ -106,7 +108,9 @@ export default {
 						return !event.numFixed && event.num > 0;
 					},
 					check: function (event, player) {
-						if (player.skipList.includes("phaseUse")) return 1;
+						if (player.skipList.includes("phaseUse")) {
+							return 1;
+						}
 						return player.getExpansions("jlsg_xionglve").length <= 3;
 					},
 					async content(event, trigger, player) {
@@ -200,13 +204,27 @@ export default {
 									shaTarget = true;
 								}
 							}
-							if (player.isDamaged()) return type == "basic" ? 2 : -1;
-							if (shaTarget && player.countCards("h", "sha") && !player.countCards("h", "jiu")) return type == "basic" ? 1 : -1;
-							if (lose > recover && lose > 0) return type == "trick" ? 1 : -1;
-							if (lose < recover && recover > 0) return type == "trick" ? 1 : -1;
-							if (equipTarget) return type == "equip" ? 1 : -1;
-							if (shunTarget || chaiTarget) return type == "trick" ? 1 : -1;
-							if (shaTarget && !player.countCards("h", "sha")) return type == "basic" ? 1 : -1;
+							if (player.isDamaged()) {
+								return type == "basic" ? 2 : -1;
+							}
+							if (shaTarget && player.countCards("h", "sha") && !player.countCards("h", "jiu")) {
+								return type == "basic" ? 1 : -1;
+							}
+							if (lose > recover && lose > 0) {
+								return type == "trick" ? 1 : -1;
+							}
+							if (lose < recover && recover > 0) {
+								return type == "trick" ? 1 : -1;
+							}
+							if (equipTarget) {
+								return type == "equip" ? 1 : -1;
+							}
+							if (shunTarget || chaiTarget) {
+								return type == "trick" ? 1 : -1;
+							}
+							if (shaTarget && !player.countCards("h", "sha")) {
+								return type == "basic" ? 1 : -1;
+							}
 							return 0;
 						},
 						backup: function (links, player) {
@@ -217,9 +235,13 @@ export default {
 										dialog: function () {
 											var list = [];
 											for (var i of lib.inpile) {
-												if (!lib.translate[i + "_info"]) continue;
+												if (!lib.translate[i + "_info"]) {
+													continue;
+												}
 												// if (lib.card[i].mode && lib.card[i].mode.includes(lib.config.mode) == false) continue;
-												if (lib.card[i].type == "trick") list.push(["锦囊", "", i]);
+												if (lib.card[i].type == "trick") {
+													list.push(["锦囊", "", i]);
+												}
 											}
 											return ui.create.dialog("雄略:请选择想要使用的锦囊牌", [list, "vcard"]);
 										},
@@ -267,10 +289,18 @@ export default {
 													chaiTarget = true;
 												}
 											}
-											if (lose > recover && lose > 0) return button.link[2] == "nanman" ? 1 : -1;
-											if (lose < recover && recover > 0) return button.link[2] == "taoyuan" ? 1 : -1;
-											if (shunTarget) return button.link[2] == "shunshou" ? 1 : -1;
-											if (chaiTarget) return button.link[2] == "guohe" ? 1 : -1;
+											if (lose > recover && lose > 0) {
+												return button.link[2] == "nanman" ? 1 : -1;
+											}
+											if (lose < recover && recover > 0) {
+												return button.link[2] == "taoyuan" ? 1 : -1;
+											}
+											if (shunTarget) {
+												return button.link[2] == "shunshou" ? 1 : -1;
+											}
+											if (chaiTarget) {
+												return button.link[2] == "guohe" ? 1 : -1;
+											}
 											return button.link[2] == "wuzhong" ? 1 : -1;
 										},
 										backup: function (links, player) {
@@ -300,9 +330,13 @@ export default {
 										dialog: function () {
 											var list = [];
 											for (var i of lib.inpile) {
-												if (!lib.translate[i + "_info"]) continue;
+												if (!lib.translate[i + "_info"]) {
+													continue;
+												}
 												// if (lib.card[i].mode && lib.card[i].mode.includes(lib.config.mode) == false) continue;
-												if (lib.card[i].type == "basic") list.push(["basic", "", i]);
+												if (lib.card[i].type == "basic") {
+													list.push(["basic", "", i]);
+												}
 											}
 											return ui.create.dialog("雄略:请选择想要使用的基本牌", [list, "vcard"]);
 										},
@@ -317,9 +351,15 @@ export default {
 													shaTarget = true;
 												}
 											}
-											if (player.isDamaged()) return button.link[2] == "tao" ? 1 : -1;
-											if (shaTarget && player.countCards("h", "sha") && !player.countCards("h", "jiu")) return button.link[2] == "jiu" ? 1 : -1;
-											if (shaTarget && !player.countCards("h", "sha")) return button.link[2] == "sha" ? 1 : -1;
+											if (player.isDamaged()) {
+												return button.link[2] == "tao" ? 1 : -1;
+											}
+											if (shaTarget && player.countCards("h", "sha") && !player.countCards("h", "jiu")) {
+												return button.link[2] == "jiu" ? 1 : -1;
+											}
+											if (shaTarget && !player.countCards("h", "sha")) {
+												return button.link[2] == "sha" ? 1 : -1;
+											}
 											return button.link[2] == "sha" ? 1 : -1;
 										},
 										backup: function (links, player) {
@@ -381,7 +421,9 @@ export default {
 						order: 6,
 						result: {
 							player: function (player) {
-								if (player.hp <= 2) return 3;
+								if (player.hp <= 2) {
+									return 3;
+								}
 								return player.getExpansions("jlsg_xionglve").length - 1;
 							},
 						},
@@ -482,12 +524,16 @@ export default {
 						"step 0"
 						player.showCards(cards[0]);
 						var nono = false;
-						if (ai.get.damageEffect(target, player, player)) nono = true;
+						if (ai.get.damageEffect(target, player, player)) {
+							nono = true;
+						}
 						if (cards[0].name == "sha") {
 							target
 								.chooseToDiscard("请弃置一张【杀】，令" + get.translation(target) + "恢复1点体力，否则你受到1点伤害", { name: "sha" })
 								.set("ai", function () {
-									if (_status.nono == true) return false;
+									if (_status.nono == true) {
+										return false;
+									}
 									return true;
 								})
 								.set("nono", nono);
@@ -498,7 +544,9 @@ export default {
 									return get.name(card) == "shan";
 								})
 								.set("ai", function () {
-									if (_status.nono == true) return false;
+									if (_status.nono == true) {
+										return false;
+									}
 									return true;
 								})
 								.set("nono", nono);
@@ -618,8 +666,12 @@ export default {
 							return;
 						}
 						target.chooseToDiscard("弃置一张基本牌，并回复一点体力。或受到一点伤害并回复一点体力。", { type: "basic" }).ai = function (card) {
-							if (target.hasSkillTag("maixie") && target.hp > 1) return 0;
-							if (get.recoverEffect(target, target, target) > 0) return 7.5 - get.value(card);
+							if (target.hasSkillTag("maixie") && target.hp > 1) {
+								return 0;
+							}
+							if (get.recoverEffect(target, target, target) > 0) {
+								return 7.5 - get.value(card);
+							}
 							return -1;
 						};
 						"step 1"
@@ -635,8 +687,12 @@ export default {
 						result: {
 							target: function (player, target) {
 								var result = 0;
-								if (target.hasSkillTag("maixie_hp") || target.hasSkillTag("maixie")) result += 0.5;
-								if (target.hp == 1 && (target.countCards("h") <= 1 || target.maxHp == 1)) result -= 2;
+								if (target.hasSkillTag("maixie_hp") || target.hasSkillTag("maixie")) {
+									result += 0.5;
+								}
+								if (target.hp == 1 && (target.countCards("h") <= 1 || target.maxHp == 1)) {
+									result -= 2;
+								}
 								if (target.hp < target.maxHp) {
 									result += Math.min(0.4, target.countCards("h") * 0.1);
 								}
@@ -668,7 +724,9 @@ export default {
 						event.result = await player
 							.gainPlayerCard(get.prompt2("jlsg_zhaoxiang", trigger.player), trigger.player, "h")
 							.set("ai", button => {
-								if (get.event("check")) return get.event().getRand(button.link.cardid.toString());
+								if (get.event("check")) {
+									return get.event().getRand(button.link.cardid.toString());
+								}
 								return 0;
 							})
 							.set(
@@ -755,7 +813,9 @@ export default {
 						const skills = [];
 						allList.randomSort();
 						for (const name of allList) {
-							if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1) continue;
+							if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1) {
+								continue;
+							}
 							const skills2 = get.character(name).skills || [];
 							for (const skill of skills2) {
 								if (skills.includes(skill)) {
@@ -765,13 +825,19 @@ export default {
 								game.expandSkills(list);
 								for (const skill2 of list) {
 									const info = lib.skill[skill2];
-									if (get.is.zhuanhuanji(skill2, trigger.player)) continue;
+									if (get.is.zhuanhuanji(skill2, trigger.player)) {
+										continue;
+									}
 									if (!info || !info.trigger || !info.trigger.player || info.silent || info.limited || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !trigger.player.isZhu2())) {
 										continue;
 									}
 									if (info.trigger.player == "damageEnd" || (Array.isArray(info.trigger.player) && info.trigger.player.includes("damageEnd"))) {
-										if (info.ai && ((info.ai.combo && !trigger.player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)) continue;
-										if (info.init) continue;
+										if (info.ai && ((info.ai.combo && !trigger.player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)) {
+											continue;
+										}
+										if (info.init) {
+											continue;
+										}
 										if (info.filter) {
 											let indexedData;
 											if (typeof info.getIndex === "function") {
@@ -781,7 +847,9 @@ export default {
 														!indexedData.some(target => {
 															try {
 																const bool = info.filter(trigger, trigger.player, "damageEnd", target);
-																if (bool) return true;
+																if (bool) {
+																	return true;
+																}
 																return false;
 															} catch (e) {
 																return false;
@@ -793,7 +861,9 @@ export default {
 												} else if (typeof indexedData === "number" && indexedData > 0) {
 													try {
 														const bool = info.filter(trigger, trigger.player, "damageEnd", true);
-														if (!bool) continue;
+														if (!bool) {
+															continue;
+														}
 													} catch (e) {
 														continue;
 													}
@@ -801,18 +871,24 @@ export default {
 											} else {
 												try {
 													const bool = info.filter(trigger, trigger.player, "damageEnd", true);
-													if (!bool) continue;
+													if (!bool) {
+														continue;
+													}
 												} catch (e) {
 													continue;
 												}
 											}
 										}
 										skills.add(skill);
-										if (skills.length > 1) break;
+										if (skills.length > 1) {
+											break;
+										}
 									}
 								}
 							}
-							if (skills.length > 1) break;
+							if (skills.length > 1) {
+								break;
+							}
 						}
 						if (!skills.length) {
 							return;
@@ -964,7 +1040,9 @@ export default {
 							})
 							.set("dialog", [prompt, "hidden", cards])
 							.set("ai", card => {
-								if (card.name == "tao") return -1;
+								if (card.name == "tao") {
+									return -1;
+								}
 								return get.event("diff") - get.value(card);
 							})
 							.set("types", types)
@@ -1176,7 +1254,9 @@ export default {
 						unequip: true,
 						unequip_ai: true,
 						skillTagFilter(player, tag, arg) {
-							if (tag == "unequip" && arg?.card?.name == "sha" && arg?.card?.storage?.jlsg_zhaxiang) return true;
+							if (tag == "unequip" && arg?.card?.name == "sha" && arg?.card?.storage?.jlsg_zhaxiang) {
+								return true;
+							}
 							return false;
 						},
 						result: {
@@ -1208,7 +1288,9 @@ export default {
 					mod: {
 						targetEnabled(card, player, target) {
 							if (target.isTurnedOver()) {
-								if (card.name == "nanman" || card.name == "shandian") return false;
+								if (card.name == "nanman" || card.name == "shandian") {
+									return false;
+								}
 							}
 						},
 					},
@@ -1259,8 +1341,12 @@ export default {
 										}
 									}
 									if (target.getVEquip("baiyin") && target.isDamaged() && get.recoverEffect(target, player, player) > 0) {
-										if (target.hp == 1 && !target.hujia) return 1.6;
-										if (target.hp == 2) return 0.01;
+										if (target.hp == 1 && !target.hujia) {
+											return 1.6;
+										}
+										if (target.hp == 2) {
+											return 0.01;
+										}
 										return 0;
 									}
 								}
@@ -1268,8 +1354,12 @@ export default {
 								let noe = es.length == 0 || target.hasSkillTag("noe");
 								let noe2 = es.length == 1 && es[0].name == "baiyin" && target.isDamaged();
 								let noh = nh == 0 || target.hasSkillTag("noh");
-								if (noh && (noe || noe2)) return 0;
-								if (att <= 0 && !target.countCards("he")) return 1.5;
+								if (noh && (noe || noe2)) {
+									return 0;
+								}
+								if (att <= 0 && !target.countCards("he")) {
+									return 1.5;
+								}
 								return -1.5;
 							},
 						},
@@ -1281,7 +1371,9 @@ export default {
 					mod: {
 						targetEnabled(card, player, target) {
 							if (target.isTurnedOver()) {
-								if (card.name == "sha" || card.name == "bingliang") return false;
+								if (card.name == "sha" || card.name == "bingliang") {
+									return false;
+								}
 							}
 						},
 					},
@@ -1361,22 +1453,38 @@ export default {
 						result: {
 							player(player) {
 								if (ui.selected.cards.length > 0) {
-									if (player.isTurnedOver()) return 3;
-									if (!player.isTurnedOver()) return -4;
+									if (player.isTurnedOver()) {
+										return 3;
+									}
+									if (!player.isTurnedOver()) {
+										return -4;
+									}
 								}
 								if (ui.selected.cards.length == 0) {
-									if (player.isTurnedOver()) return 4;
-									if (!player.isTurnedOver()) return -3;
+									if (player.isTurnedOver()) {
+										return 4;
+									}
+									if (!player.isTurnedOver()) {
+										return -3;
+									}
 								}
 							},
 							target(target, player) {
 								if (ui.selected.cards.length > 0) {
-									if (target.isTurnedOver()) return 3;
-									if (!target.isTurnedOver()) return -4;
+									if (target.isTurnedOver()) {
+										return 3;
+									}
+									if (!target.isTurnedOver()) {
+										return -4;
+									}
 								}
 								if (ui.selected.cards.length == 0) {
-									if (target.isTurnedOver()) return 4;
-									if (!target.isTurnedOver()) return -3;
+									if (target.isTurnedOver()) {
+										return 4;
+									}
+									if (!target.isTurnedOver()) {
+										return -3;
+									}
 								}
 							},
 						},

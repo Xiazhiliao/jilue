@@ -7,8 +7,12 @@ export default {
 					audio: "ext:极略/audio/skill:1",
 					trigger: { player: "damageEnd" },
 					check: function (event, player) {
-						if (player.isTurnedOver()) return true;
-						if (game.dead.length >= 2) return true;
+						if (player.isTurnedOver()) {
+							return true;
+						}
+						if (game.dead.length >= 2) {
+							return true;
+						}
 						var num = game.countPlayer(function (current) {
 							if (current.countCards("he") && current != player && get.attitude(player, current) <= 0) {
 								return true;
@@ -65,15 +69,23 @@ export default {
 						maixie: true,
 						maixie_hp: true,
 						threaten: function (player, target) {
-							if (target.hp == 1) return 3;
+							if (target.hp == 1) {
+								return 3;
+							}
 							return 1;
 						},
 						effect: {
 							target: function (card, player, target) {
 								if (get.tag(card, "damage")) {
-									if (player.hasSkillTag("jueqing", false, target)) return [1, -2];
-									if (target.hp == 1) return 0.8;
-									if (target.isTurnedOver()) return [0, 3];
+									if (player.hasSkillTag("jueqing", false, target)) {
+										return [1, -2];
+									}
+									if (target.hp == 1) {
+										return 0.8;
+									}
+									if (target.isTurnedOver()) {
+										return [0, 3];
+									}
 									var num = game.countPlayer(function (current) {
 										if (current.countCards("he") && current != player && get.attitude(player, current) <= 0) {
 											return true;
@@ -82,8 +94,12 @@ export default {
 											return true;
 										}
 									});
-									if (num > 2) return [0, 1];
-									if (num == 2) return [0.5, 1];
+									if (num > 2) {
+										return [0, 1];
+									}
+									if (num == 2) {
+										return [0.5, 1];
+									}
 								}
 							},
 						},
@@ -92,10 +108,14 @@ export default {
 				jlsg_feiying: {
 					mod: {
 						targetInRange: function (card, player, target, now) {
-							if (!player.isTurnedOver() && card.name == "sha") return true;
+							if (!player.isTurnedOver() && card.name == "sha") {
+								return true;
+							}
 						},
 						targetEnabled: function (card, player, target, now) {
-							if (target.isTurnedOver() && card.name == "sha") return false;
+							if (target.isTurnedOver() && card.name == "sha") {
+								return false;
+							}
 						},
 					},
 				},
@@ -226,7 +246,9 @@ export default {
 					filterCard: true,
 					position: "he",
 					filterTarget: function (card, player, target) {
-						if (player == target) return false;
+						if (player == target) {
+							return false;
+						}
 						return target.hasSex("male");
 					},
 					check: function (card) {
@@ -382,13 +404,17 @@ export default {
 					usable: 1,
 					filterCard: true,
 					selectCard: function () {
-						if (ui.selected.targets.length) return [ui.selected.targets.length, Math.min(ui.selected.targets.length + 1, game.players.length - 1)];
+						if (ui.selected.targets.length) {
+							return [ui.selected.targets.length, Math.min(ui.selected.targets.length + 1, game.players.length - 1)];
+						}
 						return [1, Infinity];
 					},
 					check: function (card) {
 						var player = _status.event.player;
 						let maxTarget = game.countPlayer(p => lib.skill.jlsg_yanlie.ai.result.target(player, p) * get.attitude(player, p) > 0);
-						if (maxTarget <= ui.selected.cards.length) return 0;
+						if (maxTarget <= ui.selected.cards.length) {
+							return 0;
+						}
 						return 6 - get.value(card);
 					},
 					selectTarget: function () {
@@ -428,7 +454,9 @@ export default {
 								if (target.isLinked() && !target.hasSkill("jlsg_lianti")) {
 									return 0.5;
 								}
-								if (target.hasSkillTag("nofire")) return 0;
+								if (target.hasSkillTag("nofire")) {
+									return 0;
+								}
 								let eff = get.damageEffect(target, player, player, "fire") / get.attitude(player, target);
 								if (player.hasSkill("jlsg_lianti")) {
 									eff *= 2;
@@ -662,7 +690,9 @@ export default {
 					ai: {
 						effect: {
 							target: function (card, player, target) {
-								if (player == target) return;
+								if (player == target) {
+									return;
+								}
 								if (card.name == "tao") {
 									return [1, 2];
 								}
@@ -708,8 +738,12 @@ export default {
 						"step 0"
 						if (player.storage.jlsg_kuangbao > 0) {
 							player.chooseControl("选项一", "选项二").set("prompt", '无谋<br><br><div class="text">1:弃置1枚「暴」标记</div><br><div class="text">2:受到1点伤害</div></br>').ai = function () {
-								if (player.storage.jlsg_kuangbao > 6) return "选项一";
-								if (player.hp >= 4 && player.countCards("h", "tao") >= 1) return "选项二";
+								if (player.storage.jlsg_kuangbao > 6) {
+									return "选项一";
+								}
+								if (player.hp >= 4 && player.countCards("h", "tao") >= 1) {
+									return "选项二";
+								}
 								return Math.random() < 0.5 && "选项一";
 							};
 						} else {
@@ -766,9 +800,13 @@ export default {
 								var ph = player.get("h");
 								var num = 0;
 								for (var i = 0; i < ph.length; i++) {
-									if (get.tag(ph[i], "damage")) num++;
+									if (get.tag(ph[i], "damage")) {
+										num++;
+									}
 								}
-								if (num > 1) return num;
+								if (num > 1) {
+									return num;
+								}
 								return 0;
 							},
 						},
@@ -818,7 +856,9 @@ export default {
 								var num = 0;
 								for (var i = 0; i < game.players.length; i++) {
 									if (game.players[i] != player) {
-										if (game.players[i].ai.shown == 0) return 0;
+										if (game.players[i].ai.shown == 0) {
+											return 0;
+										}
 										num += get.damageEffect(game.players[i], player, player) > 0 ? 1 : -1;
 									}
 								}
@@ -940,20 +980,36 @@ export default {
 					selectCard: [1, Infinity],
 					filter: function () {
 						for (var i = 0; i < game.players.length; i++) {
-							if (!game.players[i].storage.jlsg_jizhao1) return true;
+							if (!game.players[i].storage.jlsg_jizhao1) {
+								return true;
+							}
 						}
 						return false;
 					},
 					discard: false,
 					// prepare: "give2",
 					check: function (card) {
-						if (ui.selected.cards.length > 1) return 0;
-						if (ui.selected.cards.length && ui.selected.cards[0].name == "du") return 0;
-						if (ui.selected.cards.length && ui.selected.cards[0].name == "shandian") return 0;
-						if (!ui.selected.cards.length && card.name == "du") return 20;
-						if (!ui.selected.cards.length && card.name == "shandian") return 18;
-						if (!ui.selected.cards.length && card.name == "shan") return 14;
-						if (!ui.selected.cards.length && card.name == "jiedao") return 16;
+						if (ui.selected.cards.length > 1) {
+							return 0;
+						}
+						if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+							return 0;
+						}
+						if (ui.selected.cards.length && ui.selected.cards[0].name == "shandian") {
+							return 0;
+						}
+						if (!ui.selected.cards.length && card.name == "du") {
+							return 20;
+						}
+						if (!ui.selected.cards.length && card.name == "shandian") {
+							return 18;
+						}
+						if (!ui.selected.cards.length && card.name == "shan") {
+							return 14;
+						}
+						if (!ui.selected.cards.length && card.name == "jiedao") {
+							return 16;
+						}
 						return 0;
 					},
 					filterTarget: function (card, player, target) {
@@ -1012,7 +1068,9 @@ export default {
 					filter: function (event, player) {
 						var num = player.countCards("h");
 						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].num("h") > num) return false;
+							if (game.players[i].num("h") > num) {
+								return false;
+							}
 						}
 						return true;
 					},
@@ -1026,8 +1084,9 @@ export default {
 									!player.countCards("h", function (card) {
 										return get.tag(card, "recover");
 									})
-								)
+								) {
 									return "选项二";
+								}
 								return "选项一";
 							})
 							.set("prompt", '虎踞<br><br><div class="text">1：失去1点体力</div><br><div class="text">2：减1点体力上限，失去【虎踞】，获得【制衡】和【虎缚】</div></br>');
@@ -1110,7 +1169,9 @@ export default {
 						},
 						effect: {
 							player: function (card, player) {
-								if (get.type(card) != "basic") return [1, 3];
+								if (get.type(card) != "basic") {
+									return [1, 3];
+								}
 							},
 						},
 					},
@@ -1172,7 +1233,9 @@ export default {
 										suits.push(get.suit(cards[i]));
 									}
 								}
-								if (suits.length < 3) return -1;
+								if (suits.length < 3) {
+									return -1;
+								}
 								return suits.length;
 							},
 						},
@@ -1200,15 +1263,20 @@ export default {
 					},
 					check: function (event, player) {
 						if (event.name == "phaseDraw") {
-							if (player.countCards("h") <= 1 || player.hp == 1) return -1;
+							if (player.countCards("h") <= 1 || player.hp == 1) {
+								return -1;
+							}
 						} else {
 							if (
 								player.countCards("h", function (card) {
 									return get.value(card) > 7;
 								})
-							)
+							) {
 								return -1;
-							if (player.countCards("h") - player.hp >= 3) return -1;
+							}
+							if (player.countCards("h") - player.hp >= 3) {
+								return -1;
+							}
 						}
 						return 1;
 					},
@@ -1321,9 +1389,13 @@ export default {
 							return false;
 						}
 						var evt = event.getl(player);
-						if (!evt || !evt.cards2 || !evt.cards2.length) return false;
+						if (!evt || !evt.cards2 || !evt.cards2.length) {
+							return false;
+						}
 						for (var i of evt.cards2) {
-							if (get.color(i, player) == "red") return true;
+							if (get.color(i, player) == "red") {
+								return true;
+							}
 						}
 						return false;
 					},
@@ -1390,9 +1462,13 @@ export default {
 							return false;
 						}
 						var evt = event.getl(player);
-						if (!evt || !evt.cards2 || !evt.cards2.length) return false;
+						if (!evt || !evt.cards2 || !evt.cards2.length) {
+							return false;
+						}
 						for (var i of evt.cards2) {
-							if (get.color(i, player) == "black") return true;
+							if (get.color(i, player) == "black") {
+								return true;
+							}
 						}
 						return false;
 					},
@@ -1454,9 +1530,13 @@ export default {
 							return false;
 						}
 						var evt = event.getl(player);
-						if (!evt || !evt.cards2 || !evt.cards2.length) return false;
+						if (!evt || !evt.cards2 || !evt.cards2.length) {
+							return false;
+						}
 						for (var i of evt.cards2) {
-							if (["black", "red"].includes(get.color(i, player))) return true;
+							if (["black", "red"].includes(get.color(i, player))) {
+								return true;
+							}
 						}
 						return false;
 					},
@@ -1469,8 +1549,12 @@ export default {
 						event.cards = evt.cards2;
 						for (var i of evt.cards2) {
 							let color = get.color(i, player);
-							if (color == "black") event.colors.add("red");
-							if (color == "red") event.colors.add("black");
+							if (color == "black") {
+								event.colors.add("red");
+							}
+							if (color == "red") {
+								event.colors.add("black");
+							}
 						}
 						if (!event.colors.length) {
 							console.warn("jlsg_xiangsheng no color found!");
@@ -1487,7 +1571,9 @@ export default {
 							var card = get.cardPile2(function (card) {
 								return !event.cards.includes(card) && get.color(card, false) == event.color;
 							});
-							if (card) player.gain(card, "gain2");
+							if (card) {
+								player.gain(card, "gain2");
+							}
 						}
 
 						if (player.countMark(event.name) && event.colors.length) {
@@ -1525,10 +1611,14 @@ export default {
 					},
 					mod: {
 						cardUsable: function (card, player, num) {
-							if (card.name == "sha") return Infinity;
+							if (card.name == "sha") {
+								return Infinity;
+							}
 						},
 						targetInRange: function (card) {
-							if (card.name == "sha") return true;
+							if (card.name == "sha") {
+								return true;
+							}
 						},
 					},
 					subSkill: {
@@ -1541,7 +1631,9 @@ export default {
 							position: "hes",
 							viewAs: { name: "sha" },
 							viewAsFilter: function (player) {
-								if (!player.countCards("hes", { color: "black" })) return false;
+								if (!player.countCards("hes", { color: "black" })) {
+									return false;
+								}
 							},
 							prompt: "将一张黑色牌当杀使用或打出",
 							check: function (card) {
@@ -1549,7 +1641,9 @@ export default {
 							},
 							ai: {
 								skillTagFilter: function (player) {
-									if (!player.countCards("hes", { color: "black" })) return false;
+									if (!player.countCards("hes", { color: "black" })) {
+										return false;
+									}
 								},
 								respondSha: true,
 							},
@@ -1589,7 +1683,9 @@ export default {
 						order: 10,
 						result: {
 							player: function (player) {
-								if (player.countCards("h") > 2) return 1;
+								if (player.countCards("h") > 2) {
+									return 1;
+								}
 								return -1;
 							},
 							target: function (target) {
@@ -1603,7 +1699,9 @@ export default {
 										}
 									}
 								}
-								if (num > 0) return -num;
+								if (num > 0) {
+									return -num;
+								}
 								return 0;
 							},
 						},
@@ -1655,14 +1753,22 @@ export default {
 						return lib.inpile.includes(name) && !player.isDying() && !player.hasSkill("jlsg_tianqi_phase");
 					},
 					filter: function (event, player) {
-						if (player.isDying() || player.hasSkill("jlsg_tianqi_phase")) return false;
+						if (player.isDying() || player.hasSkill("jlsg_tianqi_phase")) {
+							return false;
+						}
 						for (var i of lib.inpile) {
-							if (i == "shan" || i == "wuxie") continue;
+							if (i == "shan" || i == "wuxie") {
+								continue;
+							}
 							var type = get.type(i);
-							if ((type == "basic" || type == "trick") && event.filterCard({ name: i }, player, event)) return true;
+							if ((type == "basic" || type == "trick") && event.filterCard({ name: i }, player, event)) {
+								return true;
+							}
 							if (i == "sha") {
 								for (var j of lib.inpile_nature) {
-									if (event.filterCard({ name: i, nature: j }, player, event)) return true;
+									if (event.filterCard({ name: i, nature: j }, player, event)) {
+										return true;
+									}
 								}
 							}
 						}
@@ -1675,19 +1781,29 @@ export default {
 							var list2 = [],
 								list2Tag;
 							for (var i of lib.inpile) {
-								if (!lib.translate[i + "_info"]) continue;
-								if (i == "shan" || i == "wuxie") continue;
+								if (!lib.translate[i + "_info"]) {
+									continue;
+								}
+								if (i == "shan" || i == "wuxie") {
+									continue;
+								}
 								var type = get.type(i);
 								if (type == "basic") {
 									list1.push([type, "", i]);
-									if (event.filterCard({ name: i }, player, event)) list1Tag = true;
+									if (event.filterCard({ name: i }, player, event)) {
+										list1Tag = true;
+									}
 									if (i == "sha") {
-										for (var j of lib.inpile_nature) list1.push([type, "", i, j]);
+										for (var j of lib.inpile_nature) {
+											list1.push([type, "", i, j]);
+										}
 									}
 								}
 								if (type == "trick") {
 									list2.push([type, "", i]);
-									if (event.filterCard({ name: i }, player, event)) list2Tag = true;
+									if (event.filterCard({ name: i }, player, event)) {
+										list2Tag = true;
+									}
 								}
 							}
 							var dialog = ui.create.dialog();
@@ -1764,14 +1880,24 @@ export default {
 						respondShan: true,
 						respondSha: true,
 						skillTagFilter: function (player, tag, arg) {
-							if (player.isDying() || player.hasSkill("jlsg_tianqi_phase")) return false;
+							if (player.isDying() || player.hasSkill("jlsg_tianqi_phase")) {
+								return false;
+							}
 						},
 						result: {
 							player: function (player) {
-								if (_status.event.dying) return get.attitude(player, _status.event.dying);
-								if (player.storage.jlsg_tianji_top != undefined) return 1;
-								if (player.hp <= 1 && player.storage.jlsg_tianji_top == undefined) return -10;
-								if (Math.random() < 0.67) return 0.5;
+								if (_status.event.dying) {
+									return get.attitude(player, _status.event.dying);
+								}
+								if (player.storage.jlsg_tianji_top != undefined) {
+									return 1;
+								}
+								if (player.hp <= 1 && player.storage.jlsg_tianji_top == undefined) {
+									return -10;
+								}
+								if (Math.random() < 0.67) {
+									return 0.5;
+								}
 								return -1;
 							},
 						},
@@ -1847,7 +1973,9 @@ export default {
 						if (player.hp > 2 && get.type(cards[0]) == "basic") {
 							return 1;
 						}
-						if (player.hp <= 2 && player.countCards("h", "shan") && player.storage.jlsg_tianji_top != "basic") return 0;
+						if (player.hp <= 2 && player.countCards("h", "shan") && player.storage.jlsg_tianji_top != "basic") {
+							return 0;
+						}
 						return 1;
 					},
 					viewAs: { name: "shan" },
@@ -1904,7 +2032,9 @@ export default {
 					trigger: { global: "phaseUseBegin" },
 					frequent: true,
 					filter: function (event, player) {
-						if (ui.cardPile.hasChildNodes() == false) return false;
+						if (ui.cardPile.hasChildNodes() == false) {
+							return false;
+						}
 						return true;
 					},
 					content: function () {
@@ -1922,7 +2052,9 @@ export default {
 						}
 						controls.push("替换");
 						player.chooseControl(controls, "cancel", event.dialog).ai = function () {
-							if (event.top[0].name == "du") return "cancel";
+							if (event.top[0].name == "du") {
+								return "cancel";
+							}
 							return 0;
 						};
 						"step 1"
@@ -2074,7 +2206,9 @@ export default {
 							clearKuangfeng.popup("jlsg_kuangfeng2");
 						}
 						player.chooseTarget("选择一名角色获得狂风标记").ai = function (target) {
-							if (player.getExpansions("jlsg_qixing").length > 3) return jlsg.isWeak(target) && jlsg.isEnemy(player, target);
+							if (player.getExpansions("jlsg_qixing").length > 3) {
+								return jlsg.isWeak(target) && jlsg.isEnemy(player, target);
+							}
 							return -1;
 						};
 						"step 1"
@@ -2126,8 +2260,12 @@ export default {
 						threaten: 3,
 						effect: {
 							target: function (card, player, target, current) {
-								if (get.tag(card, "fireDamage")) return 1.5;
-								if (get.tag(card, "thunderDamage")) return 1.5;
+								if (get.tag(card, "fireDamage")) {
+									return 1.5;
+								}
+								if (get.tag(card, "thunderDamage")) {
+									return 1.5;
+								}
 							},
 						},
 					},
@@ -2143,13 +2281,23 @@ export default {
 					content: function () {
 						"step 0"
 						player.chooseTarget("选择角色获得大雾标记", [1, Math.min(game.players.length, player.getExpansions("jlsg_qixing").length)]).ai = function (target) {
-							if (target.isMin()) return 0;
-							if (target.hasSkill("biantian2")) return 0;
+							if (target.isMin()) {
+								return 0;
+							}
+							if (target.hasSkill("biantian2")) {
+								return 0;
+							}
 							var att = get.attitude(player, target);
 							if (att >= 4) {
-								if (target.hp == 1 && target.maxHp > 2) return att;
-								if (target.hp == 2 && target.maxHp > 3 && target.countCards("he") == 0) return att * 0.7;
-								if (jlsg.isWeak(target)) return att * 1.1;
+								if (target.hp == 1 && target.maxHp > 2) {
+									return att;
+								}
+								if (target.hp == 2 && target.maxHp > 3 && target.countCards("he") == 0) {
+									return att * 0.7;
+								}
+								if (jlsg.isWeak(target)) {
+									return att * 1.1;
+								}
 								return 0;
 							}
 							return -1;
@@ -2195,7 +2343,9 @@ export default {
 				jlsg_dawu2: {
 					trigger: { player: "damageBefore" },
 					filter: function (event) {
-						if (event.nature != "thunder") return true;
+						if (event.nature != "thunder") {
+							return true;
+						}
 						return false;
 					},
 					marktext: "雾",
@@ -2210,7 +2360,9 @@ export default {
 						nodamage: true,
 						effect: {
 							target: function (card, player, target, current) {
-								if (get.tag(card, "damage") && !get.tag(card, "thunderDamage")) return [0, 0];
+								if (get.tag(card, "damage") && !get.tag(card, "thunderDamage")) {
+									return [0, 0];
+								}
 							},
 						},
 					},
@@ -2247,7 +2399,9 @@ export default {
 						"step 1"
 						event.numx = 0;
 						for (var i = 0; i < event.cards.length; i++) {
-							if (get.type(event.cards[i]) != "basic") event.numx++;
+							if (get.type(event.cards[i]) != "basic") {
+								event.numx++;
+							}
 						}
 						// player.$throw(event.cards);
 						if (event.numx) {
@@ -2274,7 +2428,9 @@ export default {
 					position: "hs",
 					viewAs: { name: "shunshou" },
 					viewAsFilter: function (player) {
-						if (!player.countCards("hs", { color: "black" })) return false;
+						if (!player.countCards("hs", { color: "black" })) {
+							return false;
+						}
 					},
 					prompt: "将一张黑色手牌当顺手牵羊使用",
 					check: function (card) {
@@ -2501,7 +2657,9 @@ export default {
 					},
 					ai: {
 						threaten(player) {
-							if (player.hasSkill("jlsg_cuifeng")) return 4.5;
+							if (player.hasSkill("jlsg_cuifeng")) {
+								return 4.5;
+							}
 							return 0;
 						},
 					},
@@ -2546,7 +2704,9 @@ export default {
 						return "移除场上全部的【袭】标记，然后摸" + num + "张牌";
 					},
 					check(event, player) {
-						if (player.countCards("h") == 0 || player.hp == 1) return 1;
+						if (player.countCards("h") == 0 || player.hp == 1) {
+							return 1;
+						}
 						return 0;
 					},
 					async content(event, trigger, player) {
