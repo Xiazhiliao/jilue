@@ -88,7 +88,11 @@ export default {
 								"player.playerid": {
 									//武将名：[第一次突破, 第二次突破, 第三次突破(技能突破), 第四次突破(携带所有技能)]
 									characterName: [false, false, false, false],
-									默认全关
+									
+									//突破技能单独存储
+									other:{
+										skill:Boolean,
+									},
 								},
 							}*/
 							game.broadcastAll(
@@ -201,19 +205,33 @@ export default {
 			},
 			async extraUpgrade(event, trigger, player) {
 				const { skill } = event,
-					upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				if (!upgrade.other) {
-					upgrade.other = {};
+					upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				if (!upgradeStorage.other) {
+					upgradeStorage.other = {};
+				} else if (upgradeStorage.other[skill]) {
+					return;
 				}
-				const buttons = [skill, skill + "_upgrade"].map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + (i.endsWith("_upgrade") ? "突破" : "原始") + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
-				const { result } = await player
-					.chooseBool()
-					.set("createDialog", [`是否突破【${get.translation(skill)}】`, [buttons, "textbutton"]])
-					.set("ai", () => true);
-				if (result.bool) {
-					upgrade.other[skill] = true;
+				let name = Object.keys(upgradeStorage).find(name => {
+					const createList = lib.skill._jlsgsr_choice.createList;
+					return createList(name).includes(skill);
+				});
+				if (name) {
+					if (upgradeStorage?.[name]?.[2]) {
+						event.check = true;
+					}
+				}
+				if (!event.check) {
+					const buttons = [skill, skill + "_upgrade"].map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + (i.endsWith("_upgrade") ? "突破" : "原始") + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
+					event.check = await player
+						.chooseBool()
+						.set("createDialog", [`是否突破【${get.translation(skill)}】`, [buttons, "textbutton"]])
+						.set("ai", () => true)
+						.forResultBool();
+				}
+				if (event.check) {
+					upgradeStorage.other[skill] = true;
 				} else {
-					upgrade.other[skill] = false;
+					upgradeStorage.other[skill] = false;
 				}
 				game.broadcastAll(
 					function (player, info) {
@@ -223,7 +241,7 @@ export default {
 						_status._jlsgsr_upgrade[player.playerid] = info;
 					},
 					player,
-					upgrade
+					upgradeStorage
 				);
 			},
 		},
