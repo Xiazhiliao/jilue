@@ -11936,14 +11936,14 @@ export default {
 				}
 				let { result } = await player.chooseBool(`是否令${get.translation(target)}回复1点体力？`, get.recoverEffect(target, player, player) > 0);
 				if (result.bool) {
-					target.recover(player);
+					await target.recover(player);
 				}
 			},
 		},
 		jlsg_huisheng: {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { player: "damageBegin4" },
-			filter: function (event, player) {
+			filter(event, player) {
 				if (!player.countCards("h")) return false;
 				if (!event.source || event.source == player || !event.source.isIn()) return false;
 				return true;
@@ -12024,7 +12024,7 @@ export default {
 					eff1 += get.effect(target, card, source, player);
 					eff2 += get.effect(target, event.card, source, player);
 				}
-				return eff1 >= eff2;
+				return eff1 > eff2;
 			},
 			async content(event, trigger, player) {
 				game.log(player, "将", trigger.card, "的效果改为了【南蛮入侵】");
@@ -12046,43 +12046,72 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { global: "respondAfter" },
 			filter(event, player) {
+				const record = player.getStorage("jlsg_souying_record", { sha: [], shan: [] });
 				switch (event.card.name) {
 					case "sha":
-						return game.hasPlayer(p => !player.getStorage("jlsg_souying_temp").includes(p));
+						return game.hasPlayer(p => !record.sha.includes(p));
 						break;
 					case "sha":
-						return game.hasPlayer(p => !player.getStorage("jlsg_souying_temp").includes(p) && p.isDamaged());
+						return game.hasPlayer(p => !record.shan.includes(p) && p.isDamaged());
 						break;
 					default:
 						return false;
 				}
 			},
 			async cost(event, trigger, player) {
+				const cardname = trigger.card.name,
+					record = player.getStorage("jlsg_souying_record", { sha: [], shan: [] });
 				event.result = await player
 					.chooseTarget((_, player, target) => {
-						if (player.getStorage("jlsg_souying_temp").includes(target)) {
+						if (get.event("record")[get.event("cardname")].includes(target)) {
 							return false;
 						}
-						return _status.event.cardName != "shan" || target.isDamaged();
+						return get.event("cardname") != "shan" || target.isDamaged();
 					})
-					.set("prompt", get.prompt(event.skill))
-					.set("prompt2", trigger.card.name == "sha" ? "对一名角色造成1点伤害" : "令一名角色回复1点体力")
-					.set("cardName", trigger.card.name)
-					.set("ai", target => get[_status.event.cardName == "sha" ? "damageEffect" : "recoverEffect"](target, _status.event.player, _status.event.player))
+					.set("prompt", get.prompt(event.name.slice(0, -5)))
+					.set("prompt2", cardname == "sha" ? "对一名角色造成1点伤害" : "令一名角色回复1点体力")
+					.set("ai", target => get[get.event("cardname") == "sha" ? "damageEffect" : "recoverEffect"](target, get.player(), get.player()))
+					.set("cardname", cardname)
 					.forResult();
 			},
 			async content(event, trigger, player) {
-				if (trigger.card.name == "sha") {
-					event.targets[0].damage();
+				const {
+						targets: [target],
+					} = event,
+					{ card } = trigger;
+				if (card.name == "sha") {
+					await target.damage();
 				} else {
-					event.targets[0].recover();
+					await target.recover();
 				}
-				player.addTempSkill("jlsg_souying_temp");
-				player.storage.jlsg_souying_temp = player.getStorage("jlsg_souying_temp").concat(event.targets[0]);
+				player.addTempSkill("jlsg_souying_record");
+				const record = player.getStorage("jlsg_souying_record", { sha: [], shan: [] });
+				record[card.name].add(target);
+				player.setStorage("jlsg_souying_record", record, true);
 			},
-		},
-		jlsg_souying_temp: {
-			onremove: true,
+			subSkill: {
+				record: {
+					onremove: true,
+					mark: true,
+					marktext: "薮",
+					intro: {
+						content(storage, player) {
+							let str = ["sha", "shan"]
+								.map(i => {
+									if (storage?.[i]?.length) {
+										return `${get.translation(i)}：${get.translation(storage[i]).join("、")}`;
+									}
+									return "";
+								})
+								.join("<br>");
+							if (str.length) {
+								return "本回合已触发<br>" + str;
+							}
+							return "";
+						},
+					},
+				},
+			},
 		},
 		jlsg_guolun: {
 			audio: "ext:极略/audio/skill:2",
@@ -12091,7 +12120,7 @@ export default {
 			},
 			trigger: { global: ["drawAfter", "discardAfter", "recoverAfter", "damageAfter"] },
 			priority: 1,
-			filter(event, player) {
+			filter: function (event, player) {
 				return game.hasPlayer(p => this.filterTargetDefault(event, player, p, false));
 			},
 			usable: 1,
@@ -12230,16 +12259,16 @@ export default {
 				let target = event.targets[0];
 				switch (trigger.name) {
 					case "draw":
-						target.draw(trigger.num);
+						await target.draw(trigger.num);
 						break;
 					case "discard":
-						target.chooseToDiscard(true, "he", trigger.cards.length);
+						await target.chooseToDiscard(true, "he", trigger.cards.length);
 						break;
 					case "recover":
-						target.recover(trigger.num, trigger.source || player);
+						await target.recover(trigger.num, trigger.source || player);
 						break;
 					case "damage":
-						target.damage(trigger.num, trigger.source);
+						await target.damage(trigger.num, trigger.source);
 						break;
 				}
 			},
@@ -12297,16 +12326,16 @@ export default {
 						let target = event.targets[0];
 						switch (trigger.name) {
 							case "draw":
-								target.chooseToDiscard(true, "he", trigger.num);
+								await target.chooseToDiscard(true, "he", trigger.num);
 								break;
 							case "discard":
-								target.draw(trigger.cards.length);
+								await target.draw(trigger.cards.length);
 								break;
 							case "recover":
-								target.damage(trigger.num, trigger.source || player);
+								await target.damage(trigger.num, trigger.source || player);
 								break;
 							case "damage":
-								target.recover(trigger.num, trigger.source);
+								await target.recover(trigger.num, trigger.source);
 								break;
 						}
 					},
@@ -12325,7 +12354,7 @@ export default {
 					player.storage.jlsg_guolun = Math.min(3, player.storage.jlsg_guolun + 1);
 					player.syncStorage("jlsg_guolun");
 				}
-				player.draw(game.countPlayer());
+				await player.draw(game.countPlayer());
 			},
 		},
 		jlsg_qinguo: {
@@ -12402,7 +12431,6 @@ export default {
 
 				let { result } = await player.chooseButton([get.prompt("jlsg_qinguo"), [cards.map(c => ["基本", "", c.name, c.nature]), "vcard"]]);
 				if (!result.bool) {
-					event.finish();
 					return;
 				}
 				let card = { name: result.links[0][2], nature: result.links[0][3], isCard: true };
@@ -12476,11 +12504,13 @@ export default {
 									return value;
 								})
 								.forResult();
-							event.result.cards = event.result.links.slice();
+							if (event.result.bool) {
+								event.result.cards = event.result.links.slice();
+							}
 						}
 					},
 					async content(event, trigger, player) {
-						player.gain(event.cards[0], "gain2");
+						await player.gain(event.cards[0], "gain2");
 					},
 				},
 			},
