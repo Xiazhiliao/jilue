@@ -9168,7 +9168,7 @@ export default {
 						case 0:
 							await target.chooseToGive(player, cnt, "he", true);
 							break;
-						case 1:
+						case 1: {
 							let skills = target.getSkills(null, false, false).map(s => [s, get.translation(s)]);
 							let { result } = await target.chooseButton([`选择一个技能交给${get.translation(player)}`, [skills, "tdnodes"]], true);
 							if (result.bool) {
@@ -9178,6 +9178,7 @@ export default {
 								await Promise.all([target.removeSkills(skill), player.addSkills(skill)]);
 							}
 							break;
+						}
 					}
 				}
 				if (player.maxHp <= event.targets.map(p => p.maxHp || 0).reduce((a, b) => a + b, 0)) {
@@ -13714,7 +13715,7 @@ export default {
 			 * @returns { Card | undefind } 若牌名存在，则返回Card，否则为undefind
 			 */
 			createTempCard(name, suit, nature, number, isInPile) {
-				if (!name in lib.card && name !== null) {
+				if (!(name in lib.card) && name !== null) {
 					return;
 				}
 				const list = lib.skill.jlsg_lingze.typePBTY;

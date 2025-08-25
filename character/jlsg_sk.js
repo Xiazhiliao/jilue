@@ -4925,7 +4925,6 @@ export default {
 							} else {
 								return -result - get.value(card) / 2;
 							}
-							return -get.value(card);
 						});
 						event.chosed = true;
 						event.current = trigger.player;
@@ -6820,7 +6819,6 @@ export default {
 							}
 							return -1;
 						}
-						return -1;
 					}
 				};
 				"step 1"
@@ -7133,7 +7131,6 @@ export default {
 					return evt && evt.hs && evt.hs.length > 0;
 				});
 			},
-			direct: true,
 			content: function () {
 				"step 0"
 				if (!player.storage.jlsg_zhubao) {
@@ -8726,7 +8723,7 @@ export default {
 					case 1:
 						await target.drawTo(game.findPlayer(current => current.isMaxHandcard())?.countCards("h") + 1);
 						break;
-					case 2:
+					case 2: {
 						let num = 0;
 						while (num < 5) {
 							num++;
@@ -8741,6 +8738,7 @@ export default {
 							}
 						}
 						break;
+					}
 					case 3:
 						await target.addSkills("jlsg_huituo");
 						break;
@@ -8861,13 +8859,10 @@ export default {
 						switch (cnt) {
 							case 0:
 								return 0.8 + 0.4 * Math.random();
-								break;
 							case 1:
 								return -1.2 + 0.4 * Math.random();
-								break;
 							case 2:
 								return -2.2 + 0.4 * Math.random();
-								break;
 						}
 					},
 					player: function (player, target) {
@@ -9102,7 +9097,7 @@ export default {
 							return 0;
 						}
 						if (att < 0) {
-							if ((card.number = 13)) {
+							if (card.number == 13) {
 								return 114514;
 							}
 							if (target.countCards("h") >= card.number * 10) {
@@ -9313,11 +9308,6 @@ export default {
 				content: "expansion",
 				markcount: function (storage, player) {
 					return;
-					let cards = player.getExpansions("jlsg_huaibi");
-					if (cards.length == 1) {
-						let suit = get.translation(cards[0].suit);
-						return `<span style="font-size: 1.4em;">${suit}</span>`;
-					}
 				},
 			},
 			onremove: function (player, skill) {
@@ -10956,7 +10946,7 @@ export default {
 			},
 			usable: 1,
 			filter: function (event) {
-				if (!"cards" in event.card || !event.card.cards.length) {
+				if (!("cards" in event.card) || !event.card.cards.length) {
 					return false;
 				}
 				return !event.card.isCard;
@@ -11012,7 +11002,6 @@ export default {
 						default:
 							return 0;
 					}
-					return 0;
 				}).judge2 = function (result) {
 					if (result.color == "black") {
 						return true;
@@ -11793,6 +11782,7 @@ export default {
 						node.setBackground(bg, "character");
 					}
 				}
+				let name = "";
 				if (Array.isArray(item)) {
 					name = `<span data-nature=${get.groupnature(get.bordergroup(_item[0]))}>${get.slimName(_item[0])}</span>`;
 					node.node.info.innerHTML = "";
@@ -13197,10 +13187,8 @@ export default {
 				switch (event.card.name) {
 					case "sha":
 						return game.hasPlayer(p => !record.sha.includes(p));
-						break;
 					case "shan":
 						return game.hasPlayer(p => !record.shan.includes(p) && p.isDamaged());
-						break;
 					default:
 						return false;
 				}
@@ -13360,7 +13348,6 @@ export default {
 							}
 						}
 						return aiTarget;
-						break;
 				}
 			},
 			async cost(event, trigger, player) {
@@ -13376,13 +13363,14 @@ export default {
 					case "recover":
 						prompt2 += `回复${trigger.num}点体力`;
 						break;
-					case "damage":
+					case "damage": {
 						let nature = "";
 						if (trigger.nature) {
 							nature = get.translation(trigger.nature) + "属性";
 						}
 						prompt2 += `受到来自${get.translation(trigger.source)}的${trigger.num}点${nature}伤害`;
 						break;
+					}
 				}
 				event.result = await player
 					.chooseTarget(`###${get.prompt("jlsg_guolun")}###${prompt2}`, (_, player, target) => {
@@ -13440,13 +13428,14 @@ export default {
 							case "discard":
 								prompt2 += `摸${get.cnNumber(trigger.cards.length)}张牌`;
 								break;
-							case "recover":
+							case "recover": {
 								let source = "";
 								if (trigger.source) {
 									source = `来自${get.translation(trigger.source)}的`;
 								}
 								prompt2 += `受到${source}${trigger.num}点伤害`;
 								break;
+							}
 							case "damage":
 								prompt2 += `回复${trigger.num}点体力`;
 								break;
@@ -14941,19 +14930,21 @@ export default {
 						return hand.every(c => get.number(c, player) <= get.number(cards[0], player));
 					case 2:
 						return get.number(cards[0], player) === get.number(cards[1], player);
-					case 3:
+					case 3: {
 						let suit0 = get.suit(cards[0], player);
 						return suit0 == get.suit(cards[1], player) && suit0 == get.suit(cards[2], player);
+					}
 					case 4:
 						nums = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
 						return nums.every((n, i) => n - nums[0] == i);
-					case 5:
+					case 5: {
 						let suit = get.suit(cards[0], player);
 						if (cards.some(c => get.suit(c, player) != suit)) {
 							return false;
 						}
 						nums = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
 						return nums.every((n, i) => n - nums[0] == i);
+					}
 					default:
 						return false;
 				}
@@ -14979,13 +14970,15 @@ export default {
 						if (!player.storage.jlsg_yanjiao[2] && hand.some(c => get.number(c, player) == nums[0])) {
 							return true;
 						}
+						break;
 					// fall through
 					case 2:
 						if (!player.storage.jlsg_yanjiao[3] && suit && hand.filter(c => get.suit(c, player) == suit).length + cards.length >= 3) {
 							return true;
 						}
+						break;
 					case 3:
-					case 4:
+					case 4: {
 						nums.sort((a, b) => a - b);
 						let num0 = nums[0],
 							num1 = nums[nums.length - 1];
@@ -15017,6 +15010,7 @@ export default {
 							}
 						}
 						return false;
+					}
 					default:
 						return false;
 				}
@@ -15993,14 +15987,17 @@ export default {
 								if (att < 0) {
 									return value;
 								}
+								break;
 							case 1:
 								if (att > 0) {
 									return 8 - value;
 								}
-							case 6:
+								break;
+							case 6: {
 								let sha = get.autoViewAs({ name: "sha", isCard: true }, []);
 								return game.hasPlayer(current => current != target && get.effect(target, sha, current, player) > 0);
-							case 7:
+							}
+							case 7: {
 								let damage = get.damageEffect(target, undefined, player, "thunder"),
 									result = {
 										card: button.link,
@@ -16029,6 +16026,8 @@ export default {
 								if (att < 0) {
 									return value;
 								}
+								break;
+							}
 							default:
 								return 0;
 						}
@@ -16044,7 +16043,7 @@ export default {
 						const storage = get.event("storage"),
 							att = get.attitude(player, target);
 						switch (storage) {
-							case 2:
+							case 2: {
 								let skills = target.getSkills(null, false, false).filter(i => {
 									let info = get.info(i);
 									return info && !info.charlotte && !info.persevereSkill;
@@ -16058,6 +16057,7 @@ export default {
 									return true;
 								}
 								return false;
+							}
 							case 3:
 								return att > 0;
 							case 4:

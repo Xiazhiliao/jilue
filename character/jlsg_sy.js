@@ -278,7 +278,6 @@ export default {
 		},
 		jlsgsy_shenji: {
 			audio: "ext:极略/audio/skill:1",
-			forced: true,
 			mod: {
 				selectTarget: function (card, player, range) {
 					if (card.name != "sha") {
@@ -396,7 +395,7 @@ export default {
 			async content(event, trigger, player) {
 				await player.logSkill("jlsgsy_mingzheng");
 				let num = player.phaseNumber;
-				if ((event.triggername = "jlsgsy_baonuAfter")) {
+				if (event.triggername == "jlsgsy_baonuAfter") {
 					num++;
 				}
 				await player.draw(player.phaseNumber + 1);
@@ -3438,11 +3437,8 @@ export default {
 		jlsgsy_wushuang2: "无双",
 		jlsgsy_wushuang3: "无双",
 		jlsgsy_wushuang_info: "锁定技，当你使用【杀】或【决斗】指定目标后，你令此牌需要依次使用或打出两张【闪】或【杀】响应。你点数为奇数的伤害牌的伤害基数固定为3。",
-		jlsgsy_xiuluo: "修罗",
 		jlsgsy_xiuluo_info: "当你成为【杀】或非延时锦囊的唯一目标后，你可以摸一张牌并将此牌的效果改为【决斗】。",
-		jlsgsy_shenwei: "神威",
 		jlsgsy_shenwei_info: "锁定技，你攻击范围内其他角色的手牌上限-1。",
-		jlsgsy_shenji: "神戟",
 		jlsgsy_shenji_info: "锁定技，你的【杀】的目标上限+2。",
 
 		jlsgsy_luanzheng_info: "其他角色使用基本牌或非延时锦囊指定唯一目标时，你可为此牌指定一个额外目标，每回合限一次。",
