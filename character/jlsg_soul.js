@@ -4143,21 +4143,26 @@ export default {
 			audio: "ext:极略/audio/skill:1",
 			trigger: { global: "dying" },
 			check(event, player) {
-				if (get.attitude(player, event.player) < 4) return false;
+				if (get.attitude(player, event.player) < 1) {
+					return false;
+				}
 				if (
-					player.countCards("h", function (card) {
-						var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+					player.countCards("hs", function (card) {
+						let mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 						if (mod2 != "unchanged") return mod2;
-						var mod = game.checkMod(card, player, event.player, "unchanged", "cardSavable", player);
+						let mod = game.checkMod(card, player, event.player, "unchanged", "cardSavable", player);
 						if (mod != "unchanged") return mod;
-						var savable = get.info(card).savable;
+						let savable = get.info(card).savable;
 						if (typeof savable == "function") savable = savable(card, player, event.player);
 						return savable;
 					}) >=
 					1 - event.player.hp
-				)
+				) {
 					return false;
-				if (event.player == player || event.player == get.zhu(player)) return true;
+				}
+				if (event.player == player || event.player == get.zhu(player)) {
+					return true;
+				}
 				return !player.hasUnknown();
 			},
 			filter(event, player) {
@@ -4178,13 +4183,13 @@ export default {
 					return;
 				}
 				const group = trigger.player.group;
-				let list = jlsg.characterList.filter(c => get.character(c, 1) == group);
-				var players = game.players.concat(game.dead);
-				for (var i = 0; i < players.length; i++) {
-					list.remove(players[i].name);
-					list.remove(players[i].name1);
-					list.remove(players[i].name2);
-				}
+				let list = jlsg.characterList.filter(c => get.character(c, 1) == group),
+					players = game.players
+						.concat(game.dead)
+						.map(current => get.nameList(current))
+						.unique()
+						.flat();
+				list.removeArray(players);
 				list = list.randomGets(3);
 				if (!list.length) {
 					return;
@@ -4196,7 +4201,7 @@ export default {
 					})
 					.set("createDialog", ["将武将牌替换为一名角色", [list, "character"]]);
 				if (result.bool) {
-					trigger.player.reinit(trigger.player.name, result.links[0], false);
+					await trigger.player.reinitCharacter(trigger.player.name, result.links[0], false);
 				}
 			},
 		},
