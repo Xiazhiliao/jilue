@@ -3694,9 +3694,9 @@ export default {
 						content: "使用牌无次数距离限制,且可以指定任意角色为目标,且可指定任意名目标",
 					},
 					mod: {
-						cardUsable: () => true,
+						cardUsable: () => Infinity,
 						targetInRange: () => true,
-						playerEnabled: (card, player, target) => {
+						playerEnabled(card, player, target) {
 							let info = get.info(card);
 							if (!info) {
 								return;
@@ -3711,8 +3711,10 @@ export default {
 							if (info.selectTarget) {
 								return true;
 							}
+							return true;
 						},
 						selectTarget(card, player, num) {
+							num = get.select(num);
 							if (get.info(card).allowMultiple === false) {
 								if (num[1] < 0) {
 									if (num[0] === num[1]) {
@@ -3726,9 +3728,6 @@ export default {
 								num[0] = 1;
 								num[1] = Infinity;
 							} else if (get.info(card, player)?.filterTarget) {
-								if (typeof num == "number") {
-									num = [num, num];
-								}
 								num[0] = 1;
 								num[1] = Infinity;
 							}
