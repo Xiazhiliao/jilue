@@ -4781,6 +4781,8 @@ export default {
 					return false;
 				} else if (event.card?.name != "sha") {
 					return false;
+				} else if (!event.source?.isIn() || event.source == target) {
+					return false;
 				}
 				return target?.isIn();
 			},

@@ -18081,7 +18081,7 @@ export default {
 		jlsg_shanshen: "善身",
 		jlsg_shanshen_info: "当任意角色失去体力后，你可以获得两张不计入手牌上限的临时基本牌。",
 		jlsg_zhengu: "镇骨",
-		jlsg_zhengu_info: "准备阶段或结束阶段，你可以令任意名角色将手牌数调整至X-1或X+1，若你已受伤，改为X-2或X+2（X为你的手牌数）。",
+		jlsg_zhengu_info: "准备阶段或结束阶段，你可以令一名角色将手牌数调整至X-1或X+1，若你已受伤，改为X-2或X+2（X为你的手牌数）。",
 	},
 	dynamicTranslate: {
 		jlsg_zhidi(player) {
