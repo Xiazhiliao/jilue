@@ -1178,10 +1178,10 @@ export default {
 				return num;
 			},
 			async cost(event, trigger, player) {
-				const cardPile = ui.cardPile.childNodes,
+				const cardPileLength = ui.cardPile.childElementCount,
 					targets = game.filterPlayer(current => current.countCards("h") && current.isMaxHandcard());
 				const list = ["牌堆", "角色"];
-				if (!cardPile?.length) {
+				if (!cardPileLength) {
 					list.remove("牌堆");
 				}
 				if (!targets.length) {
@@ -1206,7 +1206,7 @@ export default {
 								}
 							}
 							if (list.includes("牌堆")) {
-								cardPileEff = Math.min(4, cardPile.length);
+								cardPileEff = Math.min(4, cardPileLength);
 							}
 							return cardPileEff > roleEff ? "牌堆" : "角色";
 						})()
@@ -1248,7 +1248,7 @@ export default {
 							.choosePlayerCard(preTarget, "h", [1, 3], "visible")
 							.set("ai", ({ link }) => {
 								const { player, target } = get.event();
-								if (get.attitude(player, target)) {
+								if (get.attitude(player, target) > 0) {
 									return 8 - get.value(link, target);
 								}
 								return get.value(link, target);
