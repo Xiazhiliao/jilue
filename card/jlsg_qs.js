@@ -1475,5 +1475,12 @@ for (let cardName in jlsg_qs.card) {
 		}
 	}
 }
+for (let skill in jlsg_qs.skill) {
+	let info = skill.split("_");
+	let translate = info[0] + "_" + info[1];
+	if (translate in jlsg_qs.translate) {
+		jlsg_qs.translate[skill] = jlsg_qs.translate[translate];
+	}
+}
 
 export let card = jlsg_qs;
