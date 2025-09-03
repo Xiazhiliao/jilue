@@ -3122,30 +3122,30 @@ export default {
 						if (event.card.name != "shan") {
 							return false;
 						}
-						if (!event.respondTo) {
+						if (!Array.isArray(event.respondTo) || event.respondTo[0] == player) {
 							return false;
 						}
-						return get.name(event.respondTo[1], false) == "sha";
+						return get.name(event.respondTo[1], player) == "sha";
 					},
 					async cost(event, trigger, player) {
 						event.result = await player
-							.chooseToDiscard(get.prompt("jlsg_youdi", trigger.player), [1, Infinity])
+							.chooseToDiscard(get.prompt("jlsg_youdi", trigger.respondTo[0]), [1, Infinity])
 							.set("chooseonly", true)
 							.set("ai", card => (get.event("check") ? 4 - get.value(card) : 0))
 							.set(
 								"check",
 								(function () {
-									return get.attitude(player, trigger.player) <= 0;
+									return get.attitude(player, trigger.respondTo[0]) <= 0;
 								})()
 							)
 							.forResult();
 						if (event.result?.bool) {
-							event.result.targets = [trigger.player];
+							event.result.targets = [trigger.respondTo[0]];
 						}
 					},
 					async content(event, trigger, player) {
 						await player.discard(event.cards);
-						await trigger.player.chooseToDiscard(event.cards.length, "he", true);
+						await trigger.respondTo[0].chooseToDiscard(event.cards.length, "he", true);
 					},
 				},
 			},

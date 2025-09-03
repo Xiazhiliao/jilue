@@ -1491,26 +1491,25 @@ export default {
 					},
 				},
 				jlsg_youdi: {
-					audio: "ext:极略/audio/skill:true",
+					audio: "ext:极略/audio/skill:1",
 					srlose: true,
-					enable: ["chooseToRespond", "chooseToUse"],
+					enable: ["chooseToUse", "chooseToRespond"],
+					filterCard(card, player, event) {
+						return false;
+					},
+					selectCard: -1,
 					viewAs: { name: "shan" },
 					viewAsFilter(player) {
 						return player.isTurnedOver();
 					},
-					filterCard() {
-						return false;
-					},
-					selectCard: -1,
-					prompt: "将你的武将牌翻面，视为打出一张闪",
+					prompt: "你可以将武将牌翻至正面朝上，视为使用或打出一张【闪】",
 					check() {
-						return 1;
+						return true;
 					},
-					onuse(result, player) {
-						player.turnOver();
-					},
-					onrespond(result, player) {
-						player.turnOver();
+					log: false,
+					async precontent(event, trigger, player) {
+						await player.logSkill("jlsg_youdi");
+						await player.turnOver();
 					},
 					ai: {
 						respondShan: true,
@@ -1521,35 +1520,36 @@ export default {
 					group: "jlsg_youdi_shaMiss",
 					subSkill: {
 						shaMiss: {
+							audio: "jlsg_youdi",
 							trigger: { player: "useCard" },
 							filter(event, player) {
 								if (event.card.name != "shan") {
 									return false;
 								}
-								if (!event.respondTo) {
+								if (!Array.isArray(event.respondTo) || event.respondTo[0] == player) {
 									return false;
 								}
-								return get.name(event.respondTo[1], false) == "sha";
+								return get.name(event.respondTo[1], player) == "sha";
 							},
 							async cost(event, trigger, player) {
 								event.result = await player
-									.chooseToDiscard(get.prompt("jlsg_youdi", trigger.player), [1, Infinity])
+									.chooseToDiscard(get.prompt("jlsg_youdi", trigger.respondTo[0]), [1, Infinity])
 									.set("chooseonly", true)
 									.set("ai", card => (get.event("check") ? 4 - get.value(card) : 0))
 									.set(
 										"check",
 										(function () {
-											return get.attitude(player, trigger.player) <= 0;
+											return get.attitude(player, trigger.respondTo[0]) <= 0;
 										})()
 									)
 									.forResult();
-								if (event.result.bool) {
-									event.result.targets = [trigger.player];
+								if (event.result?.bool) {
+									event.result.targets = [trigger.respondTo[0]];
 								}
 							},
 							async content(event, trigger, player) {
 								await player.discard(event.cards);
-								await trigger.player.chooseToDiscard(event.cards.length, "he", true);
+								await trigger.respondTo[0].chooseToDiscard(event.cards.length, "he", true);
 							},
 						},
 					},

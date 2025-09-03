@@ -725,7 +725,7 @@ let jlsg_qs = {
 										}
 									} else {
 										next.player = player;
-										next.card = event.vcards[0];
+										next.card = event.card;
 										next.setContent(onEquip2);
 										await next;
 									}
@@ -995,7 +995,7 @@ let jlsg_qs = {
 					vcard
 				);
 				const cards = player.vcardsMap?.equips;
-				if (!cards.filter(card.name == "jlsgqs_yuxi").length) {
+				if (!cards.filter(card => card.name == "jlsgqs_yuxi").length) {
 					player.removeEquipTrigger(vcard, true);
 				}
 				player.$handleEquipChange();
@@ -1095,7 +1095,7 @@ let jlsg_qs = {
 					vcard
 				);
 				const cards = player.vcardsMap?.equips;
-				if (!cards.filter(card.name == "jlsgqs_qixingbaodao").length) {
+				if (!cards.filter(card => card.name == "jlsgqs_qixingbaodao").length) {
 					player.removeEquipTrigger(vcard, true);
 				}
 				player.$handleEquipChange();
@@ -1143,7 +1143,7 @@ let jlsg_qs = {
 					vcard
 				);
 				const cards = player.vcardsMap?.equips;
-				if (!cards.filter(card.name == "jlsgqs_xiujian").length) {
+				if (!cards.filter(card => card.name == "jlsgqs_xiujian").length) {
 					player.removeEquipTrigger(vcard, true);
 				}
 				player.$handleEquipChange();
@@ -1464,7 +1464,7 @@ for (let cardName in jlsg_qs.card) {
 						}
 					} else {
 						next.player = player;
-						next.card = event.vcards[0];
+						next.card = event.cards;
 						next.setContent(onEquip2);
 						await next;
 					}
