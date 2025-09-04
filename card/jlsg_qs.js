@@ -25,7 +25,7 @@ let jlsg_qs = {
 			recastable: true,
 			skills: ["jlsgqs_muniu_skill"],
 			onLose: async function (event, trigger, player) {
-				player.addTempSkill("jlsgqs_kongmingdeng_skill_lose");
+				player.addTempSkill("jlsgqs_muniu_skill_lose");
 			},
 			ai: {
 				basic: {
@@ -743,8 +743,6 @@ let jlsg_qs = {
 										if (info.onEquip) {
 											info.onEquip2 = info.onEquip;
 										}
-									} else {
-										info.skills.remove("jlsgqs_relic");
 									}
 									info.onEquip = baowuEquip;
 								} else if (["equip3", "equip4", "equip6"].includes(info.subtype)) {
@@ -774,22 +772,22 @@ let jlsg_qs = {
 			equipSkill: true,
 			popname: true,
 			enable: ["chooseToUse", "chooseToRespond"],
+			viewAs: { name: "tao" },
+			viewAsFilter(player) {
+				return player.countVCards("e", "jlsgqs_kongmingdeng") != 0 && _status.event.type == "dying";
+			},
+			selectCard: 1,
+			position: "e",
 			filterCard(card, player) {
-				return player.getCards("e", "jlsgqs_kongmingdeng").includes(card);
+				return player.getVCards("e", "jlsgqs_kongmingdeng").includes(card);
 			},
 			check: () => true,
-			selectCard: -1,
-			position: "e",
-			viewAsFilter(player) {
-				return player.countCards("e", "jlsgqs_kongmingdeng") != 0 && _status.event.type == "dying";
-			},
-			viewAs: { name: "tao" },
 			prompt: "将孔明灯当【桃】使用",
 			ai: {
 				threaten: 1.5,
 				save: true,
 				skillTagFilter(player) {
-					return player.countCards("e", "jlsgqs_kongmingdeng");
+					return player.countVCards("e", "jlsgqs_kongmingdeng");
 				},
 			},
 		},
@@ -830,7 +828,7 @@ let jlsg_qs = {
 			equipSkill: true,
 			enable: "phaseUse",
 			usable: 1,
-			filter: function (event, player) {
+			filter(event, player) {
 				return player.countCards("h") != 0;
 			},
 			filterCard: true,
@@ -849,8 +847,8 @@ let jlsg_qs = {
 			lose: false,
 			delay: false,
 			async content(event, trigger, player) {
-				await event.target.gain(event.cards, player, "giveAuto");
-				await player.draw();
+				await player.give(event.cards, event.target);
+				await player.draw(1);
 			},
 			ai: {
 				expose: 0.1,
@@ -883,12 +881,6 @@ let jlsg_qs = {
 				player: "loseAfter",
 				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 			},
-			filter: (event, player, name, card) => {
-				if (!card || card.name != "jlsgqs_muniu") {
-					return false;
-				}
-				return true;
-			},
 			getIndex(event, player) {
 				const evt = event.getl(player);
 				const lostCards = [];
@@ -899,6 +891,12 @@ let jlsg_qs = {
 					}
 				});
 				return lostCards;
+			},
+			filter: (event, player, name, card) => {
+				if (!card || card.name != "jlsgqs_muniu") {
+					return false;
+				}
+				return true;
 			},
 			forced: true,
 			async content(event, trigger, player) {
@@ -957,15 +955,14 @@ let jlsg_qs = {
 			getIndex(event, player) {
 				return player.getVEquips("jlsgqs_yuxi");
 			},
-			filter(event, player) {
+			filter(event, player, name, card) {
 				if (player == event.player) {
 					return false;
 				}
 				if (!event.player.isIn()) {
 					return false;
 				}
-				let cards = player.getVEquips("jlsgqs_yuxi");
-				return cards.length;
+				return card?.name == "jlsgqs_yuxi";
 			},
 			async cost(event, trigger, player) {
 				const vcard = event.indexedData;
@@ -982,7 +979,7 @@ let jlsg_qs = {
 			async content(event, trigger, player) {
 				const vcard = event.cost_data.vcard;
 				if (vcard.cards?.length) {
-					await player.give(vcard.cards, trigger.player, true);
+					await trigger.player.gain(player, vcard.cards, "giveAuto", "log");
 				}
 				game.broadcastAll(
 					function (player, vcard) {
@@ -995,7 +992,7 @@ let jlsg_qs = {
 					vcard
 				);
 				const cards = player.vcardsMap?.equips;
-				if (!cards.filter(card => card.name == "jlsgqs_yuxi").length) {
+				if (!cards?.filter(card => card.name == "jlsgqs_yuxi")?.length) {
 					player.removeEquipTrigger(vcard, true);
 				}
 				player.$handleEquipChange();
@@ -1066,14 +1063,25 @@ let jlsg_qs = {
 				if (card?.name != "jlsgqs_qixingbaodao") {
 					return false;
 				}
-				return event.target && event.target.countGainableCards(player, "e");
+				return event.target?.countGainableCards(player, "e");
 			},
 			async cost(event, trigger, player) {
 				const vcard = event.indexedData;
 				event.result = await player
-					.chooseTarget((card, player, target) => player != target)
+					.chooseBool()
 					.set("createDialog", ["是否发动【七星宝刀】", vcard.cards.length ? vcard.cards : "虚拟牌"])
-					.set("ai", target => get.effect(target, { name: "shunshou_copy2" }, get.player(), get.player()))
+					.set("ai", (event, player) => {
+						const { target } = get.event(),
+							{ indexedData: vcard } = event;
+						const es = target.countGainableCards(player, "e");
+						return es.some(card => {
+							if (vcard.cards?.length) {
+								return get.value(vcard.cards, player) <= get.value(card, player);
+							}
+							return true;
+						});
+					})
+					.set("target", trigger.target)
 					.forResult();
 				if (event.result?.bool) {
 					event.result.cost_data = { vcard };
@@ -1095,7 +1103,7 @@ let jlsg_qs = {
 					vcard
 				);
 				const cards = player.vcardsMap?.equips;
-				if (!cards.filter(card => card.name == "jlsgqs_qixingbaodao").length) {
+				if (!cards?.filter(card => card.name == "jlsgqs_qixingbaodao")?.length) {
 					player.removeEquipTrigger(vcard, true);
 				}
 				player.$handleEquipChange();
@@ -1143,7 +1151,7 @@ let jlsg_qs = {
 					vcard
 				);
 				const cards = player.vcardsMap?.equips;
-				if (!cards.filter(card => card.name == "jlsgqs_xiujian").length) {
+				if (!cards?.filter(card => card.name == "jlsgqs_xiujian")?.length) {
 					player.removeEquipTrigger(vcard, true);
 				}
 				player.$handleEquipChange();
@@ -1158,11 +1166,8 @@ let jlsg_qs = {
 				player: "loseAfter",
 				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 			},
-			filter: (event, player, name, card) => {
-				if (!card || card.name != "jlsgqs_xiujian") {
-					return false;
-				}
-				return true;
+			filter(event, player, name, card) {
+				return card?.name == "jlsgqs_xiujian";
 			},
 			getIndex(event, player) {
 				const evt = event.getl(player);
@@ -1199,11 +1204,8 @@ let jlsg_qs = {
 				player: "loseAfter",
 				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 			},
-			filter: (event, player, name, card) => {
-				if (!card || card.name != "jlsgqs_jinnangdai") {
-					return false;
-				}
-				return true;
+			filter(event, player, name, card) {
+				return card?.name == "jlsgqs_jinnangdai";
 			},
 			getIndex(event, player) {
 				const evt = event.getl(player);
@@ -1225,13 +1227,12 @@ let jlsg_qs = {
 			priority: -25,
 		},
 		jlsgqs_shuiyanqijun_skill: {
-			equipSkill: true,
+			cardSkill: true,
+			charlotte: true,
+			hidden: true,
 			audio: "ext:极略/audio/card:1",
 			trigger: { player: "phaseUseBegin" },
-			hidden: true,
 			forced: true,
-			charlotte: true,
-			cardSkill: true,
 			async content(event, trigger, player) {
 				let num = Math.ceil(player.countDiscardableCards(player, "h") / 2);
 				await player.chooseToDiscard(num, "h", true);
