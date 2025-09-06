@@ -16716,7 +16716,7 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			enable: "phaseUse",
 			onChooseToUse(event) {
-				if (!event.jlsg_jishe && !game.online) {
+				if (!game.online) {
 					const cards = [];
 					for (let name of lib.inpile) {
 						if (get.type(name, null, false) != "trick") {

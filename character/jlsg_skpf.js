@@ -403,7 +403,7 @@ export default {
 				},
 			},
 			onChooseToUse(event) {
-				if (game.online || event.jlsg_spwq_wushuang) {
+				if (game.online) {
 					return;
 				}
 				let bool = true,

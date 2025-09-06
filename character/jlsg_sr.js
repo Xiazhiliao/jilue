@@ -3229,7 +3229,7 @@ export default {
 				}
 			},
 			onChooseToUse(event) {
-				if (game.online || event.jlsg_quanheng) {
+				if (game.online) {
 					return;
 				}
 				const player = event.player;
@@ -3428,14 +3428,16 @@ export default {
 				markcount: "expansion",
 				mark(dialog, content, player) {
 					const cards = player.getExpansions("jlsg_xionglve"),
-						record = player.getStorage("jlsg_xionglve_record", { gain: 0, sourceDamage: 0 });
-					if (Object.values(record).some(i => i > 0)) {
+						getNumber = get.info("jlsg_xionglve").getNumber;
+					const gain = getNumber(player, "gain"),
+						sourceDamage = getNumber(player, "sourceDamage");
+					if (gain > 0 || sourceDamage > 0) {
 						dialog.addText("本回合记录", true);
-						if (record.gain > 0) {
-							dialog.addText(`获得牌数：${record.gain}`);
+						if (gain > 0) {
+							dialog.addText(`获得牌数：${gain}`);
 						}
-						if (record.sourceDamage > 0) {
-							dialog.addText(`造成伤害：${record.sourceDamage}`);
+						if (sourceDamage > 0) {
+							dialog.addText(`造成伤害：${sourceDamage}`);
 						}
 					}
 					if (cards?.length) {
@@ -3536,7 +3538,7 @@ export default {
 						.set("prompt", `雄略：视为使用${get.translation(card)}`);
 				}
 			},
-			group: ["jlsg_xionglve_effect", "jlsg_xionglve_record"],
+			group: ["jlsg_xionglve_effect"],
 			subSkill: {
 				used: {},
 				effect: {
@@ -3564,42 +3566,6 @@ export default {
 						await player.gain(player.getExpansions("jlsg_xionglve"), "gain2", "fromStorage");
 						player.markSkill("jlsg_xionglve");
 						player.insertPhase();
-					},
-				},
-				record: {
-					charlotte: true,
-					firstDo: true,
-					onremove: true,
-					trigger: {
-						player: ["gainAfter", "phaseAfter"],
-						source: "damageSource",
-						global: "loseAsyncAfter",
-					},
-					filter(event, player) {
-						if (_status.currentPhase != player) {
-							return false;
-						}
-						if (event.name == "phase") {
-							return true;
-						} else if (event.name == "damage") {
-							return event.num > 0;
-						}
-						return event.getg?.(player)?.length;
-					},
-					forced: true,
-					popup: false,
-					async content(event, trigger, player) {
-						const storage = player.getStorage(event.name, { gain: 0, sourceDamage: 0 });
-						if (trigger.name == "phase") {
-							storage.gain = 0;
-							storage.sourceDamage = 0;
-						} else if (trigger.name == "damage") {
-							storage.sourceDamage += trigger.num;
-						} else {
-							storage.gain += trigger.getg(player).length;
-						}
-						player.setStorage(event.name, storage);
-						player.markSkill("jlsg_xionglve");
 					},
 				},
 			},
