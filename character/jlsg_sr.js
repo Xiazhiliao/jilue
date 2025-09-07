@@ -250,7 +250,7 @@ export default {
 					}
 					return num + numx;
 				},
-				cardUsable: function (card, player, num) {
+				cardUsable(card, player, num) {
 					let nameList = get.nameList(player),
 						upgrade = _status._jlsgsr_upgrade?.[player.playerid] || {},
 						numx = 0;

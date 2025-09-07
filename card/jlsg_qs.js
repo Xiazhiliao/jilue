@@ -779,7 +779,7 @@ let jlsg_qs = {
 			selectCard: 1,
 			position: "e",
 			filterCard(card, player) {
-				return player.getVCards("e", "jlsgqs_kongmingdeng").includes(card);
+				return card.name == "jlsgqs_kongmingdeng";
 			},
 			check: () => true,
 			prompt: "将孔明灯当【桃】使用",
