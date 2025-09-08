@@ -13215,15 +13215,15 @@ export default {
 						targets: [target],
 					} = event,
 					{ card } = trigger;
+				player.addTempSkill("jlsg_souying_record");
+				const record = player.getStorage("jlsg_souying_record", { sha: [], shan: [] });
+				record[card.name].add(target);
+				player.setStorage("jlsg_souying_record", record, true);
 				if (card.name == "sha") {
 					await target.damage();
 				} else {
 					await target.recover();
 				}
-				player.addTempSkill("jlsg_souying_record");
-				const record = player.getStorage("jlsg_souying_record", { sha: [], shan: [] });
-				record[card.name].add(target);
-				player.setStorage("jlsg_souying_record", record, true);
 			},
 			subSkill: {
 				record: {
