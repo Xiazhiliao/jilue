@@ -6378,72 +6378,68 @@ export default {
 		},
 		jlsg_jieying: {
 			audio: "ext:极略/audio/skill:2",
-			trigger: { player: "phaseDrawBegin1" },
-			direct: true,
-			filter: function (event, player) {
-				return !event.numFixed && game.filterPlayer(p => p != player && !p.countMark("jlsg_jieying")).length;
-			},
-			content() {
-				"step 0"
-				player.chooseTarget(get.prompt2(event.name), (_, p, target) => target != p && !target.countMark("jlsg_jieying")).set("ai", p => -get.attitude(_status.event.player, p));
-				"step 1"
-				if (!result.bool) {
-					event.finish();
-					return;
-				}
-				player.logSkill(event.name, result.targets);
-				trigger.changeToZero();
-
-				result.targets[0].addMark(event.name, 3);
-				// player.loseHp();
-				// player.loseMaxHp();
-				player.addExpose(3);
-			},
+			marktext: "营",
 			intro: {
-				content: "mark",
 				name: "劫营",
 				name2: "劫营",
+				content: "mark",
 			},
-			marktext: "营",
-			group: "jlsg_jieying2",
+			trigger: { player: "phaseDrawBegin1" },
+			filter(event, player) {
+				return !event.numFixed && game.filterPlayer(p => p != player && !p.countMark("jlsg_jieying")).length;
+			},
+			async cost(event, trigger, player) {
+				event.result = await player
+					.chooseTarget(get.prompt2("jlsg_jieying"))
+					.set("filterTarget", (_, player, target) => target != player && !target.hasMark("jlsg_jieying"))
+					.set("ai", target => 10 - get.attitude(get.player(), target))
+					.forResult();
+			},
+			async content(event, trigger, player) {
+				trigger.changeToZero();
+				event.targets[0].addMark(event.name, 3);
+				player.addExpose(3);
+			},
+			group: "jlsg_jieying_effect",
+			subSkill: {
+				effect: {
+					sourceSkill: "jlsg_jieying",
+					audio: "jlsg_jieying",
+					locked: false,
+					firstDo: true,
+					trigger: { global: ["drawBefore", "recoverBefore", "gainMaxHpBefore", "phaseBefore", "changeSkillsBefore"] },
+					filter(event, player) {
+						if (!event.player.countMark("jlsg_jieying")) {
+							return false;
+						}
+						if (event.player == player) {
+							return false;
+						}
+						if (event.name == "phase") {
+							return event.skill;
+						}
+						if (event.name == "changeSkills") {
+							return event.addSkill.length && !(player.countMark("jlsg_jieying") && game.hasPlayer(p => p != player && p.hasSkill("jlsg_jieying")));
+						}
+						return true;
+					},
+					forced: true,
+					logTarget: "player",
+					async content(event, trigger, player) {
+						if (trigger.name != "changeSkills") {
+							trigger.player.removeMark("jlsg_jieying");
+							trigger.player = player;
+							return;
+						}
+						let changed = trigger.addSkill;
+						trigger.addSkill = [];
+						trigger.player.removeMark("jlsg_jieying");
+						await player.addSkills(changed);
+					},
+				},
+			},
 			ai: {
 				threaten: 6,
-			},
-		},
-		jlsg_jieying2: {
-			sourceSkill: "jlsg_jieying",
-			audio: "jlsg_jieying",
-			forced: true,
-			locked: false,
-			firstDo: true,
-			trigger: { global: ["drawBefore", "recoverBefore", "gainMaxHpBefore", "phaseBefore", "changeSkillsBefore"] },
-			filter(event, player) {
-				if (!event.player.countMark("jlsg_jieying")) {
-					return false;
-				}
-				if (event.player == player) {
-					return false;
-				}
-				if (event.name == "phase") {
-					return event.skill;
-				}
-				if (event.name == "changeSkills") {
-					return event.addSkill.length && !(player.countMark("jlsg_jieying") && game.hasPlayer(p => p != player && p.hasSkill("jlsg_jieying")));
-				}
-				return true;
-			},
-			logTarget: "player",
-			content() {
-				if (trigger.name != "changeSkills") {
-					trigger.player.removeMark("jlsg_jieying");
-					trigger.player = player;
-					event.finish();
-					return;
-				}
-				let changed = trigger.addSkill;
-				trigger.addSkill = [];
-				trigger.player.removeMark("jlsg_jieying");
-				player.addSkills(changed);
 			},
 		},
 		jlsg_jinlong: {
@@ -6482,61 +6478,60 @@ export default {
 				player: "gainAfter",
 				global: ["loseAfter", "cardsDiscardAfter", "loseAsyncAfter", "equipAfter"],
 			},
-			forced: true,
 			filter(event, player) {
-				if (event.getg && event.getg(player)) {
-					return event.getg(player).some(c => c.name != "muniu" && get.type(c) == "equip");
+				if (event.getg && event.getg?.(player)) {
+					if (event.getg(player).some(c => c.name != "muniu" && get.type(c) == "equip")) {
+						return true;
+					}
 				}
 				if (event.name == "cardsDiscard") {
-					const evt = event.getParent().relatedEvent;
+					let evt = event.getParent();
+					if (evt.name == "orderingDiscard") {
+						evt = evt.relatedEvent || evt.getParent();
+					}
 					if (evt && evt.name != "judge") {
-						return event.cards.some(i => i.name != "muniu" && get.position(i, true) == "d" && get.type(i) == "equip");
+						return event.cards.some(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip");
 					}
 				} else {
-					if (event.getlx !== false) {
-						for (const target of game.filterPlayer2()) {
-							const evt = event.getl(target);
-							if (evt && (evt.cards2 || []).length) {
-								return evt.cards2.some(i => i.name != "muniu" && i.original != "j" && get.position(i, true) == "d" && get.type(i) == "equip");
-							}
-						}
-					}
+					return event.getd().some(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip");
 				}
 				return false;
 			},
-			content() {
-				let cards = [],
+			forced: true,
+			async content(event, trigger, player) {
+				const cards = [],
 					gain = [];
 				if (trigger.getg && trigger.getg(player)) {
-					gain = trigger.getg(player).filter(c => c.name != "muniu" && get.type(c) == "equip");
-					player.addToExpansion(gain, "give").gaintag.add("jlsg_jinlong");
+					gain.addArray(trigger.getg(player).filter(c => c.name != "muniu" && get.type(c) == "equip"));
+					if (gain.length) {
+						const next = player.addToExpansion(gain, "give");
+						next.gaintag.add(event.name);
+						await next;
+					}
 				}
 				if (trigger.name == "cardsDiscard") {
-					const evt = trigger.getParent().relatedEvent;
+					let evt = trigger.getParent();
+					if (evt.name == "orderingDiscard") {
+						evt = evt.relatedEvent || evt.getParent();
+					}
 					if (evt && evt.name != "judge") {
-						cards.addArray(trigger.cards.filter(i => i.name != "muniu" && get.position(i, true) == "d" && get.type(i) == "equip"));
+						cards.addArray(trigger.cards.filter(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip"));
 					}
 				} else {
-					if (trigger.getlx !== false) {
-						for (const target of game.filterPlayer2()) {
-							const evt = trigger.getl(target);
-							if (evt && (evt.cards2 || []).length) {
-								cards.addArray((evt.cards2 || []).filter(i => i.name != "muniu" && i.original != "j" && get.position(i, true) == "d" && get.type(i) == "equip"));
-							}
-						}
-					}
+					cards.addArray(trigger.getd().filter(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip"));
 				}
-				player.addToExpansion(cards, "gain2").gaintag.add(event.name);
+				if (cards.length) {
+					const next = player.addToExpansion(cards, "gain2");
+					next.gaintag.add(event.name);
+					await next;
+				}
+				const cards2 = cards.addArray(gain).unique();
 				player.addAdditionalSkill(
 					event.name,
-					cards
-						.addArray(gain)
-						.map(c => get.info(c).skills || [])
-						.flat()
-						.filter(i => lib.translate[i]),
+					get.skillsFromEquips(cards2).filter(i => lib.translate[i]),
 					true
 				);
-				player.draw(cards.concat(gain).unique().length);
+				player.draw(cards2.length);
 			},
 		},
 		jlsg_liegong: {
@@ -14629,7 +14624,6 @@ export default {
 		jlsg_luoyan2: "落雁",
 		jlsg_luoyan_info: "回合结束阶段，你可以选择一名角色。当其于出牌阶段内使用第一/二/三张牌后，其随机弃置一张牌/失去1点体力/减1点体力上限，直到你再次发动此技能。",
 		jlsg_jieying: "劫营",
-		jlsg_jieying2: "劫营",
 		jlsg_jieying_info: "摸牌阶段，你可以放弃摸牌，然后令一名未拥有「劫营」标记的其他角色获得3枚「劫营」。拥有「劫营」标记的角色摸牌/回复体力/加体力上限/执行额外回合/获得技能前，你弃置其1枚「劫营」标记并改为由你执行此效果。",
 		jlsg_jinlong: "锦龙",
 		jlsg_jinlong_info: "锁定技，当装备牌被你获得或不因判定而进入弃牌堆后，将之置于你的武将牌上，然后你摸一张牌。你视为拥有这些装备牌的技能。",
