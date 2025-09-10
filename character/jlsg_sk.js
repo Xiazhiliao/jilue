@@ -6,7 +6,7 @@ export default {
 		jlsg_sk: {
 			jlsg_tiangang: ["jlsgsk_xuyou", "jlsgsk_dengzhi", "jlsgsk_dongyun", "jlsgsk_kuaiyue", "jlsgsk_yuji", "jlsgsk_panshu", "jlsgsk_zhangrang", "jlsgsk_xinxianying", "jlsgsk_wuxian", "jlsgsk_jushou", "jlsgsk_wenyang", "jlsgsk_zhugezhan", "jlsgsk_sunru", "jlsgsk_liuyan", "jlsgsk_guohuanghou", "jlsgsk_zhaoxiang", "jlsgsk_lvfan", "jlsgsk_hetaihou", "jlsgsk_zhangyi", "jlsgsk_caochun", "jlsgsk_shamoke", "jlsgsk_lingcao", "jlsgsk_zhaoyan", "jlsgsk_beimihu", "jlsgsk_wutugu", "jlsgsk_caoying"],
 			jlsg_disha: ["jlsgsk_sunce", "jlsgsk_caoren", "jlsgsk_gongsunzan", "jlsgsk_huaxiong", "jlsgsk_zumao", "jlsgsk_miheng", "jlsgsk_zhangbu", "jlsgsk_guonvwang", "jlsgsk_quancong", "jlsgsk_mateng", "jlsgsk_zhoufei", "jlsgsk_liuchen", "jlsgsk_xiahoushi", "jlsgsk_yanyan", "jlsgsk_panzhang", "jlsgsk_gongsunyuan", "jlsgsk_chenqun"],
-			jlsg_renjie: ["jlsgsk_wangping", "jlsgsk_buzhi", "jlsgsk_maliang", "jlsgsk_sunqian", "jlsgsk_dongxi", "jlsgsk_luzhi", "jlsgsk_mifuren", "jlsgsk_xizhicai", "jlsgsk_zhangliang", "jlsgsk_caorui", "jlsgsk_sunxiu", "jlsgsk_sundeng", "jlsgsk_zhuzhi", "jlsgsk_wanglang", "jlsgsk_sunliang", "jlsgsk_mayunlu", "jlsgsk_zhongyao", "jlsgsk_nanhualaoxian", "jlsgsk_jiangwei", "jlsgsk_huanghao", "jlsgsk_huaman", "jlsgsk_pangtong", "jlsgsk_lvdai", "jlsgsk_wangyuanji", "jlsgsk_zhangchangpu", "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan", "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan", "jlsgsk_tadun", "jlsgsk_yanghuiyu", "jlsgsk_caojinyu", "jlsgsk_haozhao", "jlsgsk_puyua"],
+			jlsg_renjie: ["jlsgsk_wangping", "jlsgsk_buzhi", "jlsgsk_maliang", "jlsgsk_sunqian", "jlsgsk_dongxi", "jlsgsk_luzhi", "jlsgsk_mifuren", "jlsgsk_xizhicai", "jlsgsk_zhangliang", "jlsgsk_caorui", "jlsgsk_sunxiu", "jlsgsk_sundeng", "jlsgsk_zhuzhi", "jlsgsk_wanglang", "jlsgsk_sunliang", "jlsgsk_mayunlu", "jlsgsk_zhongyao", "jlsgsk_nanhualaoxian", "jlsgsk_jiangwei", "jlsgsk_huanghao", "jlsgsk_huaman", "jlsgsk_pangtong", "jlsgsk_lvdai", "jlsgsk_wangyuanji", "jlsgsk_zhangchangpu", "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan", "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan", "jlsgsk_tadun", "jlsgsk_yanghuiyu", "jlsgsk_caojinyu", "jlsgsk_haozhao", "jlsgsk_puyuan"],
 			jlsg_pojun: ["jlsgsk_zhuran", "jlsgsk_yanliang", "jlsgsk_chendao", "jlsgsk_dingfeng", "jlsgsk_dongzhuo", "jlsgsk_yujin", "jlsgsk_panfeng", "jlsgsk_jiangqin", "jlsgsk_guanxing", "jlsgsk_guansuo", "jlsgsk_baosanniang", "jlsgsk_dongbai", "jlsgsk_xushi", "jlsgsk_caoxiu", "jlsgsk_caojie"],
 			jlsg_yinyang: ["jlsgsk_zuoci", "jlsgsk_guanlu", "jlsgsk_wangyi", "jlsgsk_zhanglu", "jlsgsk_kongrong", "jlsgsk_zhoucang", "jlsgsk_zhoutai", "jlsgsk_lvlingqi", "jlsgsk_lukang", "jlsgsk_luji", "jlsgsk_xianglang", "jlsgsk_zoushi", "jlsgsk_zhugeguo"],
 			jlsg_tanlang: ["jlsgsk_zhangxiu", "jlsgsk_zhugejin", "jlsgsk_liyan", "jlsgsk_jiping", "jlsgsk_sunhao", "jlsgsk_yangxiu", "jlsgsk_simazhao", "jlsgsk_simashi", "jlsgsk_zhangning", "jlsgsk_feiyi", "jlsgsk_wuyi"],
@@ -17409,15 +17409,14 @@ export default {
 					if (card) {
 						cards.push(card);
 					}
-					if (cards.length > 1) {
+					if (cards.length > 4) {
 						break;
 					}
 				}
 				if (cards.length) {
-					await player.gain(cards, "gain2");
 					for (let card of cards) {
 						if (player.canEquip(card)) {
-							await player.equip(card);
+							await player.chooseUseTarget(card, true, "nopopup");
 						}
 					}
 				}
@@ -17507,7 +17506,7 @@ export default {
 				const swords = target.getVCards("e", card => get.subtype(card, false) == "equip1");
 				const phaseUse = event.getParent("phaseUse");
 				if (swords.length > 1) {
-					const vcards = await player.chooseButton(true, [`###铸刃###请选择${get.translation(target)}的一张武器牌进行附魔`, [swords, "vcard"]]).forResultLinks();
+					const vcards = await player.chooseButton(true, [`###铸刃###请选择${get.translation(target)}的一张武器牌进行附魔`, [swords, "vcard"]], () => true).forResultLinks();
 					event.result.cards = vcards[0].cards || [];
 					phaseUse.jlsg_zhuren_vcard = vcards[0];
 				} else {
@@ -17541,7 +17540,7 @@ export default {
 						.chooseControlList(choiceList, prompt, (event, player) => {
 							const {
 								targets: [target],
-							} = event;
+							} = event.result;
 							if (get.attitude(player, target) < 0) {
 								return 2;
 							} else {
@@ -17749,7 +17748,7 @@ export default {
 							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "duanyu", "断玉");
 							if (effectsList.length) {
 								event.effect = effectsList.randomGet();
-								game.log(player, "的", event.card, "获得", `#y断玉`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["duanyu"][choice].str}`);
+								game.log(player, "的", event.card, "获得", `#y断玉`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["duanyu"][event.effect].str}`);
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
@@ -17763,7 +17762,7 @@ export default {
 							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "fuling", "附灵");
 							if (effectsList.length) {
 								event.effect = effectsList.randomGet();
-								game.log(player, "的", event.card, "获得", `#y附灵`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["fuling"][choice].str}`);
+								game.log(player, "的", event.card, "获得", `#y附灵`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["fuling"][event.effect].str}`);
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
@@ -17848,7 +17847,7 @@ export default {
 							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "shizhu", "噬主");
 							if (effectsList.length) {
 								event.effect = effectsList.randomGet();
-								game.log(player, "的", event.card, "获得", `#y噬主`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["shizhu"][choice].str}`);
+								game.log(player, "的", event.card, "获得", `#y噬主`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["shizhu"][event.effect].str}`);
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
@@ -18180,9 +18179,11 @@ export default {
 			},
 			ai: {
 				order: 11,
-				player: 1,
-				target(player, target) {
-					return get.attitude(player, target);
+				result: {
+					player: 1,
+					target(player, target) {
+						return get.attitude(player, target);
+					},
 				},
 			},
 		},
