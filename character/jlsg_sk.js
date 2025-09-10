@@ -6,7 +6,7 @@ export default {
 		jlsg_sk: {
 			jlsg_tiangang: ["jlsgsk_xuyou", "jlsgsk_dengzhi", "jlsgsk_dongyun", "jlsgsk_kuaiyue", "jlsgsk_yuji", "jlsgsk_panshu", "jlsgsk_zhangrang", "jlsgsk_xinxianying", "jlsgsk_wuxian", "jlsgsk_jushou", "jlsgsk_wenyang", "jlsgsk_zhugezhan", "jlsgsk_sunru", "jlsgsk_liuyan", "jlsgsk_guohuanghou", "jlsgsk_zhaoxiang", "jlsgsk_lvfan", "jlsgsk_hetaihou", "jlsgsk_zhangyi", "jlsgsk_caochun", "jlsgsk_shamoke", "jlsgsk_lingcao", "jlsgsk_zhaoyan", "jlsgsk_beimihu", "jlsgsk_wutugu", "jlsgsk_caoying"],
 			jlsg_disha: ["jlsgsk_sunce", "jlsgsk_caoren", "jlsgsk_gongsunzan", "jlsgsk_huaxiong", "jlsgsk_zumao", "jlsgsk_miheng", "jlsgsk_zhangbu", "jlsgsk_guonvwang", "jlsgsk_quancong", "jlsgsk_mateng", "jlsgsk_zhoufei", "jlsgsk_liuchen", "jlsgsk_xiahoushi", "jlsgsk_yanyan", "jlsgsk_panzhang", "jlsgsk_gongsunyuan", "jlsgsk_chenqun"],
-			jlsg_renjie: ["jlsgsk_wangping", "jlsgsk_buzhi", "jlsgsk_maliang", "jlsgsk_sunqian", "jlsgsk_dongxi", "jlsgsk_luzhi", "jlsgsk_mifuren", "jlsgsk_xizhicai", "jlsgsk_zhangliang", "jlsgsk_caorui", "jlsgsk_sunxiu", "jlsgsk_sundeng", "jlsgsk_zhuzhi", "jlsgsk_wanglang", "jlsgsk_sunliang", "jlsgsk_mayunlu", "jlsgsk_zhongyao", "jlsgsk_nanhualaoxian", "jlsgsk_jiangwei", "jlsgsk_huanghao", "jlsgsk_huaman", "jlsgsk_pangtong", "jlsgsk_lvdai", "jlsgsk_wangyuanji", "jlsgsk_zhangchangpu", "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan", "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan", "jlsgsk_tadun", "jlsgsk_yanghuiyu", "jlsgsk_caojinyu", "jlsgsk_haozhao"],
+			jlsg_renjie: ["jlsgsk_wangping", "jlsgsk_buzhi", "jlsgsk_maliang", "jlsgsk_sunqian", "jlsgsk_dongxi", "jlsgsk_luzhi", "jlsgsk_mifuren", "jlsgsk_xizhicai", "jlsgsk_zhangliang", "jlsgsk_caorui", "jlsgsk_sunxiu", "jlsgsk_sundeng", "jlsgsk_zhuzhi", "jlsgsk_wanglang", "jlsgsk_sunliang", "jlsgsk_mayunlu", "jlsgsk_zhongyao", "jlsgsk_nanhualaoxian", "jlsgsk_jiangwei", "jlsgsk_huanghao", "jlsgsk_huaman", "jlsgsk_pangtong", "jlsgsk_lvdai", "jlsgsk_wangyuanji", "jlsgsk_zhangchangpu", "jlsgsk_guohuai", "jlsgsk_qinmi", "jlsgsk_zhouyi", "jlsgsk_xingdaorong", "jlsgsk_huangchengyan", "jlsgsk_lvkai", "jlsgsk_zhugedan", "jlsgsk_yangwan", "jlsgsk_cenhun", "jlsgsk_gexuan", "jlsgsk_tadun", "jlsgsk_yanghuiyu", "jlsgsk_caojinyu", "jlsgsk_haozhao", "jlsgsk_puyua"],
 			jlsg_pojun: ["jlsgsk_zhuran", "jlsgsk_yanliang", "jlsgsk_chendao", "jlsgsk_dingfeng", "jlsgsk_dongzhuo", "jlsgsk_yujin", "jlsgsk_panfeng", "jlsgsk_jiangqin", "jlsgsk_guanxing", "jlsgsk_guansuo", "jlsgsk_baosanniang", "jlsgsk_dongbai", "jlsgsk_xushi", "jlsgsk_caoxiu", "jlsgsk_caojie"],
 			jlsg_yinyang: ["jlsgsk_zuoci", "jlsgsk_guanlu", "jlsgsk_wangyi", "jlsgsk_zhanglu", "jlsgsk_kongrong", "jlsgsk_zhoucang", "jlsgsk_zhoutai", "jlsgsk_lvlingqi", "jlsgsk_lukang", "jlsgsk_luji", "jlsgsk_xianglang", "jlsgsk_zoushi", "jlsgsk_zhugeguo"],
 			jlsg_tanlang: ["jlsgsk_zhangxiu", "jlsgsk_zhugejin", "jlsgsk_liyan", "jlsgsk_jiping", "jlsgsk_sunhao", "jlsgsk_yangxiu", "jlsgsk_simazhao", "jlsgsk_simashi", "jlsgsk_zhangning", "jlsgsk_feiyi", "jlsgsk_wuyi"],
@@ -154,6 +154,7 @@ export default {
 		jlsgsk_tadun: ["male", "qun", 6, ["jlsg_luanzhan"], ["name:null|null"]],
 		jlsgsk_caojinyu: ["female", "wei", 3, ["jlsg_yuqi", "jlsg_shanshen"], ["name:曹|null"]],
 		jlsgsk_haozhao: ["male", "wei", 4, ["jlsg_zhengu"], []],
+		jlsgsk_puyuan: ["male", "shu", 4, ["jlsg_tianjiang", "jlsg_zhuren"], []],
 	},
 	characterIntro: {
 		jlsgsk_kuaiyue: "蒯越（？－214年），字异度，襄阳中庐（今湖北襄阳西南）人。东汉末期人物，演义中为蒯良之弟。原本是荆州牧刘表的部下，曾经在刘表初上任时帮助刘表铲除荆州一带的宗贼（以宗族、乡里关系组成的武装集团）。刘表病逝后与刘琮一同投降曹操，后来官至光禄勋。",
@@ -17377,6 +17378,814 @@ export default {
 				}
 			},
 		},
+		jlsg_tianjiang: {
+			audio: "ext:极略/audio/skill:2",
+			trigger: {
+				global: "phaseBefore",
+				player: "enterGame",
+			},
+			filter(event, player) {
+				return event.name != "phase" || game.phaseNumber == 0;
+			},
+			forced: true,
+			locked: false,
+			async content(event, trigger, player) {
+				const list = lib.skill.jlsg_lingze.typePBTY.equip
+						.filter(([suit, number, name]) => {
+							const subtype = get.subtype(name);
+							if (player.countEmptySlot(subtype) > 0) {
+								return player.canEquip(name);
+							}
+							return false;
+						})
+						.randomSort(),
+					cards = [];
+				for (let info of list) {
+					const [suit, number, name, nature = null] = info;
+					if (cards.some(card => get.subtype(card) == get.subtype(name))) {
+						continue;
+					}
+					let card = lib.skill.jlsg_lingze.createTempCard(name, suit, nature, number);
+					if (card) {
+						cards.push(card);
+					}
+					if (cards.length > 1) {
+						break;
+					}
+				}
+				if (cards.length) {
+					await player.gain(cards, "gain2");
+					for (let card of cards) {
+						if (player.canEquip(card)) {
+							await player.equip(card);
+						}
+					}
+				}
+			},
+			group: "jlsg_tianjiang_move",
+			subSkill: {
+				move: {
+					sourceSkill: "jlsg_tianjiang",
+					audio: "jlsg_tianjiang",
+					enable: "phaseUse",
+					position: "he",
+					filter(event, player) {
+						return player.countCards("he", card => get.type(card) == "equip");
+					},
+					filterCard: card => get.type(card) == "equip",
+					check() {
+						return 1;
+					},
+					filterTarget(event, player, target) {
+						return target != player && target.canEquip(ui.selected.cards[0], true);
+					},
+					prepare: "give",
+					discard: false,
+					lose: false,
+					async content(event, trigger, player) {
+						await event.target.equip(event.cards[0]);
+						await player.draw(2);
+					},
+					ai: {
+						expose: 0.2,
+						order(item, player) {
+							if (player.hasCard(i => get.subtype(i) === "equip1", "h")) {
+								return 11;
+							}
+							return 1;
+						},
+						result: {
+							target(player, target) {
+								if (ui.selected.cards.length) {
+									let card = ui.selected.cards[0],
+										tv = get.value(card, target),
+										sub = get.subtype(card);
+									if (sub === "equip1") {
+										let ev = Infinity,
+											te = target.getEquips(1);
+										if (!te.length) {
+											return tv;
+										}
+										te.forEach(i => {
+											ev = Math.min(ev, get.value(i));
+										});
+										return 2 + tv - ev;
+									}
+									if (target.hasCard(i => get.subtype(i) === sub, "he")) {
+										return 0;
+									}
+									let pv = get.value(card, player);
+									if (pv > 0 && Math.abs(tv) <= pv) {
+										return 0;
+									}
+									return tv;
+								}
+								return 0;
+							},
+						},
+					},
+				},
+			},
+		},
+		jlsg_zhuren: {
+			intro: {
+				markcount: "mark",
+				content: "mark",
+			},
+			audio: "ext:极略/audio/skill:2",
+			enable: "phaseUse",
+			filter(event, player) {
+				return player.hasMark("jlsg_zhuren");
+			},
+			filterTarget(card, player, target) {
+				return target.countVCards("e", card => get.subtype(card, false) == "equip1");
+			},
+			async precontent(event, trigger, player) {
+				const {
+					targets: [target],
+				} = event.result;
+				const swords = target.getVCards("e", card => get.subtype(card, false) == "equip1");
+				const phaseUse = event.getParent("phaseUse");
+				if (swords.length > 1) {
+					const vcards = await player.chooseButton(true, [`###铸刃###请选择${get.translation(target)}的一张武器牌进行附魔`, [swords, "vcard"]]).forResultLinks();
+					event.result.cards = vcards[0].cards || [];
+					phaseUse.jlsg_zhuren_vcard = vcards[0];
+				} else {
+					event.result.cards = swords[0].cards || [];
+					phaseUse.jlsg_zhuren_vcard = swords[0];
+				}
+				const vcard = phaseUse.jlsg_zhuren_vcard;
+				if (!phaseUse.jlsg_zhuren_record?.[vcard.vcardID]) {
+					let { duanyu, fuling, shizhu } = lib.skill.jlsg_zhuren.effects;
+					duanyu = lib.skill.jlsg_zhuren.checkEffect(vcard, "duanyu").randomGets(2);
+					fuling = lib.skill.jlsg_zhuren.checkEffect(vcard, "fuling").randomGets(2);
+					shizhu = lib.skill.jlsg_zhuren.checkEffect(vcard, "shizhu").randomGets(2);
+					if (!phaseUse.jlsg_zhuren_record) {
+						phaseUse.jlsg_zhuren_record = {};
+					}
+					phaseUse.jlsg_zhuren_record[vcard.vcardID] = { duanyu, fuling, shizhu };
+				}
+				const record = phaseUse.jlsg_zhuren_record[vcard.vcardID],
+					effectsList = lib.skill.jlsg_zhuren.effects;
+				let map = {
+						选项一: "duanyu",
+						选项二: "fuling",
+						选项三: "shizhu",
+					},
+					choice = [],
+					choiceList,
+					prompt;
+				while (true) {
+					(choiceList = ["断玉", "附灵", "噬主"]), (prompt = "铸刃：请选择强化分支");
+					const control = await player
+						.chooseControlList(choiceList, prompt, (event, player) => {
+							const {
+								targets: [target],
+							} = event;
+							if (get.attitude(player, target) < 0) {
+								return 2;
+							} else {
+								if (target.hp < 3) {
+									return 1;
+								}
+								return 0;
+							}
+						})
+						.forResultControl();
+					if (control == "cancel2") {
+						break;
+					}
+					choice[0] = map[control];
+					(choiceList = record[choice[0]].slice().map(i => effectsList[choice[0]][i].str)), (prompt = "铸刃：请选择强化效果");
+					const result = await player.chooseControlList(choiceList, prompt, () => 0).forResult();
+					if (result.control != "cancel2") {
+						choice[1] = record[choice[0]][result.index];
+						break;
+					}
+				}
+				if (choice.length != 2) {
+					delete event.getParent().result;
+					event.getParent().goto(0);
+				} else {
+					phaseUse.jlsg_zhuren_choice = choice;
+					delete phaseUse.jlsg_zhuren_record?.[vcard.vcardID];
+				}
+			},
+			lose: false,
+			discard: false,
+			async content(event, trigger, player) {
+				player.removeMark(event.name);
+				for (let current of game.players) {
+					if (!lib.skill.globalmap["jlsg_zhuren_extraSkill"]?.includes(current)) {
+						game.addGlobalSkill("jlsg_zhuren_extraSkill", current);
+					}
+				}
+				const {
+					jlsg_zhuren_vcard: vcard,
+					jlsg_zhuren_choice: [type, choice],
+				} = event.getParent("phaseUse");
+				let map = { duanyu: "断玉", fuling: "附灵", shizhu: "噬主" };
+				game.log(player, "对", vcard, "选择", `#y${map[type]}`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects[type][choice].str}`);
+				lib.skill.jlsg_zhuren.syncRecord(vcard, choice);
+				await game.delay();
+				if (!_status.jlsg_zhuren) {
+					game.broadcastAll(function () {
+						_status.jlsg_zhuren = true;
+						for (let i in lib.card) {
+							const info = lib.card[i];
+							if (info?.subtype != "equip1") {
+								continue;
+							}
+							if (info.cardPrompt) {
+								const { cardPrompt } = info;
+								info.jlsg_zhuren_cardPrompt = cardPrompt;
+							}
+							info.cardPrompt = function (card) {
+								const info = get.info(card);
+								let str = "";
+								if (info.jlsg_zhuren_cardPrompt) {
+									str += info.jlsg_zhuren_cardPrompt(card);
+								} else {
+									if (lib.translate[card.name + "_info"]) {
+										str += lib.translate[card.name + "_info"];
+									}
+								}
+								let cardx = card;
+								const cardSymbol = card[card["cardSymbol"]];
+								if (cardSymbol) {
+									cardx = cardSymbol;
+								}
+								if (cardx.storage?.jlsg_zhuren?.length) {
+									str += `<br><span style="color: #8b2caeff" data-nature="graymm">附魔效果</span>：<br>`;
+									const list = cardx.storage.jlsg_zhuren.reduce((list, i) => {
+											if (!list[i]) {
+												list[i] = 0;
+											}
+											list[i]++;
+											return list;
+										}, {}),
+										effects = Object.fromEntries(Object.values(lib.skill.jlsg_zhuren.effects).flatMap(i => Object.entries(i))),
+										str2 = [];
+									for (let i in effects) {
+										if (!list[i]) {
+											continue;
+										}
+										str2.push(effects[i].str.replaceAll(/\d+/g, list[i]));
+									}
+									str += str2.join("<br>");
+								}
+								return str;
+							};
+						}
+					});
+				}
+			},
+			effects: {
+				duanyu: {
+					11: {
+						str: "锁定技，你使用【杀】造成伤害+1",
+						content: async function (event, trigger, player) {
+							trigger.baseDamage += event.num;
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					12: {
+						str: "锁定技，你使用的【杀】的目标上限+1",
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					13: {
+						str: "锁定技，当你使用【杀】时，你摸1张牌",
+						content: async function (event, trigger, player) {
+							await player.draw(event.num);
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					14: {
+						str: "锁定技，攻击范围+1，使用【杀】的次数上限+1",
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					15: {
+						str: "锁定技，你使用的【杀】不能被【闪】响应",
+						content: async function (event, trigger, player) {
+							trigger.getParent(2).directHit.addArray(game.players);
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					16: {
+						str: "锁定技，你使用的【杀】无视防具",
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+				},
+				fuling: {
+					21: {
+						str: "锁定技，结束阶段，你视为使用1张【杀】",
+						content: async function (event, trigger, player) {
+							for (let i = 0; i < event.num; i++) {
+								if (player.hasUseTarget("sha", true, false)) {
+									await player.chooseUseTarget("sha", true, false);
+								}
+							}
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					22: {
+						str: "锁定技，出牌阶段开始时，你获得1张随机属性的临时【杀】",
+						content: async function (event, trigger, player) {
+							const cards = [];
+							for (let i = 0; i < event.num; i++) {
+								let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.concat([null]).randomGet());
+								if (card) {
+									cards.add(card);
+								}
+							}
+							if (cards.length) {
+								await player.gain(cards, "draw2");
+							}
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					23: {
+						str: "锁定技，当你获得或失去此牌后，你加1点体力上限并回复1点体力",
+						content: async function (event, trigger, player) {
+							await player.gainMaxHp();
+							await player.recover();
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					24: {
+						str: "锁定技，当你受到其他角色造成的伤害后，你视为对其使用1张【杀】",
+						content: async function (event, trigger, player) {
+							for (let i = 0; i < event.num; i++) {
+								if (trigger.source.isIn() && player.canUse("sha", trigger.source, false, false)) {
+									await player.useCard({ name: "sha", isCard: true }, trigger.source, false);
+								}
+							}
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					25: {
+						str: "锁定技，准备阶段或结束阶段，随机获得一项“断玉”强化",
+						content: async function (event, trigger, player) {
+							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "duanyu", "断玉");
+							if (effectsList.length) {
+								event.effect = effectsList.randomGet();
+								game.log(player, "的", event.card, "获得", `#y${map[type]}`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["duanyu"][choice].str}`);
+								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
+							}
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					26: {
+						str: "锁定技，准备阶段或结束阶段，随机获得一项“附灵”强化",
+						content: async function (event, trigger, player) {
+							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "fuling", "附灵");
+							if (effectsList.length) {
+								event.effect = effectsList.randomGet();
+								game.log(player, "的", event.card, "获得", `#y${map[type]}`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["fuling"][choice].str}`);
+								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
+							}
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+				},
+				shizhu: {
+					31: {
+						str: "锁定技，当你获得或失去此牌后，你失去1点体力并减1点体力上限",
+						content: async function (event, trigger, player) {
+							await player.loseHp();
+							await player.loseMaxHp();
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					32: {
+						str: "锁定技，出牌阶段开始时，你视为对自己使用1张【杀】",
+						content: async function (event, trigger, player) {
+							for (let i = 0; i < event.num; i++) {
+								if (player.isIn()) {
+									await player.useCard({ name: "sha", isCard: true }, player, false);
+								}
+							}
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					33: {
+						str: "锁定技，当你使用【杀】时，你随机弃置1张除此牌外的牌",
+						content: async function (event, trigger, player) {
+							const ignore = event.vcard?.cards || [];
+							const cards = player.getDiscardableCards(player, "e", card => ignore.includes(card));
+							if (cards.length) {
+								await player.discard(cards.randomGets(event.num));
+							}
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					34: {
+						str: "锁定技，攻击范围+1，手牌上限-1",
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					35: {
+						str: "锁定技，准备阶段，你随机将一个与【杀】无关的技能替换为与【杀】有关的技能",
+						content: async function (event, trigger, player) {
+							const skills = player.getSkills(null, false, false).filter(skill => {
+								let info = get.info(skill);
+								if (!info || info.charlotte) {
+									return false;
+								}
+								return lib.translate[skill] && get.plainText(get.skillInfoTranslation(s, player)).includes("【杀】");
+							});
+							if (!skills.length) {
+								return;
+							}
+							if (!_status.jlsg_luocha_list_hidden?.length) {
+								lib.skill.jlsg_luocha.initList();
+							}
+							let shaRelatedList = _status.jlsg_luocha_list_hidden.filter(skill => !player.hasSkill(skill, null, false, false));
+							if (!shaRelatedList.length) {
+								game.log("没有与“杀”有关的技能了");
+								return;
+							}
+							await player.changeSkills(shaRelatedList.randomGets(1), skills.randomGets(1));
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+					36: {
+						str: "锁定技，准备阶段或结束阶段。随机获得一项“噬主”强化",
+						content: async function (event, trigger, player) {
+							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "shizhu", "噬主");
+							if (effectsList.length) {
+								event.effect = effectsList.randomGet();
+								game.log(player, "的", event.card, "获得", `#y${map[type]}`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["shizhu"][choice].str}`);
+								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
+							}
+						},
+						postive(player, viewer) {
+							return 2;
+						},
+					},
+				},
+			},
+			checkEffect(card, type, ignore = null) {
+				const effectsList = lib.skill.jlsg_zhuren.effects[type];
+				const record = card.storage?.jlsg_zhuren;
+				if (!record?.length) {
+					return Object.keys(effectsList);
+				}
+				let list = [];
+				for (let i in effectsList) {
+					let str = effectsList[i].str;
+					if (str.match(/\d+/g)) {
+						list.push(i);
+					} else if (str.includes("强化")) {
+						if (ignore && str.includes(ignore)) {
+							continue;
+						}
+						list.push(i);
+					} else if (!record.includes(i)) {
+						list.push(i);
+					}
+				}
+				return list;
+			},
+			syncRecord(vcard, effect) {
+				game.broadcastAll(
+					function (vcard, effect) {
+						if (!vcard.storage) {
+							vcard.storage = {};
+						} else if (!vcard.storage.jlsg_zhuren) {
+							vcard.storage.jlsg_zhuren = [];
+						}
+						vcard.storage.jlsg_zhuren.push(effect);
+						if (get.is.ordinaryCard(vcard)) {
+							const card = vcard.cards[0];
+							if (!card.storage) {
+								card.storage = {};
+							} else if (!card.storage.jlsg_zhuren) {
+								card.storage.jlsg_zhuren = [];
+							}
+							card.storage.jlsg_zhuren.push(effect);
+						}
+					},
+					vcard,
+					effect
+				);
+			},
+			group: "jlsg_zhuren_addMark",
+			subSkill: {
+				addMark: {
+					trigger: {
+						player: "phaseZhunbeiBegin",
+						global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+					},
+					getIndex(event, player) {
+						if (event.name == "phaseZhunbei") {
+							return 1;
+						}
+						return game.filterPlayer2(current => {
+							const evt = event.getl(current);
+							const lostCards = [];
+							evt.es.forEach(card => {
+								const vcard = evt.vcard_map.get(card);
+								if (vcard?.name && get.subtype(vcard) == "equip1") {
+									lostCards.add(vcard);
+								}
+							});
+							return lostCards.length;
+						});
+					},
+					filter(event, player, name, target) {
+						return true;
+					},
+					forced: true,
+					locked: false,
+					async content(event, trigger, player) {
+						await player.addMark("jlsg_zhuren", 1);
+					},
+				},
+				extraSkill: {
+					charlotte: true,
+					equipSkill: true,
+					lastDo: true,
+					audio: false,
+					mod: {
+						selectTarget(card, player, range) {
+							range = get.select(range);
+							if (card.name == "sha" && range[1] > 0) {
+								const add = player
+									.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("12"))
+									.flatMap(vcard => vcard.storage.jlsg_zhuren)
+									.filter(i => i == "12").length;
+								range[1] += add;
+							}
+						},
+						attackRange(player, num) {
+							const add = player
+								.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("14"))
+								.flatMap(vcard => vcard.storage.jlsg_zhuren)
+								.filter(i => ["14", "34"].includes(i)).length;
+							return num + add;
+						},
+						cardUsable(card, player, num) {
+							if (card.name == "sha") {
+								const add = player
+									.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("14"))
+									.flatMap(vcard => vcard.storage.jlsg_zhuren)
+									.filter(i => i == "14").length;
+								return num + add;
+							}
+						},
+						maxHandcard(player, num) {
+							const reduce = player
+								.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("14"))
+								.flatMap(vcard => vcard.storage.jlsg_zhuren)
+								.filter(i => i == "34").length;
+							return num - reduce;
+						},
+					},
+					trigger: {
+						player: ["useCard", "damageEnd", "phaseUseBegin", "phaseZhunbeiBegin", "phaseJieshuBegin"],
+						global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+					},
+					getIndex(event, player) {
+						if (!["useCard", "damage", "phaseUse", "phaseZhunbei", "phaseJieshu"].includes(event.name)) {
+							return 1;
+						}
+						return player.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length);
+					},
+					filter(event, player, name, vcard) {
+						if (event.name == "useCard") {
+							if (event.card.name != "sha") {
+								return false;
+							}
+							return vcard.storage.jlsg_zhuren.some(i => ["11", "13", "15", "33"].includes(i));
+						} else if (event.name == "damage") {
+							if (event.source == player || !event.source.isIn()) {
+								return false;
+							} else if (!player.canUse("sha", event.source, false, false)) {
+								return false;
+							}
+							return vcard.storage.jlsg_zhuren.some(i => ["24"].includes(i));
+						} else if (event.name == "phaseUse") {
+							return vcard => vcard.storage.jlsg_zhuren.some(i => ["22", "32"].includes(i));
+						} else if (["phaseZhunbei", "phaseJieshu"].includes(event.name)) {
+							if (vcard.storage.jlsg_zhuren.some(i => ["25", "26", "36"].includes(i))) {
+								return true;
+							} else if (event.name == "phaseZhunbei") {
+								return vcard.storage.jlsg_zhuren.some(i => ["34"].includes(i));
+							} else if (event.name == "phaseJieshu") {
+								return vcard.storage.jlsg_zhuren.some(i => ["21"].includes(i));
+							}
+						} else {
+							const getl = event.getl(player),
+								getg = event.getg?.(player) || [];
+							const lostCards = [],
+								gainCards = getg.filter(card => card.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i)));
+							getl.es.forEach(card => {
+								const lostVcard = getl.vcard_map.get(card);
+								if (lostVcard?.name && lostVcard.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i))) {
+									lostCards.add(vcard);
+								}
+							});
+							if (lostCards.length || gainCards.length) {
+								return true;
+							}
+							if (event.name == "equip" && event.card.storage?.jlsg_zhuren?.length) {
+								let cardSymbol = event.card[event.card["cardSymbol"]];
+								if (cardSymbol) {
+									return get.is.ordinaryCard(cardSymbol) && !cardSymbol.storage?.jlsg_zhuren?.length;
+								}
+							}
+						}
+						return false;
+					},
+					forced: true,
+					popup: false,
+					async content(event, trigger, player) {
+						const card = event.indexedData;
+						if (trigger.name == "equip") {
+							game.broadcastAll(function (card) {
+								const cardSymbol = card[card["cardSymbol"]];
+								if (cardSymbol) {
+									let record = card.storage.jlsg_zhuren;
+									if (!cardSymbol.storage) {
+										cardSymbol.storage = {};
+									}
+									cardSymbol.storage.jlsg_zhuren = record;
+								}
+							}, trigger.card);
+						}
+						let list =
+								card?.storage?.jlsg_zhuren?.reduce((list, i) => {
+									if (!list[i]) {
+										list[i] = 0;
+									}
+									list[i]++;
+									return list;
+								}, {}) || {},
+							effects = Object.fromEntries(Object.values(lib.skill.jlsg_zhuren.effects).flatMap(i => Object.entries(i)));
+						if (get.itemtype(card) == "vcard") {
+							game.log(player, "的", card, "的附魔效果触发了");
+						}
+						if (trigger.name == "useCard") {
+							let checkList = ["11", "13", "15", "33"];
+							for (let check of checkList) {
+								if (list[check] > 0) {
+									const next = game.createEvent("jlsg_zhuren_effect", false, event);
+									next._trigger = trigger;
+									next.player = player;
+									next.num = list[check];
+									next.setContent(effects[check].content);
+									await next;
+								}
+							}
+						} else if (trigger.name == "damage") {
+							const next = game.createEvent("jlsg_zhuren_effect", false, event);
+							next._trigger = trigger;
+							next.player = player;
+							next.num = list["24"];
+							next.setContent(effects["24"].content);
+							await next;
+						} else if (trigger.name == "phaseUse") {
+							let checkList = ["22", "32"];
+							for (let check of checkList) {
+								if (list[check] > 0) {
+									const next = game.createEvent("jlsg_zhuren_effect", false, event);
+									next._trigger = trigger;
+									next.player = player;
+									next.num = list[check];
+									next.setContent(effects[check].content);
+									await next;
+								}
+							}
+						} else if (["phaseZhunbei", "phaseJieshu"].includes(trigger.name)) {
+							let checkList = ["25", "26", "36"];
+							for (let check of checkList) {
+								if (list[check] > 0) {
+									const next = game.createEvent("jlsg_zhuren_effect", false, event);
+									next._trigger = trigger;
+									next.player = player;
+									next.card = card;
+									next.setContent(effects[check].content);
+									await next;
+								}
+							}
+							if (trigger.name == "phaseZhunbei") {
+								const next = game.createEvent("jlsg_zhuren_effect", false, event);
+								next._trigger = trigger;
+								next.player = player;
+								next.num = list["34"];
+								next.setContent(effects["34"].content);
+								await next;
+							} else if (trigger.name == "phaseJieshu") {
+								const next = game.createEvent("jlsg_zhuren_effect", false, event);
+								next._trigger = trigger;
+								next.player = player;
+								next.num = list["21"];
+								next.setContent(effects["21"].content);
+								await next;
+							}
+						} else {
+							const getl = trigger.getl(player),
+								getg = trigger.getg?.(player) || [];
+							const lostCards = [],
+								gainCards = getg.filter(card => card.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i)));
+							getl.es.forEach(card => {
+								const lostVcard = getl.vcard_map.get(card);
+								if (lostVcard?.name && lostVcard.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i))) {
+									lostCards.add(vcard);
+								}
+							});
+							if (lostCards.length || gainCards.length) {
+								let cards = lostCards.concat(gainCards),
+									checkList = ["23", "31"];
+								for (let card of cards) {
+									list = card.storage?.jlsg_zhuren?.reduce((list, i) => {
+										if (!list[i]) {
+											list[i] = 0;
+										}
+										list[i]++;
+										return list;
+									}, {});
+									for (let check of checkList) {
+										if (list[check] > 0) {
+											game.log(card, "的附魔效果触发了");
+											const next = game.createEvent("jlsg_zhuren_effect", false, event);
+											next._trigger = trigger;
+											next.player = player;
+											next.card = card;
+											next.setContent(effects[check].content);
+											await next;
+										}
+									}
+								}
+							}
+						}
+					},
+					ai: {
+						unequip: true,
+						unequip_ai: true,
+						directHit_ai: true,
+						skillTagFilter(player, tag, arg) {
+							if (arg?.card?.name != "sha") {
+								return false;
+							}
+							const esRecord = player.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("14")).flatMap(vcard => vcard.storage.jlsg_zhuren);
+							if (tag === "directHit_ai") {
+								return esRecord.includes("15");
+							}
+							return esRecord.includes("16");
+						},
+						effect: {
+							target(card, player, target, current) {
+								if (card?.storage?.jlsg_zhuren?.some(i => i.startsWith("3"))) {
+									return [1, -2];
+								}
+							},
+						},
+					},
+				},
+			},
+			ai: {
+				order: 11,
+				player: 1,
+				target(player, target) {
+					return get.attitude(player, target);
+				},
+			},
+		},
 	},
 	translate: {
 		jlsg_sk: "SK武将",
@@ -17529,6 +18338,7 @@ export default {
 		jlsgsk_tadun: "SK蹋顿",
 		jlsgsk_caojinyu: "SK曹金玉",
 		jlsgsk_haozhao: "SK郝昭",
+		jlsgsk_puyuan: "SK蒲元",
 
 		jlsg_hemeng: "和盟",
 		jlsg_sujian: "素检",
@@ -18082,6 +18892,10 @@ export default {
 		jlsg_shanshen_info: "当任意角色失去体力后，你可以获得两张不计入手牌上限的临时基本牌。",
 		jlsg_zhengu: "镇骨",
 		jlsg_zhengu_info: "准备阶段或结束阶段，你可以令一名角色将手牌数调整至X-1或X+1，若你已受伤，改为X-2或X+2（X为你的手牌数）。",
+		jlsg_tianjiang: "天匠",
+		jlsg_tianjiang_info: "锁定技，游戏开始时，或回合开始时，你将随机临时装备牌置入你装备区的空位。出牌阶段，你可以将一张装备牌置入其他角色的装备区（替换原装备），然后摸两张牌。",
+		jlsg_zhuren: "铸刃",
+		jlsg_zhuren_info: "回合开始阶段，或当任意角色失去装备区的武器牌后，你获得1枚“铸刃”标记。出牌阶段，你可以弃1枚“铸刃”标记，强化任意角色装备区的武器牌。",
 	},
 	dynamicTranslate: {
 		jlsg_zhidi(player) {
