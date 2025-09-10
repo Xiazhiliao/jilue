@@ -17674,7 +17674,7 @@ export default {
 					15: {
 						str: "锁定技，你使用的【杀】不能被【闪】响应",
 						content: async function (event, trigger, player) {
-							trigger.getParent(2).directHit.addArray(game.players);
+							trigger.directHit.addArray(game.players);
 						},
 						postive(player, viewer) {
 							return 2;
@@ -17775,8 +17775,8 @@ export default {
 					31: {
 						str: "锁定技，当你获得或失去此牌后，你失去1点体力并减1点体力上限",
 						content: async function (event, trigger, player) {
-							await player.loseHp();
-							await player.loseMaxHp();
+							await player.loseHp(event.num);
+							await player.loseMaxHp(event.num);
 						},
 						postive(player, viewer) {
 							return 2;
@@ -18096,6 +18096,7 @@ export default {
 									const next = game.createEvent("jlsg_zhuren_effect", false, event);
 									next._trigger = trigger;
 									next.player = player;
+									next.num = list[check];
 									next.card = card;
 									next.setContent(effects[check].content);
 									await next;
@@ -18144,6 +18145,7 @@ export default {
 											const next = game.createEvent("jlsg_zhuren_effect", false, event);
 											next._trigger = trigger;
 											next.player = player;
+											next.num = list[check];
 											next.card = card;
 											next.setContent(effects[check].content);
 											await next;
