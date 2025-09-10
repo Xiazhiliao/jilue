@@ -18105,14 +18105,14 @@ export default {
 									await next;
 								}
 							}
-							if (trigger.name == "phaseZhunbei") {
+							if (trigger.name == "phaseZhunbei" && list["35"] > 0) {
 								const next = game.createEvent("jlsg_zhuren_effect", false, event);
 								next._trigger = trigger;
 								next.player = player;
 								next.num = list["35"];
 								next.setContent(effects["35"].content);
 								await next;
-							} else if (trigger.name == "phaseJieshu") {
+							} else if (trigger.name == "phaseJieshu" && list["21"] > 0) {
 								const next = game.createEvent("jlsg_zhuren_effect", false, event);
 								next._trigger = trigger;
 								next.player = player;
