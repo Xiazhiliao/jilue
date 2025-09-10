@@ -17382,9 +17382,12 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			trigger: {
 				global: "phaseBefore",
-				player: "enterGame",
+				player: ["enterGame", "phaseBegin"],
 			},
-			filter(event, player) {
+			filter(event, player, name) {
+				if (name == "phaseBegin") {
+					return true;
+				}
 				return event.name != "phase" || game.phaseNumber == 0;
 			},
 			forced: true,
@@ -17822,7 +17825,7 @@ export default {
 								if (!info || info.charlotte) {
 									return false;
 								}
-								return lib.translate[skill] && get.plainText(get.skillInfoTranslation(s, player)).includes("【杀】");
+								return lib.translate[skill] && !get.plainText(get.skillInfoTranslation(skill, player)).includes("【杀】");
 							});
 							if (!skills.length) {
 								return;
@@ -18003,7 +18006,7 @@ export default {
 							if (vcard.storage.jlsg_zhuren.some(i => ["25", "26", "36"].includes(i))) {
 								return true;
 							} else if (event.name == "phaseZhunbei") {
-								return vcard.storage.jlsg_zhuren.some(i => ["34"].includes(i));
+								return vcard.storage.jlsg_zhuren.some(i => ["35"].includes(i));
 							} else if (event.name == "phaseJieshu") {
 								return vcard.storage.jlsg_zhuren.some(i => ["21"].includes(i));
 							}
@@ -18106,8 +18109,8 @@ export default {
 								const next = game.createEvent("jlsg_zhuren_effect", false, event);
 								next._trigger = trigger;
 								next.player = player;
-								next.num = list["34"];
-								next.setContent(effects["34"].content);
+								next.num = list["35"];
+								next.setContent(effects["35"].content);
 								await next;
 							} else if (trigger.name == "phaseJieshu") {
 								const next = game.createEvent("jlsg_zhuren_effect", false, event);
@@ -18125,11 +18128,11 @@ export default {
 							getl.es.forEach(card => {
 								const lostVcard = getl.vcard_map.get(card);
 								if (lostVcard?.name && lostVcard.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i))) {
-									lostCards.add(vcard);
+									lostCards.add(card);
 								}
 							});
 							if (lostCards.length || gainCards.length) {
-								let cards = lostCards.concat(gainCards),
+								let cards = lostCards.concat(gainCards).unique(),
 									checkList = ["23", "31"];
 								for (let card of cards) {
 									list = card.storage?.jlsg_zhuren?.reduce((list, i) => {
@@ -18163,7 +18166,7 @@ export default {
 							if (arg?.card?.name != "sha") {
 								return false;
 							}
-							const esRecord = player.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("14")).flatMap(vcard => vcard.storage.jlsg_zhuren);
+							const esRecord = player.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length).flatMap(vcard => vcard.storage.jlsg_zhuren);
 							if (tag === "directHit_ai") {
 								return esRecord.includes("15");
 							}

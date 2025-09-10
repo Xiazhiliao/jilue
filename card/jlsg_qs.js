@@ -1073,7 +1073,7 @@ let jlsg_qs = {
 					.set("ai", (event, player) => {
 						const { target } = get.event(),
 							{ indexedData: vcard } = event;
-						const es = target.countGainableCards(player, "e");
+						const es = target.getGainableCards(player, "e");
 						return es.some(card => {
 							if (vcard.cards?.length) {
 								return get.value(vcard.cards, player) <= get.value(card, player);
