@@ -17749,7 +17749,7 @@ export default {
 							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "duanyu", "断玉");
 							if (effectsList.length) {
 								event.effect = effectsList.randomGet();
-								game.log(player, "的", event.card, "获得", `#y${map[type]}`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["duanyu"][choice].str}`);
+								game.log(player, "的", event.card, "获得", `#y断玉`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["duanyu"][choice].str}`);
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
@@ -17763,7 +17763,7 @@ export default {
 							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "fuling", "附灵");
 							if (effectsList.length) {
 								event.effect = effectsList.randomGet();
-								game.log(player, "的", event.card, "获得", `#y${map[type]}`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["fuling"][choice].str}`);
+								game.log(player, "的", event.card, "获得", `#y附灵`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["fuling"][choice].str}`);
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
@@ -17848,7 +17848,7 @@ export default {
 							let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "shizhu", "噬主");
 							if (effectsList.length) {
 								event.effect = effectsList.randomGet();
-								game.log(player, "的", event.card, "获得", `#y${map[type]}`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["shizhu"][choice].str}`);
+								game.log(player, "的", event.card, "获得", `#y噬主`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["shizhu"][choice].str}`);
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
