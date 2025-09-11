@@ -17947,7 +17947,7 @@ export default {
 							range = get.select(range);
 							if (card.name == "sha" && range[1] > 0) {
 								const add = player
-									.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("12"))
+									.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length)
 									.flatMap(vcard => vcard.storage.jlsg_zhuren)
 									.filter(i => i == "12").length;
 								range[1] += add;
@@ -17955,7 +17955,7 @@ export default {
 						},
 						attackRange(player, num) {
 							const add = player
-								.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("14"))
+								.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length)
 								.flatMap(vcard => vcard.storage.jlsg_zhuren)
 								.filter(i => ["14", "34"].includes(i)).length;
 							return num + add;
@@ -17963,7 +17963,7 @@ export default {
 						cardUsable(card, player, num) {
 							if (card.name == "sha") {
 								const add = player
-									.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("14"))
+									.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length)
 									.flatMap(vcard => vcard.storage.jlsg_zhuren)
 									.filter(i => i == "14").length;
 								return num + add;
@@ -17971,7 +17971,7 @@ export default {
 						},
 						maxHandcard(player, num) {
 							const reduce = player
-								.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.includes("14"))
+								.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length)
 								.flatMap(vcard => vcard.storage.jlsg_zhuren)
 								.filter(i => i == "34").length;
 							return num - reduce;
@@ -18115,7 +18115,7 @@ export default {
 							let checkList = ["23", "31"];
 							if (trigger.name == "eqiup") {
 								if (trigger.card.storage?.jlsg_zhuren?.length) {
-									const cardSymbol = trigger.card[event.card["cardSymbol"]];
+									const cardSymbol = trigger.card[trigger.card["cardSymbol"]];
 									if (cardSymbol && get.is.ordinaryCard(cardSymbol) && !cardSymbol.storage?.jlsg_zhuren?.length) {
 										game.broadcastAll(function (card) {
 											const cardSymbol = card[card["cardSymbol"]];
