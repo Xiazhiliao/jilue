@@ -6459,7 +6459,7 @@ export default {
 				markcount: "expansion",
 			},
 			mod: {
-				globalFrom: function (from, to, distance) {
+				globalFrom(from, to, distance) {
 					var num =
 						distance +
 						from
@@ -6471,7 +6471,7 @@ export default {
 							.reduce((a, b) => a + (b ? b : 0), 0);
 					return num;
 				},
-				globalTo: function (from, to, distance) {
+				globalTo(from, to, distance) {
 					var num =
 						distance +
 						to
@@ -6531,6 +6531,7 @@ export default {
 					cards.addArray(trigger.getd().filter(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip"));
 				}
 				if (cards.length) {
+					game.log(player, "将", cards, "置于了武将牌上")
 					const next = player.addToExpansion(cards, "gain2", "log");
 					next.gaintag.add(event.name);
 					await next;

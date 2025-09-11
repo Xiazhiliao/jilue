@@ -18049,7 +18049,7 @@ export default {
 									return list;
 								}, {}) || {},
 							effects = Object.fromEntries(Object.values(lib.skill.jlsg_zhuren.effects).flatMap(i => Object.entries(i)));
-						if (get.itemtype(card) == "vcard") {
+						if (["vcard", "card"].includes(get.itemtype(card))) {
 							game.log(player, "的", card, "的附魔效果触发了");
 						}
 						if (trigger.name == "useCard") {
