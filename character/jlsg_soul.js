@@ -1102,8 +1102,18 @@ export default {
 			init(player, skill) {
 				player.setStorage(skill, {}, true);
 			},
-			trigger: {
-				player: ["phaseBegin", "damageEnd", "phaseJieshuBegin"],
+			trigger: { player: ["phaseBegin", "phaseZhunbeiBegin", "damageEnd", "phaseJieshuBegin"] },
+			filter(event, player, name) {
+				if (name == "phaseBegin") {
+					return event.getRand("jlsg_yaozhi") >= 0.5;
+				} else if (name == "phaseZhunbeiBegin") {
+					const map = event.getParent("phase")._rand_map;
+					if (!("jlsg_yaozhi" in map)) {
+						return true;
+					}
+					return event.getParent("phase").getRand("jlsg_yaozhi") < 0.5;
+				}
+				return true;
 			},
 			frequent: true,
 			async content(event, trigger, player) {
@@ -1118,7 +1128,6 @@ export default {
 					characterList = Object.keys(lib.character).randomSort();
 				}
 				const storage = player.getStorage(event.name, {}),
-					triggername = event.triggername == "phaseBegin" ? ["phaseBegin", "phaseZhunbeiBegin"] : [event.triggername],
 					list = {};
 				let packList = ["jlsg_sr", "jlsg_sk", "jlsg_soul"];
 				for (let name of characterList) {
@@ -1149,56 +1158,52 @@ export default {
 							if (!info || !info.trigger || !info.trigger.player || info.silent || info.juexingji || info.zhuanhuanji || info.hiddenSkill || info.dutySkill) {
 								continue;
 							}
-							if (triggername.includes(info.trigger.player) || (Array.isArray(info.trigger.player) && info.trigger.player.some(i => triggername.includes(i)))) {
-								if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) {
+							if (info.trigger.player == event.triggername || (Array.isArray(info.trigger.player) && info.trigger.player.includes(event.triggername))) {
+								if (info.ai && ((info.ai.combo && !trigger.player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)) {
 									continue;
 								}
 								if (info.init) {
 									continue;
 								}
 								if (info.filter) {
-									if (
-										triggername.every(triggername2 => {
-											if (typeof info.getIndex === "function") {
-												let indexedData = info.getIndex(trigger, player, triggername2);
-												if (Array.isArray(indexedData)) {
-													if (
-														!indexedData.some(target => {
-															try {
-																const bool = info.filter(trigger, player, triggername2, target);
-																if (bool) {
-																	return true;
-																}
-															} catch (e) {
-																return false;
-															}
-														})
-													) {
-														return true;
-													}
-												} else if (typeof indexedData === "number" && indexedData > 0) {
+									let indexedData;
+									if (typeof info.getIndex === "function") {
+										indexedData = info.getIndex(trigger, trigger.player, event.triggername);
+										if (Array.isArray(indexedData)) {
+											if (
+												!indexedData.some(target => {
 													try {
-														const bool = info.filter(trigger, player, triggername2, true);
-														if (!bool) {
+														const bool = info.filter(trigger, trigger.player, event.triggername, target);
+														if (bool) {
 															return true;
 														}
+														return false;
 													} catch (e) {
-														return true;
+														return false;
 													}
-												}
-											} else {
-												try {
-													const bool = info.filter(trigger, player, triggername2, true);
-													if (!bool) {
-														return true;
-													}
-												} catch (e) {
-													return true;
-												}
+												})
+											) {
+												continue;
 											}
-										})
-									) {
-										continue;
+										} else if (typeof indexedData === "number" && indexedData > 0) {
+											try {
+												const bool = info.filter(trigger, trigger.player, event.triggername, true);
+												if (!bool) {
+													continue;
+												}
+											} catch (e) {
+												continue;
+											}
+										}
+									} else {
+										try {
+											const bool = info.filter(trigger, trigger.player, event.triggername, true);
+											if (!bool) {
+												continue;
+											}
+										} catch (e) {
+											continue;
+										}
 									}
 								}
 								if (!list[name]) {
@@ -1233,7 +1238,7 @@ export default {
 				let expire = "damageAfter";
 				if (event.triggername == "phaseJieshuBegin") {
 					expire = "phaseJieshuEnd";
-				} else if (event.triggername == "phaseBegin") {
+				} else if (["phaseBegin", "phaseZhunbeiBegin"].includes(event.triggername)) {
 					expire = "phaseZhunbeiEnd";
 				}
 				player.addTempSkill(control, expire);
@@ -1566,6 +1571,11 @@ export default {
 						}
 					} else {
 						finish();
+						storage[name].remove(control);
+						if (!storage[name].length) {
+						}
+						delete storage[name];
+						player.setStorage("jlsg_yaozhi", storage);
 						await player.addSkills([control]);
 						return;
 					}
