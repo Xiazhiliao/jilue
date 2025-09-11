@@ -6521,7 +6521,7 @@ export default {
 					cards.addArray(trigger.getd().filter(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip"));
 				}
 				if (cards.length) {
-					const next = player.addToExpansion(cards, "gain2");
+					const next = player.addToExpansion(cards, "gain2", "log");
 					next.gaintag.add(event.name);
 					await next;
 				}

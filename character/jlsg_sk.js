@@ -17723,10 +17723,10 @@ export default {
 						},
 					},
 					23: {
-						str: "锁定技，当你获得或失去此牌后，你加1点体力上限并回复1点体力",
+						str: "锁定技，当装备或从装备区失去此牌后，你加1点体力上限并回复1点体力",
 						content: async function (event, trigger, player) {
-							await player.gainMaxHp();
-							await player.recover();
+							await player.gainMaxHp(event.num);
+							await player.recover(event.num);
 						},
 						postive(player, viewer) {
 							return 2;
@@ -17776,7 +17776,7 @@ export default {
 				},
 				shizhu: {
 					31: {
-						str: "锁定技，当你获得或失去此牌后，你失去1点体力并减1点体力上限",
+						str: "锁定技，当你装备或从装备区失去此牌后，你失去1点体力并减1点体力上限",
 						content: async function (event, trigger, player) {
 							await player.loseHp(event.num);
 							await player.loseMaxHp(event.num);
@@ -17802,7 +17802,7 @@ export default {
 						str: "锁定技，当你使用【杀】时，你随机弃置1张除此牌外的牌",
 						content: async function (event, trigger, player) {
 							const ignore = event.vcard?.cards || [];
-							const cards = player.getDiscardableCards(player, "e", card => ignore.includes(card));
+							const cards = player.getDiscardableCards(player, "e", card => !ignore.includes(card));
 							if (cards.length) {
 								await player.discard(cards.randomGets(event.num));
 							}
@@ -17985,7 +17985,11 @@ export default {
 						if (!["useCard", "damage", "phaseUse", "phaseZhunbei", "phaseJieshu"].includes(event.name)) {
 							return 1;
 						}
-						return player.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length);
+						let extraCards = player.getExpansions("jlsg_jinlong");
+						return player
+							.getVCards("e")
+							.concat(extraCards)
+							.filter(card => card.storage?.jlsg_zhuren?.length);
 					},
 					filter(event, player, name, vcard) {
 						if (event.name == "useCard") {
@@ -18011,25 +18015,24 @@ export default {
 								return vcard.storage.jlsg_zhuren.some(i => ["21"].includes(i));
 							}
 						} else {
+							if (event.name == "equip" && event.card.storage?.jlsg_zhuren?.length) {
+								if (event.card.storage.jlsg_zhuren.some(i => ["23", "31"].includes(i))) {
+									return true;
+								}
+								let cardSymbol = event.card[event.card["cardSymbol"]];
+								if (cardSymbol) {
+									return get.is.ordinaryCard(cardSymbol) && !cardSymbol.storage?.jlsg_zhuren?.length;
+								}
+							}
 							const getl = event.getl(player),
-								getg = event.getg?.(player) || [];
-							const lostCards = [],
-								gainCards = getg.filter(card => card.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i)));
+								lostCards = [];
 							getl.es.forEach(card => {
 								const lostVcard = getl.vcard_map.get(card);
 								if (lostVcard?.name && lostVcard.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i))) {
 									lostCards.add(vcard);
 								}
 							});
-							if (lostCards.length || gainCards.length) {
-								return true;
-							}
-							if (event.name == "equip" && event.card.storage?.jlsg_zhuren?.length) {
-								let cardSymbol = event.card[event.card["cardSymbol"]];
-								if (cardSymbol) {
-									return get.is.ordinaryCard(cardSymbol) && !cardSymbol.storage?.jlsg_zhuren?.length;
-								}
-							}
+							return lostCards.length;
 						}
 						return false;
 					},
@@ -18037,18 +18040,6 @@ export default {
 					popup: false,
 					async content(event, trigger, player) {
 						const card = event.indexedData;
-						if (trigger.name == "equip") {
-							game.broadcastAll(function (card) {
-								const cardSymbol = card[card["cardSymbol"]];
-								if (cardSymbol) {
-									let record = card.storage.jlsg_zhuren;
-									if (!cardSymbol.storage) {
-										cardSymbol.storage = {};
-									}
-									cardSymbol.storage.jlsg_zhuren = record;
-								}
-							}, trigger.card);
-						}
 						let list =
 								card?.storage?.jlsg_zhuren?.reduce((list, i) => {
 									if (!list[i]) {
@@ -18121,38 +18112,74 @@ export default {
 								await next;
 							}
 						} else {
+							let checkList = ["23", "31"];
+							if (trigger.name == "eqiup") {
+								if (trigger.card.storage?.jlsg_zhuren?.length) {
+									const cardSymbol = trigger.card[event.card["cardSymbol"]];
+									if (cardSymbol && get.is.ordinaryCard(cardSymbol) && !cardSymbol.storage?.jlsg_zhuren?.length) {
+										game.broadcastAll(function (card) {
+											const cardSymbol = card[card["cardSymbol"]];
+											if (cardSymbol) {
+												let record = card.storage.jlsg_zhuren;
+												if (!cardSymbol.storage) {
+													cardSymbol.storage = {};
+												}
+												cardSymbol.storage.jlsg_zhuren = record;
+											}
+										}, trigger.card);
+									}
+									if (trigger.card.storage.jlsg_zhuren.some(i => checkList.includes(i))) {
+										list = trigger.card.storage.jlsg_zhuren.reduce((list, i) => {
+											if (!list[i]) {
+												list[i] = 0;
+											}
+											list[i]++;
+											return list;
+										}, {});
+										for (let check of checkList) {
+											if (list[check] > 0) {
+												game.log(trigger.card, "的附魔效果触发了");
+												const next = game.createEvent("jlsg_zhuren_effect", false, event);
+												next._trigger = trigger;
+												next.player = player;
+												next.num = list[check];
+												next.card = trigger.card;
+												next.setContent(effects[check].content);
+												await next;
+											}
+										}
+									}
+								}
+							}
 							const getl = trigger.getl(player),
-								getg = trigger.getg?.(player) || [];
-							const lostCards = [],
-								gainCards = getg.filter(card => card.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i)));
+								lostCards = [];
 							getl.es.forEach(card => {
 								const lostVcard = getl.vcard_map.get(card);
-								if (lostVcard?.name && lostVcard.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i))) {
+								if (lostVcard?.name && lostVcard.storage?.jlsg_zhuren?.some(i => checkList.includes(i))) {
 									lostCards.add(card);
 								}
 							});
-							if (lostCards.length || gainCards.length) {
-								let cards = lostCards.concat(gainCards).unique(),
-									checkList = ["23", "31"];
-								for (let card of cards) {
-									list = card.storage?.jlsg_zhuren?.reduce((list, i) => {
-										if (!list[i]) {
-											list[i] = 0;
-										}
-										list[i]++;
-										return list;
-									}, {});
-									for (let check of checkList) {
-										if (list[check] > 0) {
-											game.log(card, "的附魔效果触发了");
-											const next = game.createEvent("jlsg_zhuren_effect", false, event);
-											next._trigger = trigger;
-											next.player = player;
-											next.num = list[check];
-											next.card = card;
-											next.setContent(effects[check].content);
-											await next;
-										}
+							if (!lostCards.length) {
+								return;
+							}
+							for (let card of lostCards) {
+								list = card.storage?.jlsg_zhuren?.reduce((list, i) => {
+									if (!list[i]) {
+										list[i] = 0;
+									}
+									list[i]++;
+									return list;
+								}, {});
+								for (let check of checkList) {
+									if (list[check] > 0) {
+										game.log(card, "的附魔效果触发了");
+										const next = game.createEvent("jlsg_zhuren_effect", false, event);
+										next._trigger = trigger;
+										next.player = player;
+										next.num = list[check];
+										next.card = card;
+										next.setContent(effects[check].content);
+										await next;
 									}
 								}
 							}
