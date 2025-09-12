@@ -17517,17 +17517,14 @@ export default {
 					phaseUse.jlsg_zhuren_vcard = swords[0];
 				}
 				const vcard = phaseUse.jlsg_zhuren_vcard;
-				if (!phaseUse.jlsg_zhuren_record?.[vcard.vcardID]) {
+				if (!phaseUse.jlsg_zhuren_record) {
 					let { duanyu, fuling, shizhu } = lib.skill.jlsg_zhuren.effects;
 					duanyu = lib.skill.jlsg_zhuren.checkEffect(vcard, "duanyu").randomGets(2);
 					fuling = lib.skill.jlsg_zhuren.checkEffect(vcard, "fuling").randomGets(2);
 					shizhu = lib.skill.jlsg_zhuren.checkEffect(vcard, "shizhu").randomGets(2);
-					if (!phaseUse.jlsg_zhuren_record) {
-						phaseUse.jlsg_zhuren_record = {};
-					}
-					phaseUse.jlsg_zhuren_record[vcard.vcardID] = { duanyu, fuling, shizhu };
+					phaseUse.jlsg_zhuren_record = { duanyu, fuling, shizhu };
 				}
-				const record = phaseUse.jlsg_zhuren_record[vcard.vcardID],
+				const record = phaseUse.jlsg_zhuren_record,
 					effectsList = lib.skill.jlsg_zhuren.effects;
 				let map = {
 						选项一: "duanyu",
@@ -17570,7 +17567,7 @@ export default {
 					event.getParent().goto(0);
 				} else {
 					phaseUse.jlsg_zhuren_choice = choice;
-					delete phaseUse.jlsg_zhuren_record?.[vcard.vcardID];
+					delete phaseUse.jlsg_zhuren_record;
 				}
 			},
 			lose: false,
@@ -17617,15 +17614,9 @@ export default {
 								if (cardSymbol) {
 									cardx = cardSymbol;
 								}
-								if (cardx.storage?.jlsg_zhuren?.length) {
+								if (Object.keys(cardx.storage?.jlsg_zhuren || {}).length) {
 									str += `<br><span style="color: #8b2caeff" data-nature="graymm">附魔效果</span>：<br>`;
-									const list = cardx.storage.jlsg_zhuren.reduce((list, i) => {
-											if (!list[i]) {
-												list[i] = 0;
-											}
-											list[i]++;
-											return list;
-										}, {}),
+									const list = cardx.storage.jlsg_zhuren,
 										effects = Object.fromEntries(Object.values(lib.skill.jlsg_zhuren.effects).flatMap(i => Object.entries(i))),
 										str2 = [];
 									for (let i in effects) {
@@ -17863,7 +17854,7 @@ export default {
 			checkEffect(card, type, ignore = null) {
 				const effectsList = lib.skill.jlsg_zhuren.effects[type];
 				const record = card.storage?.jlsg_zhuren;
-				if (!record?.length) {
+				if (!Object.keys(record || {}).length) {
 					return Object.keys(effectsList);
 				}
 				let list = [];
@@ -17876,7 +17867,7 @@ export default {
 							continue;
 						}
 						list.push(i);
-					} else if (!record.includes(i)) {
+					} else if (!record[i]) {
 						list.push(i);
 					}
 				}
@@ -17888,17 +17879,23 @@ export default {
 						if (!vcard.storage) {
 							vcard.storage = {};
 						} else if (!vcard.storage.jlsg_zhuren) {
-							vcard.storage.jlsg_zhuren = [];
+							vcard.storage.jlsg_zhuren = {};
 						}
-						vcard.storage.jlsg_zhuren.push(effect);
+						if (!vcard.storage.jlsg_zhuren[effect]) {
+							vcard.storage.jlsg_zhuren[effect] = 0;
+						}
+						vcard.storage.jlsg_zhuren[effect]++;
 						if (get.is.ordinaryCard(vcard)) {
 							const card = vcard.cards[0];
 							if (!card.storage) {
 								card.storage = {};
 							} else if (!card.storage.jlsg_zhuren) {
-								card.storage.jlsg_zhuren = [];
+								card.storage.jlsg_zhuren = {};
 							}
-							card.storage.jlsg_zhuren.push(effect);
+							if (!card.storage.jlsg_zhuren[effect]) {
+								card.storage.jlsg_zhuren[effect] = 0;
+							}
+							card.storage.jlsg_zhuren[effect]++;
 						}
 					},
 					vcard,
@@ -17946,34 +17943,34 @@ export default {
 						selectTarget(card, player, range) {
 							range = get.select(range);
 							if (card.name == "sha" && range[1] > 0) {
-								const add = player
-									.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length)
-									.flatMap(vcard => vcard.storage.jlsg_zhuren)
-									.filter(i => i == "12").length;
+								const es = player.getVCards("e").concat(player.getExpansions("jlsg_jinlong"));
+								const add = es.reduce((sum, vcard) => sum + (vcard.storage?.jlsg_zhuren?.["12"] || 0), 0);
 								range[1] += add;
 							}
 						},
 						attackRange(player, num) {
-							const add = player
-								.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length)
-								.flatMap(vcard => vcard.storage.jlsg_zhuren)
-								.filter(i => ["14", "34"].includes(i)).length;
+							const es = player.getVCards("e").concat(player.getExpansions("jlsg_jinlong"));
+							const add = es.reduce((sum, vcard) => {
+								let checkList = ["14", "34"];
+								for (let i of checkList) {
+									if (vcard.storage?.jlsg_zhuren?.[i] > 0) {
+										sum += vcard.storage.jlsg_zhuren[i];
+									}
+								}
+								return sum;
+							}, 0);
 							return num + add;
 						},
 						cardUsable(card, player, num) {
 							if (card.name == "sha") {
-								const add = player
-									.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length)
-									.flatMap(vcard => vcard.storage.jlsg_zhuren)
-									.filter(i => i == "14").length;
+								const es = player.getVCards("e").concat(player.getExpansions("jlsg_jinlong"));
+								const add = es.reduce((sum, vcard) => sum + (vcard.storage?.jlsg_zhuren?.["14"] || 0), 0);
 								return num + add;
 							}
 						},
 						maxHandcard(player, num) {
-							const reduce = player
-								.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length)
-								.flatMap(vcard => vcard.storage.jlsg_zhuren)
-								.filter(i => i == "34").length;
+							const es = player.getVCards("e").concat(player.getExpansions("jlsg_jinlong"));
+							const reduce = es.reduce((sum, vcard) => sum + (vcard.storage?.jlsg_zhuren?.["34"] || 0), 0);
 							return num - reduce;
 						},
 					},
@@ -17989,46 +17986,53 @@ export default {
 						return player
 							.getVCards("e")
 							.concat(extraCards)
-							.filter(card => card.storage?.jlsg_zhuren?.length);
+							.filter(card => Object.keys(card.storage?.jlsg_zhuren || {}).length);
 					},
 					filter(event, player, name, vcard) {
+						const storage = Object.keys(vcard?.storage?.jlsg_zhuren || {});
 						if (event.name == "useCard") {
 							if (event.card.name != "sha") {
 								return false;
 							}
-							return vcard.storage.jlsg_zhuren.some(i => ["11", "13", "15", "33"].includes(i));
+							return storage.some(i => ["11", "13", "15", "33"].includes(i));
 						} else if (event.name == "damage") {
 							if (event.source == player || !event.source.isIn()) {
 								return false;
 							} else if (!player.canUse("sha", event.source, false, false)) {
 								return false;
 							}
-							return vcard.storage.jlsg_zhuren.some(i => ["24"].includes(i));
+							return storage.includes("24");
 						} else if (event.name == "phaseUse") {
-							return vcard => vcard.storage.jlsg_zhuren.some(i => ["22", "32"].includes(i));
+							return storage.some(i => ["22", "32"].includes(i));
 						} else if (["phaseZhunbei", "phaseJieshu"].includes(event.name)) {
-							if (vcard.storage.jlsg_zhuren.some(i => ["25", "26", "36"].includes(i))) {
+							if (storage.some(i => ["25", "26", "36"].includes(i))) {
 								return true;
 							} else if (event.name == "phaseZhunbei") {
-								return vcard.storage.jlsg_zhuren.some(i => ["35"].includes(i));
+								return storage.includes("35");
 							} else if (event.name == "phaseJieshu") {
-								return vcard.storage.jlsg_zhuren.some(i => ["21"].includes(i));
+								return storage.includes("21");
 							}
 						} else {
-							if (event.name == "equip" && event.card.storage?.jlsg_zhuren?.length) {
-								if (event.card.storage.jlsg_zhuren.some(i => ["23", "31"].includes(i))) {
+							if (event.name == "equip" && event.player == player) {
+								let cardx = event.card;
+								if (get.itemtype(event.card) == "vcard") {
+									if (get.is.ordinaryCard(event.card)) {
+										cardx = event.card.cards[0];
+									}
+								}
+								if (Object.keys(cardx.storage?.jlsg_zhuren || {}).some(i => ["23", "31"].includes(i))) {
 									return true;
 								}
-								let cardSymbol = event.card[event.card["cardSymbol"]];
+								let cardSymbol = cardx[cardx["cardSymbol"]];
 								if (cardSymbol) {
-									return get.is.ordinaryCard(cardSymbol) && !cardSymbol.storage?.jlsg_zhuren?.length;
+									return get.is.ordinaryCard(cardSymbol) && !Object.keys(cardSymbol.storage?.jlsg_zhuren || {}).length;
 								}
 							}
 							const getl = event.getl(player),
 								lostCards = [];
 							getl.es.forEach(card => {
 								const lostVcard = getl.vcard_map.get(card);
-								if (lostVcard?.name && lostVcard.storage?.jlsg_zhuren?.some(i => ["23", "31"].includes(i))) {
+								if (lostVcard?.name && Object.keys(lostVcard.storage?.jlsg_zhuren || {}).some(i => ["23", "31"].includes(i))) {
 									lostCards.add(vcard);
 								}
 							});
@@ -18040,14 +18044,7 @@ export default {
 					popup: false,
 					async content(event, trigger, player) {
 						const card = event.indexedData;
-						let list =
-								card?.storage?.jlsg_zhuren?.reduce((list, i) => {
-									if (!list[i]) {
-										list[i] = 0;
-									}
-									list[i]++;
-									return list;
-								}, {}) || {},
+						let list = card?.storage?.jlsg_zhuren || {},
 							effects = Object.fromEntries(Object.values(lib.skill.jlsg_zhuren.effects).flatMap(i => Object.entries(i)));
 						if (["vcard", "card"].includes(get.itemtype(card))) {
 							game.log(player, "的", card, "的附魔效果触发了");
@@ -18113,10 +18110,16 @@ export default {
 							}
 						} else {
 							let checkList = ["23", "31"];
-							if (trigger.name == "eqiup") {
-								if (trigger.card.storage?.jlsg_zhuren?.length) {
-									const cardSymbol = trigger.card[trigger.card["cardSymbol"]];
-									if (cardSymbol && get.is.ordinaryCard(cardSymbol) && !cardSymbol.storage?.jlsg_zhuren?.length) {
+							if (trigger.name == "equip" && trigger.player == player) {
+								let cardx = trigger.card;
+								if (get.itemtype(cardx) == "vcard") {
+									if (get.is.ordinaryCard(cardx)) {
+										cardx = trigger.card.cards[0];
+									}
+								}
+								if (Object.keys(cardx.storage?.jlsg_zhuren || {}).length) {
+									const cardSymbol = cardx[cardx["cardSymbol"]];
+									if (cardSymbol && get.is.ordinaryCard(cardSymbol) && !Object.keys(cardSymbol.storage?.jlsg_zhuren || {}).length) {
 										game.broadcastAll(function (card) {
 											const cardSymbol = card[card["cardSymbol"]];
 											if (cardSymbol) {
@@ -18126,27 +18129,19 @@ export default {
 												}
 												cardSymbol.storage.jlsg_zhuren = record;
 											}
-										}, trigger.card);
+										}, cardx);
 									}
-									if (trigger.card.storage.jlsg_zhuren.some(i => checkList.includes(i))) {
-										list = trigger.card.storage.jlsg_zhuren.reduce((list, i) => {
-											if (!list[i]) {
-												list[i] = 0;
-											}
-											list[i]++;
-											return list;
-										}, {});
-										for (let check of checkList) {
-											if (list[check] > 0) {
-												game.log(trigger.card, "的附魔效果触发了");
-												const next = game.createEvent("jlsg_zhuren_effect", false, event);
-												next._trigger = trigger;
-												next.player = player;
-												next.num = list[check];
-												next.card = trigger.card;
-												next.setContent(effects[check].content);
-												await next;
-											}
+									list = cardx.storage.jlsg_zhuren || {};
+									for (let check of checkList) {
+										if (list[check] > 0) {
+											game.log(trigger.card, "的附魔效果触发了");
+											const next = game.createEvent("jlsg_zhuren_effect", false, event);
+											next._trigger = trigger;
+											next.player = player;
+											next.num = list[check];
+											next.card = cardx;
+											next.setContent(effects[check].content);
+											await next;
 										}
 									}
 								}
@@ -18155,21 +18150,15 @@ export default {
 								lostCards = [];
 							getl.es.forEach(card => {
 								const lostVcard = getl.vcard_map.get(card);
-								if (lostVcard?.name && lostVcard.storage?.jlsg_zhuren?.some(i => checkList.includes(i))) {
-									lostCards.add(card);
+								if (lostVcard?.name && Object.keys(lostVcard.storage?.jlsg_zhuren || {}).some(i => checkList.includes(i))) {
+									lostCards.add(lostVcard);
 								}
 							});
 							if (!lostCards.length) {
 								return;
 							}
 							for (let card of lostCards) {
-								list = card.storage?.jlsg_zhuren?.reduce((list, i) => {
-									if (!list[i]) {
-										list[i] = 0;
-									}
-									list[i]++;
-									return list;
-								}, {});
+								list = card.storage?.jlsg_zhuren || {};
 								for (let check of checkList) {
 									if (list[check] > 0) {
 										game.log(card, "的附魔效果触发了");
