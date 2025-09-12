@@ -18033,7 +18033,7 @@ export default {
 							getl.es.forEach(card => {
 								const lostVcard = getl.vcard_map.get(card);
 								if (lostVcard?.name && Object.keys(lostVcard.storage?.jlsg_zhuren || {}).some(i => ["23", "31"].includes(i))) {
-									lostCards.add(vcard);
+									lostCards.add(card);
 								}
 							});
 							return lostCards.length;
@@ -18151,7 +18151,7 @@ export default {
 							getl.es.forEach(card => {
 								const lostVcard = getl.vcard_map.get(card);
 								if (lostVcard?.name && Object.keys(lostVcard.storage?.jlsg_zhuren || {}).some(i => checkList.includes(i))) {
-									lostCards.add(lostVcard);
+									lostCards.add(card);
 								}
 							});
 							if (!lostCards.length) {
