@@ -4801,7 +4801,7 @@ export default {
 					Array.from({ length: upgrade ? 4 : 3 }, () => true)
 				);
 				event.result = await player
-					.gainPlayerCard(get.prompt2("jlsg_zhaoxiang", trigger.player), trigger.player, "h")
+					.gainPlayerCard(`###${get.prompt("jlsg_zhaoxiang", trigger.player)}###${get.skillInfoTranslation("jlsg_zhaoxiang", player)}`, trigger.player, "h")
 					.set("ai", button => {
 						if (get.event("check")) {
 							return get.event().getRand(button.link.cardid.toString());
