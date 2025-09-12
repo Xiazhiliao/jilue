@@ -18182,7 +18182,7 @@ export default {
 							if (arg?.card?.name != "sha") {
 								return false;
 							}
-							const esRecord = player.getVCards("e", vcard => vcard.storage?.jlsg_zhuren?.length).flatMap(vcard => vcard.storage.jlsg_zhuren);
+							const esRecord = player.getVCards("e").concat(player.getExpansions("jlsg_jinlong")).flatMap(vcard => Object.keys(vcard.storage?.jlsg_zhuren||{})||[]);
 							if (tag === "directHit_ai") {
 								return esRecord.includes("15");
 							}
@@ -18190,7 +18190,7 @@ export default {
 						},
 						effect: {
 							target(card, player, target, current) {
-								if (card?.storage?.jlsg_zhuren?.some(i => i.startsWith("3"))) {
+								if (Object.keys(card?.storage?.jlsg_zhuren||{}).some(i => i.startsWith("3"))) {
 									return [1, -2];
 								}
 							},
