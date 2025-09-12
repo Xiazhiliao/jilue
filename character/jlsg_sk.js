@@ -17640,14 +17640,14 @@ export default {
 						content: async function (event, trigger, player) {
 							trigger.baseDamage += event.num;
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
 					12: {
 						str: "锁定技，你使用的【杀】的目标上限+1",
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
 					13: {
@@ -17655,14 +17655,14 @@ export default {
 						content: async function (event, trigger, player) {
 							await player.draw(event.num);
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(player.hasUseTarget("sha") ? get.effect(player, { name: "draw" }, player, viewer) : 0) * num;
 						},
 					},
 					14: {
 						str: "锁定技，攻击范围+1，使用【杀】的次数上限+1",
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
 					15: {
@@ -17671,13 +17671,13 @@ export default {
 							trigger.directHit.addArray(game.players);
 						},
 						postive(player, viewer) {
-							return 2;
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
 						},
 					},
 					16: {
 						str: "锁定技，你使用的【杀】无视防具",
 						postive(player, viewer) {
-							return 2;
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
 						},
 					},
 				},
@@ -17691,8 +17691,8 @@ export default {
 								}
 							}
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
 					22: {
@@ -17709,8 +17709,8 @@ export default {
 								await player.gain(cards, "draw2");
 							}
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
 					23: {
@@ -17719,8 +17719,8 @@ export default {
 							await player.gainMaxHp(event.num);
 							await player.recover(event.num);
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(get.effect(player, { name: "recover" }, player, viewer)) * num;
 						},
 					},
 					24: {
@@ -17732,8 +17732,8 @@ export default {
 								}
 							}
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
 					25: {
@@ -17747,7 +17747,7 @@ export default {
 							}
 						},
 						postive(player, viewer) {
-							return 2;
+							return get.sgnAttitude(viewer, player);
 						},
 					},
 					26: {
@@ -17761,7 +17761,7 @@ export default {
 							}
 						},
 						postive(player, viewer) {
-							return 2;
+							return get.sgnAttitude(viewer, player);
 						},
 					},
 				},
@@ -17772,8 +17772,8 @@ export default {
 							await player.loseHp(event.num);
 							await player.loseMaxHp(event.num);
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(get.effect(player, { name: "losehp" }, player, viewer)) * num;
 						},
 					},
 					32: {
@@ -17785,8 +17785,8 @@ export default {
 								}
 							}
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(get.effect(player, { name: "sha" }, player, viewer)) * num;
 						},
 					},
 					33: {
@@ -17798,14 +17798,14 @@ export default {
 								await player.discard(cards.randomGets(event.num));
 							}
 						},
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return Math.sign(get.effect(player, { name: "guohe_copy2" }, player, viewer)) * num;
 						},
 					},
 					34: {
 						str: "锁定技，攻击范围+1，手牌上限-1",
-						postive(player, viewer) {
-							return 2;
+						postive(player, viewer, num = 1) {
+							return get.sgnAttitude(viewer, player) * num;
 						},
 					},
 					35: {
@@ -17832,7 +17832,7 @@ export default {
 							await player.changeSkills(shaRelatedList.randomGets(1), skills.randomGets(1));
 						},
 						postive(player, viewer) {
-							return 2;
+							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
 						},
 					},
 					36: {
@@ -17846,7 +17846,7 @@ export default {
 							}
 						},
 						postive(player, viewer) {
-							return 2;
+							return get.sgnAttitude(viewer, player);
 						},
 					},
 				},
@@ -17972,6 +17972,22 @@ export default {
 							const es = player.getVCards("e").concat(player.getExpansions("jlsg_jinlong"));
 							const reduce = es.reduce((sum, vcard) => sum + (vcard.storage?.jlsg_zhuren?.["34"] || 0), 0);
 							return num - reduce;
+						},
+						aiValue(player, card, num) {
+							const storage = card?.storage?.jlsg_zhuren || {};
+							let list = { 1: 0, 2: 0, 3: 0 };
+							for (let i in list) {
+								for (let j in storage) {
+									if (j.startsWith(i)) {
+										list[i] += storage[j];
+									}
+								}
+							}
+							let numx = list["1"] + list["2"] - list["3"];
+							return num + numx;
+						},
+						aiUseful(player, card, num) {
+							return lib.skill.jlsg_zhuren_extraSkill.mod.aiValue.apply(this, arguments);
 						},
 					},
 					trigger: {
@@ -18182,17 +18198,61 @@ export default {
 							if (arg?.card?.name != "sha") {
 								return false;
 							}
-							const esRecord = player.getVCards("e").concat(player.getExpansions("jlsg_jinlong")).flatMap(vcard => Object.keys(vcard.storage?.jlsg_zhuren||{})||[]);
+							const esRecord = player
+								.getVCards("e")
+								.concat(player.getExpansions("jlsg_jinlong"))
+								.flatMap(vcard => Object.keys(vcard.storage?.jlsg_zhuren || {}) || []);
 							if (tag === "directHit_ai") {
 								return esRecord.includes("15");
 							}
 							return esRecord.includes("16");
 						},
 						effect: {
-							target(card, player, target, current) {
-								if (Object.keys(card?.storage?.jlsg_zhuren||{}).some(i => i.startsWith("3"))) {
-									return [1, -2];
+							player_use(card, player, target) {
+								if (card.name != "sha") {
+									return;
 								}
+								_status.jlsg_zhuren_getEffect = true;
+								const esStorage = player
+										.getVCards("e")
+										.concat(player.getExpansions("jlsg_jinlong"))
+										.map(card => card.storage?.jlsg_zhuren || {})
+										.reduce((list, info) => {
+											for (let i in info) {
+												if (!list[i]) {
+													list[i] = 0;
+												}
+												list[i] += info[i];
+												return list;
+											}
+										}, {}),
+									effects = Object.fromEntries(Object.values(lib.skill.jlsg_zhuren.effects).flatMap(i => Object.entries(i)));
+								let list = { 1: 0, 2: 0, 3: 0 };
+								for (let i in list) {
+									for (let j in esStorage) {
+										if (j.startsWith(i)) {
+											list[i] += effects[j].positive(player, player, esStorage[j]);
+										}
+									}
+								}
+								let num = list["1"] + list["2"] - list["3"];
+								delete _status.jlsg_zhuren_getEffect;
+								return [1, num];
+							},
+							target_use(card, player, target, current) {
+								_status.jlsg_zhuren_getEffect = true;
+								const storage = card?.storage?.jlsg_zhuren || {};
+								let list = { 1: 0, 2: 0, 3: 0 };
+								for (let i in list) {
+									for (let j in storage) {
+										if (j.startsWith(i)) {
+											list[i] += storage[j];
+										}
+									}
+								}
+								let num = list["1"] + list["2"] - list["3"];
+								delete _status.jlsg_zhuren_getEffect;
+								return [1, num];
 							},
 						},
 					},
