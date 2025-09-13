@@ -1107,7 +1107,7 @@ export default {
 				if (name == "phaseBegin") {
 					return event.getRand("jlsg_yaozhi") >= 0.5;
 				} else if (name == "phaseZhunbeiBegin") {
-					const map = event.getParent("phase")._rand_map;
+					const map = event.getParent("phase")?._rand_map || {};
 					if (!("jlsg_yaozhi" in map)) {
 						return true;
 					}
