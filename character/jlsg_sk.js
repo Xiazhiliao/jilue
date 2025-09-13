@@ -17792,8 +17792,8 @@ export default {
 					33: {
 						str: "锁定技，当你使用【杀】时，你随机弃置1张除此牌外的牌",
 						content: async function (event, trigger, player) {
-							const ignore = event.vcard?.cards || [];
-							const cards = player.getDiscardableCards(player, "e", card => !ignore.includes(card));
+							const ignore = event.card?.cards || [];
+							const cards = player.getDiscardableCards(player, "he", card => !ignore.includes(card));
 							if (cards.length) {
 								await player.discard(cards.randomGets(event.num));
 							}
@@ -18073,6 +18073,7 @@ export default {
 									next._trigger = trigger;
 									next.player = player;
 									next.num = list[check];
+									next.card = card;
 									next.setContent(effects[check].content);
 									await next;
 								}
@@ -18182,7 +18183,6 @@ export default {
 										next._trigger = trigger;
 										next.player = player;
 										next.num = list[check];
-										next.card = card;
 										next.setContent(effects[check].content);
 										await next;
 									}
