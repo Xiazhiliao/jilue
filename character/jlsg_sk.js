@@ -17640,13 +17640,13 @@ export default {
 						content: async function (event, trigger, player) {
 							trigger.baseDamage += event.num;
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
 					12: {
 						str: "锁定技，你使用的【杀】的目标上限+1",
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
@@ -17655,13 +17655,13 @@ export default {
 						content: async function (event, trigger, player) {
 							await player.draw(event.num);
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(player.hasUseTarget("sha") ? get.effect(player, { name: "draw" }, player, viewer) : 0) * num;
 						},
 					},
 					14: {
 						str: "锁定技，攻击范围+1，使用【杀】的次数上限+1",
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
@@ -17670,13 +17670,13 @@ export default {
 						content: async function (event, trigger, player) {
 							trigger.directHit.addArray(game.players);
 						},
-						postive(player, viewer) {
+						positive(player, viewer) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
 						},
 					},
 					16: {
 						str: "锁定技，你使用的【杀】无视防具",
-						postive(player, viewer) {
+						positive(player, viewer) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
 						},
 					},
@@ -17691,7 +17691,7 @@ export default {
 								}
 							}
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
@@ -17709,7 +17709,7 @@ export default {
 								await player.gain(cards, "draw2");
 							}
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
@@ -17719,7 +17719,7 @@ export default {
 							await player.gainMaxHp(event.num);
 							await player.recover(event.num);
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(get.effect(player, { name: "recover" }, player, viewer)) * num;
 						},
 					},
@@ -17732,7 +17732,7 @@ export default {
 								}
 							}
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
 						},
 					},
@@ -17746,7 +17746,7 @@ export default {
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
-						postive(player, viewer) {
+						positive(player, viewer) {
 							return get.sgnAttitude(viewer, player);
 						},
 					},
@@ -17760,7 +17760,7 @@ export default {
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
-						postive(player, viewer) {
+						positive(player, viewer) {
 							return get.sgnAttitude(viewer, player);
 						},
 					},
@@ -17772,7 +17772,7 @@ export default {
 							await player.loseHp(event.num);
 							await player.loseMaxHp(event.num);
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(get.effect(player, { name: "losehp" }, player, viewer)) * num;
 						},
 					},
@@ -17785,7 +17785,7 @@ export default {
 								}
 							}
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(get.effect(player, { name: "sha" }, player, viewer)) * num;
 						},
 					},
@@ -17798,13 +17798,13 @@ export default {
 								await player.discard(cards.randomGets(event.num));
 							}
 						},
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return Math.sign(get.effect(player, { name: "guohe_copy2" }, player, viewer)) * num;
 						},
 					},
 					34: {
 						str: "锁定技，攻击范围+1，手牌上限-1",
-						postive(player, viewer, num = 1) {
+						positive(player, viewer, num = 1) {
 							return get.sgnAttitude(viewer, player) * num;
 						},
 					},
@@ -17831,7 +17831,7 @@ export default {
 							}
 							await player.changeSkills(shaRelatedList.randomGets(1), skills.randomGets(1));
 						},
-						postive(player, viewer) {
+						positive(player, viewer) {
 							return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
 						},
 					},
@@ -17845,7 +17845,7 @@ export default {
 								lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
 							}
 						},
-						postive(player, viewer) {
+						positive(player, viewer) {
 							return get.sgnAttitude(viewer, player);
 						},
 					},
