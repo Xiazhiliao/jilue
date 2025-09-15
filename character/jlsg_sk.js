@@ -13521,7 +13521,7 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			locked: false,
 			mod: {
-				playerEnabled: (card, player, target) => {
+				playerEnabled(card, player, target) {
 					let info = get.info(card);
 					if (info.type != "equip") {
 						return;
@@ -13549,6 +13549,7 @@ export default {
 					if (!player.isPhaseUsing()) {
 						return;
 					}
+					num = get.select(num);
 					if (num[1] < 0) {
 						if (num[0] === num[1]) {
 							num[0] = 1;
@@ -13562,38 +13563,28 @@ export default {
 				if (get.type(event.card) != "equip") {
 					return false;
 				}
-				let cards = lib.inpile
-					.filter(c => lib.card[c].type === "basic")
-					.map(c => {
-						let cards = [{ name: c, isCard: true }];
-						if (c == "sha") {
-							for (let nature of lib.inpile_nature) {
-								cards.push({ name: c, nature, isCard: true });
-							}
-						}
-						return cards;
-					})
-					.flat()
-					.filter(c => player.hasUseTarget(c, undefined, false));
-				return cards.length;
+				const vcards = get.inpileVCardList(([type, _, name, nature]) => {
+					if (type != "basic") {
+						return false;
+					}
+					const vcard = get.autoViewAs({ name, nature, isCard: true }, []);
+					return player.hasUseTarget(vcard, false, false);
+				});
+				return vcards.length;
 			},
 			direct: true,
 			async content(event, trigger, player) {
-				let cards = lib.inpile
-					.filter(c => lib.card[c].type === "basic")
-					.map(c => {
-						let cards = [{ name: c, isCard: true }];
-						if (c == "sha") {
-							for (let nature of lib.inpile_nature) {
-								cards.push({ name: c, nature, isCard: true });
-							}
-						}
-						return cards;
-					})
-					.flat()
-					.filter(c => player.hasUseTarget(c, undefined, false));
-
-				let { result } = await player.chooseButton([get.prompt("jlsg_qinguo"), [cards.map(c => ["基本", "", c.name, c.nature]), "vcard"]]);
+				const vcards = get.inpileVCardList(([type, _, name, nature]) => {
+					if (type != "basic") {
+						return false;
+					}
+					const vcard = get.autoViewAs({ name, nature, isCard: true }, []);
+					return player.hasUseTarget(vcard, false, false);
+				});
+				let { result } = await player.chooseButton([get.prompt("jlsg_qinguo"), [vcards, "vcard"]]).set("ai", ({ link: [_, __, name, nature] }) => {
+					const vcard = get.autoViewAs({ name, nature, isCard: true }, []);
+					return player.getUseValue(vcard, false, false);
+				});
 				if (!result.bool) {
 					return;
 				}
@@ -13604,54 +13595,22 @@ export default {
 			subSkill: {
 				gain: {
 					audio: "jlsg_qinguo",
-					trigger: {
-						global: ["equipAfter", "loseAfter", "loseAsyncAfter", "cardsDiscardAfter"],
-					},
+					trigger: { global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"] },
 					filter(event, player) {
 						let cards = this.getCards(event, player);
 						return cards.length;
-					},
-					getCards(event, player) {
-						if (event.name == "cardsDiscard") {
-							// 装备牌转化出牌
-							let parent = event.getParent();
-							if (parent.name !== "orderingDiscard") {
-								return false;
-							}
-							let source = parent.relatedEvent || parent.getParent();
-							let dcards = event.getd().filter(c => get.type(c) == "equip");
-							let lcards = new Set();
-							for (let p of game.filterPlayer(p => p != player)) {
-								let events = p.getHistory("lose", e => source == (e.relatedEvent || e.getParent()));
-								for (let plose of events) {
-									for (let v of plose.getl(p).es) {
-										lcards.add(v);
-									}
-								}
-							}
-							return dcards.filter(c => lcards.has(c)).filterInD("d");
-						}
-						let lcards = game
-							.filterPlayer(p => p != player)
-							.map(p => event.getl(p).es)
-							.flat();
-						let dcards = game
-							.filterPlayer(p => p != player)
-							.map(p => event.getd(p))
-							.flat();
-						return lcards.filter(c => get.type(c) == "equip" && dcards.includes(c)).filterInD("d");
 					},
 					usable: 1,
 					async cost(event, trigger, player) {
 						let cards = lib.skill.jlsg_qinguo_gain.getCards(trigger, player);
 						if (cards.length == 1) {
-							let prompt = `###${get.prompt("jlsg_qinguo")}###获得弃牌堆中的${get.translation(cards[0])}`;
+							let prompt = `###${get.prompt("jlsg_qinguo")}###获得弃牌堆中的${get.translation(cards)}`;
 							event.result = await player.chooseBool(prompt, true).forResult();
 							if (event.result.bool) {
 								event.result.cards = cards;
 							}
 						} else {
-							let prompt = `###${get.prompt("jlsg_qinguo")}###获得弃牌堆中的一张装备`;
+							let prompt = `###${get.prompt("jlsg_qinguo")}###获得弃牌堆中的一张牌`;
 							event.result = await player
 								.chooseCardButton(prompt, cards)
 								.set("ai", button => {
@@ -13675,6 +13634,27 @@ export default {
 					},
 					async content(event, trigger, player) {
 						await player.gain(event.cards[0], "gain2");
+					},
+					getCards(event, player) {
+						if (!event.getd || !event.getl) {
+							return false;
+						}
+						let cards = event.getd();
+						return cards.filter(card => {
+							if (get.position(card) != "d") {
+								return false;
+							}
+							return game.hasPlayer(current => {
+								let evt = event.getl(current);
+								if (!evt?.es?.includes(card)) {
+									return false;
+								}
+								if (card.willBeDestroyed("discardPile", current, event)) {
+									return false;
+								}
+								return true;
+							});
+						});
 					},
 				},
 			},
