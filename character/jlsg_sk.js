@@ -17602,33 +17602,38 @@ export default {
 								const { cardPrompt } = info;
 								info.jlsg_zhuren_cardPrompt = cardPrompt;
 							}
-							info.cardPrompt = function (card) {
-								const info = get.info(card);
-								let str = "";
-								if (info.jlsg_zhuren_cardPrompt) {
-									str += info.jlsg_zhuren_cardPrompt(card);
+							info.cardPrompt = function (card, player) {
+								let str = "",
+									info;
+								if (!card?.name) {
+									info = this;
 								} else {
-									if (lib.translate[card.name + "_info"]) {
-										str += lib.translate[card.name + "_info"];
+									info = get.info(card, false);
+								}
+								if (info.jlsg_zhuren_cardPrompt) {
+									str += info.jlsg_zhuren_cardPrompt(card, player);
+								} else if (lib.translate[card.name + "_info"]) {
+									str += lib.translate[card.name + "_info"];
+								}
+								if (card) {
+									let cardx = card;
+									const cardSymbol = card[card["cardSymbol"]];
+									if (cardSymbol) {
+										cardx = cardSymbol;
 									}
-								}
-								let cardx = card;
-								const cardSymbol = card[card["cardSymbol"]];
-								if (cardSymbol) {
-									cardx = cardSymbol;
-								}
-								if (Object.keys(cardx.storage?.jlsg_zhuren || {}).length) {
-									str += `<br><span style="color: #8b2caeff" data-nature="graymm">附魔效果</span>：<br>`;
-									const list = cardx.storage.jlsg_zhuren,
-										effects = Object.fromEntries(Object.values(lib.skill.jlsg_zhuren.effects).flatMap(i => Object.entries(i))),
-										str2 = [];
-									for (let i in effects) {
-										if (!list[i]) {
-											continue;
+									if (Object.keys(cardx.storage?.jlsg_zhuren || {}).length) {
+										str += `<br><span style="color: #8b2caeff" data-nature="graymm">附魔效果</span>：<br>`;
+										const list = cardx.storage.jlsg_zhuren,
+											effects = Object.fromEntries(Object.values(lib.skill.jlsg_zhuren.effects).flatMap(i => Object.entries(i))),
+											str2 = [];
+										for (let i in effects) {
+											if (!list[i]) {
+												continue;
+											}
+											str2.push(effects[i].str.replaceAll(/\d+/g, list[i]));
 										}
-										str2.push(effects[i].str.replaceAll(/\d+/g, list[i]));
+										str += str2.join("<br>");
 									}
-									str += str2.join("<br>");
 								}
 								return str;
 							};
