@@ -441,62 +441,97 @@ export default {
 		jlsg_huaiju: {
 			audio: "ext:极略/audio/skill:2",
 			trigger: {
-				player: ["phaseJudgeEnd", "phaseDrawEnd", "phaseUseEnd", "phaseDiscardEnd", "phaseJieshuEnd"],
+				get player() {
+					return lib.phaseName.map(i => i + "End");
+				},
 			},
-			filter: function (event, player) {
+			filter(event, player) {
 				return player.countCards("h") == 3;
 			},
-			content: function () {
-				"step 0"
-				player.chooseControl("摸牌", "弃牌", function (event, player) {
-					return "摸牌";
-				}).prompt = "怀橘：你可以摸一张牌或弃置两张牌";
-				"step 1"
-				if (result.control == "摸牌") {
-					player.draw();
+			async cost(event, trigger, player) {
+				const control = await player
+					.chooseControl("摸牌", "弃牌", "cancel2")
+					.set("prompt", get.prompt(event.skill))
+					.set("prompt2", "你可以摸一张牌或弃置两张牌")
+					.set("ai", (event, player) => {
+						const drawEff = get.effect(player, { name: "draw" }, player, player),
+							discardEff = get.effect(player, { name: "guohe_copy2" }, player, player);
+						if (drawEff >= discardEff) {
+							return "摸牌";
+						}
+						return "弃牌";
+					})
+					.forResultControl();
+				event.result = {
+					bool: control != "cancel2",
+					cost_data: { control },
+				};
+			},
+			async content(event, trigger, player) {
+				const control = event.cost_data.control;
+				if (control == "摸牌") {
+					await player.draw(1);
 				} else {
-					player.chooseToDiscard("he", 2, true);
+					await player.chooseToDiscard("he", 2, true);
 				}
 			},
 		},
 		jlsg_huntian: {
 			audio: "ext:极略/audio/skill:2",
-			trigger: { player: "discardEnd" },
-			filter: function (event, player) {
-				for (var i = 0; i < event.cards.length; i++) {
-					if (get.position(event.cards[i]) == "d") {
-						return true;
-					}
+			trigger: {
+				player: "loseAfter",
+				global: "loseAsyncAfter",
+			},
+			filter(event, player) {
+				if (event.type != "discard" || event.getlx === false) {
+					return false;
+				}
+				const evt = event.getl?.(player);
+				if (evt?.cards2?.length) {
+					return evt.cards2.someInD("d");
 				}
 				return false;
 			},
-			content: function () {
-				"step 0"
-				event.list = [];
-				for (var i = 0; i < trigger.cards.length; i++) {
-					if (get.position(trigger.cards[i]) == "d") {
-						event.list.push(trigger.cards[i]);
-					}
-				}
-				"step 1"
-				player.chooseCardButton("将任意张牌置于牌堆顶(后选在上)", event.list, [1, Infinity], true).ai = function (button) {
-					if (ui.selected.buttons.length) {
-						return 0;
-					}
-					return 2 + Math.random();
+			async cost(event, trigger, player) {
+				const cards = trigger.getl(player).cards2.filterInD("d");
+				const { result } = await player
+					.chooseToMove("浑天：将任意张牌置于牌堆顶，然后从牌堆中获得与这些牌类别各不同的一张牌")
+					.set("list", [["本次弃置的牌", cards], ["牌堆顶"]])
+					.set("filterOk", moved => moved[1].length > 0)
+					.set("processAI", function (list) {
+						let cards = list[0][1].slice(0),
+							cards2 = [];
+						for (let card of cards) {
+							if (cards2.some(cardx => get.type(cardx) == get.type(card))) {
+								continue;
+							}
+							cards2.add(card);
+							if (cards2.length > 1) {
+								break;
+							}
+						}
+						return [[], cards2];
+					});
+				event.result = {
+					bool: result?.bool,
+					cards: result?.moved[1] || [],
 				};
-				"step 2"
-				event.cards = result.links;
-				player.lose(event.cards, ui.cardPile, "insert");
-				player.$throw(event.cards.length, 1000);
-				game.log(player, "将", event.cards, "置于牌堆顶");
-				"step 3"
-				for (var i = 0; i < ui.cardPile.childNodes.length; i++) {
-					var card = ui.cardPile.childNodes[i];
-					if (event.cards.every(c => get.type(card) != get.type(c))) {
-						player.gain(card, "gain2");
-						break;
-					}
+			},
+			async content(event, trigger, player) {
+				game.log(player, "将", event.cards, "置于了牌堆顶");
+				while (event.cards.length) {
+					ui.cardPile.insertBefore(event.cards.pop().fix(), ui.cardPile.firstChild);
+				}
+				let types = ["basic", "trick", "equip"].filter(type => !event.cards.some(card => get.type(card) == type));
+				if (!types.length) {
+					return;
+				}
+				let card = get.cardPile2(card => {
+					let type = get.type(card);
+					return types.includes(type);
+				}, "random");
+				if (card) {
+					await player.gain(card, "gain2");
 				}
 			},
 		},
