@@ -3878,17 +3878,19 @@ export default {
 			audio: "ext:极略/audio/skill:2",
 			trigger: { player: "phaseDiscardBegin" },
 			frequent: true,
-			filter: function (event, player) {
+			filter(event, player) {
 				return player.countCards("h");
 			},
-			check: () => true,
-			content: function () {
-				player.draw(player.countCards("h"));
+			check(event, player) {
+				return get.effect(player, { name: "draw" }, player, player) > 0;
+			},
+			async content(event, trigger, player) {
+				await player.draw(player.countCards("h"));
 			},
 			ai: {
 				effect: {
-					player: function (card, player, target) {
-						var hs = player.countCards("h");
+					player(card, player, target) {
+						let hs = player.countCards("h");
 						if (player.hasSkill("jlsg_zhijiao")) {
 							if (
 								game.hasPlayer(function (cur) {
@@ -3905,61 +3907,80 @@ export default {
 			},
 		},
 		jlsg_zhijiao: {
-			audio: "ext:极略/audio/skill:2",
-			trigger: { player: "phaseJieshuBegin" },
-			unique: true,
 			limited: true,
-			direct: true,
-			init: function (player) {
-				player.storage.jlsg_zhijiao = false;
-				player.storage.jlsg_zhijiao2 = [];
-			},
-			filter: function (event, player) {
-				return !player.storage.jlsg_zhijiao && player.storage.jlsg_zhijiao2.length;
-			},
 			mark: true,
 			intro: {
 				content: "limited",
 			},
-			content: function () {
-				"step 0"
-				player.chooseTarget("是否发动【至交】？", function (card, player, target) {
-					return player != target;
-				}).ai = function (target) {
-					var cardnum = player.storage.jlsg_zhijiao2.length;
-					var att = get.attitude(player, target);
-					if (att <= 0) {
-						return 0;
-					}
-					var result = Math.max(9 - target.countCards("he"), 1);
-					if (target.hasJudge("lebu")) {
-						result -= 2;
-					}
-					result = Math.max(1, result);
-					result += att;
-					if (cardnum >= 5) {
-						return result;
-					}
-					if (player.hp == 2 && cardnum >= 4) {
-						return result;
-					}
-					if (player.hp == 1) {
-						return result;
-					}
-					return 0;
-				};
-				"step 1"
-				if (result.bool) {
-					player.storage.jlsg_zhijiao = true;
-					player.logSkill("jlsg_zhijiao", result.targets[0]);
-					result.targets[0].gain(player.storage.jlsg_zhijiao2, "gain2");
-					player.awakenSkill("jlsg_zhijiao");
-				}
-				player.storage.jlsg_zhijiao2 = [];
+			audio: "ext:极略/audio/skill:2",
+			trigger: { player: "phaseJieshuBegin" },
+			filter(event, player) {
+				return game
+					.getGlobalHistory("cardMove", function (evt) {
+						if (evt.name != "lose" || evt.type != "discard" || evt.player != player) {
+							return false;
+						}
+						return evt.cards2.someInD("d");
+					})
+					.flatMap(evt => evt.cards2.filterInD("d"))
+					.unique().length;
 			},
-			group: ["jlsg_zhijiao2"],
+			async cost(event, trigger, player) {
+				const cards = game
+					.getGlobalHistory("cardMove", function (evt) {
+						if (evt.name != "lose" || evt.type != "discard" || evt.player != player) {
+							return false;
+						}
+						return evt.cards2.someInD("d");
+					})
+					.flatMap(evt => evt.cards2.filterInD("d"))
+					.unique();
+
+				event.result = await player
+					.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
+						return player != target;
+					})
+					.set("ai", function (target) {
+						const { player, cards } = get.event();
+						let cardnum = cards.length,
+							att = get.attitude(player, target);
+						if (att <= 0) {
+							return 0;
+						}
+						var result = Math.max(9 - target.countCards("he"), 1);
+						if (target.hasJudge("lebu")) {
+							result -= 2;
+						}
+						result = Math.max(1, result);
+						result += att;
+						if (cardnum >= 5) {
+							return result;
+						}
+						if (player.hp == 2 && cardnum >= 4) {
+							return result;
+						}
+						if (player.hp == 1) {
+							return result;
+						}
+						return 0;
+					})
+					.set("cards", cards)
+					.forResult();
+				if (event.result?.bool) {
+					event.result.cards = cards;
+				}
+			},
+			async content(event, trigger, player) {
+				const {
+					targets: [target],
+					cards,
+				} = event;
+				player.awakenSkill("jlsg_zhijiao");
+				await target.gain(cards, "gain2");
+			},
 			ai: {
-				order: function (skill, player) {
+				threaten: 0.8,
+				order(skill, player) {
 					if (!player.hasSkill("jlsg_zhijiao")) {
 						return;
 					}
@@ -3969,7 +3990,7 @@ export default {
 					return 4;
 				},
 				result: {
-					target: function (player, target) {
+					target(player, target) {
 						if (!player.hasSkill("jlsg_zhijiao")) {
 							return;
 						}
@@ -3996,7 +4017,7 @@ export default {
 					},
 				},
 				effect: {
-					target: function (card, player, target) {
+					target(card, player, target) {
 						if (!player.hasSkill("jlsg_zhijiao")) {
 							return;
 						}
@@ -4013,39 +4034,6 @@ export default {
 						}
 					},
 				},
-				threaten: 0.8,
-			},
-		},
-		jlsg_zhijiao2: {
-			trigger: { player: "discardAfter" },
-			forced: true,
-			popup: false,
-			priority: -1,
-			filter: function (event, player) {
-				if (player.storage.jlsg_zhijiao) {
-					return false;
-				}
-				if (_status.currentPhase != player) {
-					return false;
-				}
-				for (var i = 0; i < event.cards.length; i++) {
-					if (get.position(event.cards[i]) == "d") {
-						return true;
-					}
-				}
-				return false;
-			},
-			content: function () {
-				for (var i = 0; i < trigger.cards.length; i++) {
-					if (get.position(trigger.cards[i]) == "d") {
-						player.storage.jlsg_zhijiao2 = player.storage.jlsg_zhijiao2.concat(trigger.cards[i]);
-					}
-				}
-				player.syncStorage("jlsg_zhijiao2");
-				player.markSkill("jlsg_zhijiao2");
-			},
-			intro: {
-				content: "cards",
 			},
 		},
 		jlsg_jiwux: {
