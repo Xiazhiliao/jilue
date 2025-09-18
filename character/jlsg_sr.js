@@ -1810,7 +1810,9 @@ export default {
 				const card = result.links[0];
 				await player.showCards(card);
 				if (get.suit(card, target) == "diamond") {
-					await target.addJudge("lebu", [card]);
+					if (target.canAddJudge({ name: "lebu", cards: [card] })) {
+						await target.addJudge("lebu", [card]);
+					}
 				} else {
 					if (lib.filter.canBeGained(card, player, target)) {
 						await player.gain(card, target, "give").set("visible", true);
