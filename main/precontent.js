@@ -138,7 +138,9 @@ export async function precontent(config, originalPack) {
 				let list = [],
 					skills = args[0];
 				if (this.getSkills(null, false, false)) {
-					if (!Array.isArray(skills)) skills = [skills];
+					if (!Array.isArray(skills)) {
+						skills = [skills];
+					}
 					for (let sk of skills) {
 						if (!lib.skill[sk]?.skillBlocker) {
 							list.add(sk);
@@ -148,7 +150,9 @@ export async function precontent(config, originalPack) {
 							if (lib.skill[sk]?.skillBlocker(sk2, this)) {
 								list.remove(sk);
 								break;
-							} else list.add(sk);
+							} else {
+								list.add(sk);
+							}
 						}
 					}
 					skills.removeArray(list);
@@ -162,9 +166,13 @@ export async function precontent(config, originalPack) {
 						event.special = [];
 						if (Array.isArray(event.args[0])) {
 							for (let i of event.args[0]) {
-								if (["hm_podai_sb", "dcjiezhen_blocker"].includes(i)) event.special.add(i);
+								if (["hm_podai_sb", "dcjiezhen_blocker"].includes(i)) {
+									event.special.add(i);
+								}
 							}
-						} else if (["hm_podai_sb", "dcjiezhen_blocker"].includes(event.args[0])) event.special = event.args[0];
+						} else if (["hm_podai_sb", "dcjiezhen_blocker"].includes(event.args[0])) {
+							event.special = event.args[0];
+						}
 						if (event.special.includes("dcjiezhen_blocker")) {
 							let skills = event.player.getSkills(null, false, false).filter(function (i) {
 								if (i == "bazhen") {
@@ -189,7 +197,9 @@ export async function precontent(config, originalPack) {
 				list = [];
 				for (let sk of skills) {
 					for (let sk2 of this.getSkills(null, false, false)) {
-						if (lib.skill[sk].skillBlocker(sk2, this)) list.add(sk2);
+						if (lib.skill[sk].skillBlocker(sk2, this)) {
+							list.add(sk2);
+						}
 					}
 				}
 				evt.disableSkills = list;
@@ -206,7 +216,9 @@ export async function precontent(config, originalPack) {
 		lib.element.player.hasSkills = function (skills) {
 			var skill = skills.split("|");
 			for (var i = 0; i < skill.length; i++) {
-				if (this.hasSkill(skill[i])) return true;
+				if (this.hasSkill(skill[i])) {
+					return true;
+				}
 			}
 			return false;
 		};
@@ -220,10 +232,16 @@ export async function precontent(config, originalPack) {
 				Array.from(document.getElementsByClassName("character"))
 					.filter(c => c.link)
 					.forEach(c => logC(c.link));
-				if (!game.players || !game.players.forEach) return;
+				if (!game.players || !game.players.forEach) {
+					return;
+				}
 				game.players.forEach(p => {
-					if (p.name1) logC(p.name1);
-					if (p.name2) logC(p.name2);
+					if (p.name1) {
+						logC(p.name1);
+					}
+					if (p.name2) {
+						logC(p.name2);
+					}
 				});
 			},
 			debugProperty(obj, name, get = true, set = true) {
@@ -236,11 +254,10 @@ export async function precontent(config, originalPack) {
 				}
 				Object.defineProperty(obj, name, {
 					get() {
-						debugger;
 						return this["__" + name + "__"];
 					},
 					set(value) {
-						debugger;
+						// eslint-disable-next-line no-setter-return
 						return (this["__" + name + "__"] = value);
 					},
 				});
@@ -330,14 +347,18 @@ export async function precontent(config, originalPack) {
 			console.assert(sum > 0, `utils.distributionGet received param ${JSON.stringify(dist)}`);
 			dist = dist.map(v => v / sum);
 			for (let i = 0; ; ) {
-				if (res < dist[i]) return i;
+				if (res < dist[i]) {
+					return i;
+				}
 				res -= dist[i];
 				++i;
 			}
 		},
 		showRepo() {
 			var mirrorURL = lib.extensionPack["极略"] && lib.extensionPack["极略"].mirrorURL;
-			if (!mirrorURL) return;
+			if (!mirrorURL) {
+				return;
+			}
 			this.openLink(mirrorURL);
 		},
 		openLink(url) {
@@ -556,10 +577,11 @@ export async function precontent(config, originalPack) {
 				for (let [i, f] of files.entries()) {
 					switch (f.status) {
 						case "added":
-						case "modified":
+						case "modified": {
 							let blob = blobMap.get(f.sha);
 							lib.node.fs.writeFile(prefix + f.filename, Buffer.from(blob), e => e && console.log(f, e));
 							break;
+						}
 						case "removed":
 							lib.node.fs.rm(prefix + f.filename, e => e && console.log(f, e));
 							break;
@@ -577,7 +599,7 @@ export async function precontent(config, originalPack) {
 						for (let [i, f] of files.entries()) {
 							switch (f.status) {
 								case "added":
-								case "modified":
+								case "modified": {
 									let blob = blobMap.get(f.sha);
 									dirEntry.getFile(f.filename, { create: true }, function (fileEntry) {
 										fileEntry.createWriter(function (fileWriter) {
@@ -585,6 +607,7 @@ export async function precontent(config, originalPack) {
 										});
 									});
 									break;
+								}
 								case "removed":
 									dirEntry.getFile(f.filename, function (fileEntry) {
 										fileEntry.remove();
@@ -619,12 +642,24 @@ export async function precontent(config, originalPack) {
 		},
 		getLoseHpEffect(player) {
 			var loseHpEffect = -3;
-			if (player.hp == 1) loseHpEffect *= 2.5;
-			if (player.hp == 2) loseHpEffect *= 1.8;
-			if (player.hp == 4) loseHpEffect *= 0.9;
-			if (player.hp == 5) loseHpEffect *= 0.8;
-			if (player.hp > 5) loseHpEffect *= 0.6;
-			if (player.hasSkillTag("maihp")) loseHpEffect += 3;
+			if (player.hp == 1) {
+				loseHpEffect *= 2.5;
+			}
+			if (player.hp == 2) {
+				loseHpEffect *= 1.8;
+			}
+			if (player.hp == 4) {
+				loseHpEffect *= 0.9;
+			}
+			if (player.hp == 5) {
+				loseHpEffect *= 0.8;
+			}
+			if (player.hp > 5) {
+				loseHpEffect *= 0.6;
+			}
+			if (player.hasSkillTag("maihp")) {
+				loseHpEffect += 3;
+			}
 			return loseHpEffect;
 		},
 		ai: {
@@ -694,20 +729,34 @@ export async function precontent(config, originalPack) {
 			if (keep) {
 				return jlsg.isKongcheng(player) && (player.hasSkill("kongcheng") || (player.hasSkill("zhiji") && !player.storage.zhiji));
 			}
-			if (!jlsg.hasLoseHandcardEffective(player) && !jlsg.isKongcheng(player)) return true;
-			if (player.hasSkill("zhiji") && !player.storage.zhiji) return true;
+			if (!jlsg.hasLoseHandcardEffective(player) && !jlsg.isKongcheng(player)) {
+				return true;
+			}
+			if (player.hasSkill("zhiji") && !player.storage.zhiji) {
+				return true;
+			}
 			return player.hasSkills(jlsg.ai.skill.need_kongcheng);
 		},
 		hasBaguaEffect: function (player) {
-			if (player.countCards("e", "bagua")) return true;
-			if (player.hasSkill("bazhen") && !player.get("e", "2")) return true;
-			if (player.hasSkill("linglong") && !player.get("e", "2")) return true;
+			if (player.countCards("e", "bagua")) {
+				return true;
+			}
+			if (player.hasSkill("bazhen") && !player.get("e", "2")) {
+				return true;
+			}
+			if (player.hasSkill("linglong") && !player.get("e", "2")) {
+				return true;
+			}
 			return false;
 		},
 		hasBuquEffect: function (player) {
 			if (player.hasSkill("buqu")) {
-				if (player.storage.buqu == undefined) return true;
-				if (player.storage.buqu && player.storage.buqu.length <= 4) return true;
+				if (player.storage.buqu == undefined) {
+					return true;
+				}
+				if (player.storage.buqu && player.storage.buqu.length <= 4) {
+					return true;
+				}
 				return false;
 			}
 			return false;
@@ -715,15 +764,27 @@ export async function precontent(config, originalPack) {
 		hasZhuqueEffect: function (player) {
 			var cards = player.get("h");
 			for (var i = 0; i < cards.length; i++) {
-				if (cards[i].name == "sha" && cards[i].nature == "fire") return true;
-				if (player.countCards("e", "zhuque") && cards[i].name == "sha" && !cards[i].nature) return true;
+				if (cards[i].name == "sha" && cards[i].nature == "fire") {
+					return true;
+				}
+				if (player.countCards("e", "zhuque") && cards[i].name == "sha" && !cards[i].nature) {
+					return true;
+				}
 			}
 			return false;
 		},
 		hasJiuEffect: function (player) {
-			if (player.hasSkills("jiu|boss_zuijiu|luoyi2|reluoyi2|jie|nuzhan2|anjian|jlsg_huxiao|jlsg_jiwu_buff1|jlsg_wenjiu3")) return true;
-			if (player.hasSkills("jlsg_ganglie_damage|jlsg_fenwei")) return true;
-			if (player.hasSkill("jieyuan") && player.countCards("h") >= 2) if (player.hasSkill("chouhai") && jlsg.isKongcheng(player)) return true;
+			if (player.hasSkills("jiu|boss_zuijiu|luoyi2|reluoyi2|jie|nuzhan2|anjian|jlsg_huxiao|jlsg_jiwu_buff1|jlsg_wenjiu3")) {
+				return true;
+			}
+			if (player.hasSkills("jlsg_ganglie_damage|jlsg_fenwei")) {
+				return true;
+			}
+			if (player.hasSkill("jieyuan") && player.countCards("h") >= 2) {
+				if (player.hasSkill("chouhai") && jlsg.isKongcheng(player)) {
+					return true;
+				}
+			}
 			if (player.hasSkill("qingxi")) {
 				var num = 1;
 				var info = get.info(player.get("e", "1"));
@@ -735,43 +796,77 @@ export async function precontent(config, originalPack) {
 			return false;
 		},
 		hasWushuangEffect: function (player) {
-			if (player.hasSkills("wushuang|jlsg_shejing")) return true;
+			if (player.hasSkills("wushuang|jlsg_shejing")) {
+				return true;
+			}
 			return false;
 		},
 		hasZhugeEffect: function (player) {
-			if (player.countCards("e", "zhuge")) return true;
-			if (player.hasSkills("paoxiao|tianyi2|zhanlong2|xianzhen2|jlsg_shayi")) return true;
+			if (player.countCards("e", "zhuge")) {
+				return true;
+			}
+			if (player.hasSkills("paoxiao|tianyi2|zhanlong2|xianzhen2|jlsg_shayi")) {
+				return true;
+			}
 			return false;
 		},
 		loseCardEffect: function (player) {
-			if (jlsg.needKongcheng(player)) return 3;
-			if (jlsg.getLeastHandcardNum(player) > 0) return 1;
+			if (jlsg.needKongcheng(player)) {
+				return 3;
+			}
+			if (jlsg.getLeastHandcardNum(player) > 0) {
+				return 1;
+			}
 			return -player.countCards("h");
 		},
 		gainCardEffect: function (player) {
-			if (jlsg.needKongcheng(target, true)) return -1;
-			if (jlsg.getOverflow(player)) return 0;
+			if (jlsg.needKongcheng(target, true)) {
+				return -1;
+			}
+			if (jlsg.getOverflow(player)) {
+				return 0;
+			}
 			return 3;
 		},
 		getLeastHandcardNum: function (player) {
 			var least = 0;
-			if (player.hasSkills("lianying|relianying") && least < 1) least = 1;
-			if (player.hasSkill("jlsg_ruya") && least < player.maxHp) least = player.maxHp;
-			if (player.hasSkill("shangshix") && least < 4) least = 4;
+			if (player.hasSkills("lianying|relianying") && least < 1) {
+				least = 1;
+			}
+			if (player.hasSkill("jlsg_ruya") && least < player.maxHp) {
+				least = player.maxHp;
+			}
+			if (player.hasSkill("shangshix") && least < 4) {
+				least = 4;
+			}
 			var jwfy = jlsg.findPlayerBySkillName("shoucheng");
-			if (least < 1 && jwfy && jlsg.isFriend(player, jwfy)) least = 1;
-			if (player.hasSkill("shangshi") && least < Math.min(2, jlsg.getLostHp(player))) least = Math.min(2, jlsg.getLostHp(player));
+			if (least < 1 && jwfy && jlsg.isFriend(player, jwfy)) {
+				least = 1;
+			}
+			if (player.hasSkill("shangshi") && least < Math.min(2, jlsg.getLostHp(player))) {
+				least = Math.min(2, jlsg.getLostHp(player));
+			}
 			return least;
 		},
 		hasLoseHandcardEffective: function (player) {
 			return player.countCards("h") > jlsg.getLeastHandcardNum(player);
 		},
 		isWeak: function (player) {
-			if (jlsg.hasBuquEffect(player)) return false;
-			if (player.hasSkill("longhun") && player.countCards("he") > 2) return false;
-			if (player.hasSkill("jlsg_longhun") && player.countCards("he") > 2) return false;
-			if (player.hasSkill("hunzi") && !player.storage.hunzi && player.hp > 1) return false;
-			if ((player.hp <= 2 && player.countCards("h") <= 2) || player.hp <= 1) return true;
+			if (jlsg.hasBuquEffect(player)) {
+				return false;
+			}
+			if (player.hasSkill("longhun") && player.countCards("he") > 2) {
+				return false;
+			}
+			if (player.hasSkill("jlsg_longhun") && player.countCards("he") > 2) {
+				return false;
+			}
+			if (player.hasSkill("hunzi") && !player.storage.hunzi && player.hp > 1) {
+				return false;
+			}
+			if ((player.hp <= 2 && player.countCards("h") <= 2) || player.hp <= 1) {
+				return true;
+			}
 			return false;
 		},
 		getLostHp: function (player) {
@@ -784,53 +879,91 @@ export async function precontent(config, originalPack) {
 				xueji: 1,
 				baobian: Math.max(0, player.maxHp - 3),
 			};
-			if (player.hasSkill("longhun") && player.countCards("he") > 2) return 1;
-			if (player.hasSkill("hunzi") && !player.storage.hunzi) return 2;
+			if (player.hasSkill("longhun") && player.countCards("he") > 2) {
+				return 1;
+			}
+			if (player.hasSkill("hunzi") && !player.storage.hunzi) {
+				return 2;
+			}
 			for (var i in arr) {
 				if (player.hasSkill(i)) {
 					return Math.max((player.isZhu && 3) || 2, player.maxHp - arr[i]);
 				}
 			}
-			if (player.hasSkill("renjie") && player.hasSkill("sbaiyin")) return player.maxHp - 1;
-			if (player.hasSkill("quanji") && player.hasSkill("zili")) return player.maxHp - 1;
+			if (player.hasSkill("renjie") && player.hasSkill("sbaiyin")) {
+				return player.maxHp - 1;
+			}
+			if (player.hasSkill("quanji") && player.hasSkill("zili")) {
+				return player.maxHp - 1;
+			}
 			return player.maxHp;
 		},
 		getValue: function (player) {
 			return player.hp * 2 + player.countCards("h");
 		},
 		isGoodHp: function (player) {
-			if (player.hp > 1 || jlsg.getCardsNum("tao", player) >= 1 || jlsg.getCardsNum("jiu", player) >= 1) return true;
-			if (jlsg.hasBuquEffect(player)) return true;
-			if (player.hasSkill("niepan") && !player.storage.niepan) return true;
-			if (player.hasSkill("reniepan") && !player.storage.reniepan) return true;
-			if (player.hasSkill("jlsg_zhuizun") && !player.storage.jlsg_zhuizun) return true;
-			if (player.hasSkill("fuli") && !player.storage.fuli) return true;
+			if (player.hp > 1 || jlsg.getCardsNum("tao", player) >= 1 || jlsg.getCardsNum("jiu", player) >= 1) {
+				return true;
+			}
+			if (jlsg.hasBuquEffect(player)) {
+				return true;
+			}
+			if (player.hasSkill("niepan") && !player.storage.niepan) {
+				return true;
+			}
+			if (player.hasSkill("reniepan") && !player.storage.reniepan) {
+				return true;
+			}
+			if (player.hasSkill("jlsg_zhuizun") && !player.storage.jlsg_zhuizun) {
+				return true;
+			}
+			if (player.hasSkill("fuli") && !player.storage.fuli) {
+				return true;
+			}
 			return false;
 		},
 		isScure: function (player) {
-			if (player.hp > jlsg.getBestHp(player)) return true;
-			if (jlsg.countCanShaMe(player) <= 0) return true;
-			if (jlsg.isGoodHp(player)) return true;
+			if (player.hp > jlsg.getBestHp(player)) {
+				return true;
+			}
+			if (jlsg.countCanShaMe(player) <= 0) {
+				return true;
+			}
+			if (jlsg.isGoodHp(player)) {
+				return true;
+			}
 			return false;
 		},
 		needBear: function (player) {
 			return (player.hasSkill("renjie") && player.hasSkill("sbaiyin") && !player.hasSkill("jilue") && player.storage.renjie < 4) || (player.hasSkill("qinxue") && !player.storage.qinxue);
 		},
 		cardNeed: function (card, player) {
-			if (player == undefined || get.itemtype(player) != "player") player = get.owner(card);
+			if (player == undefined || get.itemtype(player) != "player") {
+				player = get.owner(card);
+			}
 			var friends = jlsg.getFriends(player).sort(jlsg.sort.hp);
-			if (!friends.length) return null;
+			if (!friends.length) {
+				return null;
+			}
 			if (card.name == "tao") {
 				friends.sort(jlsg.sort.hp);
-				if (friends[0].hp < 2) return 10;
-				if (player.hp < 3 || (jlsg.getLostHp(player) > 1 && !player.hasSkills("longhun|buqu|jlsg_longhun")) || player.hasSkills("kurou|benghuai")) return 14;
+				if (friends[0].hp < 2) {
+					return 10;
+				}
+				if (player.hp < 3 || (jlsg.getLostHp(player) > 1 && !player.hasSkills("longhun|buqu|jlsg_longhun")) || player.hasSkills("kurou|benghuai")) {
+					return 14;
+				}
 				return jlsg.getUseValue(card, player);
 			}
 			var wuguotai = jlsg.findPlayerBySkillName("buyi");
 			if (wuguotai && jlsg.isFriend(player, wuguotai) && get.type(card) != "basic") {
-				if (player.hp < 3 || (jlsg.getLostHp(player) > 1 && !player.hasSkills("longhun|buqu|jlsg_longhun")) || player.hasSkills("kurou|benghuai")) return 13;
+				if (player.hp < 3 || (jlsg.getLostHp(player) > 1 && !player.hasSkills("longhun|buqu|jlsg_longhun")) || player.hasSkills("kurou|benghuai")) {
+					return 13;
+				}
 			}
-			if (jlsg.isWeak(player) && card.name == "shan" && jlsg.getCardsNum("shan", player, player) < 1) return 12;
+			if (jlsg.isWeak(player) && card.name == "shan" && jlsg.getCardsNum("shan", player, player) < 1) {
+				return 12;
+			}
 			return 0;
 		},
 		getOverflow: function (player, getMaxCards) {
@@ -845,27 +978,48 @@ export async function precontent(config, originalPack) {
 				}
 			}
 			var MaxCards = 0;
-			if (player.hasSkill("qiaobian")) MaxCards = Math.max(player.countCards("h") - 1, player.getHandcardLimit());
-			if (player.hasSkill("keji") && get.cardCount({ name: "sha" }, player) == 0) MaxCards = player.countCards("h");
-			if (getMaxCards && MaxCards > 0) return MaxCards;
+			if (player.hasSkill("qiaobian")) {
+				MaxCards = Math.max(player.countCards("h") - 1, player.getHandcardLimit());
+			}
+			if (player.hasSkill("keji") && get.cardCount({ name: "sha" }, player) == 0) {
+				MaxCards = player.countCards("h");
+			}
+			if (getMaxCards && MaxCards > 0) {
+				return MaxCards;
+			}
 			MaxCards = player.getHandcardLimit();
 			if (kingdom_num > 0) {
-				if (player.countCards("he") <= kingdom_num) MaxCards = 0;
-				else MaxCards = Math.min(player.getHandcardLimit(), player.countCards("he") - kingdom_num);
-				if (getMaxCards) return MaxCards;
+				if (player.countCards("he") <= kingdom_num) {
+					MaxCards = 0;
+				} else {
+					MaxCards = Math.min(player.getHandcardLimit(), player.countCards("he") - kingdom_num);
+				}
+				if (getMaxCards) {
+					return MaxCards;
+				}
 			}
-			if (getMaxCards) return player.getHandcardLimit();
+			if (getMaxCards) {
+				return player.getHandcardLimit();
+			}
 			return player.countCards("h") - MaxCards;
 		},
 		willSkipPhaseUse: function (player) {
 			var friend_wuxie = 0;
 			for (var i = 0; i < game.players.length; i++) {
-				if (jlsg.isFriend(player, game.players[i])) friend_wuxie = friend_wuxie + jlsg.getCardsNum("wuxie", game.players[i], player);
-				if (jlsg.isEnemy(player, game.players[i])) friend_wuxie = friend_wuxie - jlsg.getCardsNum("wuxie", game.players[i], player);
+				if (jlsg.isFriend(player, game.players[i])) {
+					friend_wuxie = friend_wuxie + jlsg.getCardsNum("wuxie", game.players[i], player);
+				}
+				if (jlsg.isEnemy(player, game.players[i])) {
+					friend_wuxie = friend_wuxie - jlsg.getCardsNum("wuxie", game.players[i], player);
+				}
 			}
-			if (player.skipList.includes("phaseUse")) return true;
+			if (player.skipList.includes("phaseUse")) {
+				return true;
+			}
 			if (player.hasJudge("lebu") && !player.hasSkill("yanxiao2") && friend_wuxie <= 0) {
-				if (!player.hasSkills("zongshi|keji|guanxing|qiaobian") && player.countCards("h") >= player.hp + 1) return true;
+				if (!player.hasSkills("zongshi|keji|guanxing|qiaobian") && player.countCards("h") >= player.hp + 1) {
+					return true;
+				}
 				return false;
 			}
 			return false;
@@ -873,14 +1027,22 @@ export async function precontent(config, originalPack) {
 		willSkipPhaseDraw: function (player) {
 			var friend_wuxie = 0;
 			for (var i = 0; i < game.players.length; i++) {
-				if (jlsg.isFriend(player, game.players[i])) friend_wuxie = friend_wuxie + jlsg.getCardsNum("wuxie", game.players[i], player);
-				if (jlsg.isEnemy(player, game.players[i])) friend_wuxie = friend_wuxie - jlsg.getCardsNum("wuxie", game.players[i], player);
+				if (jlsg.isFriend(player, game.players[i])) {
+					friend_wuxie = friend_wuxie + jlsg.getCardsNum("wuxie", game.players[i], player);
+				}
+				if (jlsg.isEnemy(player, game.players[i])) {
+					friend_wuxie = friend_wuxie - jlsg.getCardsNum("wuxie", game.players[i], player);
+				}
 			}
 			if (player.hasJudge("bingliang") && !player.hasSkill("yanxiao2") && friend_wuxie <= 0) {
-				if (!player.hasSkills("guanxing|qiaobian") && player.countCards("h") <= player.hp + 2) return true;
+				if (!player.hasSkills("guanxing|qiaobian") && player.countCards("h") <= player.hp + 2) {
+					return true;
+				}
 				return false;
 			}
-			if (player.skipList.includes("phaseDraw")) return true;
+			if (player.skipList.includes("phaseDraw")) {
+				return true;
+			}
 			return false;
 		},
 		getViewAsCard: function (card, player) {
@@ -908,8 +1070,12 @@ export async function precontent(config, originalPack) {
 					if (ifo.filterCard) {
 						var filtercard = get.filter(ifo.filterCard);
 						if (filtercard(card, player) && (ifo.selectCard == 1 || ifo.selectCard == undefined)) {
-							if (ifo.position && ifo.position.indexOf(place) == 0) return true;
-							if (!ifo.position) return place == "h";
+							if (ifo.position && ifo.position.indexOf(place) == 0) {
+								return true;
+							}
+							if (!ifo.position) {
+								return place == "h";
+							}
 						}
 					}
 				}
@@ -919,15 +1085,23 @@ export async function precontent(config, originalPack) {
 		getCardPlace: function (card) {
 			var owner = get.owner(card);
 			if (owner) {
-				if (owner.get("h").includes(card)) return "h";
-				if (owner.get("e").includes(card)) return "e";
-				if (owner.get("j").includes(card)) return "j";
+				if (owner.get("h").includes(card)) {
+					return "h";
+				}
+				if (owner.get("e").includes(card)) {
+					return "e";
+				}
+				if (owner.get("j").includes(card)) {
+					return "j";
+				}
 				return "s";
 			}
 			return "s";
 		},
 		isCard: function (name, card, player) {
-			if (!player || !card) return false;
+			if (!player || !card) {
+				return false;
+			}
 			if (card.name != name) {
 				var owner = get.owner(card);
 				var place;
@@ -936,20 +1110,34 @@ export async function precontent(config, originalPack) {
 				} else {
 					place = jlsg.getCardPlace(card);
 				}
-				if (jlsg.getSkillViewCard(card, name, player, place)) return true;
-				if (player.hasSkill("wushen") && get.suit(card) == "heart" && card.name != "sha") return false;
-				if (player.hasSkill("jinjiu") && card.name == "jiu") return true;
+				if (jlsg.getSkillViewCard(card, name, player, place)) {
+					return true;
+				}
+				if (player.hasSkill("wushen") && get.suit(card) == "heart" && card.name != "sha") {
+					return false;
+				}
+				if (player.hasSkill("jinjiu") && card.name == "jiu") {
+					return true;
+				}
 			} else {
-				if (player.hasSkill("wushen") && get.suit(card) == "heart" && card.name == "sha") return true;
-				if (player.hasSkill("jinjiu") && card.name == "jiu") return true;
-				if (lib.filter.cardUsable(card, player)) return true;
+				if (player.hasSkill("wushen") && get.suit(card) == "heart" && card.name == "sha") {
+					return true;
+				}
+				if (player.hasSkill("jinjiu") && card.name == "jiu") {
+					return true;
+				}
+				if (lib.filter.cardUsable(card, player)) {
+					return true;
+				}
 			}
 			return false;
 		},
 		getKnownCard: function (player, from, card_name, viewAs, flags) {
 			flags = flags || "h";
 			var forbid = false;
-			if (!from && player == _status.event.player) forbid = true;
+			if (!from && player == _status.event.player) {
+				forbid = true;
+			}
 			from = from || _status.event.player;
 			var cards = player.get(flags);
 			var know = 0;
@@ -964,7 +1152,9 @@ export async function precontent(config, originalPack) {
 			return know;
 		},
 		getDefenseSha: function (player, attacker) {
-			if (attacker == undefined || get.itemtype(attacker) != "player") attacker = _status.event.player;
+			if (attacker == undefined || get.itemtype(attacker) != "player") {
+				attacker = _status.event.player;
+			}
 			var defense = jlsg.getCardsNum("shan", player, attacker);
 			var knownShan = jlsg.getKnownCard(player, attacker, "shan", true);
 
@@ -972,41 +1162,75 @@ export async function precontent(config, originalPack) {
 
 			if (attacker.hasSkill("liegong")) {
 				var length = player.countCards("h");
-				if (length >= attacker.hp || length <= get.attackRange(attacker)) return 0;
+				if (length >= attacker.hp || length <= get.attackRange(attacker)) {
+					return 0;
+				}
 			}
 			if (attacker.hasSkill("reliegong")) {
 				var num = 0;
-				if (player.countCards("h") >= attacker.num("h")) num++;
-				if (player.hp >= attacker.hp) num++;
-				if (get.attackRange(player) <= get.attackRange(attacker)) num++;
-				if (num > 0) return 0;
+				if (player.countCards("h") >= attacker.num("h")) {
+					num++;
+				}
+				if (player.hp >= attacker.hp) {
+					num++;
+				}
+				if (get.attackRange(player) <= get.attackRange(attacker)) {
+					num++;
+				}
+				if (num > 0) {
+					return 0;
+				}
 			}
 
 			if (jlsg.hasBaguaEffect(player)) {
 				defense += 1.3;
-				if (player.hasSkill("tiandu")) defense += 0.6;
-				if (player.hasSkill("leiji")) defense += 0.4;
-				if (player.hasSkill("boss_leiji")) defense += 0.5;
-				if (player.hasSkill("releiji")) defense += 0.4;
-				if (player.hasSkill("hongyan")) defense += 0.2;
+				if (player.hasSkill("tiandu")) {
+					defense += 0.6;
+				}
+				if (player.hasSkill("leiji")) {
+					defense += 0.4;
+				}
+				if (player.hasSkill("boss_leiji")) {
+					defense += 0.5;
+				}
+				if (player.hasSkill("releiji")) {
+					defense += 0.4;
+				}
+				if (player.hasSkill("hongyan")) {
+					defense += 0.2;
+				}
 			}
 
 			if (jlsg.getCardsNum("shan", player, _status.event.player) > 1) {
-				if (player.hasSkill("mingzhe")) defense += 0.2;
-				if (player.hasSkill("tuntian") && player.hasSkill("zaoxian")) defense += 1.5;
+				if (player.hasSkill("mingzhe")) {
+					defense += 0.2;
+				}
+				if (player.hasSkill("tuntian") && player.hasSkill("zaoxian")) {
+					defense += 1.5;
+				}
 			}
 
-			if (player.hasSkill("aocai") && _status.currentPhase !== player) defense += 0.5;
-			if (player.hasSkill("jlsg_zhenlie")) defense += 0.5;
-			if (player.hasSkill("jlsg_danshou") && !jlsg.isKongcheng(player) && !jlsg.isKongcheng(attacker)) defense += 0.5;
+			if (player.hasSkill("aocai") && _status.currentPhase !== player) {
+				defense += 0.5;
+			}
+			if (player.hasSkill("jlsg_zhenlie")) {
+				defense += 0.5;
+			}
+			if (player.hasSkill("jlsg_danshou") && !jlsg.isKongcheng(player) && !jlsg.isKongcheng(attacker)) {
+				defense += 0.5;
+			}
 
 			var jlsgsk_zhuran = jlsg.findPlayerBySkillName("jlsg_yonglie");
 			if (jlsgsk_zhuran && jlsg.isGoodHp(jlsgsk_zhuran)) {
-				if (player.inRangeOf(jlsgsk_zhuran) && jlsg.isFriend(player, jlsgsk_zhuran)) defense += 0.5;
+				if (player.inRangeOf(jlsgsk_zhuran) && jlsg.isFriend(player, jlsgsk_zhuran)) {
+					defense += 0.5;
+				}
 			}
 			var jlsgsr_zhangliao = jlsg.findPlayerBySkillName("jlsg_yansha");
 			if (jlsgsr_zhangliao && jlsgsr_zhangliao.storage.jlsg_yansha2 && jlsgsr_zhangliao.storage.jlsg_yansha2.length) {
-				if (jlsg.isFriend(player, jlsgsr_zhangliao) && get.attitude(jlsgsr_zhangliao, attacker) < 0 && attacker.num("he")) defense += 0.5;
+				if (jlsg.isFriend(player, jlsgsr_zhangliao) && get.attitude(jlsgsr_zhangliao, attacker) < 0 && attacker.num("he")) {
+					defense += 0.5;
+				}
 			}
 
 			if (player.hasZhuSkill("hujia")) {
@@ -1018,49 +1242,101 @@ export async function precontent(config, originalPack) {
 					var hujiaShan = 0;
 					for (var i = 0; i < list.length; i++) {
 						hujiaShan += jlsg.getCardsNum("shan", list[i], _status.event.player);
-						if (jlsg.hasBaguaEffect(list[i])) hujiaShan += 0.8;
+						if (jlsg.hasBaguaEffect(list[i])) {
+							hujiaShan += 0.8;
+						}
 					}
 					defense += hujiaShan;
 				}
 			}
 			defense = defense + Math.min(player.hp * 0.45, 10);
 			if (attacker && !attacker.hasSkill("jueqing")) {
-				if (player.hasSkillTag("maixie") && jlsg.isGoodHp(player)) defense++;
+				if (player.hasSkillTag("maixie") && jlsg.isGoodHp(player)) {
+					defense++;
+				}
 
-				if (player.hasSkill("jieming")) defense += 4;
-				if (player.hasSkills("yiji|jlsg_yiji")) defense += 4;
-				if (player.hasSkill("guixin")) defense += 4;
-				if (player.hasSkill("yuce")) defense += 2;
+				if (player.hasSkill("jieming")) {
+					defense += 4;
+				}
+				if (player.hasSkills("yiji|jlsg_yiji")) {
+					defense += 4;
+				}
+				if (player.hasSkill("guixin")) {
+					defense += 4;
+				}
+				if (player.hasSkill("yuce")) {
+					defense += 2;
+				}
 			}
 
-			if (player.hasSkills("rende|rerende") && player.hp > 2) defense++;
-			if (player.hasSkill("kuanggu") && player.hp > 1) defense += 0.2;
-			if (player.hasSkill("tianming") && player.hp > 1) defense += 0.1;
-			if (player.hasSkills("zaiqi|rezaiqi") && player.hp > 1) defense += 0.35;
-			if (player.hp > jlsg.getBestHp(player)) defense += 0.8;
-			if (player.hp <= 2) defense -= 0.4;
-			if (player.hasSkill("tianxiang")) defense += player.countCards("h") * 0.5;
+			if (player.hasSkills("rende|rerende") && player.hp > 2) {
+				defense++;
+			}
+			if (player.hasSkill("kuanggu") && player.hp > 1) {
+				defense += 0.2;
+			}
+			if (player.hasSkill("tianming") && player.hp > 1) {
+				defense += 0.1;
+			}
+			if (player.hasSkills("zaiqi|rezaiqi") && player.hp > 1) {
+				defense += 0.35;
+			}
+			if (player.hp > jlsg.getBestHp(player)) {
+				defense += 0.8;
+			}
+			if (player.hp <= 2) {
+				defense -= 0.4;
+			}
+			if (player.hasSkill("tianxiang")) {
+				defense += player.countCards("h") * 0.5;
+			}
 
-			if (player.countCards("e", "tengjia") && jlsg.hasZhuqueEffect(attacker) && !attacker.hasSkill("unequip")) defense -= 0.6;
+			if (player.countCards("e", "tengjia") && jlsg.hasZhuqueEffect(attacker) && !attacker.hasSkill("unequip")) {
+				defense -= 0.6;
+			}
 			if (player.isZhu) {
 				defense -= 0.4;
-				if (jlsg.isZhuInDanger()) defense -= 0.7;
+				if (jlsg.isZhuInDanger()) {
+					defense -= 0.7;
+				}
 			}
-			if (player.isTurnedOver() && !player.hasSkill("jlsg_youxia")) defense -= 0.35;
+			if (player.isTurnedOver() && !player.hasSkill("jlsg_youxia")) {
+				defense -= 0.35;
+			}
 
-			if (player.countCards("j", "lebu") && !player.hasSkill("yanxiao2")) defense -= 0.15;
-			if (player.countCards("j", "bingliang") && !player.hasSkill("yanxiao2")) defense -= 0.15;
-			if (player.countCards("j", "caomu") && !player.hasSkill("yanxiao2")) defense -= 0.15;
+			if (player.countCards("j", "lebu") && !player.hasSkill("yanxiao2")) {
+				defense -= 0.15;
+			}
+			if (player.countCards("j", "bingliang") && !player.hasSkill("yanxiao2")) {
+				defense -= 0.15;
+			}
+			if (player.countCards("j", "caomu") && !player.hasSkill("yanxiao2")) {
+				defense -= 0.15;
+			}
 
-			if ((attacker.hasSkill("roulin") && player.sex == "female") || (attacker.sex == "female" && player.hasSkill("roulin"))) defense = defense - 2.4;
+			if ((attacker.hasSkill("roulin") && player.sex == "female") || (attacker.sex == "female" && player.hasSkill("roulin"))) {
+				defense = defense - 2.4;
+			}
 
 			if (!jlsg.hasBaguaEffect(player)) {
-				if (player.hasSkill("jijiu")) defense -= 3;
-				if (player.hasSkill("dimeng")) defense -= 2.5;
-				if (player.hasSkill("guzheng") && !jlsg.getCardsNum("shan", player, attacker)) defense -= 2.5;
-				if (player.hasSkill("qiaobian")) defense -= 2.4;
-				if (player.hasSkill("jieyin")) defense -= 2.3;
-				if (player.hasSkills("lijian|jlsg_lijian")) defense -= 2.2;
+				if (player.hasSkill("jijiu")) {
+					defense -= 3;
+				}
+				if (player.hasSkill("dimeng")) {
+					defense -= 2.5;
+				}
+				if (player.hasSkill("guzheng") && !jlsg.getCardsNum("shan", player, attacker)) {
+					defense -= 2.5;
+				}
+				if (player.hasSkill("qiaobian")) {
+					defense -= 2.4;
+				}
+				if (player.hasSkill("jieyin")) {
+					defense -= 2.3;
+				}
+				if (player.hasSkills("lijian|jlsg_lijian")) {
+					defense -= 2.2;
+				}
 			}
 			return defense;
 		},
@@ -1069,78 +1345,168 @@ export async function precontent(config, originalPack) {
 				return 0;
 			}
 			var current_player = _status.event.player;
-			if (!current_player) return jlsg.getValue(player);
+			if (!current_player) {
+				return jlsg.getValue(player);
+			}
 
 			var defense = jlsg.getValue(player);
 
-			if (player.get("e", "2")) defense += 2;
-			if (player.get("e", "3")) defense++;
-			if (player.countCards("e", "muniu") && player.get("e", "5").cards) defense += player.get("e", "5").cards.length;
+			if (player.get("e", "2")) {
+				defense += 2;
+			}
+			if (player.get("e", "3")) {
+				defense++;
+			}
+			if (player.countCards("e", "muniu") && player.get("e", "5").cards) {
+				defense += player.get("e", "5").cards.length;
+			}
 
 			if (jlsg.hasBaguaEffect(player)) {
-				if (player.hasSkill("tiandu")) defense++;
-				if (player.hasSkill("leiji")) defense += 2;
-				if (player.hasSkill("boss_leiji")) defense += 2;
-				if (player.hasSkill("releiji")) defense += 2;
-				if (player.hasSkill("hongyan")) defense += 2;
+				if (player.hasSkill("tiandu")) {
+					defense++;
+				}
+				if (player.hasSkill("leiji")) {
+					defense += 2;
+				}
+				if (player.hasSkill("boss_leiji")) {
+					defense += 2;
+				}
+				if (player.hasSkill("releiji")) {
+					defense += 2;
+				}
+				if (player.hasSkill("hongyan")) {
+					defense += 2;
+				}
 			}
 			var maixie = jlsg.ai.skill.maixie_skill.split("|");
 			for (var i = 0; i < maixie.length; i++) {
-				if (player.hasSkill(maixie[i]) && jlsg.isGoodHp(player)) defense++;
+				if (player.hasSkill(maixie[i]) && jlsg.isGoodHp(player)) {
+					defense++;
+				}
 			}
 
-			if (player.hasSkill("jieming")) defense += 3;
-			if (player.hasSkills("yiji|jlsg_yiji")) defense += 3;
-			if (player.hasSkill("guixin")) defense += game.players.length - 1;
-			if (player.hasSkill("yuce")) defense += 2;
-			if (player.hasSkill("chengxiang")) defense++;
+			if (player.hasSkill("jieming")) {
+				defense += 3;
+			}
+			if (player.hasSkills("yiji|jlsg_yiji")) {
+				defense += 3;
+			}
+			if (player.hasSkill("guixin")) {
+				defense += game.players.length - 1;
+			}
+			if (player.hasSkill("yuce")) {
+				defense += 2;
+			}
+			if (player.hasSkill("chengxiang")) {
+				defense++;
+			}
 
 			if (player.hasZhuSkill("shichou")) {
 				var current = jlsg.findPlayerBySkillName("shichou_dying");
-				if (current) defense += current.hp;
+				if (current) {
+					defense += current.hp;
+				}
 			}
 
-			if (player.hasSkill("rende") && player.countCards("h") > 1 && player.hp > 2) defense++;
-			if (player.hasSkill("rerende") && player.countCards("h") > 1 && player.hp > 2) defense++;
-			if (player.hasSkill("kuanggu") && player.hp > 1) defense += 0.5;
-			if (player.hasSkill("diykuanggu") && player.hp > 1) defense += 0.5;
-			if (player.hasSkill("zaiqi") && player.hp > 1) defense = defense + (player.maxHp - player.hp) * 0.5;
-			if (player.hasSkill("tianming")) defense += 0.5;
-			if (player.hasSkill("keji")) defense += player.countCards("h") * 0.25;
-			if (player.hasSkill("aocai") && _status.currentPhase !== player) defense += 0.5;
-			if (player.hasSkill("tianxiang")) defense += player.countCards("h") * 0.5;
+			if (player.hasSkill("rende") && player.countCards("h") > 1 && player.hp > 2) {
+				defense++;
+			}
+			if (player.hasSkill("rerende") && player.countCards("h") > 1 && player.hp > 2) {
+				defense++;
+			}
+			if (player.hasSkill("kuanggu") && player.hp > 1) {
+				defense += 0.5;
+			}
+			if (player.hasSkill("diykuanggu") && player.hp > 1) {
+				defense += 0.5;
+			}
+			if (player.hasSkill("zaiqi") && player.hp > 1) {
+				defense = defense + (player.maxHp - player.hp) * 0.5;
+			}
+			if (player.hasSkill("tianming")) {
+				defense += 0.5;
+			}
+			if (player.hasSkill("keji")) {
+				defense += player.countCards("h") * 0.25;
+			}
+			if (player.hasSkill("aocai") && _status.currentPhase !== player) {
+				defense += 0.5;
+			}
+			if (player.hasSkill("tianxiang")) {
+				defense += player.countCards("h") * 0.5;
+			}
 
-			if (player.hp > jlsg.getBestHp(player)) defense += 0.8;
-			if (player.hp <= 2) defense = defense - 0.4;
-			if (player.hasSkill("benghuai") && player.maxHp <= 5) defense--;
-			if (player.hasSkills(jlsg.ai.skill.bad_skills)) defense--;
+			if (player.hp > jlsg.getBestHp(player)) {
+				defense += 0.8;
+			}
+			if (player.hp <= 2) {
+				defense = defense - 0.4;
+			}
+			if (player.hasSkill("benghuai") && player.maxHp <= 5) {
+				defense--;
+			}
+			if (player.hasSkills(jlsg.ai.skill.bad_skills)) {
+				defense--;
+			}
 
 			if (player.isZhu) {
 				defense = defense - 0.4;
-				if (jlsg.isZhuInDanger()) defense = defense - 0.7;
+				if (jlsg.isZhuInDanger()) {
+					defense = defense - 0.7;
+				}
 			}
 
 			var invaliditySkill = ["yijue", "boss_hujia", "retieji", "pozhou", "jlsg_zhenhun"];
 			for (var i = 0; i < invaliditySkill.length; i++) {
-				if (player.disabledSkills[invaliditySkill[i]] && player.disabledSkills[invaliditySkill[i]].length > 0) defense -= 5;
+				if (player.disabledSkills[invaliditySkill[i]] && player.disabledSkills[invaliditySkill[i]].length > 0) {
+					defense -= 5;
+				}
 			}
 
-			if (player.isTurnedOver()) defense--;
+			if (player.isTurnedOver()) {
+				defense--;
+			}
 
-			if (player.countCards("j", "lebu") && !player.hasSkill("yanxiao2")) defense -= 0.5;
-			if (player.countCards("j", "bingliang") && !player.hasSkill("yanxiao2")) defense -= 0.5;
-			if (player.countCards("j", "caomu") && !player.hasSkill("yanxiao2")) defense -= 0.5;
+			if (player.countCards("j", "lebu") && !player.hasSkill("yanxiao2")) {
+				defense -= 0.5;
+			}
+			if (player.countCards("j", "bingliang") && !player.hasSkill("yanxiao2")) {
+				defense -= 0.5;
+			}
+			if (player.countCards("j", "caomu") && !player.hasSkill("yanxiao2")) {
+				defense -= 0.5;
+			}
 
-			if (player.hasSkill("jijiu")) defense += 2;
-			if (player.hasSkill("qingnang")) defense += 2;
-			if (player.hasSkill("dimeng")) defense += 2.5;
-			if (player.hasSkill("guzheng")) defense += 2.5;
-			if (player.hasSkill("qiaobian")) defense += 2.4;
-			if (player.hasSkill("jieyin")) defense += 2.3;
-			if (player.hasSkills("jlsg_lijian|lijian")) defense += 2.1;
-			if (player.hasSkill("yishe")) defense += 2;
-			if (player.hasSkill("paiyi")) defense += 1.5;
-			if (player.hasSkill("yongsi")) defense += 2;
+			if (player.hasSkill("jijiu")) {
+				defense += 2;
+			}
+			if (player.hasSkill("qingnang")) {
+				defense += 2;
+			}
+			if (player.hasSkill("dimeng")) {
+				defense += 2.5;
+			}
+			if (player.hasSkill("guzheng")) {
+				defense += 2.5;
+			}
+			if (player.hasSkill("qiaobian")) {
+				defense += 2.4;
+			}
+			if (player.hasSkill("jieyin")) {
+				defense += 2.3;
+			}
+			if (player.hasSkills("jlsg_lijian|lijian")) {
+				defense += 2.1;
+			}
+			if (player.hasSkill("yishe")) {
+				defense += 2;
+			}
+			if (player.hasSkill("paiyi")) {
+				defense += 1.5;
+			}
+			if (player.hasSkill("yongsi")) {
+				defense += 2;
+			}
 
 			defense = defense + (game.players.length - (get.distance(player, _status.currentPhase, "absolute") % game.players.length)) / 4;
 
@@ -1181,12 +1547,16 @@ export async function precontent(config, originalPack) {
 					cards = cards.concat(card);
 				}
 			}
-			if (cards.length) return cards.randomGet();
+			if (cards.length) {
+				return cards.randomGet();
+			}
 			return null;
 		},
 		isZhuHealthy: function () {
 			var zhu = get.zhu();
-			if (!zhu) return false;
+			if (!zhu) {
+				return false;
+			}
 			var zhu_hp;
 			if (zhu.hasSkill("benghuai") && zhu.hp > 4) {
 				zhu_hp = 4;
@@ -1197,7 +1567,9 @@ export async function precontent(config, originalPack) {
 		},
 		isZhuInDanger: function () {
 			var zhu = get.zhu();
-			if (!zhu) return false;
+			if (!zhu) {
+				return false;
+			}
 			var zhu_hp;
 			if (zhu.hasSkill("benghuai") && zhu.hp > 4) {
 				zhu_hp = 4;
@@ -1322,7 +1694,9 @@ export async function precontent(config, originalPack) {
 			return target[0];
 		},
 		getCardsNum: function (class_name, player, from) {
-			if (player == undefined || get.itemtype(player) != "player") player = _status.event.player;
+			if (player == undefined || get.itemtype(player) != "player") {
+				player = _status.event.player;
+			}
 			var cards = player.get("h");
 			if (player.countCards("e", "muniu") && player.get("e", "5").cards && player.get("e", "5").cards.length) {
 				cards = cards.concat(player.get("e", "5").cards);
@@ -1346,50 +1720,88 @@ export async function precontent(config, originalPack) {
 				shashan = 0,
 				jiunum = 0;
 			var forbid = false;
-			if (!from && _status.event.player != player) forbid = true;
+			if (!from && _status.event.player != player) {
+				forbid = true;
+			}
 			from = from || _status.event.player;
 			for (var i = 0; i < cards.length; i++) {
 				var card = cards[i];
 				if (!forbid && player == from) {
 					shownum++;
-					if (card.name == class_name) num++;
-					if (card.name == "jiu") jiunum++;
-					if (get.type(card) == "equip") equipcard++;
-					if (card.name == "sha" || card.name == "shan") shashan++;
+					if (card.name == class_name) {
+						num++;
+					}
+					if (card.name == "jiu") {
+						jiunum++;
+					}
+					if (get.type(card) == "equip") {
+						equipcard++;
+					}
+					if (card.name == "sha" || card.name == "shan") {
+						shashan++;
+					}
 					if (get.color(card) == "red") {
 						rencard++;
-						if (card.name != "sha") redsha++;
-						if (card.name != "tao") redtao++;
+						if (card.name != "sha") {
+							redsha++;
+						}
+						if (card.name != "tao") {
+							redtao++;
+						}
 					}
 					if (get.color(card) == "black") {
 						blackcard++;
-						if (card.name != "wuxie") blackwuxie++;
+						if (card.name != "wuxie") {
+							blackwuxie++;
+						}
 					}
 					if (get.suit(card) == "heart") {
-						if (card.name != "sha") heartsha++;
-						if (card.name != "tao") redtao++;
+						if (card.name != "sha") {
+							heartsha++;
+						}
+						if (card.name != "tao") {
+							redtao++;
+						}
 					}
 					if (get.suit(card) == "spade") {
-						if (card.name != "wuxie") spadewuxie++;
-						if (card.name != "jiu") spadejiu++;
+						if (card.name != "wuxie") {
+							spadewuxie++;
+						}
+						if (card.name != "jiu") {
+							spadejiu++;
+						}
 					}
-					if (get.suit(card) == "diamond" && card.name != "sha") diamondcard++;
-					if (get.suit(card) == "club") clubcard++;
+					if (get.suit(card) == "diamond" && card.name != "sha") {
+						diamondcard++;
+					}
+					if (get.suit(card) == "club") {
+						clubcard++;
+					}
 				}
 			}
 			var ecards = player.get("e");
 			for (var i = 0; i < ecards.length; i++) {
 				var card = ecards[i];
 				equipcard++;
-				if (player.countCards("h") > player.hp) equipwuxie++;
+				if (player.countCards("h") > player.hp) {
+					equipwuxie++;
+				}
 				if (get.color(card) == "red") {
 					redtao++;
 					redsha++;
 				}
-				if (get.suit(card) == "heart") hearttao++;
-				if (get.suit(card) == "spade") spadecard++;
-				if (get.suit(card) == "diamond") diamondcard++;
-				if (get.suit(card) == "club") clubcard++;
+				if (get.suit(card) == "heart") {
+					hearttao++;
+				}
+				if (get.suit(card) == "spade") {
+					spadecard++;
+				}
+				if (get.suit(card) == "diamond") {
+					diamondcard++;
+				}
+				if (get.suit(card) == "club") {
+					clubcard++;
+				}
 			}
 			if (class_name == "sha") {
 				var shanum;
@@ -1501,8 +1913,11 @@ export async function precontent(config, originalPack) {
 				}
 			},
 			skillStr: function (html, skill) {
-				if (html.innerHTML[0] == "▶") html.innerHTML = "▼" + get.translation(skill) + '<br><b style="color: white;font-weight: normal">' + get.translation(skill + "_info") + "</b>";
-				else html.innerHTML = "▶" + get.translation(skill);
+				if (html.innerHTML[0] == "▶") {
+					html.innerHTML = "▼" + get.translation(skill) + '<br><b style="color: white;font-weight: normal">' + get.translation(skill + "_info") + "</b>";
+				} else {
+					html.innerHTML = "▶" + get.translation(skill);
+				}
 			},
 		},
 	};

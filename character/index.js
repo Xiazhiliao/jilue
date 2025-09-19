@@ -23,7 +23,9 @@ for (let character in config) {
 	const packName = prefix.includes("jlsgsk_skpf") ? "jlsg_skpf" : prefix.slice(0, 4) + "_" + prefix.slice(4);
 	const replaceInfo = oldCharacter[packName]?.[character]?.[configx],
 		pack = packList.find(i => i.name == packName);
-	if (!replaceInfo) continue;
+	if (!replaceInfo) {
+		continue;
+	}
 	for (let i in replaceInfo) {
 		if (i == "info") {
 			pack.character[character] = replaceInfo.info;
@@ -83,16 +85,18 @@ for (let character in jlsg_sr.character) {
 			jlsg_sr.skill[skill].derivation = [jlsg_sr.skill[skill].derivation];
 		}
 		if (jlsg_sr?.dynamicTranslate?.[skill]) {
-			jlsg_sr.skill[skill].derivation.add(skill + "_improve");
-			jlsg_sr.translate[skill + "_improve"] = jlsg_sr.translate[skill];
-			jlsg_sr.translate[skill + "_improve_info"] = "突破后效果：" + jlsg_sr.dynamicTranslate[skill]({ index: true });
+			jlsg_sr.skill[skill].derivation.add(skill + "_upgrade");
+			jlsg_sr.translate[skill + "_upgrade"] = jlsg_sr.translate[skill];
+			jlsg_sr.translate[skill + "_upgrade_info"] = "突破后效果：" + jlsg_sr.dynamicTranslate[skill]({ index: true });
 		}
 	}
 }
 //魔将调整
 if (lib.config?.extension_极略_syRefactor) {
 	for (const name in jlsg_sy.character) {
-		if (!name.startsWith("jlsgsy_")) continue;
+		if (!name.startsWith("jlsgsy_")) {
+			continue;
+		}
 		jlsg_sy.character[name][1] = "jlsgsy";
 		const title = jlsg_sy.translate[name],
 			baonu = name.endsWith("baonu") ? true : false;
@@ -101,10 +105,13 @@ if (lib.config?.extension_极略_syRefactor) {
 		if (get.mode() == "boss") {
 			num2 = 4;
 		}
-		if (baonu) jlsg_sy.character[name][2] = num2;
+		if (baonu) {
+			jlsg_sy.character[name][2] = num2;
+		}
 		if (get.mode() != "boss") {
-			if (!title) continue;
-			else {
+			if (!title) {
+				continue;
+			} else {
 				lib.arenaReady.push(function () {
 					lib.characterTitle[name] = title;
 					let translation = get.rawName(info);
@@ -131,7 +138,9 @@ if (lib.device || lib.node) {
 		const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
 		for (let name in pack.character) {
 			//初始化第五格
-			if (!pack.character[name][4]) pack.character[name][4] = [];
+			if (!pack.character[name][4]) {
+				pack.character[name][4] = [];
+			}
 			//原画
 			pack.character[name][4].push(`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/image/character/${name}.jpg`);
 			//阵亡语音

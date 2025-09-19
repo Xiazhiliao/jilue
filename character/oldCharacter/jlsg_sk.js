@@ -93,9 +93,13 @@ export default {
 							return false;
 						}
 						var targets = event.targets || [];
-						if (targets.length > 0) return true;
+						if (targets.length > 0) {
+							return true;
+						}
 						var info = get.info(event.card);
-						if (info.allowMultiple == false) return false;
+						if (info.allowMultiple == false) {
+							return false;
+						}
 						return game.filterPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(event.card, event.player, current) && lib.filter.targetInRange(event.card, event.player, current)).length;
 					},
 					content: function () {
@@ -104,7 +108,9 @@ export default {
 						player
 							.chooseTarget(get.prompt(event.name), function (card, player, target) {
 								var user = _status.event.user;
-								if (_status.event.targets.includes(target)) return true;
+								if (_status.event.targets.includes(target)) {
+									return true;
+								}
 								return lib.filter.targetEnabled2(_status.event.card, user, target) && lib.filter.targetInRange(_status.event.card, user, target);
 							})
 							.set("prompt2", prompt2)
@@ -119,7 +125,9 @@ export default {
 							.set("user", trigger.player);
 						"step 1"
 						if (result.bool) {
-							if (!event.isMine() && !event.isOnline()) game.delayx();
+							if (!event.isMine() && !event.isOnline()) {
+								game.delayx();
+							}
 							event.targets = result.targets;
 						} else {
 							event.finish();
@@ -132,8 +140,11 @@ export default {
 							}
 						}
 						player.addTempSkill("jlsg_kuangbi2");
-						if (trigger.targets.includes(event.targets[0])) trigger.targets.removeArray(event.targets);
-						else trigger.targets.addArray(event.targets);
+						if (trigger.targets.includes(event.targets[0])) {
+							trigger.targets.removeArray(event.targets);
+						} else {
+							trigger.targets.addArray(event.targets);
+						}
 					},
 					ai: {
 						threaten: 4,
@@ -206,28 +217,46 @@ export default {
 								value: function (self, me) {
 									me = me || game.me;
 									var that = this._trueMe || this;
-									if (that.isMad() || game.notMe) return false;
+									if (that.isMad() || game.notMe) {
+										return false;
+									}
 									if (this === me) {
-										if (self) return true;
+										if (self) {
+											return true;
+										}
 										return false;
 									}
 									me = me._trueMe || me;
 									if (that === me) {
 										return true;
 									}
-									if (_status.connectMode) return false;
+									if (_status.connectMode) {
+										return false;
+									}
 									if (lib.config.mode == "versus") {
-										if (_status.mode == "three") return this.side == me.side;
-										if (_status.mode == "standard") return lib.storage.single_control && this.side == me.side;
-										if (_status.mode == "four") return get.config("four_phaseswap") && this.side == me.side;
-										if (_status.mode == "two") return get.config("two_phaseswap") && this.side == me.side;
+										if (_status.mode == "three") {
+											return this.side == me.side;
+										}
+										if (_status.mode == "standard") {
+											return lib.storage.single_control && this.side == me.side;
+										}
+										if (_status.mode == "four") {
+											return get.config("four_phaseswap") && this.side == me.side;
+										}
+										if (_status.mode == "two") {
+											return get.config("two_phaseswap") && this.side == me.side;
+										}
 										return false;
 									} else if (lib.config.mode == "boss") {
-										if (me.side) return false;
+										if (me.side) {
+											return false;
+										}
 										return this.side == me.side && get.config("single_control");
 									} else if (game.chess) {
 										if (lib.config.mode == "chess") {
-											if (_status.mode == "combat" && !get.config("single_control")) return false;
+											if (_status.mode == "combat" && !get.config("single_control")) {
+												return false;
+											}
 										}
 										return this.side == me.side;
 									}
@@ -334,7 +363,9 @@ export default {
 						}
 						let { result: result2 } = await player.chooseButton([`招募一名的${get.translation(result.control)}势力武将`, [choices, "character"]]);
 						event.result = { bool: result2.bool };
-						if (result2.bool) event.result.cost_data = [result.control, result2.links[0]];
+						if (result2.bool) {
+							event.result.cost_data = [result.control, result2.links[0]];
+						}
 					},
 					async content(event, trigger, player) {
 						let [token, name] = event.cost_data;
@@ -477,7 +508,9 @@ export default {
 									.map(i => i.storage.jlsg_xinghan_recruit || i)
 									.unique();
 								currents.remove(from);
-								if (currents.length == 1 && currents[0] == to) return -2;
+								if (currents.length == 1 && currents[0] == to) {
+									return -2;
+								}
 								return get.attitude(from, to);
 							};
 							p.ai.modAttitudeTo = function (from, to, att) {
@@ -488,7 +521,9 @@ export default {
 									.map(i => i.storage.jlsg_xinghan_recruit || i)
 									.unique();
 								currents.remove(to);
-								if (currents.length == 1 && currents[0] == from) return -2;
+								if (currents.length == 1 && currents[0] == from) {
+									return -2;
+								}
 								return get.attitude(from, to);
 							};
 						}
@@ -546,7 +581,9 @@ export default {
 					},
 					ai: {
 						threaten(player, target) {
-							if (!target.storage.jlsg_xinghan_token.length && !target.storage.jlsg_xinghan.length) return 0;
+							if (!target.storage.jlsg_xinghan_token.length && !target.storage.jlsg_xinghan.length) {
+								return 0;
+							}
 							return 3;
 						},
 					},
@@ -710,7 +747,9 @@ export default {
 					},
 					mod: {
 						cardUsable: function (card) {
-							if (card.storage && card.storage.jlsg_choujue) return Infinity;
+							if (card.storage && card.storage.jlsg_choujue) {
+								return Infinity;
+							}
 						},
 					},
 					group: "jlsg_choujue2",
@@ -775,13 +814,17 @@ export default {
 							.map(c => get.character(c)[3])
 							.flat()
 							.filter(s => {
-								if (lib.filter.skillDisabled(s)) return false;
+								if (lib.filter.skillDisabled(s)) {
+									return false;
+								}
 								return !get.info(s).charlotte;
 							});
 						skills.removeArray(game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), []));
 						skills = skills.filter(skill => {
 							const info = lib.skill[skill];
-							if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+							if (info.ai?.combo) {
+								return player.hasSkill(info.ai?.combo, null, false, false);
+							}
 							return true;
 						});
 						let skill = [...skills].randomGet();
@@ -808,13 +851,17 @@ export default {
 							.map(c => get.character(c)[3])
 							.flat()
 							.filter(s => {
-								if (lib.filter.skillDisabled(s)) return false;
+								if (lib.filter.skillDisabled(s)) {
+									return false;
+								}
 								return !get.info(s).charlotte;
 							});
 						skills.removeArray(game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), []));
 						skills = skills.filter(skill => {
 							const info = lib.skill[skill];
-							if (info.ai?.combo) return player.hasSkill(info.ai?.combo, null, false, false);
+							if (info.ai?.combo) {
+								return player.hasSkill(info.ai?.combo, null, false, false);
+							}
 							return true;
 						});
 						let skill = [...skills].randomGet();
