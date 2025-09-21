@@ -1975,13 +1975,13 @@ export async function precontent(config, originalPack) {
 			}
 		}
 		//导入武将包
-		game.import("character", function () {
+		await game.import("character", function () {
 			return pack;
 		});
 	}
 
 	let name = jlsg_qs.name;
-	game.import("card", function () {
+	await game.import("card", function () {
 		return jlsg_qs;
 	});
 }

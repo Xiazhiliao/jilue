@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 import { config } from "../main/config.js";
 import { oldCharacter } from "./oldCharacter/index.js";
-import jlsg_sk from "./jlsg_sk.js";
+import jlsg_sk from "./jlsg_sk/index.js";
 import jlsg_sr from "./jlsg_sr.js";
 import jlsg_soul from "./jlsg_soul.js";
 import jlsg_sy from "./jlsg_sy.js";
