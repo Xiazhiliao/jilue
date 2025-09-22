@@ -3139,11 +3139,11 @@ const skills = {
 				return;
 			}
 			const result = await trigger.source
-				.chooseBool(`###${get.prompt(event.name, player)}###是否令其摸一张牌并令此伤害-1？${trigger.num}`)
+				.chooseBool(`###${get.prompt(event.name, player)}###是否令其摸一张牌并令此伤害-1？(当前伤害：${trigger.num})`)
 				.set("ai", (event, player) => {
 					const target = event.player,
 						nature = get.event().nature;
-					return get.effect(player, { name: "draw" }, target, player) - get.damageEffect(target, player, player, nature) > 0;
+					return get.effect(player, { name: "draw" }, target, player) - 0.5 > get.damageEffect(target, player, player, nature);
 				})
 				.set("nature", trigger.nature)
 				.forResult();
