@@ -1,0 +1,67 @@
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
+
+const dynamicTranslates = {
+	jlsg_zhaoxiang(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player?.playerid] || {},
+			storage = player?.getStorage?.("jlsg_zhaoxiang", [true, true, true]) || [true, true, true];
+		let str = "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：",
+			list = ["1．令此【杀】不能被响应", "2．令此【杀】无效", "3．将此【杀】的目标改为你"];
+		if (upgradeStorage["jlsgsr_caocao"]?.[2] || upgradeStorage.other?.jlsg_zhaoxiang || player?.index) {
+			list.push("4．令目标角色于此【杀】结算后回复1点体力");
+			if (storage.length < 4) {
+				storage.push(true);
+			}
+		}
+		for (let i in storage) {
+			if (!storage[i]) {
+				list[i] = `<span style="text-decoration: line-through;">${list[i]}</span>`;
+			}
+		}
+		str += list.join("；") + "。当所有选项执行后，重置此技能。";
+		return str;
+	},
+	jlsg_zhishi(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player?.playerid] || {};
+		if (upgradeStorage["jlsgsr_caocao"]?.[2] || upgradeStorage.other?.jlsg_zhishi || player?.index) {
+			return "当任意角色受到伤害后，你可以令其从随机三个能在此时机发动的技能中选择一个并发动。";
+		}
+		return lib.translate.jlsg_zhishi_info;
+	},
+	jlsg_rende(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_liubei"]?.[2] || upgradeStorage.other?.jlsg_rende;
+		if (improve || player?.index) {
+			return "任意角色的回合结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
+		} else {
+			return get.translation("jlsg_rende_info");
+		}
+	},
+	jlsg_chouxi(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_liubei"]?.[2] || upgradeStorage.other?.jlsg_chouxi;
+		if (improve || player?.index) {
+			return "出牌阶段每名角色限一次，你可以获得一名其他角色至多三张牌，然后交给其等量的牌，若如此做，你可以对其造成X点伤害（X为你以此法获得的牌与给出的牌的类别数之差）。";
+		} else {
+			return get.translation("jlsg_chouxi_info");
+		}
+	},
+	jlsg_quanheng(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_sunquan"]?.[2] || upgradeStorage.other?.jlsg_quanheng;
+		if (improve || player?.index) {
+			return "出牌阶段，你可以将X张手牌当【无中生有】或【杀】使用（X为你本回合先前发动此技能的次数）；当你使用【无中生有】后，你本回合使用的下一张【杀】的伤害+1；当你使用【杀】后，你本回合使用的下一张【无中生有】的摸牌数+1。";
+		} else {
+			return get.translation("jlsg_quanheng_info");
+		}
+	},
+	jlsg_xionglve(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_sunquan"]?.[2] || upgradeStorage.other?.jlsg_xionglve;
+		if (improve || player?.index) {
+			return "每回合限一次，当你获得牌后，你可以将其中至少一张牌置于你的武将牌上，称为“略”，若这些牌里有出牌阶段可以使用的基本牌或普通锦囊牌，你可以依次视为使用之；每轮限一次，回合结束时，若你有“略”且你本回合造成的伤害为X，或获得的牌数为2X（X为“略”数），你可以获得所有“略”，然后于本回合结束后执行一个额外回合。";
+		} else {
+			return get.translation("jlsg_xionglve_info");
+		}
+	},
+};
+export default dynamicTranslates;

@@ -12,11 +12,11 @@ import voices from "./voices.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
 
 export default {
-	name: "jlsg_sk",
+	name: "jlsg_sr",
 	connect: true,
 	character: { ...characters },
 	characterSort: {
-		jlsg_sk: characterSort,
+		//jlsg_sr: characterSort,
 	},
 	characterFilter: { ...characterFilters },
 	characterTitle: { ...characterTitle },
