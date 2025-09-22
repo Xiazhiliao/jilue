@@ -18074,6 +18074,7 @@ const skills = {
 									.concat(player.getExpansions("jlsg_jinlong"))
 									.map(card => card.storage?.jlsg_zhuren || {})
 									.reduce((list, info) => {
+										list ??= {};
 										for (let i in info) {
 											if (!list[i]) {
 												list[i] = 0;
