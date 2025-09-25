@@ -3476,7 +3476,7 @@ const skills = {
 			next.gaintag.add("jlsg_xionglve");
 			await next;
 			player.markSkill(event.name);
-			const improve = _status._jlsgsr_upgrade?.[player.playerid]?.["jlsgsr_sunquan"]?.[2];
+			const improve = _status._jlsgsr_upgrade?.[player.playerid]?.other?.[event.name];
 			if (!improve) {
 				return;
 			}
