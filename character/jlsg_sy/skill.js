@@ -3521,12 +3521,12 @@ const skills = {
 				}
 			} else if (key == "link") {
 				if (event) {
-					bool = !player.isLinked();
+					bool = player.isLinked();
 				}
 				str = `横置`;
 			} else if (key == "turnOver") {
 				if (event) {
-					bool = !player.isTurnedOver();
+					bool = player.isTurnedOver();
 				}
 				str = `翻面`;
 			} else if (key == "disableSkill") {
