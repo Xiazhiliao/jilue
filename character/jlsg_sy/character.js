@@ -31,6 +31,8 @@ const characters = {
 	jlsgsy_zhangchunhuabaonu: ["female", "shen", 3, ["jlsgsy_diaoling", "jlsgsy_ejue", "jlsgsy_jianmie"], ["wei", "hiddenboss", "bossallowed"]],
 	jlsgsy_liru: ["male", "shen", 8, ["jlsgsy_baonuliru", "jlsgsy_moce"], ["qun", "boss", "bossallowed"]],
 	jlsgsy_lirubaonu: ["male", "shen", 3, ["jlsgsy_moce", "jlsgsy_fenjie", "jlsgsy_jinmie"], ["qun", "hiddenboss", "bossallowed"]],
+	jlsgsy_yuanshu: ["male", "shen", 8, ["jlsgsy_baonuyuanshu", "jlsgsy_wangzun"], ["qun", "boss", "bossallowed"]],
+	jlsgsy_yuanshubaonu: ["male", "shen", 3, ["jlsgsy_wangzun", "jlsgsy_jiantian", "jlsgsy_zhonggu"], ["qun", "hiddenboss", "bossallowed"]],
 };
 
 export default characters;

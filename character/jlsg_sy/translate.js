@@ -178,6 +178,16 @@ const translates = {
 	jlsgsy_fenjie_info: "变身技，锁定技，你获得此技能后的第一个回合开始时，你令所有其他角色各加1点体力上限，摸两张牌；第二个回合开始时，你令所有其他角色各弃置所有红色牌；其余回合开始时，你对所有其他角色各造成1点火焰伤害。",
 	jlsgsy_jinmie: "烬灭",
 	jlsgsy_jinmie_info: "变身技，每回合限一次，当其他角色失去所有手牌后，若其已受伤，你可以对其造成X点火焰伤害（X为其体力）。",
+	jlsgsy_yuanshu: "伪龙窥天",
+	jlsgsy_baonuyuanshu: "暴怒",
+	jlsgsy_baonuyuanshu_info: "锁定技，当你的体力值降至4或更低时，你进入暴怒状态并立即开始你的回合。",
+	jlsgsy_wangzun: "妄尊",
+	jlsgsy_wangzun_info: "锁定技，准备阶段，若你的武将牌上没有“玺”，你将所有其他角色的各一张牌置于你的武将牌上称为“玺”；否则你从你的武将牌上获得一张“玺”并回复1点体力。你的摸牌数、攻击范围合使用【杀】的次数上限+X，你的手牌上限-X（X为“玺”数）。",
+	jlsgsy_yuanshubaonu: "伪龙窥天",
+	jlsgsy_jiantian: "僭天",
+	jlsgsy_jiantian_info: "变身技，当你使用【杀】或伤害类非延时锦囊牌指定目标后，你可以令此牌的伤害+1且不能被响应，若如此做，你下次受到的伤害+1.",
+	jlsgsy_zhonggu: "冢骨",
+	jlsgsy_zhonggu_info: "变身技，每回合限一次，当你受到负面效果后，你可以对所有其他角色施加此负面效果。",
 };
 
 export default translates;

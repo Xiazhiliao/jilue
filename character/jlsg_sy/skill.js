@@ -3324,6 +3324,251 @@ const skills = {
 			},
 		},
 	},
+	jlsgsy_baonuyuanshu: {
+		//animationStr: "仁义？天道？今日，唯有魔道！",
+		inherit: "jlsgsy_baonu",
+		mode: ["identity", "guozhan", "boss", "stone"],
+	},
+	jlsgsy_wangzun: {
+		audio: "ext:极略/audio/skill:2",
+		mod: {
+			attackRange(player, num) {
+				return num + player.countExpansions("jlsgsy_wangzun");
+			},
+			cardUsable(card, player, num) {
+				if (card.name == "sha") {
+					return num + player.countExpansions("jlsgsy_wangzun");
+				}
+			},
+			maxHandcard(player, num) {
+				return num - player.countExpansions("jlsgsy_wangzun");
+			},
+		},
+		marktext: "玺",
+		intro: {
+			markcount: "expansion",
+			content: "expansion",
+		},
+		trigger: { player: "phaseZhunbeiBegin" },
+		forced: true,
+		logTarget(event, player) {
+			const xi = player.getExpansions("jlsgsy_wangzun");
+			if (!xi.length) {
+				return game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
+			}
+			return player;
+		},
+		async content(event, trigger, player) {
+			const xi = player.getExpansions(event.name);
+			if (!xi.length) {
+				for (const target of event.targets) {
+					if (!target.isIn() || !target.countCards("he")) {
+						continue;
+					}
+					const { result } = await player.choosePlayerCard(`###妄尊###请选择${get.translation(target)}的一张牌`, target, "he", true);
+					if (result.bool && result.links.length) {
+						const next = player.addToExpansion(target, result.links, "give", "log");
+						next.gaintag.add(event.name);
+						await next;
+					}
+				}
+				if (!player.hasSkill(`${event.name}_effect`)) {
+					player.addSkill(`${event.name}_effect`);
+				}
+			} else {
+				const { result } = await player.chooseCardButton(true, "妄尊：选择获得一张“玺”", xi);
+				if (result.bool && result.links.length) {
+					await player.gain(result.links, player, "giveAuto");
+					await player.recover(1);
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				trigger: { player: "phaseDrawBegin2" },
+				filter(event, player) {
+					if (!player.countExpansions("jlsgsy_wangzun")) {
+						return false;
+					}
+					return event.num > 0 && !event.numFixed;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num += player.countExpansions("jlsgsy_wangzun");
+				},
+			},
+		},
+	},
+	jlsgsy_jiantian: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: { player: "useCardToTargeted" },
+		filter(event, player) {
+			if (event.card.name != "sha" && get.type(event.card) != "trick") {
+				return false;
+			} else if (get.tag("damage", event.card) < 1) {
+				return false;
+			}
+			return event.getParent().triggeredTargets4.length == 1;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseBool(`###${get.prompt(event.skill)}###令${get.translation(trigger.card)}伤害+1且不能被响应`)
+				.set("ai", (event, player) => {
+					const trigger = event.getTrigger();
+					const eff = trigger.targets.reduce((sum, target) => sum + get.effect(target, trigger.card, player, player), 0);
+					return eff > 0;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			trigger.getParent().baseDamage++;
+			trigger.getParent().directHit = game.players;
+			player.addSkill(`${event.name}_debuff`);
+		},
+		subSkill: {
+			debuff: {
+				charlotte: true,
+				init(player, skill) {
+					let num = player.getStorage(skill, 0);
+					num++;
+					player.setStorage(skill, num, true);
+				},
+				onremove: true,
+				mark: true,
+				marktext: "僭",
+				intro: {
+					content(storage, player) {
+						return "下次受到的伤害+" + storage;
+					},
+				},
+				trigger: { player: "damageBegin3" },
+				forced: true,
+				pupup: false,
+				async content(event, trigger, player) {
+					trigger.num += player.getStorage(event.name, 0);
+				},
+			},
+		},
+	},
+	jlsgsy_zhonggu: {
+		audio: "ext:极略/audio/skill:2",
+		usable: 1,
+		trigger: { player: ["damageEnd", "loseHpAfter", "loseMaxHpAfter", "loseAfter", "changeSkillsAfter", "linkAfter", "turnOverAfter", "disableSkill"] },
+		filter(event, player) {
+			let key = lib.jlsg.debuffSkill.translate[event.name];
+			return get.info("jlsgsy_zhonggu").getInfo(event, player, key).bool;
+		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseBool(`###${get.prompt(event.skill)}###令所有其他角色${get.info("jlsgsy_zhonggu").getInfo(trigger, player).str}`)
+				.set("ai", (event, player) => {
+					return true;
+				})
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				targets: game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase),
+			};
+		},
+		async content(event, trigger, player) {
+			let key = lib.jlsg.debuffSkill.translate[trigger.name],
+				info = get.info(event.name).getInfo(trigger, player, key);
+			if (key == "removeSkill") {
+				ket = "removeSkills";
+			}
+			for (const target of event.targets) {
+				if (!target.isIn()) {
+					continue;
+				}
+				if (key == "removeSkills") {
+					const skills = target.getSkills(null, false, false);
+					if (!skills.length) {
+						continue;
+					}
+					await target.removeSkills(skills.randomGets(info.num));
+				} else if (key == "discard") {
+					const cards = target.getDiscardableCards(target, "he");
+					if (!cards.length) {
+						continue;
+					}
+					await target.discard(cards.randomGets(info.num));
+				} else {
+					await target[key](info.num, info.nature);
+				}
+			}
+		},
+		getInfo(event, player, name, num, nature = null) {
+			let key = name || lib.jlsg.debuffSkill.translate[event.name],
+				bool = true,
+				str = "";
+			if (key == "discard") {
+				if (event) {
+					bool = event.type == "discard" && !event.getlx && event.getl?.(player)?.cards2?.length;
+					if (!num) {
+						num = event.getl?.(player)?.cards2.length;
+					}
+				}
+				str = `弃置${num}张牌`;
+			} else if (key == "removeSkill") {
+				if (event) {
+					bool = event.removeSkill.length;
+					if (!num) {
+						num = event.removeSkill.length;
+					}
+					str = `失去${num}个技能：` + get.translation(event.removeSkill);
+				} else {
+					str = `失去${num}个技能`;
+				}
+			} else if (key == "link") {
+				if (event) {
+					bool = !player.isLinked();
+				}
+				str = `横置`;
+			} else if (key == "turnOver") {
+				if (event) {
+					bool = !player.isTurnedOver();
+				}
+				str = `翻面`;
+			} else if (key == "disableSkill") {
+				if (event) {
+					bool = event.disableSkills.length;
+					num = event.num;
+					str = `失效${num}个技能：` + get.translation(event.disableSkills);
+				} else {
+					str = `失效${num}个技能`;
+				}
+			} else {
+				if (event) {
+					num = event.num;
+				}
+				if (key == "damage") {
+					if (event) {
+						num = event.num;
+						nature = event.nature;
+					}
+					str = `受到${num}点${nature ? get.translation(nature) : ""}伤害`;
+				} else if (key == "loseHp") {
+					str = `失去${num}点体力`;
+				} else if (key == "loseMaxHp") {
+					str = `减少${num}点体力上限`;
+				}
+			}
+			console.log({
+				bool: bool,
+				num: num,
+				nature: nature,
+				str: str,
+			});
+			return {
+				bool: bool,
+				num: num,
+				nature: nature,
+				str: str,
+			};
+		},
+	},
 };
 
 export default skills;

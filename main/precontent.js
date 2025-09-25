@@ -1920,6 +1920,146 @@ export async function precontent(config, originalPack) {
 				}
 			},
 		},
+		debuffSkill: {
+			filter(event, player) {
+				let key = lib.jlsg.debuffSkill.translate[event.name];
+				return lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
+			},
+			translate: {
+				damage: "damage",
+				loseHp: "loseHp",
+				loseMaxHp: "loseMaxHp",
+				lose: "discard",
+				loseAsync: "discard",
+				changeSkills: "removeSkill",
+				disableSkill: "disableSkill",
+				linkBefore: "link",
+				link: "link",
+				turnOverBefore: "turnOver",
+				turnOver: "turnOver",
+			},
+			transfer(event, player, name, number = 1, nature = null) {
+				let next,
+					key = ["damage", "loseHp", "loseMaxHp", "discard", "removeSkill", "disableSkill", "link", "turnOver"]
+						.filter(i => {
+							if (i == name) {
+								return false;
+							}
+							if (i == "discard") {
+								return player.countDiscardableCards(player, "he");
+							} else if (i == "removeSkill") {
+								return player.getSkills(null, false, false).length;
+							}
+							return true;
+						})
+						.randomGet();
+				if (!key) {
+					return;
+				}
+				game.log(player, "将", `#y${lib.jlsg.debuffSkill.getInfo(event, player, name, number).str}`, "改为", `#y${lib.jlsg.debuffSkill.getInfo(null, player, key, 1, nature).str}`);
+				if (key == "damage") {
+					next = player.damage(1, nature);
+				} else if (key == "loseHp") {
+					next = player.loseHp(1);
+				} else if (key == "loseMaxHp") {
+					next = player.loseMaxHp(1);
+				} else if (key == "discard") {
+					next = player.discard(player.getDiscardableCards(player, "he").randomGets(1));
+				} else if (key == "removeSkill") {
+					next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
+				} else if (key == "disableSkill") {
+					if (!lib.config.extension_极略_jlsg_disableSkill && player.storage?.jlsg_qianyuan?.disableSkill === false) {
+						player.storage.jlsg_qianyuan.disableSkill = true;
+					} else {
+						next = player.tempBanSkill(
+							player
+								.getSkills(null, false, false)
+								?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
+								?.randomGets(1)
+						);
+					}
+				} else if (key == "link") {
+					next = player.link();
+				} else if (key == "turnOver") {
+					next = player.turnOver();
+				}
+				return next;
+			},
+			getInfo(event, player, name, num, nature = null) {
+				let key = name || lib.jlsg.debuffSkill.translate[event.name],
+					bool = true,
+					str = "";
+				if (key == "discard") {
+					if (event) {
+						bool =
+							event.type == "discard" &&
+							event.cards.some(card => {
+								if (get.owner(card) != event.player) {
+									return false;
+								}
+								return ["h", "e"].includes(get.position(card));
+							});
+						if (!num) {
+							num = event.cards.filter(card => {
+								if (get.owner(card) != event.player) {
+									return false;
+								}
+								return ["h", "e"].includes(get.position(card));
+							}).length;
+						}
+					}
+					str = `弃置${num}张牌`;
+				} else if (key == "removeSkill") {
+					if (event) {
+						bool = event.removeSkill.length;
+						if (!num) {
+							num = event.removeSkill.length;
+						}
+						str = `失去${num}个技能：` + get.translation(event.removeSkill);
+					} else {
+						str = `失去${num}个技能`;
+					}
+				} else if (key == "link") {
+					if (event) {
+						bool = !player.isLinked();
+					}
+					str = `横置`;
+				} else if (key == "turnOver") {
+					if (event) {
+						bool = !player.isTurnedOver();
+					}
+					str = `翻面`;
+				} else if (key == "disableSkill") {
+					if (event) {
+						bool = event.disableSkills.length;
+						num = event.num;
+						str = `失效${num}个技能：` + get.translation(event.disableSkills);
+					} else {
+						str = `失效${num}个技能`;
+					}
+				} else {
+					if (event) {
+						num = event.num;
+					}
+					if (key == "damage") {
+						if (event) {
+							nature = event.nature;
+						}
+						str = `受到${num}点${nature ? get.translation(nature) : ""}伤害`;
+					} else if (key == "loseHp") {
+						str = `失去${num}点体力`;
+					} else if (key == "loseMaxHp") {
+						str = `减少${num}点体力上限`;
+					}
+				}
+				return {
+					bool: bool,
+					num: num,
+					nature: nature,
+					str: str,
+				};
+			},
+		},
 	};
 	lib.jlsg = jlsg;
 	window.jlsg = jlsg;
