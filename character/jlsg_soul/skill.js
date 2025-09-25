@@ -1514,8 +1514,8 @@ const skills = {
 					finish();
 					storage[name].remove(control);
 					if (!storage[name].length) {
+						delete storage[name];
 					}
-					delete storage[name];
 					player.setStorage("jlsg_yaozhi", storage);
 					await player.addSkills([control]);
 					return;
@@ -6665,7 +6665,7 @@ const skills = {
 			if (event.targets) {
 				trigger.player.line(event.targets[0]);
 				trigger.player.removeMark("jlsg_xingwu", 1);
-				lib.skill.jlsg_xingwu.loseSkill(trigger.player);
+				lib.skill.jlsg_xingwu.removeSkill(trigger.player);
 				player.storage.jlsg_xingwu_mark[trigger.player.playerid]--;
 				event.targets[0].addMark("jlsg_xingwu", 1);
 				await lib.skill.jlsg_xingwu.gainSkill(event.targets[0]);
@@ -6734,7 +6734,7 @@ const skills = {
 			target.storage.jlsg_xingwu_skill.addArray(skills);
 			target.addSkills(skills);
 		},
-		loseSkill(target) {
+		removeSkill(target) {
 			target.loseHp();
 			let skills = [];
 			let targetSkills = target.getSkills(null, false, false);
@@ -6821,7 +6821,7 @@ const skills = {
 							}
 						} else {
 							while (player.storage.jlsg_xingwu_mark[target.playerid] > target.countMark("jlsg_xingwu")) {
-								await lib.skill.jlsg_xingwu.loseSkill(target);
+								await lib.skill.jlsg_xingwu.removeSkill(target);
 								player.storage.jlsg_xingwu_mark[target.playerid]--;
 							}
 						}
@@ -9495,7 +9495,7 @@ const skills = {
 					},
 					contentx: effect.content,
 					gainSkill: effect.gainSkill,
-					loseSkill: effect.loseSkill,
+					removeSkill: effect.removeSkill,
 					ai: {
 						effect: {
 							name: name,
@@ -9686,7 +9686,7 @@ const skills = {
 								if (info) {
 									continue;
 								}
-								if (info.loseSkill) {
+								if (info.removeSkill) {
 									return 2;
 								}
 								if (info.dutySkill || info.limited || info.juexingji || info.xinadingji) {
@@ -10105,7 +10105,7 @@ const skills = {
 							});
 							return -Math.min(2, skills.length);
 						},
-						loseSkill: true,
+						removeSkill: true,
 					},
 					弃置所有牌: {
 						content: async function (event, trigger, player) {
@@ -10275,7 +10275,7 @@ const skills = {
 				loseHp: false,
 				loseMaxHp: false,
 				discard: false,
-				loseSkill: false,
+				removeSkill: false,
 				disableSkill: false,
 				link: false,
 				turnOver: false,
@@ -10307,7 +10307,7 @@ const skills = {
 						loseHp: "失去体力",
 						loseMaxHp: "减体力上限",
 						discard: "弃置牌",
-						loseSkill: "失去技能",
+						removeSkill: "失去技能",
 						disableSkill: "失效技能",
 						link: "横置",
 						turnOver: "翻面",
@@ -10331,8 +10331,8 @@ const skills = {
 		},
 		filter(event, player) {
 			let storage = player.storage.jlsg_qianyuan,
-				key = lib.skill.jlsg_qianyuan.translate[event.name];
-			let bool1 = lib.skill.jlsg_qianyuan.getInfo(event, player, key).bool,
+				key = lib.jlsg.debuffSkill.translate[event.name];
+			let bool1 = lib.jlsg.debuffSkill.getInfo(event, player, key).bool,
 				bool2 = true;
 			if (storage[key] === true) {
 				let used = player.getHistory("useSkill", evt => {
@@ -10347,8 +10347,8 @@ const skills = {
 		},
 		prompt(event, player) {
 			let str = "潜渊:是否将此次负面效果";
-			let key = lib.skill.jlsg_qianyuan.translate[event.name];
-			let translation = lib.skill.jlsg_qianyuan.getInfo(event, player, key).str;
+			let key = lib.jlsg.debuffSkill.translate[event.name];
+			let translation = lib.jlsg.debuffSkill.getInfo(event, player, key).str;
 			str += `<span class='yellowtext'>${translation}</span>`;
 			if (player.storage.jlsg_qianyuan[key] === false) {
 				str += "无效？";
@@ -10359,7 +10359,7 @@ const skills = {
 		},
 		prompt2(event, player) {
 			let storage = player.storage.jlsg_qianyuan,
-				key = lib.skill.jlsg_qianyuan.translate[event.name],
+				key = lib.jlsg.debuffSkill.translate[event.name],
 				num1 = 0,
 				num2 = game.countPlayer();
 			if (storage[key] === true) {
@@ -10374,7 +10374,7 @@ const skills = {
 		},
 		check(event, player) {
 			//@.修改
-			var key = lib.skill.jlsg_qianyuan.translate[event.name];
+			var key = lib.jlsg.debuffSkill.translate[event.name];
 			if (player.storage.jlsg_qianyuan[key] === false) {
 				return true;
 			}
@@ -10394,13 +10394,13 @@ const skills = {
 				num3 = 5;
 			} else if (key == "discard") {
 				let least = player.storage.jlsg_hualong_effect,
-					card = lib.skill.jlsg_qianyuan.getInfo(event, player).num;
+					card = lib.jlsg.debuffSkill.getInfo(event, player).num;
 				if (least && least > player.countCards("h") - card) {
 					num3 = 2;
 				} else {
 					num3 = card + 1;
 				}
-			} else if (key == "loseSkill") {
+			} else if (key == "removeSkill") {
 				num3 = 6;
 			} else if (key == "disableSkill") {
 				num3 = 2.5;
@@ -10427,8 +10427,8 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			let key = lib.skill.jlsg_qianyuan.translate[trigger.name];
-			const { num, nature, str } = lib.skill.jlsg_qianyuan.getInfo(trigger, player, key);
+			let key = lib.jlsg.debuffSkill.translate[trigger.name];
+			const { num, nature, str } = lib.jlsg.debuffSkill.getInfo(trigger, player, key);
 			if (trigger.name == "changeSkills") {
 				trigger.removeSkill = [];
 			} else if (trigger.name == "lose") {
@@ -10448,154 +10448,13 @@ const skills = {
 			}
 			if (player.storage.jlsg_qianyuan[key] === true) {
 				event.getParent().jlsg_qianyuan = true;
-				await lib.skill.jlsg_qianyuan.transfer(trigger, player, key, num, nature);
+				await lib.jlsg.debuffSkill.transfer(trigger, player, key, num, nature);
 			} else {
 				player.storage.jlsg_qianyuan[key] = true;
 				game.log(player, "取消了", `#y${str}`);
 				player.storage.jlsg_qianyuan.record[key] = num;
 			}
 			player.markSkill("jlsg_qianyuan");
-		},
-		get translate() {
-			let result = {
-				damage: "damage",
-				loseHp: "loseHp",
-				loseMaxHp: "loseMaxHp",
-				lose: "discard",
-				loseAsync: "discard",
-				changeSkills: "loseSkill",
-				disableSkill: "disableSkill",
-				linkBefore: "link",
-				link: "link",
-				turnOverBefore: "turnOver",
-				turnOver: "turnOver",
-			};
-			delete this.translation;
-			this.translation = result;
-			return result;
-		},
-		transfer(event, player, name, number = 1, nature = null) {
-			let next,
-				key = ["damage", "loseHp", "loseMaxHp", "discard", "loseSkill", "disableSkill", "link", "turnOver"]
-					.filter(i => {
-						if (i == name) {
-							return false;
-						}
-						if (i == "discard") {
-							return player.countDiscardableCards(player, "he");
-						} else if (i == "loseSkill") {
-							return player.getSkills(null, false, false).length;
-						}
-						return true;
-					})
-					.randomGet();
-			if (!key) {
-				return;
-			}
-			game.log(player, "将", `#y${lib.skill.jlsg_qianyuan.getInfo(event, player, name, number).str}`, "改为", `#y${lib.skill.jlsg_qianyuan.getInfo(null, player, key, 1, nature).str}`);
-			if (key == "damage") {
-				next = player.damage(1, nature);
-			} else if (key == "loseHp") {
-				next = player.loseHp(1);
-			} else if (key == "loseMaxHp") {
-				next = player.loseMaxHp(1);
-			} else if (key == "discard") {
-				next = player.discard(player.getDiscardableCards(player, "he").randomGets(1));
-			} else if (key == "loseSkill") {
-				next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
-			} else if (key == "disableSkill") {
-				if (!lib.config.extension_极略_jlsg_disableSkill && player.storage.jlsg_qianyuan.disableSkill != true) {
-					player.storage.jlsg_qianyuan.disableSkill = true;
-				} else {
-					next = player.tempBanSkill(
-						player
-							.getSkills(null, false, false)
-							?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
-							?.randomGets(1)
-					);
-				}
-			} else if (key == "link") {
-				next = player.link();
-			} else if (key == "turnOver") {
-				next = player.turnOver();
-			}
-			return next;
-		},
-		getInfo(event, player, name, num, nature = null) {
-			let key = name || lib.skill.jlsg_qianyuan.translate[event.name],
-				bool = true,
-				str = "";
-			if (key == "discard") {
-				if (event) {
-					bool =
-						event.type == "discard" &&
-						event.cards.some(card => {
-							if (get.owner(card) != event.player) {
-								return false;
-							}
-							return ["h", "e"].includes(get.position(card));
-						});
-					if (!num) {
-						num = event.cards.filter(card => {
-							if (get.owner(card) != event.player) {
-								return false;
-							}
-							return ["h", "e"].includes(get.position(card));
-						}).length;
-					}
-				}
-				str = `弃置${num}张牌`;
-			} else if (key == "loseSkill") {
-				if (event) {
-					bool = event.removeSkill.length;
-					if (!num) {
-						num = event.removeSkill.length;
-					}
-					str = `失去${num}个技能：` + get.translation(event.removeSkill);
-				} else {
-					str = `失去${num}个技能`;
-				}
-			} else if (key == "link") {
-				if (event) {
-					bool = !player.isLinked();
-					num = true;
-				}
-				str = `横置`;
-			} else if (key == "turnOver") {
-				if (event) {
-					bool = !player.isTurnedOver();
-					num = true;
-				}
-				str = `翻面`;
-			} else if (key == "disableSkill") {
-				if (event) {
-					bool = event.disableSkills.length;
-					num = event.num;
-					str = `失效${num}个技能：` + get.translation(event.disableSkills);
-				} else {
-					str = `失效${num}个技能`;
-				}
-			} else {
-				if (event) {
-					num = event.num;
-				}
-				if (key == "damage") {
-					if (event) {
-						nature = event.nature;
-					}
-					str = `受到${num}点${nature ? get.translation(nature) : ""}伤害`;
-				} else if (key == "loseHp") {
-					str = `失去${num}点体力`;
-				} else if (key == "loseMaxHp") {
-					str = `减少${num}点体力上限`;
-				}
-			}
-			return {
-				bool: bool,
-				num: num,
-				nature: nature,
-				str: str,
-			};
 		},
 		ai: {
 			//@.修改
@@ -10639,7 +10498,7 @@ const skills = {
 			let str = `###化龙:选择一名其他角色，令其受到以下负面效果，然后将你的各项属性和最小手牌数改为${list.length + (player.storage.jlsg_hualong_effect ?? 0)}###`;
 			for (let i of list) {
 				if (player.storage.jlsg_qianyuan.record[i] !== false) {
-					str += `${lib.skill.jlsg_qianyuan.getInfo(null, player, i, list.length).str}<br>`;
+					str += `${lib.jlsg.debuffSkill.getInfo(null, player, i, list.length).str}<br>`;
 				}
 			}
 			event.result = await player
@@ -10671,7 +10530,7 @@ const skills = {
 					await target.loseMaxHp(number);
 				} else if (key == "discard") {
 					await target.discard(target.getDiscardableCards(target, "he").randomGets(number));
-				} else if (key == "loseSkill") {
+				} else if (key == "removeSkill") {
 					await target.removeSkills(target.getSkills(null, false, false).randomGets(number));
 				} else if (key == "disableSkill") {
 					await target.awakenSkill(
@@ -14323,12 +14182,10 @@ const skills = {
 	},
 	jlsg_zhanhun: {
 		audio: "ext:极略/audio/skill:2",
-		trigger: {
-			player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkill"],
-		},
+		get trigger(){return lib.jlsg.debuffSkill.trigger},
 		filter(event, player) {
-			let key = lib.skill.jlsg_qianyuan.translate[event.name];
-			let bool = lib.skill.jlsg_qianyuan.getInfo(event, player, key).bool;
+			let key = lib.jlsg.debuffSkill.translate[event.name];
+			let bool = lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
 			if (!bool) {
 				return false;
 			}
@@ -14336,10 +14193,7 @@ const skills = {
 				if (!event.source || event.source == player) {
 					return false;
 				}
-			} else if (["loseHp", "loseMaxHp", "loseSkill", "link", "turnOver"].includes(key)) {
-				if (key == "loseSkill" && !event.removeSkill.length) {
-					return false;
-				}
+			} else if (["loseHp", "loseMaxHp", "removeSkill", "link", "turnOver"].includes(key)) {
 				if (event.getParent().player && event.getParent().player == player) {
 					return false;
 				}
@@ -14359,8 +14213,8 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			let key = lib.skill.jlsg_qianyuan.translate[trigger.name];
-			const { str } = lib.skill.jlsg_qianyuan.getInfo(trigger, player, key);
+			let key = lib.jlsg.debuffSkill.translate[trigger.name];
+			const { str } = lib.jlsg.debuffSkill.getInfo(trigger, player, key);
 			if (trigger.name == "changeSkills") {
 				trigger.removeSkill = [];
 			} else if (trigger.name == "lose") {

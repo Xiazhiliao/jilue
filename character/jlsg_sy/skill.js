@@ -2719,15 +2719,13 @@ const skills = {
 				},
 			},
 			3: {
-				trigger: {
-					player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore"],
-				},
+				get trigger(){return lib.jlsg.debuffSkill.trigger},
 				filter(event, player) {
 					if (player.storage.jlsgsy_moshou_record != 3) {
 						return false;
 					}
-					let key = lib.skill.jlsg_qianyuan.translate[event.name];
-					let bool = lib.skill.jlsg_qianyuan.getInfo(event, player, key).bool;
+					let key = lib.jlsg.debuffSkill.translate[event.name];
+					let bool = lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
 					if (!bool) {
 						return false;
 					}
@@ -2761,8 +2759,8 @@ const skills = {
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					let key = lib.skill.jlsg_qianyuan.translate[trigger.name];
-					const { str } = lib.skill.jlsg_qianyuan.getInfo(trigger, player, key);
+					let key = lib.jlsg.debuffSkill.translate[trigger.name];
+					const { str } = lib.jlsg.debuffSkill.getInfo(trigger, player, key);
 					if (trigger.name == "changeSkills") {
 						trigger.removeSkill = [];
 					} else if (trigger.name == "lose") {
@@ -3325,7 +3323,7 @@ const skills = {
 		},
 	},
 	jlsgsy_baonuyuanshu: {
-		//animationStr: "仁义？天道？今日，唯有魔道！",
+		animationStr: "弑君之罪，当诛九族！",
 		inherit: "jlsgsy_baonu",
 		mode: ["identity", "guozhan", "boss", "stone"],
 	},
