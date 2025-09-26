@@ -14352,7 +14352,7 @@ const skills = {
 		chooseButton: {
 			dialog(event, player) {
 				const storage = player.getStorage("jlsg_qixian", { count: 0, list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]) }),
-					dialog = ui.create.dialog("七弦：请分配7音到对应体力上限");
+					dialog = ui.create.dialog("七弦：请选择要调换位置的两个音");
 				dialog.addText("1—————————————————7", true);
 				dialog.add([
 					storage.list.map((v, i) => [Number(i) + 1, "", v]),
@@ -14520,7 +14520,7 @@ const skills = {
 							await player.gainPlayerCard(event.target, true, "he", event.key);
 						},
 						ai(volume, key, player, target) {
-							return get.effect(target, { name: "gain_copy2" }, player, player);
+							return get.effect(target, { name: "shunshou_copy2" }, player, player);
 						},
 					},
 				},
@@ -14688,7 +14688,7 @@ const skills = {
 								return { type: ["basic", "trick"].randomGet(), skill };
 							},
 							prompt(key) {
-								return `获得两张不能造成伤害的临时${key.type}牌，获得${get.poptip(key.skill)}`;
+								return `获得两张不能造成伤害的临时${get.translation(key.type)}牌，获得${get.poptip(key.skill)}`;
 							},
 						},
 						content: async function (event, trigger, player) {
@@ -14709,7 +14709,7 @@ const skills = {
 								await event.target.gain(cards, "draw2");
 							}
 							if (typeof event.key.skill == "string" && event.key.skill in lib.skill) {
-								await event.target.addSkills(event.skill);
+								await event.target.addSkills(event.key.skill);
 							}
 						},
 						ai(volume, key, player, target) {
@@ -14761,7 +14761,7 @@ const skills = {
 								return { type: ["basic", "trick"].randomGet() };
 							},
 							prompt(key) {
-								return `获得两张能造成伤害的临时${key.type}牌`;
+								return `获得两张能造成伤害的临时${get.translation(key.type)}牌`;
 							},
 						},
 						forte: {
@@ -14771,7 +14771,7 @@ const skills = {
 								return { type: ["basic", "trick"].randomGet(), skill };
 							},
 							prompt(key) {
-								return `获得两张能造成伤害的临时${key.type}牌，获得${get.poptip(key.skill)}`;
+								return `获得两张能造成伤害的临时${get.translation(key.type)}牌，获得${get.poptip(key.skill)}`;
 							},
 						},
 						content: async function (event, trigger, player) {
@@ -14792,7 +14792,7 @@ const skills = {
 								await event.target.gain(cards, "draw2");
 							}
 							if (typeof event.key.skill == "string" && event.key.skill in lib.skill) {
-								await event.target.addSkills(event.skill);
+								await event.target.addSkills(event.key.skill);
 							}
 						},
 						ai(volume, key, player, target) {
@@ -14806,7 +14806,7 @@ const skills = {
 								return { num: 2, type: ["basic", "trick"].randomGet() };
 							},
 							prompt(key) {
-								return `随机弃置两张能造成伤害的${key.type}牌`;
+								return `随机弃置两张能造成伤害的${get.translation(key.type)}牌`;
 							},
 						},
 						forte: {
@@ -14815,7 +14815,7 @@ const skills = {
 								return { num: "all", type: ["basic", "trick"].randomGet() };
 							},
 							prompt(key) {
-								return `弃置所有能造成伤害的${key.type}牌`;
+								return `弃置所有能造成伤害的${get.translation(key.type)}牌`;
 							},
 						},
 						content: async function (event, trigger, player) {
@@ -15150,9 +15150,15 @@ const skills = {
 					if (trigger.name == "useCard") {
 						result = await player
 							.chooseBool(`###${get.prompt("jlsg_qixian")}###将你的体力值从${player.hp}变为${num}<br>（触发${str2}<span class="yellowtext">${trigger.name == "useCard" ? str : get.plainText(prompt)}</span>）`)
-							.set("ai", (event, trigger) => {
+							.set("ai", (event, player) => {
+								const { type, volume } = get.event();
+								if (type == "羽" && volume == "piano") {
+									return false;
+								}
 								return true;
 							})
+							.set("type", type)
+							.set("volume", volume)
 							.forResult();
 					} else {
 						result = await player
