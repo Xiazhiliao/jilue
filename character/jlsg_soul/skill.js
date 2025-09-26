@@ -14874,14 +14874,10 @@ const skills = {
 						info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
 					let num = 2,
 						translate = {
-							direction: {
-								red: "正弦",
-								black: "逆弦",
-							},
-							volume: {
-								piano: "弱音",
-								forte: "强音",
-							},
+							red: "正弦",
+							black: "逆弦",
+							piano: "弱音",
+							forte: "强音",
 						};
 					while (num > 0) {
 						num--;
@@ -14897,7 +14893,7 @@ const skills = {
 						if (!event.target.isIn() || !player.isIn()) {
 							break;
 						}
-						game.log(player, "对", event.target, "执行", `#y${type}`, "的", `#y${translate.direction[direction]}${translate.volume[volume]}`, "效果：", `#y${get.plainText(prompt)}`);
+						game.log(player, "对", event.target, "执行", `#y${type}`, "的", `#y${translate[direction]}${translate[volume]}`, "效果：", `#y${get.plainText(prompt)}`);
 						if (volume == "piano") {
 							player.storage.jlsg_qixian.count++;
 							player.markSkill("jlsg_qixian_effect");
@@ -15084,7 +15080,7 @@ const skills = {
 							num += 7;
 						}
 						let str = list.join("");
-						str = `${str.slice(0, num - 1)}<span class="yellowtext">${str.slice(num - 1, num)}</span>${str.slice(num)}`;
+						str = `${str.slice(0, num - 1)}<span class="yellowtext">|${str.slice(num - 1, num)}|</span>${str.slice(num)}`;
 						dialog.addText(str);
 					},
 				},
@@ -15136,14 +15132,10 @@ const skills = {
 					}
 					let type = storage.list[num - 1],
 						translate = {
-							direction: {
-								red: "正弦",
-								black: "逆弦",
-							},
-							volume: {
-								piano: "弱音",
-								forte: "强音",
-							},
+							red: "正弦",
+							black: "逆弦",
+							piano: "弱音",
+							forte: "强音",
 						};
 					const info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
 					let { str, key, prompt } = info;
@@ -15155,7 +15147,7 @@ const skills = {
 					} else if (typeof prompt == "function") {
 						prompt = prompt(key, player);
 					}
-					let str2 = `<span class="yellowtext">${type}</span>的<span class="yellowtext">${translate.direction[direction]}${translate.volume[volume]}</span>效果：`;
+					let str2 = `<span class="yellowtext">${type}</span>的<span class="yellowtext">${translate[direction]}${translate[volume]}</span>效果：`;
 					if (trigger.name == "useCard") {
 						result = await player
 							.chooseBool(`###${get.prompt("jlsg_qixian")}###将你的体力值从${player.hp}变为${num}<br>（触发${str2}<span class="yellowtext">${trigger.name == "useCard" ? str : prompt}</span>）`)
@@ -15202,16 +15194,12 @@ const skills = {
 						player.setStorage("jlsg_qixian", storage, true);
 						const { content } = get.info("jlsg_qixian").effects[type][direction],
 							translate = {
-								direction: {
-									red: "正弦",
-									black: "逆弦",
-								},
-								volume: {
-									piano: "弱音",
-									forte: "强音",
-								},
+								red: "正弦",
+								black: "逆弦",
+								piano: "弱音",
+								forte: "强音",
 							};
-						game.log(player, "对", event.targets[0], "执行", `#y${type}`, "的", `#y${translate.direction[direction]}${translate.volume[volume]}`, "效果：", `#y${type == "羽" ? str : get.plainText(prompt)}`);
+						game.log(player, "对", event.targets[0], "执行", `#y${type}`, "的", `#y${translate[direction]}${translate[volume]}`, "效果：", `#y${type == "羽" ? str : get.plainText(prompt)}`);
 						const next = game.createEvent("jlsg_qixian_effect2", false);
 						next.player = player;
 						next.target = event.targets[0];
