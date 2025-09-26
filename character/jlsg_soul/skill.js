@@ -15158,20 +15158,12 @@ const skills = {
 					let str2 = `<span class="yellowtext">${type}</span>的<span class="yellowtext">${translate.direction[direction]}${translate.volume[volume]}</span>效果：`;
 					if (trigger.name == "useCard") {
 						result = await player
-							.chooseBool(`###${get.prompt("jlsg_qixian")}###将你的体力值从${player.hp}变为${num}<br>（触发${str2}<span class="yellowtext">${trigger.name == "useCard" ? str : get.plainText(prompt)}</span>）`)
-							.set("ai", (event, player) => {
-								const { type, volume } = get.event();
-								if (type == "羽" && volume == "piano") {
-									return false;
-								}
-								return true;
-							})
-							.set("type", type)
-							.set("volume", volume)
+							.chooseBool(`###${get.prompt("jlsg_qixian")}###将你的体力值从${player.hp}变为${num}<br>（触发${str2}<span class="yellowtext">${trigger.name == "useCard" ? str : prompt}</span>）`)
+							.set("ai", (event, player) => true)
 							.forResult();
 					} else {
 						result = await player
-							.chooseTarget(`###${get.prompt("jlsg_qixian")}###选择一名角色执行${str2}<span class="yellowtext">${type == "羽" ? str : get.plainText(prompt)}</span>`)
+							.chooseTarget(`###${get.prompt("jlsg_qixian")}###选择一名角色执行${str2}<span class="yellowtext">${type == "羽" ? str : prompt}</span>`)
 							.set("ai", target => {
 								const { volume, key, extraAi, player } = get.event();
 								return extraAi(volume, key, player, target);
