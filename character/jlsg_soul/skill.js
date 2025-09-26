@@ -14335,6 +14335,7 @@ const skills = {
 	jlsg_qixian: {
 		audio: "ext:极略/audio/skill:7",
 		init(player, skill) {
+			get.info(skill).getSkills["recover"];
 			if (!_status.gameStarted) {
 				return;
 			}
@@ -14414,7 +14415,10 @@ const skills = {
 							str: "随机属性+1，获得一个与此属性有关的技能",
 							key(player) {
 								let key = ["maxHandcard", "draw", "shaUsable", "maxHp", "attack"].randomGet();
-								let skill = get.info("jlsg_qixian").getSkills(key, player).randomGet();
+								let skill = get
+									.info("jlsg_qixian")
+									.getSkills[key].filter(skill => !player.hasSkill(skill, null, false, false))
+									.randomGet();
 								return { key, skill: skill };
 							},
 							prompt(key) {
@@ -14532,7 +14536,10 @@ const skills = {
 						forte: {
 							str: "回复1点体力，获得一个与回复有关的技能",
 							key: function (player) {
-								let skill = get.info("jlsg_qixian").getSkills("recover", player).randomGet();
+								let skill = get
+									.info("jlsg_qixian")
+									.getSkills["recover"].filter(skill => !player.hasSkill(skill, null, false, false))
+									.randomGet();
 								return skill;
 							},
 							prompt(key) {
@@ -14591,7 +14598,7 @@ const skills = {
 							if (event.key == "ignoreSha") {
 								let sha = event.target.getCards("h", { name: "sha" });
 								if (sha.length) {
-									event.target.addTempSkill("jlsg_qixian_buff");
+									event.target.addSkill("jlsg_qixian_buff");
 									event.target.addGaintag(sha, "jlsg_qixian");
 								}
 							}
@@ -14684,7 +14691,10 @@ const skills = {
 						forte: {
 							str: "获得两张不能造成伤害的临时基本牌或锦囊牌，获得一个与伤害无关的技能",
 							key: function (player) {
-								let skill = get.info("jlsg_qixian").getSkills("nodamage", player).randomGet();
+								let skill = get
+									.info("jlsg_qixian")
+									.getSkills["nodamage"].filter(skill => !player.hasSkill(skill, null, false, false))
+									.randomGet();
 								return { type: ["basic", "trick"].randomGet(), skill };
 							},
 							prompt(key) {
@@ -14767,7 +14777,10 @@ const skills = {
 						forte: {
 							str: "获得两张能造成伤害的临时基本牌或锦囊牌，获得一个与伤害有关的技能",
 							key(player) {
-								let skill = get.info("jlsg_qixian").getSkills("damage", player).randomGet();
+								let skill = get
+									.info("jlsg_qixian")
+									.getSkills["damage"].filter(skill => !player.hasSkill(skill, null, false, false))
+									.randomGet();
 								return { type: ["basic", "trick"].randomGet(), skill };
 							},
 							prompt(key) {
@@ -14859,15 +14872,6 @@ const skills = {
 					const { type, direction, volume } = event.key;
 					const { content } = get.info("jlsg_qixian").effects[type][direction],
 						info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
-					let { str, key, prompt } = info;
-					if (typeof key == "function") {
-						key = key(player);
-					}
-					if (!prompt) {
-						prompt = str;
-					} else if (typeof prompt == "function") {
-						prompt = prompt(key, player);
-					}
 					let num = 2,
 						translate = {
 							direction: {
@@ -14881,6 +14885,15 @@ const skills = {
 						};
 					while (num > 0) {
 						num--;
+						let { str, key, prompt } = info;
+						if (typeof key == "function") {
+							key = key(player);
+						}
+						if (!prompt) {
+							prompt = str;
+						} else if (typeof prompt == "function") {
+							prompt = prompt(key, player);
+						}
 						if (!event.target.isIn() || !player.isIn()) {
 							break;
 						}
@@ -14906,28 +14919,9 @@ const skills = {
 			this.effects = result;
 			return result;
 		},
-		getSkills(key, player) {
-			if (!key) {
-				return;
-			}
-			const nameList = game
-				.filterPlayer(() => true, undefined, true)
-				.reduce((list, current) => {
-					list.addArray(get.nameList(current));
-					return list;
-				}, []);
-			const skills = get
-				.gainableSkills((info, skill, i) => {
-					if (info.charlotte) {
-						return false;
-					} else if (nameList.includes(i)) {
-						return false;
-					}
-					return skill in lib.translate;
-				})
-				.filter(skill => {
-					const info = get.info(skill),
-						translation = get.skillInfoTranslation(skill, player);
+		get getSkills() {
+			let keyList = ["maxHandcard", "draw", "shaUsable", "maxHp", "attack", "recover", "damage", "nodamage"],
+				check = function (key, info, translation) {
 					if (key == "maxHandcard") {
 						return translation.indexOf("手牌上限") > -1;
 					} else if (key == "draw") {
@@ -14980,8 +14974,23 @@ const skills = {
 						return translation.indexOf("伤害") == -1;
 					}
 					return false;
-				});
-			return skills;
+				};
+			const list = get
+				.gainableSkills((info, skill) => !info.charlotte && skill in lib.translate)
+				.reduce((list, skill) => {
+					const info = get.info(skill),
+						translation = get.skillInfoTranslation(skill);
+					for (let key of keyList) {
+						if (check(key, info, translation)) {
+							list[key] ??= [];
+							list[key].add(skill);
+						}
+					}
+					return list;
+				}, {});
+			delete this.getSkills;
+			this.getSkills = list;
+			return list;
 		},
 		getInclusion(str, tag) {
 			const names = Object.keys(lib.card);
