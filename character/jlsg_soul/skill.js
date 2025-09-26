@@ -11493,7 +11493,7 @@ const skills = {
 								for (let i = 0; i < 6; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -11594,7 +11594,7 @@ const skills = {
 						"获得一张【过河拆桥】、一张【顺手牵羊】、一张【决斗】、一张【酒】、一张【杀】",
 						{
 							content: async function (event, trigger, player) {
-								const cards = [lib.skill.jlsg_lingze.createTempCard("guohe"), lib.skill.jlsg_lingze.createTempCard("shunshou"), lib.skill.jlsg_lingze.createTempCard("juedou"), lib.skill.jlsg_lingze.createTempCard("jiu"), lib.skill.jlsg_lingze.createTempCard("sha")].flat();
+								const cards = [lib.skill.jlsg_lingze.createTempCard("guohe"), lib.skill.jlsg_lingze.createTempCard("shunshou"), lib.skill.jlsg_lingze.createTempCard("juedou"), lib.skill.jlsg_lingze.createTempCard("jiu"), lib.skill.jlsg_lingze.createTempCard("sha")];
 								if (cards.length) {
 									await player.gain(cards, "draw").set("log", true);
 								}
@@ -11615,7 +11615,7 @@ const skills = {
 								for (let i = 0; i < 3; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								let attack = lib.inpile
@@ -11627,7 +11627,7 @@ const skills = {
 										return card.distance?.globalFrom;
 									})
 									.randomGet();
-								cards.add(lib.skill.jlsg_lingze.createTempCard(attack)).flat();
+								cards.add(lib.skill.jlsg_lingze.createTempCard(attack));
 								if (cards.length) {
 									await player.gain(cards, "draw").set("log", true);
 								}
@@ -11647,13 +11647,13 @@ const skills = {
 								for (let i = 0; i < 2; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								for (let i = 0; i < 2; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(null);
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -11675,7 +11675,7 @@ const skills = {
 								for (let i = 0; i < 4; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -11697,7 +11697,7 @@ const skills = {
 								for (let i = 0; i < 4; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(null);
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -11718,7 +11718,7 @@ const skills = {
 								for (let i = 0; i < 2; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12024,7 +12024,7 @@ const skills = {
 								for (let i = 0; i < 4; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(event.cardName);
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12045,7 +12045,7 @@ const skills = {
 								for (let i = 0; i < 6; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(event.cardName);
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12066,7 +12066,7 @@ const skills = {
 								for (let i = 0; i < 3; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(event.cardName);
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12090,7 +12090,7 @@ const skills = {
 								for (let i = 0; i < 3; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard("baiyin");
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12117,8 +12117,8 @@ const skills = {
 										return card.distance?.globalTo;
 									})
 									.randomGet();
-								cards.add(lib.skill.jlsg_lingze.createTempCard(attack)).flat();
-								cards.add(lib.skill.jlsg_lingze.createTempCard(event.cardName)).flat();
+								cards.add(lib.skill.jlsg_lingze.createTempCard(attack));
+								cards.add(lib.skill.jlsg_lingze.createTempCard(event.cardName));
 								if (cards.length) {
 									await player.gain(cards, "draw").set("log", true);
 								}
@@ -12287,7 +12287,7 @@ const skills = {
 									for (let i = 0; i < hs.length * 2; i++) {
 										let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
 										if (card) {
-											cards.add(card).flat();
+											cards.add(card);
 										}
 									}
 									if (cards.length) {
@@ -12455,7 +12455,7 @@ const skills = {
 								for (let i = 0; i < 6; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12476,7 +12476,7 @@ const skills = {
 								for (let i = 0; i < 6; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(null, suits.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12496,7 +12496,7 @@ const skills = {
 								for (let i = 0; i < 6; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(null, event.cardName);
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12517,7 +12517,7 @@ const skills = {
 								for (let i = 0; i < 5; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12538,7 +12538,7 @@ const skills = {
 								for (let i = 0; i < 5; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12559,7 +12559,7 @@ const skills = {
 								for (let i = 0; i < 5; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12580,7 +12580,7 @@ const skills = {
 								for (let i = 0; i < 4; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12606,7 +12606,7 @@ const skills = {
 								for (let i = 0; i < 4; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12628,11 +12628,11 @@ const skills = {
 								for (let i = 0; i < 3; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(cardList1.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 									card = lib.skill.jlsg_lingze.createTempCard(cardList2.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -12654,11 +12654,11 @@ const skills = {
 								for (let i = 0; i < 3; i++) {
 									let card = lib.skill.jlsg_lingze.createTempCard(cardList1.randomGet());
 									if (card) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 									card = lib.skill.jlsg_lingze.createTempCard(cardList2.randomGet());
 									if (card && cards.length < 4) {
-										cards.add(card).flat();
+										cards.add(card);
 									}
 								}
 								if (cards.length) {
@@ -14182,7 +14182,9 @@ const skills = {
 	},
 	jlsg_zhanhun: {
 		audio: "ext:极略/audio/skill:2",
-		get trigger(){return lib.jlsg.debuffSkill.trigger},
+		get trigger() {
+			return lib.jlsg.debuffSkill.trigger;
+		},
 		filter(event, player) {
 			let key = lib.jlsg.debuffSkill.translate[event.name];
 			let bool = lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
@@ -14326,6 +14328,960 @@ const skills = {
 					if (get.name(card) == "tiesuo" && !target.isLinked()) {
 						return [1, 0, 0, num];
 					}
+				},
+			},
+		},
+	},
+	jlsg_qixian: {
+		audio: "ext:极略/audio/skill:7",
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
+			}
+			const next = game.createEvent("jlsg_qixian_start", false, get.event());
+			next.player = player;
+			next.skill = "jlsg_qixian_start";
+			next.setContent(get.info("jlsg_qixian_start").content);
+		},
+		usable: 1,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.getStorage("jlsg_qixian")?.list?.length;
+		},
+		direct: true,
+		chooseButton: {
+			dialog(event, player) {
+				const storage = player.getStorage("jlsg_qixian", { count: 0, list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]) }),
+					dialog = ui.create.dialog("七弦：请分配7音到对应体力上限");
+				dialog.addText("1—————————————————7", true);
+				dialog.add([
+					storage.list.map((v, i) => [Number(i) + 1, "", v]),
+					(item, type, position, noclick, node) => {
+						let showCard = [item[0], item[1], `${item[2]}`];
+						node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+						node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+						node.node.info.style["font-size"] = "20px";
+						node._link = node.link = item;
+						node._customintro = uiintro => {
+							uiintro.add(get.translation(node._link[2]));
+							uiintro.addText(`此为第${get.cnNumber(node._link[0], true)}点体力上限`);
+							return uiintro;
+						};
+						return node;
+					},
+				]);
+				return dialog;
+			},
+			select: [2, 2],
+			backup(links, player) {
+				return {
+					links,
+					prompt: "是否调换选中弦音位置",
+					async content(event, trigger, player) {
+						const storage = player.getStorage("jlsg_qixian", { count: 0, list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]) }),
+							[first, second] = links
+								.map(i => i[2])
+								.sort((a, b) => {
+									const list = storage.list;
+									return list.indexOf(a) - list.indexOf(b);
+								});
+						game.log(player, "调换了", `#y${first}`, "和", `#y${second}`, "的位置");
+						let firstIndex = storage.list.indexOf(first),
+							secondIndex = storage.list.indexOf(second);
+						storage.list[firstIndex] = second;
+						storage.list[secondIndex] = first;
+						player.setStorage("jlsg_qixian", storage, true);
+					},
+				};
+			},
+			prompt: () => "是否调换选中弦音位置",
+		},
+		get effects() {
+			const result = {
+				宫: {
+					red: {
+						piano: {
+							str: "随机属性+1",
+							key: function () {
+								return ["maxHandcard", "draw", "shaUsable", "maxHp", "attack"].randomGet();
+							},
+							prompt: function (key) {
+								const translate = { maxHandcard: "手牌上限", draw: "额定摸牌数", shaUsable: "使用【杀】的次数上限", maxHp: "血量上限", attack: "攻击范围" }[key];
+								return `${translate}+1`;
+							},
+						},
+						forte: {
+							str: "随机属性+1，获得一个与此属性有关的技能",
+							key: function (player) {
+								let key = ["maxHandcard", "draw", "shaUsable", "maxHp", "attack"].randomGet();
+								let skill = get.info("jlsg_qixian").getSkills(key, player).randomGet();
+								return { key, skill: skill };
+							},
+							prompt: function (key) {
+								const translate = { maxHandcard: "手牌上限", draw: "额定摸牌数", shaUsable: "使用【杀】的次数上限", maxHp: "血量上限", attack: "攻击范围" }[key["key"]];
+								return `${translate}+1，获得${get.poptip(key["skill"])}`;
+							},
+						},
+						content: async function (event, trigger, player) {
+							let key, skill;
+							if (typeof event.key == "string") {
+								key = event.key;
+							} else if (typeof event.key == "object") {
+								key = event.key.key;
+								skill = event.key.skill;
+							}
+							if (key == "maxHp") {
+								await event.target.gainMaxHp(1);
+							} else {
+								event.target.addSkill("jlsg_qixian_buff");
+								event.target.storage.jlsg_qixian_buff[key]++;
+								event.target.markSkill("jlsg_qixian_buff");
+							}
+							if (skill) {
+								await event.target.addSkills(skill);
+							}
+						},
+						ai(volume, key, player, target) {
+							return get.attitude(player, target);
+						},
+					},
+					black: {
+						piano: {
+							str: "下次造成的伤害-1",
+							key: "filterDamage",
+						},
+						forte: {
+							str: "将武将牌翻至背面",
+							key: "turnOver",
+						},
+						content: async function (event, trigger, player) {
+							if (event.key == "filterDamage") {
+								await event.target.addSkill("jlsg_qixian_debuff");
+								event.target.storage.jlsg_qixian_debuff[event.key]++;
+								event.target.markSkill("jlsg_qixian_debuff");
+							} else {
+								await event.target.turnOver(true);
+							}
+						},
+						ai(volume, key, player, target) {
+							if (key == "turnOver") {
+								if (target.isTurnedOver()) {
+									if (target.hasSkillTag("noturn")) {
+										return 0;
+									}
+									return get.attitude(player, target);
+								}
+							}
+							return 10 - get.attitude(player, target);
+						},
+					},
+				},
+				商: {
+					red: {
+						piano: {
+							str: "获得两张临时牌",
+							key: 2,
+						},
+						forte: {
+							str: "获得六张临时牌",
+							key: 6,
+						},
+						content: async function (event, trigger, player) {
+							let num = event.key,
+								cards = [];
+							while (num > 0) {
+								const card = lib.skill.jlsg_lingze.createTempCard(null, null, null, null, true);
+								if (card) {
+									cards.add(card);
+								}
+								num--;
+							}
+							if (cards.length) {
+								await event.target.gain(cards, "draw");
+							}
+						},
+						ai(volume, key, player, target) {
+							return get.attitude(player, target);
+						},
+					},
+					black: {
+						piano: {
+							str: "随机获得其一张牌",
+							key: 1,
+						},
+						forte: {
+							str: "随机获得其三张牌",
+							key: 3,
+						},
+						content: async function (event, trigger, player) {
+							if (!event.target.countGainableCards(player, "he")) {
+								return;
+							}
+							await player.gainPlayerCard(event.target, true, "he", event.key);
+						},
+						ai(volume, key, player, target) {
+							return get.effect(target, { name: "gain_copy2" }, player, player);
+						},
+					},
+				},
+				角: {
+					red: {
+						piano: {
+							str: "回复1点体力",
+						},
+						forte: {
+							str: "回复1点体力，获得一个与回复有关的技能",
+							key: function (player) {
+								let skill = get.info("jlsg_qixian").getSkills("recover", player).randomGet();
+								return skill;
+							},
+							prompt(key) {
+								return `回复1点体力，获得${get.poptip(key)}`;
+							},
+						},
+						content: async function (event, trigger, player) {
+							await event.target.recover(1);
+							if (typeof event.key == "string" && event.key in lib.skill) {
+								await event.target.addSkills(event.key);
+							}
+						},
+						ai(volume, key, player, target) {
+							return get.recoverEffect(target, player, player);
+						},
+					},
+					black: {
+						piano: {
+							str: "失去1点体力",
+							key: 1,
+						},
+						forte: {
+							str: "失去3点体力",
+							key: 3,
+						},
+						content: async function (event, trigger, player) {
+							await event.target.loseHp(event.key);
+						},
+						ai(volume, key, player, target) {
+							return get.effect(target, { name: "losehp" }, player, player);
+						},
+					},
+				},
+				徵: {
+					red: {
+						piano: {
+							str: "获得两张随机属性的临时【杀】",
+						},
+						forte: {
+							str: "获得两张随机属性的临时【杀】，令手牌里所有【杀】不计入次数限制",
+							key: "ignoreSha",
+						},
+						content: async function (event, trigger, player) {
+							let num = 2,
+								cards = [];
+							while (num > 0) {
+								num--;
+								let card = lib.skill.jlsg_lingze.createTempCard("sha", null, undefined, null, true);
+								if (card) {
+									cards.add(card);
+								}
+							}
+							if (cards.length) {
+								await event.target.gain(cards, "draw");
+							}
+							if (event.key == "ignoreSha") {
+								let sha = event.target.getCards("h", { name: "sha" });
+								if (sha.length) {
+									event.target.addTempSkill("jlsg_qixian_buff");
+									event.target.addGaintag(sha, "jlsg_qixian");
+								}
+							}
+						},
+						ai(volume, key, player, target) {
+							return target.getUseValue({ name: "sha" }) * get.sgnAttitude(player, target);
+						},
+					},
+					black: {
+						piano: {
+							str: "随机造成1点火焰或雷电伤害",
+							key: function () {
+								let nature = ["fire", "thunder"].randomGet();
+								return { num: 1, nature };
+							},
+							prompt: function (key) {
+								return `随机造成1点${get.translation(key.nature)}属性伤害`;
+							},
+						},
+						forte: {
+							str: "随机造成3点火焰或雷电伤害",
+							key: function () {
+								let nature = ["fire", "thunder"].randomGet();
+								return { num: 3, nature };
+							},
+							prompt: function (key) {
+								return `随机造成3点${get.translation(key.nature)}属性伤害`;
+							},
+						},
+						content: async function (event, trigger, player) {
+							const { num, nature } = event.key;
+							await event.target.damage(num, nature);
+						},
+						ai(volume, key, player, target) {
+							return get.damageEffect(target, player, player, key.nature);
+						},
+					},
+				},
+				羽: {
+					red: {
+						piano: {
+							str: "随机触发其他正弦弱音效果，触发两次",
+							key: function () {
+								let type = Object.keys(get.info("jlsg_qixian").effects).remove("羽").randomGet();
+								return { type, direction: "red", volume: "piano" };
+							},
+						},
+						forte: {
+							str: "随机触发其他正弦强音效果，触发两次",
+							key: function () {
+								let type = Object.keys(get.info("jlsg_qixian").effects).remove("羽").randomGet();
+								return { type, direction: "red", volume: "forte" };
+							},
+						},
+						ai(volume, key, player, target) {
+							return get.attitude(player, target);
+						},
+					},
+					black: {
+						piano: {
+							str: "随机触发其他逆弦弱音效果，触发两次",
+							key: function () {
+								let type = Object.keys(get.info("jlsg_qixian").effects).remove("羽").randomGet();
+								return { type, direction: "black", volume: "piano" };
+							},
+						},
+						forte: {
+							str: "随机触发其他逆弦强音效果，触发两次",
+							key: function () {
+								let type = Object.keys(get.info("jlsg_qixian").effects).remove("羽").randomGet();
+								return { type, direction: "black", volume: "forte" };
+							},
+						},
+						ai(volume, key, player, target) {
+							return 0;
+						},
+					},
+				},
+				文: {
+					red: {
+						piano: {
+							str: "获得两张不能造成伤害的临时基本牌或锦囊牌",
+						},
+						forte: {
+							str: "获得两张不能造成伤害的临时基本牌或锦囊牌，获得一个与伤害无关的技能",
+							key: function (player) {
+								let skill = get.info("jlsg_qixian").getSkills("nodamage", player).randomGet();
+								return skill;
+							},
+							prompt(key) {
+								return `获得两张不能造成伤害的临时基本牌或锦囊牌牌，获得${get.poptip(skill)}`;
+							},
+						},
+						content: async function (event, trigger, player) {
+							let cards = [];
+							let type = ["basic", "trick"].randomGet();
+							const list = get.info("jlsg_lingze").typePBTY[type].randomGets(2);
+							for (let info of list) {
+								const [suit, number, name, nature = null] = info;
+								if (get.tag({ name }, "damage")) {
+									continue;
+								}
+								let card = get.info("jlsg_lingze").createTempCard(name, suit, nature, number);
+								if (card) {
+									cards.push(card);
+								}
+							}
+							if (cards.length) {
+								await event.target.gain(cards, "draw2");
+							}
+							if (typeof event.skill == "string" && event.skill in lib.skill) {
+								await event.target.addSkills(event.skill);
+							}
+						},
+						ai(volume, key, player, target) {
+							return get.attitude(player, target);
+						},
+					},
+					black: {
+						piano: {
+							str: "随机弃置两张不能造成伤害的基本牌或锦囊牌",
+							key: 2,
+						},
+						forte: {
+							str: "弃置弃置所有不能造成伤害的基本牌或锦囊牌",
+							key: "all",
+						},
+						content: async function (event, trigger, player) {
+							let cards = event.target.getDiscardableCards(event.target, "he", card => {
+								if (!["basic", "trick"].includes(get.type2(card, event.target))) {
+									return false;
+								}
+								return !get.tag(card, "damage");
+							});
+							if (!cards.length) {
+								return;
+							}
+							cards = event.key === 2 ? cards.randomGets(2) : cards;
+							await event.target.discard(cards);
+						},
+						ai(volume, key, player, target) {
+							return get.effect(target, { name: "guohe_copy2" }, player, player) * target.countDiscardableCards(target, "he");
+						},
+					},
+				},
+				武: {
+					red: {
+						piano: {
+							str: "获得两张能造成伤害的临时基本牌或锦囊牌",
+						},
+						forte: {
+							str: "获得两张能造成伤害的临时基本牌或锦囊牌，获得一个与伤害有关的技能",
+							key: function (player) {
+								let skill = get.info("jlsg_qixian").getSkills("damage", player).randomGet();
+								return skill;
+							},
+							prompt(key) {
+								return `获得两张能造成伤害的临时基本牌或锦囊牌牌，获得${get.poptip(key)}`;
+							},
+						},
+						content: async function (event, trigger, player) {
+							let cards = [];
+							let type = ["basic", "trick"].randomGet();
+							const list = get.info("jlsg_lingze").typePBTY[type].randomGets(2);
+							for (let info of list) {
+								const [suit, number, name, nature = null] = info;
+								if (!get.tag({ name }, "damage")) {
+									continue;
+								}
+								let card = get.info("jlsg_lingze").createTempCard(name, suit, nature, number);
+								if (card) {
+									cards.push(card);
+								}
+							}
+							if (cards.length) {
+								await event.target.gain(cards, "draw2");
+							}
+							if (typeof event.skill == "string" && event.skill in lib.skill) {
+								await event.target.addSkills(event.skill);
+							}
+						},
+						ai(volume, key, player, target) {
+							return get.attitude(player, target);
+						},
+					},
+					black: {
+						piano: {
+							str: "随机弃置两张能造成伤害的基本牌或锦囊牌",
+							key: 2,
+						},
+						forte: {
+							str: "弃置弃置所有能造成伤害的基本牌或锦囊牌",
+							key: "all",
+						},
+						content: async function (event, trigger, player) {
+							let cards = event.target.getDiscardableCards(event.target, "he", card => {
+								if (!["basic", "trick"].includes(get.type2(card, event.target))) {
+									return false;
+								}
+								return get.tag(card, "damage");
+							});
+							if (!cards.length) {
+								return;
+							}
+							cards = event.key === 2 ? cards.randomGets(2) : cards;
+							await event.target.discard(cards);
+						},
+						ai(volume, key, player, target) {
+							return get.effect(target, { name: "guohe_copy2" }, player, player) * target.countDiscardableCards(target, "he");
+						},
+					},
+				},
+			};
+			let yu = result["羽"];
+			for (let direction in yu) {
+				for (let volume in yu[direction]) {
+					yu[direction][volume].prompt = function (key, player) {
+						const { type, direction, volume } = key;
+						const info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
+						let { str, key: key2, prompt } = info;
+						if (typeof key2 == "function") {
+							key2 = key2(player);
+						}
+						if (!("prompt" in info)) {
+							prompt = str;
+						} else if (typeof prompt == "function") {
+							prompt = prompt(key2, player);
+						}
+						return `${prompt}（触发两次）`;
+					};
+				}
+				yu[direction].content = async function (event, trigger, player) {
+					const { type, direction, volume } = event.key;
+					const { content } = get.info("jlsg_qixian").effects[type][direction],
+						info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
+					let { str, key, prompt } = info;
+					if (typeof key == "function") {
+						key = key(player);
+					}
+					if (!prompt) {
+						prompt = str;
+					} else if (typeof prompt == "function") {
+						prompt = prompt(key, player);
+					}
+					let num = 2,
+						translate = {
+							direction: {
+								red: "正弦",
+								black: "逆弦",
+							},
+							volume: {
+								piano: "弱音",
+								forte: "强音",
+							},
+						};
+					while (num > 0) {
+						num--;
+						if (!event.target.isIn() || !player.isIn()) {
+							break;
+						}
+						game.log(player, "对", event.target, "执行", `#y${type}`, "的", `#y${translate.direction[direction]}${translate.volume[volume]}`, "效果：", `#y${get.plainText(prompt)}`);
+						const next = game.createEvent("jlsg_qixian_effect", false);
+						next.player = player;
+						next.target = event.target;
+						next.jlsg_qixian_type = type;
+						next.jlsg_qixian_direction = direction;
+						next.jlsg_qixian_volume = volume;
+						next.key = key;
+						next.setContent(content);
+						await next;
+					}
+				};
+			}
+			result["羽"] = yu;
+			delete this.effects;
+			this.effects = result;
+			return result;
+		},
+		getSkills(key, player) {
+			if (!key) {
+				return;
+			}
+			const nameList = game
+				.filterPlayer(() => true, undefined, true)
+				.reduce((list, current) => {
+					list.addArray(get.nameList(current));
+					return list;
+				}, []);
+			const skills = get
+				.gainableSkills((info, skill, i) => {
+					if (info.charlotte) {
+						return false;
+					} else if (nameList.includes(i)) {
+						return false;
+					}
+					return skill in lib.translate;
+				})
+				.filter(skill => {
+					const info = get.info(skill),
+						translation = get.skillInfoTranslation(skill, player);
+					if (key == "maxHandcard") {
+						return translation.indexOf("手牌上限") > -1;
+					} else if (key == "draw") {
+						if (info.trigger) {
+							for (let role in info.trigger) {
+								if (info.trigger[role] == "phaseDrawBegin2" || (Array.isArray(info.trigger[role]) && info.trigger[role].includes("phaseDrawBegin2"))) {
+									return true;
+								}
+							}
+						}
+						if (translation.indexOf("额定摸牌数") > -1) {
+							return true;
+						} else if (translation.indexOf("摸牌阶段") > -1) {
+							if (translation.indexOf("放弃摸牌") > -1) {
+								return false;
+							}
+							return true;
+						}
+					} else if (key == "shaUsable") {
+						if (translation.indexOf("杀") == -1) {
+							return false;
+						}
+						{
+							if (translation.indexOf("的次数上限") > -1) {
+								return true;
+							} else if (translation.indexOf("的使用次数上限") > -1) {
+								return true;
+							} else if (translation.indexOf("且次数上限") > -1) {
+								return true;
+							}
+						}
+					} else if (key == "maxHp") {
+						return translation.indexOf("体力上限") > -1;
+					} else if (key == "attack") {
+						return translation.indexOf("攻击范围") > -1;
+					} else if (key == "recover") {
+						if (get.info("jlsg_qixian").getInclusion(translation, "recover")) {
+							return true;
+						}
+						return translation.indexOf("回复") > -1;
+					} else if (key == "damage") {
+						if (get.info("jlsg_qixian").getInclusion(translation, "damage")) {
+							return true;
+						}
+						return translation.indexOf("伤害") > -1;
+					} else if (key == "nodamage") {
+						if (get.info("jlsg_qixian").getInclusion(translation, "nodamage")) {
+							return true;
+						}
+						return translation.indexOf("伤害") == -1;
+					}
+					return false;
+				});
+			return skills;
+		},
+		getInclusion(str, tag) {
+			const names = Object.keys(lib.card);
+			for (const name of names) {
+				let type = get.type2(name);
+				if (!["basic", "trick"].includes(type)) {
+					continue;
+				}
+				if (tag == "damage") {
+					if (!get.tag({ name }, "damage")) {
+						continue;
+					}
+				} else if (tag == "nodamage") {
+					if (get.tag({ name }, "damage")) {
+						continue;
+					}
+				} else if (tag == "recover") {
+					if (!get.tag({ name }, "recover") && !get.tag({ name }, "save")) {
+						continue;
+					}
+				}
+				const reg = `【${get.translation(name)}】`;
+				if (name == "sha") {
+					if (str.includes(reg)) {
+						return true;
+					}
+					for (let nature of lib.inpile_nature) {
+						const reg1 = `【${get.translation(nature) + get.translation(name)}】`,
+							reg2 = `${get.translation(nature)}【${get.translation(name)}】`;
+						if (str.includes(reg1) || str.includes(reg2)) {
+							return true;
+						}
+					}
+				} else {
+					if (!str.includes(reg)) {
+						continue;
+					}
+					return true;
+				}
+			}
+			return false;
+		},
+		group: "jlsg_qixian_start",
+		subSkill: {
+			backup: {},
+			start: {
+				audio: "jlsg_qixian",
+				trigger: {
+					player: "enterGame",
+					global: "phaseBefore",
+				},
+				filter(event, player) {
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					let num = player.maxHp - 7;
+					if (num > 0) {
+						await player.loseMaxHp(num);
+					} else if (num < 0) {
+						await player.gainMaxHp(-num);
+					}
+					if (Object.keys(player.getStorage("jlsg_qixian", {})).length) {
+						return;
+					}
+					const list = Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]).randomSort();
+					player.setStorage("jlsg_qixian", { count: 0, list }, true);
+					player.addSkill("jlsg_qixian_effect");
+				},
+			},
+			effect: {
+				charlotte: true,
+				onremove(player) {
+					delete player.storage.jlsg_qixian;
+				},
+				mark: true,
+				marktext: "弦",
+				intro: {
+					markcount(storage, player) {
+						return player.getStorage("jlsg_qixian")?.count;
+					},
+					mark(dialog, content, player) {
+						const storage = player.getStorage("jlsg_qixian");
+						const { count, list } = storage;
+						dialog.addText(`已发动弱音次数：${count / 2}`);
+						let num = player.hp;
+						while (num > 7) {
+							num -= 7;
+						}
+						while (num < 1) {
+							num += 7;
+						}
+						let str = list.join("");
+						str = `${str.slice(0, num - 1)}<span class="yellowtext">${str.slice(num - 1, num)}</span>${str.slice(num)}`;
+						dialog.addText(str);
+					},
+				},
+				audio: "jlsg_qixian",
+				trigger: { player: ["useCardAfter", "changeHp"] },
+				filter(event, player) {
+					if (!player.getStorage("jlsg_qixian", {})?.list?.length) {
+						return false;
+					}
+					if (event.name == "useCard") {
+						if (player.isDying()) {
+							return false;
+						} else if (typeof event.card.number != "number" || event.card.number < 1) {
+							return false;
+						} else if (!["red", "black"].includes(get.color(event.card, false))) {
+							return false;
+						} else if (
+							!player.hasHistory("lose", function (evt) {
+								const evtx = evt.relatedEvent || evt.getParent();
+								return evt.hs.length > 0 && evtx == event;
+							})
+						) {
+							return false;
+						}
+					}
+					return true;
+				},
+				async cost(event, trigger, player) {
+					const storage = player.getStorage("jlsg_qixian");
+					let num = player.hp,
+						direction = "red",
+						volume = storage.count >= 2 ? "forte" : "piano",
+						result;
+					if (trigger.name == "useCard") {
+						num = player.hp + (get.color(trigger.card) == "red" ? trigger.card.number : -trigger.card.number);
+						direction = get.color(trigger.card, false);
+					} else {
+						if (trigger.jlsg_qixian_direction) {
+							direction = trigger.jlsg_qixian_direction;
+						} else {
+							direction = trigger.num > 0 ? "red" : "black";
+						}
+					}
+					while (num < 1) {
+						num += 7;
+					}
+					while (num > 7) {
+						num -= 7;
+					}
+					let type = storage.list[num - 1],
+						translate = {
+							direction: {
+								red: "正弦",
+								black: "逆弦",
+							},
+							volume: {
+								piano: "弱音",
+								forte: "强音",
+							},
+						};
+					const info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
+					let { str, key, prompt } = info;
+					if (typeof key == "function") {
+						key = key(player);
+					}
+					if (!prompt) {
+						prompt = str;
+					} else if (typeof prompt == "function") {
+						prompt = prompt(key, player);
+					}
+					let str2 = `<span class="yellowtext">${type}</span>的<span class="yellowtext">${translate.direction[direction]}${translate.volume[volume]}</span>效果：`;
+					if (trigger.name == "useCard") {
+						result = await player
+							.chooseBool(`###${get.prompt("jlsg_qixian")}###将你的体力值从${player.hp}变为${num}<br>（触发${str2}<span class="yellowtext">${trigger.name == "useCard" ? str : get.plainText(prompt)}</span>）`)
+							.set("ai", (event, trigger) => {
+								return true;
+							})
+							.forResult();
+					} else {
+						result = await player
+							.chooseTarget(`###${get.prompt("jlsg_qixian")}###选择一名角色执行${str2}<span class="yellowtext">${type == "羽" ? str : get.plainText(prompt)}</span>`)
+							.set("ai", target => {
+								const { volume, key, extraAi, player } = get.event();
+								return extraAi(volume, key, player, target);
+							})
+							.set("volume", volume)
+							.set("key", key)
+							.set("extraAi", get.info("jlsg_qixian").effects[type][direction].ai)
+							.forResult();
+					}
+					event.result = {
+						bool: result.bool,
+						targets: result.targets,
+						cost_data: {
+							num,
+							type,
+							direction,
+							volume,
+							str,
+							prompt,
+							key,
+						},
+					};
+				},
+				async content(event, trigger, player) {
+					const { num, type, direction, volume, str, prompt, key } = event.cost_data;
+					if (trigger.name == "useCard") {
+						game.log(player, `体力值从${player.hp}调整为${Math.min(num, player.maxHp)}`);
+						await player.changeHp(num - player.hp).set("jlsg_qixian_direction", direction);
+					} else {
+						const storage = player.getStorage("jlsg_qixian");
+						if (storage.count >= 2) {
+							storage.count -= 2;
+						} else {
+							storage.count++;
+						}
+						player.setStorage("jlsg_qixian", storage, true);
+						const { content } = get.info("jlsg_qixian").effects[type][direction],
+							translate = {
+								direction: {
+									red: "正弦",
+									black: "逆弦",
+								},
+								volume: {
+									piano: "弱音",
+									forte: "强音",
+								},
+							};
+						game.log(player, "对", event.targets[0], "执行", `#y${type}`, "的", `#y${translate.direction[direction]}${translate.volume[volume]}`, "效果：", `#y${type == "羽" ? str : get.plainText(prompt)}`);
+						const next = game.createEvent("jlsg_qixian_effect", false);
+						next.player = player;
+						next.target = event.targets[0];
+						next.jlsg_qixian_type = type;
+						next.jlsg_qixian_direction = direction;
+						next.jlsg_qixian_volume = volume;
+						next.key = key;
+						next.setContent(content);
+						await next;
+					}
+				},
+			},
+			buff: {
+				charlotte: true,
+				init(player, skill) {
+					player.setStorage(skill, { maxHandcard: 0, draw: 0, shaUsable: 0, attack: 0 }, true);
+				},
+				onremove: true,
+				mark: true,
+				marktext: "↑",
+				intro: {
+					name: "七弦",
+					noucount: true,
+					mark(dialog, storage, player) {
+						const translate = {
+							maxHandcard: "手牌上限",
+							draw: "额定摸牌数",
+							shaUsable: "使用【杀】的次数上限",
+							attack: "攻击范围",
+						};
+						for (let i in translate) {
+							if (storage[i] > 0) {
+								dialog.addText(`${translate[i]}：+${storage[i]}`);
+							}
+						}
+					},
+				},
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.getStorage("jlsg_qixian_buff", {}).maxHandcard;
+					},
+					cardUsable(card, player, num) {
+						if (card.name == "sha") {
+							return num + player.getStorage("jlsg_qixian_buff", {}).shaUsable;
+						}
+					},
+					attackRange(player, num) {
+						return num + player.getStorage("jlsg_qixian_buff", {}).attack;
+					},
+				},
+				trigger: {
+					player: ["phaseDrawBegin2", "useCard1"],
+				},
+				filter(event, player) {
+					if (event.name == "phaseDraw") {
+						return !event.numFixed;
+					}
+					if (event.addCount === false) {
+						return false;
+					}
+					return player.hasHistory("lose", evt => {
+						const evtx = evt.relatedEvent || evt.getParent();
+						return evtx == event && Object.values(evt.gaintag_map).flat().includes("jlsg_qixian");
+					});
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					if (trigger.name == "phaseDraw") {
+						trigger.num += player.getStorage(event.name, {}).draw;
+					} else {
+						trigger.addCount = false;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] === "number") {
+							stat[name]--;
+						}
+					}
+				},
+			},
+			debuff: {
+				charlotte: true,
+				init(player, skill) {
+					player.setStorage(skill, { filterDamage: 0 }, true);
+				},
+				onremove: true,
+				mark: true,
+				marktext: "↓",
+				intro: {
+					name: "七弦",
+					noucount: true,
+					mark(dialog, storage, player) {
+						const translate = {
+							filterDamage: "下次造成伤害",
+						};
+						for (let i in translate) {
+							if (storage[i] > 0) {
+								dialog.addText(`${translate[i]}：-${storage[i]}`);
+							}
+						}
+					},
+				},
+				trigger: {
+					source: "damageBegin1",
+				},
+				filter(event, player) {
+					return player.getStorage("jlsg_qixian_debuff", {}).filterDamage > 0;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num -= player.getStorage("jlsg_qixian_debuff", {}).filterDamage;
+					player.removeSkill(event.name);
 				},
 			},
 		},
