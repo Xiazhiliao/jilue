@@ -13524,13 +13524,13 @@ const skills = {
 				return;
 			}
 			const list = lib.skill.jlsg_lingze.typePBTY;
-			if (!name) {
+			if (name === null) {
 				const { PBTY } = list;
 				const numx = Math.random();
 				for (let type in PBTY) {
 					const [min, max] = PBTY[type];
 					if (numx >= min && numx < max) {
-						name = list[type].randomGet()[2];
+						name = list[type].randomGet()?.[2];
 						break;
 					}
 				}
@@ -13548,7 +13548,7 @@ const skills = {
 				const type = get.type2(name, false);
 				const cardInfo = list[type].filter(i => i[2] == name).randomGet();
 				suit = cardInfo[0];
-				nature = cardInfo[3];
+				nature = cardInfo[3] || null;
 				number = cardInfo[1];
 			}
 			let card = game.createCard(name, suit, number, nature);
@@ -14494,7 +14494,7 @@ const skills = {
 							let num = event.key,
 								cards = [];
 							while (num > 0) {
-								const card = lib.skill.jlsg_lingze.createTempCard(null, null, null, null, true);
+								const card = get.info("jlsg_lingze").createTempCard(null, null, undefined, null, true);
 								if (card) {
 									cards.add(card);
 								}
@@ -14673,7 +14673,7 @@ const skills = {
 							},
 						},
 						ai(volume, key, player, target) {
-							return 0;
+							return 10 - get.attitude(player, target);
 						},
 					},
 				},
@@ -14852,22 +14852,6 @@ const skills = {
 			};
 			let yu = result["羽"];
 			for (let direction in yu) {
-				for (let volume in yu[direction]) {
-					yu[direction][volume].prompt = function (key, player) {
-						const { type, direction, volume } = key;
-						const info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
-						let { str, key: key2, prompt } = info;
-						if (typeof key2 == "function") {
-							key2 = key2(player);
-						}
-						if (!("prompt" in info)) {
-							prompt = str;
-						} else if (typeof prompt == "function") {
-							prompt = prompt(key2, player);
-						}
-						return `${prompt}（触发两次）`;
-					};
-				}
 				yu[direction].content = async function (event, trigger, player) {
 					const { type, direction, volume } = event.key;
 					const { content } = get.info("jlsg_qixian").effects[type][direction],
@@ -14894,10 +14878,12 @@ const skills = {
 							break;
 						}
 						game.log(player, "对", event.target, "执行", `#y${type}`, "的", `#y${translate[direction]}${translate[volume]}`, "效果：", `#y${get.plainText(prompt)}`);
+						/*此该效果不计入弱音发动次数
 						if (volume == "piano") {
 							player.storage.jlsg_qixian.count++;
 							player.markSkill("jlsg_qixian_effect");
 						}
+						*/
 						const next = game.createEvent("jlsg_qixian_effect2", false);
 						next.player = player;
 						next.target = event.target;
@@ -15125,10 +15111,10 @@ const skills = {
 						}
 					}
 					while (num < 1) {
-						num += 7;
+						num += player.maxHp;
 					}
-					while (num > 7) {
-						num -= 7;
+					while (num > player.maxHp) {
+						num -= player.maxHp;
 					}
 					let type = storage.list[num - 1],
 						translate = {
@@ -15137,7 +15123,7 @@ const skills = {
 							piano: "弱音",
 							forte: "强音",
 						};
-					const info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
+					const info = { ...(get.info("jlsg_qixian").effects[type]?.[direction]?.[volume] || {}) };
 					let { str, key, prompt } = info;
 					if (typeof key == "function") {
 						key = key(player);
@@ -15147,15 +15133,28 @@ const skills = {
 					} else if (typeof prompt == "function") {
 						prompt = prompt(key, player);
 					}
-					let str2 = `<span class="yellowtext">${type}</span>的<span class="yellowtext">${translate[direction]}${translate[volume]}</span>效果：`;
+					let str2 = [type, `${translate[direction]}${translate[volume]}`, trigger.name == "useCard" ? str : prompt].map(i => {
+						return `<span class="yellowtext">${i}</span>`;
+					});
+					str2=`${str2[0]}的${str2[1]}效果：${str2[2]}`
 					if (trigger.name == "useCard") {
+						if (!type) {
+							str2 = "无弦音效果";
+						} else {
+							str2 = `触发${str2}`;
+						}
 						result = await player
-							.chooseBool(`###${get.prompt("jlsg_qixian")}###将你的体力值从${player.hp}变为${num}<br>（触发${str2}<span class="yellowtext">${trigger.name == "useCard" ? str : prompt}</span>）`)
+							.chooseBool(`###${get.prompt("jlsg_qixian")}###将你的体力值从${player.hp}变为${num}<br>（${str2}）`)
 							.set("ai", (event, player) => true)
 							.forResult();
 					} else {
+						if (!type) {
+							return;
+						} else {
+							str2 = `执行${str2}`;
+						}
 						result = await player
-							.chooseTarget(`###${get.prompt("jlsg_qixian")}###选择一名角色执行${str2}<span class="yellowtext">${type == "羽" ? str : prompt}</span>`)
+							.chooseTarget(`###${get.prompt("jlsg_qixian")}###选择一名角色${str2}`)
 							.set("ai", target => {
 								const { volume, key, extraAi, player } = get.event();
 								return extraAi(volume, key, player, target);
