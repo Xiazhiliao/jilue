@@ -14335,7 +14335,6 @@ const skills = {
 	jlsg_qixian: {
 		audio: "ext:极略/audio/skill:7",
 		init(player, skill) {
-			get.info(skill).getSkills["recover"];
 			if (!_status.gameStarted) {
 				return;
 			}
@@ -14352,11 +14351,18 @@ const skills = {
 		direct: true,
 		chooseButton: {
 			dialog(event, player) {
-				const storage = player.getStorage("jlsg_qixian", { count: 0, list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]) }),
-					dialog = ui.create.dialog("七弦：请选择要调换位置的两个音");
+				const storage = player.getStorage("jlsg_qixian", { count: 0, list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects).flat()[i]) }),
+					dialog = ui.create.dialog("七弦：请选择要调换位置的两个音弦");
+				const list = storage.list.map(i => {
+					let pinyin = get.pinyin(i)[0];
+					if (i == "角") {
+						pinyin = "jué";
+					}
+					return `jlsg_qixian_${pinyin}`;
+				});
 				dialog.addText("1—————————————————7", true);
 				dialog.add([
-					storage.list.map((v, i) => [Number(i) + 1, "", v]),
+					list.map((v, i) => [Number(i) + 1, "", v]),
 					(item, type, position, noclick, node) => {
 						let showCard = [item[0], item[1], `${item[2]}`];
 						node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
@@ -14381,7 +14387,7 @@ const skills = {
 					async content(event, trigger, player) {
 						const storage = player.getStorage("jlsg_qixian", { count: 0, list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]) }),
 							[first, second] = links
-								.map(i => i[2])
+								.map(i => get.translation(i[2]))
 								.sort((a, b) => {
 									const list = storage.list;
 									return list.indexOf(a) - list.indexOf(b);
@@ -14415,10 +14421,7 @@ const skills = {
 							str: "随机属性+1，获得一个与此属性有关的技能",
 							key(player) {
 								let key = ["maxHandcard", "draw", "shaUsable", "maxHp", "attack"].randomGet();
-								let skill = get
-									.info("jlsg_qixian")
-									.getSkills[key].filter(skill => !player.hasSkill(skill, null, false, false))
-									.randomGet();
+								let skill = get.info("jlsg_qixian").getSkills(key, player);
 								return { key, skill: skill };
 							},
 							prompt(key) {
@@ -14536,10 +14539,7 @@ const skills = {
 						forte: {
 							str: "回复1点体力，获得一个与回复有关的技能",
 							key: function (player) {
-								let skill = get
-									.info("jlsg_qixian")
-									.getSkills["recover"].filter(skill => !player.hasSkill(skill, null, false, false))
-									.randomGet();
+								let skill = get.info("jlsg_qixian").getSkills("recover", player);
 								return skill;
 							},
 							prompt(key) {
@@ -14691,10 +14691,7 @@ const skills = {
 						forte: {
 							str: "获得两张不能造成伤害的临时基本牌或锦囊牌，获得一个与伤害无关的技能",
 							key: function (player) {
-								let skill = get
-									.info("jlsg_qixian")
-									.getSkills["nodamage"].filter(skill => !player.hasSkill(skill, null, false, false))
-									.randomGet();
+								let skill = get.info("jlsg_qixian").getSkills("nodamage", player);
 								return { type: ["basic", "trick"].randomGet(), skill };
 							},
 							prompt(key) {
@@ -14777,10 +14774,7 @@ const skills = {
 						forte: {
 							str: "获得两张能造成伤害的临时基本牌或锦囊牌，获得一个与伤害有关的技能",
 							key(player) {
-								let skill = get
-									.info("jlsg_qixian")
-									.getSkills["damage"].filter(skill => !player.hasSkill(skill, null, false, false))
-									.randomGet();
+								let skill = get.info("jlsg_qixian").getSkills("damage", player);
 								return { type: ["basic", "trick"].randomGet(), skill };
 							},
 							prompt(key) {
@@ -14901,78 +14895,73 @@ const skills = {
 			this.effects = result;
 			return result;
 		},
-		get getSkills() {
-			let keyList = ["maxHandcard", "draw", "shaUsable", "maxHp", "attack", "recover", "damage", "nodamage"],
-				check = function (key, info, translation) {
-					if (key == "maxHandcard") {
-						return translation.indexOf("手牌上限") > -1;
-					} else if (key == "draw") {
-						if (info.trigger) {
-							for (let role in info.trigger) {
-								if (info.trigger[role] == "phaseDrawBegin2" || (Array.isArray(info.trigger[role]) && info.trigger[role].includes("phaseDrawBegin2"))) {
-									return true;
-								}
+		getSkills(key, player) {
+			const check = function (key, info, translation) {
+				if (key == "maxHandcard") {
+					return translation.indexOf("手牌上限") > -1;
+				} else if (key == "draw") {
+					if (info.trigger) {
+						for (let role in info.trigger) {
+							if (info.trigger[role] == "phaseDrawBegin2" || (Array.isArray(info.trigger[role]) && info.trigger[role].includes("phaseDrawBegin2"))) {
+								return true;
 							}
 						}
-						if (translation.indexOf("额定摸牌数") > -1) {
-							return true;
-						} else if (translation.indexOf("摸牌阶段") > -1) {
-							if (translation.indexOf("放弃摸牌") > -1) {
-								return false;
-							}
-							return true;
-						}
-					} else if (key == "shaUsable") {
-						if (translation.indexOf("杀") == -1) {
+					}
+					if (translation.indexOf("额定摸牌数") > -1) {
+						return true;
+					} else if (translation.indexOf("摸牌阶段") > -1) {
+						if (translation.indexOf("放弃摸牌") > -1) {
 							return false;
 						}
-						{
-							if (translation.indexOf("的次数上限") > -1) {
-								return true;
-							} else if (translation.indexOf("的使用次数上限") > -1) {
-								return true;
-							} else if (translation.indexOf("且次数上限") > -1) {
-								return true;
-							}
-						}
-					} else if (key == "maxHp") {
-						return translation.indexOf("体力上限") > -1;
-					} else if (key == "attack") {
-						return translation.indexOf("攻击范围") > -1;
-					} else if (key == "recover") {
-						if (get.info("jlsg_qixian").getInclusion(translation, "recover")) {
+						return true;
+					}
+				} else if (key == "shaUsable") {
+					if (translation.indexOf("杀") == -1) {
+						return false;
+					}
+					{
+						if (translation.indexOf("的次数上限") > -1) {
+							return true;
+						} else if (translation.indexOf("的使用次数上限") > -1) {
+							return true;
+						} else if (translation.indexOf("且次数上限") > -1) {
 							return true;
 						}
-						return translation.indexOf("回复") > -1;
-					} else if (key == "damage") {
-						if (get.info("jlsg_qixian").getInclusion(translation, "damage")) {
-							return true;
-						}
-						return translation.indexOf("伤害") > -1;
-					} else if (key == "nodamage") {
-						if (get.info("jlsg_qixian").getInclusion(translation, "nodamage")) {
-							return true;
-						}
-						return translation.indexOf("伤害") == -1;
+					}
+				} else if (key == "maxHp") {
+					return translation.indexOf("体力上限") > -1;
+				} else if (key == "attack") {
+					return translation.indexOf("攻击范围") > -1;
+				} else if (key == "recover") {
+					if (get.info("jlsg_qixian").getInclusion(translation, "recover")) {
+						return true;
+					}
+					return translation.indexOf("回复") > -1;
+				} else if (key == "damage") {
+					if (get.info("jlsg_qixian").getInclusion(translation, "damage")) {
+						return true;
+					}
+					return translation.indexOf("伤害") > -1;
+				} else if (key == "nodamage") {
+					if (get.info("jlsg_qixian").getInclusion(translation, "nodamage")) {
+						return true;
+					}
+					return translation.indexOf("伤害") == -1;
+				}
+				return false;
+			};
+			const skill = get
+				.gainableSkills((info, skill) => !info.charlotte && !player.hasSkill(skill, null, false, false))
+				.randomSort()
+				.find(skill => {
+					const info = get.info(skill),
+						translation = get.skillInfoTranslation(skill, player);
+					if (check(key, info, translation)) {
+						return true;
 					}
 					return false;
-				};
-			const list = get
-				.gainableSkills((info, skill) => !info.charlotte && skill in lib.translate)
-				.reduce((list, skill) => {
-					const info = get.info(skill),
-						translation = get.skillInfoTranslation(skill);
-					for (let key of keyList) {
-						if (check(key, info, translation)) {
-							list[key] ??= [];
-							list[key].add(skill);
-						}
-					}
-					return list;
-				}, {});
-			delete this.getSkills;
-			this.getSkills = list;
-			return list;
+				});
+			return skill;
 		},
 		getInclusion(str, tag) {
 			const names = Object.keys(lib.card);
@@ -15136,7 +15125,7 @@ const skills = {
 					let str2 = [type, `${translate[direction]}${translate[volume]}`, trigger.name == "useCard" ? str : prompt].map(i => {
 						return `<span class="yellowtext">${i}</span>`;
 					});
-					str2=`${str2[0]}的${str2[1]}效果：${str2[2]}`
+					str2 = `${str2[0]}的${str2[1]}效果：${str2[2]}`;
 					if (trigger.name == "useCard") {
 						if (!type) {
 							str2 = "无弦音效果";
@@ -15181,7 +15170,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const { num, type, direction, volume, str, prompt, key } = event.cost_data;
 					if (trigger.name == "useCard") {
-						game.log(player, `体力值从${player.hp}调整为${Math.min(num, player.maxHp)}`);
+						game.log(player, `体力值从${player.hp}调整为${num}`);
 						await player.changeHp(num - player.hp).set("jlsg_qixian_direction", direction);
 					} else {
 						const storage = player.getStorage("jlsg_qixian");
