@@ -14497,7 +14497,7 @@ const skills = {
 							let num = event.key,
 								cards = [];
 							while (num > 0) {
-								const card = get.info("jlsg_lingze").createTempCard(null, null, undefined, null, true);
+								const card = get.info("jlsg_lingze").createTempCard(null, null, null, null, true);
 								if (card) {
 									cards.add(card);
 								}
@@ -14681,33 +14681,22 @@ const skills = {
 					red: {
 						piano: {
 							str: "获得两张不能造成伤害的临时基本牌或锦囊牌",
-							key() {
-								return { type: ["basic", "trick"].randomGet() };
-							},
-							prompt(key) {
-								return `获得两张不能造成伤害的临时${get.translation(key.type)}牌`;
-							},
 						},
 						forte: {
 							str: "获得两张不能造成伤害的临时基本牌或锦囊牌，获得一个与伤害无关的技能",
 							key: function (player) {
 								let skill = get.info("jlsg_qixian").getSkills("nodamage", player);
-								return { type: ["basic", "trick"].randomGet(), skill };
+								return skill;
 							},
 							prompt(key) {
-								return `获得两张不能造成伤害的临时${get.translation(key.type)}牌，获得${get.poptip(key.skill)}`;
+								return `获得两张不能造成伤害的临时基本牌或锦囊牌，获得${get.poptip(key)}`;
 							},
 						},
 						content: async function (event, trigger, player) {
-							let cards = [],
-								type = event.key.type;
-							const list = get
-								.info("jlsg_lingze")
-								.typePBTY[type].filter(info => !get.tag({ name: info[2] }, "damage"))
-								.randomGets(2);
-							for (let info of list) {
-								const [suit, number, name, nature = null] = info;
-								let card = get.info("jlsg_lingze").createTempCard(name, suit, nature, number);
+							const cards = [];
+							while (cards.length < 2) {
+								let name = lib.inpile.filter(name => get.type2(name, false) != "equip" && !get.tag({ name }, "damage")).randomGet();
+								let card = get.info("jlsg_lingze").createTempCard(name, null, null, null, true);
 								if (card) {
 									cards.push(card);
 								}
@@ -14715,8 +14704,8 @@ const skills = {
 							if (cards.length) {
 								await event.target.gain(cards, "draw2");
 							}
-							if (typeof event.key.skill == "string" && event.key.skill in lib.skill) {
-								await event.target.addSkills(event.key.skill);
+							if (typeof event.key == "string" && event.key in lib.skill) {
+								await event.target.addSkills(event.key);
 							}
 						},
 						ai(volume, key, player, target) {
@@ -14726,25 +14715,13 @@ const skills = {
 					black: {
 						piano: {
 							str: "随机弃置两张不能造成伤害的基本牌或锦囊牌",
-							key() {
-								return { num: 2, type: ["basic", "trick"].randomGet() };
-							},
-							prompt(key) {
-								return `随机弃置两张不能造成伤害的${get.translation(key.type)}牌`;
-							},
 						},
 						forte: {
 							str: "弃置所有不能造成伤害的基本牌或锦囊牌",
-							key: function () {
-								return { num: "all", type: ["basic", "trick"].randomGet() };
-							},
-							prompt(key) {
-								return `弃置所有不能造成伤害的${get.translation(key.type)}牌`;
-							},
 						},
 						content: async function (event, trigger, player) {
 							let cards = event.target.getDiscardableCards(event.target, "he", card => {
-								if (get.type2(card, event.target) != event.key.type) {
+								if (get.type2(card, event.target) == "euiqp") {
 									return false;
 								}
 								return !get.tag(card, "damage");
@@ -14752,7 +14729,7 @@ const skills = {
 							if (!cards.length) {
 								return;
 							}
-							cards = event.key.num === 2 ? cards.randomGets(2) : cards;
+							cards = event.key === 2 ? cards.randomGets(2) : cards;
 							await event.target.discard(cards);
 						},
 						ai(volume, key, player, target) {
@@ -14764,33 +14741,22 @@ const skills = {
 					red: {
 						piano: {
 							str: "获得两张能造成伤害的临时基本牌或锦囊牌",
-							key(player) {
-								return { type: ["basic", "trick"].randomGet() };
-							},
-							prompt(key) {
-								return `获得两张能造成伤害的临时${get.translation(key.type)}牌`;
-							},
 						},
 						forte: {
 							str: "获得两张能造成伤害的临时基本牌或锦囊牌，获得一个与伤害有关的技能",
 							key(player) {
 								let skill = get.info("jlsg_qixian").getSkills("damage", player);
-								return { type: ["basic", "trick"].randomGet(), skill };
+								return skill;
 							},
 							prompt(key) {
-								return `获得两张能造成伤害的临时${get.translation(key.type)}牌，获得${get.poptip(key.skill)}`;
+								return `获得两张能造成伤害的临时基本牌或锦囊牌，获得${get.poptip(key)}`;
 							},
 						},
 						content: async function (event, trigger, player) {
-							let cards = [],
-								type = event.key.type;
-							const list = get
-								.info("jlsg_lingze")
-								.typePBTY[type].filter(info => get.tag({ name: info[2] }, "damage"))
-								.randomGets(2);
-							for (let info of list) {
-								const [suit, number, name, nature = null] = info;
-								let card = get.info("jlsg_lingze").createTempCard(name, suit, nature, number);
+							const cards = [];
+							while (cards.length < 2) {
+								let name = lib.inpile.filter(name => get.type2(name, false) != "equip" && get.tag({ name }, "damage")).randomGet();
+								let card = get.info("jlsg_lingze").createTempCard(name, null, null, null, true);
 								if (card) {
 									cards.push(card);
 								}
@@ -14798,8 +14764,8 @@ const skills = {
 							if (cards.length) {
 								await event.target.gain(cards, "draw2");
 							}
-							if (typeof event.key.skill == "string" && event.key.skill in lib.skill) {
-								await event.target.addSkills(event.key.skill);
+							if (typeof event.key == "string" && event.key in lib.skill) {
+								await event.target.addSkills(event.key);
 							}
 						},
 						ai(volume, key, player, target) {
@@ -14809,25 +14775,15 @@ const skills = {
 					black: {
 						piano: {
 							str: "随机弃置两张能造成伤害的基本牌或锦囊牌",
-							key() {
-								return { num: 2, type: ["basic", "trick"].randomGet() };
-							},
-							prompt(key) {
-								return `随机弃置两张能造成伤害的${get.translation(key.type)}牌`;
-							},
+							key: 2,
 						},
 						forte: {
 							str: "弃置所有能造成伤害的基本牌或锦囊牌",
-							key() {
-								return { num: "all", type: ["basic", "trick"].randomGet() };
-							},
-							prompt(key) {
-								return `弃置所有能造成伤害的${get.translation(key.type)}牌`;
-							},
+							key: "all",
 						},
 						content: async function (event, trigger, player) {
 							let cards = event.target.getDiscardableCards(event.target, "he", card => {
-								if (get.type2(card, event.target) != event.key.type) {
+								if (get.type2(card, event.target) == "equip") {
 									return false;
 								}
 								return get.tag(card, "damage");
@@ -14835,7 +14791,7 @@ const skills = {
 							if (!cards.length) {
 								return;
 							}
-							cards = event.key.num === 2 ? cards.randomGets(2) : cards;
+							cards = event.key === 2 ? cards.randomGets(2) : cards;
 							await event.target.discard(cards);
 						},
 						ai(volume, key, player, target) {
