@@ -422,7 +422,7 @@ const skills = {
 			await target.chooseToDiscard(num, true);
 			await target.draw(num);
 			await target.showHandcards();
-			const cards = target.getDiscardableCards(target, "h", card => get.type(card) != "basic");
+			const cards = target.getDiscardableCards(target, "he", card => get.type(card) != "basic");
 			if (cards.length) {
 				const { result } = await player
 					.chooseBool()
