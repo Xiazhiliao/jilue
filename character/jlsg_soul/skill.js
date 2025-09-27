@@ -6343,7 +6343,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget(get.prompt2("jlsg_jieying"))
 				.set("filterTarget", (_, player, target) => target != player && !target.hasMark("jlsg_jieying"))
-				.set("ai", target => 10 - get.attitude(get.player(), target))
+				.set("ai", target => -get.attitude(get.player(), target))
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -11175,7 +11175,7 @@ const skills = {
 									if (!target.getSkills(null, false, false).length) {
 										return 0;
 									}
-									return 10 - get.attitude(player, target);
+									return -get.attitude(player, target);
 								});
 								if (result.bool) {
 									const target = result.targets[0];
@@ -11278,7 +11278,7 @@ const skills = {
 									if (!target.getSkills(null, false, false).length) {
 										return 0;
 									}
-									return 10 - get.attitude(player, target);
+									return -get.attitude(player, target);
 								});
 								if (result.bool) {
 									const targets = result.targets.sortBySeat(player);
@@ -14275,10 +14275,8 @@ const skills = {
 				},
 			},
 			sha: {
-				audio: "ext:极略/audio/skill:2",
-				trigger: {
-					player: "damageBegin2",
-				},
+				audio: "jlsg_zhanhun",
+				trigger: { source: "damageBegin2" },
 				filter(event, player) {
 					if (event.player == player) {
 						return false;
@@ -14296,6 +14294,8 @@ const skills = {
 						} else if (card?.name != "sha") {
 							return;
 						} else if (player.isHealthy()) {
+							return;
+						}else if (target.hp < player.hp) {
 							return;
 						}
 						return [1, 2];
@@ -14334,6 +14334,7 @@ const skills = {
 	},
 	jlsg_qixian: {
 		audio: "ext:极略/audio/skill:7",
+		derivation: ["jlsg_qixian_faq"],
 		init(player, skill) {
 			if (!_status.gameStarted) {
 				return;
@@ -14362,10 +14363,12 @@ const skills = {
 				});
 				dialog.addText("1—————————————————7", true);
 				dialog.add([
-					list.map((v, i) => [Number(i) + 1, "", v]),
+					list.map((v, i) => [i + 1, "", v]),
 					(item, type, position, noclick, node) => {
 						let showCard = [item[0], item[1], `${item[2]}`];
 						node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+						node.classList.add("decade-card");
+						node.style.backgroundImage = `url("${lib.assetURL}extension/极略/image/card/${item[2]}.png")`;
 						node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
 						node.node.info.style["font-size"] = "20px";
 						node._link = node.link = item;
@@ -14479,7 +14482,7 @@ const skills = {
 									return get.attitude(player, target);
 								}
 							}
-							return 10 - get.attitude(player, target);
+							return -get.attitude(player, target);
 						},
 					},
 				},
@@ -14673,7 +14676,7 @@ const skills = {
 							},
 						},
 						ai(volume, key, player, target) {
-							return 10 - get.attitude(player, target);
+							return -get.attitude(player, target);
 						},
 					},
 				},

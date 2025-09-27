@@ -287,6 +287,8 @@ const translates = {
 	jlsg_qixian: "七弦",
 	jlsg_qixian_info: "锁定技，游戏开始时，或当你获得此技能后，将你的体力上限改为7点，并为前7点体力上限随机分配“弦音”。当你于濒死状态外使用手牌后，若此牌为红色/黑色，你可以将体力改为X/Y点（X/Y为你的体力向增加/减少方向循环此牌点数的值）。当你的体力改变后，你可以根据本次改变体力的方向触发当前体力的“弦音”对应的“正弦”或“逆弦”的“弱音”效果，你每触发两次“弱音”，第三次“弦音”改为触发“强音”。出牌阶段限一次，你可以交换任意两个“弦音”的位置。",
 	jlsg_qixian_append: ["gōng", "shāng", "jué", "zhǐ", "yǔ", "wén", "wǔ"].map(i => get.poptip(`jlsg_qixian_${i}`)).join(""),
+	jlsg_qixian_faq: "关于弦音",
+	jlsg_qixian_faq_info: ["gōng", "shāng", "jué", "zhǐ", "yǔ", "wén", "wǔ"].map(i => get.poptip(`jlsg_qixian_${i}`)).join(""),
 	jlsg_qixian_gōng: "宫",
 	jlsg_qixian_shāng: "商",
 	jlsg_qixian_jué: "角",
