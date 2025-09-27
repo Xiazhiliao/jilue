@@ -49,6 +49,19 @@ const skills = {
 						}
 						if (choice.includes(2)) {
 							info[2] = true;
+							const skills = lib.skill._jlsgsr_choice.createList(name);
+							game.broadcastAll(
+								function (player, skills) {
+									_status._jlsgsr_upgrade ??= {};
+									_status._jlsgsr_upgrade[player.playerid] ??= {};
+									_status._jlsgsr_upgrade[player.playerid].other ??= {};
+									for (let i of skills) {
+										_status._jlsgsr_upgrade[player.playerid].other[i] = true;
+									}
+								},
+								player,
+								skills
+							);
 						}
 						if (choice.includes(3)) {
 							info[3] = true;
@@ -68,12 +81,8 @@ const skills = {
 							}*/
 						game.broadcastAll(
 							function (player, name, info) {
-								if (!_status._jlsgsr_upgrade) {
-									_status._jlsgsr_upgrade = {};
-								}
-								if (!_status._jlsgsr_upgrade[player.playerid]) {
-									_status._jlsgsr_upgrade[player.playerid] = {};
-								}
+								_status._jlsgsr_upgrade ??= {};
+								_status._jlsgsr_upgrade[player.playerid] ??= {};
 								_status._jlsgsr_upgrade[player.playerid][name] = info;
 							},
 							player,
@@ -194,9 +203,7 @@ const skills = {
 			}
 			game.broadcastAll(
 				function (player, info) {
-					if (!_status._jlsgsr_upgrade) {
-						_status._jlsgsr_upgrade = {};
-					}
+					_status._jlsgsr_upgrade ??= {};
 					_status._jlsgsr_upgrade[player.playerid] = info;
 				},
 				player,
@@ -3486,29 +3493,30 @@ const skills = {
 					if (!["basic", "trick"].includes(get.type(name))) {
 						return false;
 					}
-					return player.hasUseTarget(card);
+					return player.hasUseTarget(card, true, false);
 				})
 				.reverse();
+			console.log(useCards);
 			if (!useCards.length) {
 				return;
 			}
-			const { result } = await player
-				.chooseBool()
-				.set("ai", () => true)
-				.set("prompt", `雄略：是否依次视为使用${get.translation(useCards)}？`);
-			if (!result.bool) {
-				return;
-			}
-			for (let card of useCards) {
-				let nature = get.nature(card, player);
-				await player
-					.chooseUseTarget(true)
-					.set("card", {
+			while (useCards.length) {
+				const { result } = await player.chooseCardButton("雄略：请选择要使用的牌", useCards).set("ai", ({ link: card }) => {
+					return get.player().getUseValue(card, true, false) * get.order(card, get.player());
+				});
+				if (result.bool) {
+					const card = result.links[0];
+					useCards.remove(card);
+					await player.chooseUseTarget(true, false, `雄略：视为使用${get.translation(card)}`).set("card", {
+						suit: card.suit,
 						name: card.name,
-						nature: nature,
+						number: card.number,
+						nature: card.nature,
 						isCard: true,
-					})
-					.set("prompt", `雄略：视为使用${get.translation(card)}`);
+					});
+				} else {
+					break;
+				}
 			}
 		},
 		group: ["jlsg_xionglve_effect"],
@@ -4551,7 +4559,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_liubei"]?.[2] || upgradeStorage?.other?.[event.name];
+			const upgrade = upgradeStorage?.other?.[event.name];
 			let num = upgrade ? 3 : 2;
 			await player.draw(num);
 			let result = await player
@@ -4639,7 +4647,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_liubei"]?.[2] || upgradeStorage?.other?.[event.name];
+			const upgrade = upgradeStorage?.other?.[event.name];
 			const target = event.targets[0];
 			if (!player.getStorage("jlsg_chouxi")?.length) {
 				player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
@@ -4768,7 +4776,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const skill = event.name.slice(0, -5);
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_caocao"]?.[2] || upgradeStorage?.other?.[skill];
+			const upgrade = upgradeStorage?.other?.[skill];
 			const storage = player.getStorage(
 				event.skill,
 				Array.from({ length: upgrade ? 4 : 3 }, () => true)
@@ -4912,7 +4920,7 @@ const skills = {
 		},
 		prompt2(event, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_caocao"]?.[2] || upgradeStorage?.other?.["jlsg_zhishi"];
+			const upgrade = upgradeStorage?.other?.["jlsg_zhishi"];
 			let num = upgrade ? "三" : "两";
 			return `令其从随机${num}个能在此时机发动的技能中选择一个并发动`;
 		},
@@ -4922,7 +4930,7 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_caocao"]?.[2] || upgradeStorage?.other?.[event.name];
+			const upgrade = upgradeStorage?.other?.[event.name];
 			if (!_status.characterlist) {
 				game.initCharacterList();
 			}
