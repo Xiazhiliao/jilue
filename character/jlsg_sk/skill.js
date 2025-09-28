@@ -17439,6 +17439,9 @@ const skills = {
 						if (info?.subtype != "equip1") {
 							continue;
 						}
+						if (info.jlsg_zhuren_cardPrompt) {
+							continue;
+						}
 						if (info.cardPrompt) {
 							const { cardPrompt } = info;
 							info.jlsg_zhuren_cardPrompt = cardPrompt;
@@ -17868,7 +17871,7 @@ const skills = {
 						}
 						return storage.some(i => ["11", "13", "15", "33"].includes(i));
 					} else if (event.name == "damage") {
-						if (event.source == player || !event.source.isIn()) {
+						if (event.source == player || !event.source?.isIn()) {
 							return false;
 						} else if (!player.canUse("sha", event.source, false, false)) {
 							return false;

@@ -14726,7 +14726,7 @@ const skills = {
 						},
 						content: async function (event, trigger, player) {
 							let cards = event.target.getDiscardableCards(event.target, "he", card => {
-								if (get.type2(card, event.target) == "euiqp") {
+								if (get.type2(card, event.target) == "equip") {
 									return false;
 								}
 								return !get.tag(card, "damage");
