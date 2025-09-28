@@ -3424,14 +3424,14 @@ const skills = {
 			trigger.getParent().baseDamage++;
 			trigger.getParent().directHit = game.players;
 			player.addSkill(`${event.name}_debuff`);
+			player.storage[`${event.name}_debuff`]++;
+			player.markSkill(`${event.name}_debuff`);
 		},
 		subSkill: {
 			debuff: {
 				charlotte: true,
 				init(player, skill) {
-					let num = player.getStorage(skill, 0);
-					num++;
-					player.setStorage(skill, num, true);
+					player.setStorage(skill, 0, true);
 				},
 				onremove: true,
 				mark: true,
@@ -3446,6 +3446,7 @@ const skills = {
 				pupup: false,
 				async content(event, trigger, player) {
 					trigger.num += player.getStorage(event.name, 0);
+					player.removeSkill(event.name);
 				},
 			},
 		},
