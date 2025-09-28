@@ -14718,9 +14718,11 @@ const skills = {
 					black: {
 						piano: {
 							str: "随机弃置两张不能造成伤害的基本牌或锦囊牌",
+							key: 2,
 						},
 						forte: {
 							str: "弃置所有不能造成伤害的基本牌或锦囊牌",
+							key: "all",
 						},
 						content: async function (event, trigger, player) {
 							let cards = event.target.getDiscardableCards(event.target, "he", card => {
@@ -14732,7 +14734,7 @@ const skills = {
 							if (!cards.length) {
 								return;
 							}
-							cards = event.key === 2 ? cards.randomGets(2) : cards;
+							cards = event.key == 2 ? cards.randomGets(2) : cards;
 							await event.target.discard(cards);
 						},
 						ai(volume, key, player, target) {
@@ -14794,7 +14796,7 @@ const skills = {
 							if (!cards.length) {
 								return;
 							}
-							cards = event.key === 2 ? cards.randomGets(2) : cards;
+							cards = event.key == 2 ? cards.randomGets(2) : cards;
 							await event.target.discard(cards);
 						},
 						ai(volume, key, player, target) {
