@@ -3454,7 +3454,7 @@ const skills = {
 	jlsgsy_zhonggu: {
 		audio: "ext:极略/audio/skill:2",
 		usable: 1,
-		trigger: { player: ["damageEnd", "loseHpAfter", "loseMaxHpAfter", "loseAfter", "changeSkillsAfter", "linkAfter", "turnOverAfter", "disableSkill"] },
+		trigger: { player: ["damageEnd", "loseHpAfter", "loseMaxHpAfter", "loseAfter", "changeSkillsAfter", "linkAfter", "turnOverAfter"/*, "disableSkill"*/] },
 		filter(event, player) {
 			let key = lib.jlsg.debuffSkill.translate[event.name];
 			return get.info("jlsgsy_zhonggu").getInfo(event, player, key).bool;
