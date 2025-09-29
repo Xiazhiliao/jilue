@@ -14295,7 +14295,7 @@ const skills = {
 							return;
 						} else if (player.isHealthy()) {
 							return;
-						}else if (target.hp < player.hp) {
+						} else if (target.hp < player.hp) {
 							return;
 						}
 						return [1, 2];
@@ -14582,7 +14582,7 @@ const skills = {
 							str: "获得两张随机属性的临时【杀】",
 						},
 						forte: {
-							str: "获得两张随机属性的临时【杀】，令手牌里所有【杀】不计入次数限制",
+							str: "获得两张随机属性的临时【杀】，令手牌里所有【杀】无次数且不计入次数限制",
 							key: "ignoreSha",
 						},
 						content: async function (event, trigger, player) {
@@ -14644,17 +14644,11 @@ const skills = {
 					red: {
 						piano: {
 							str: "随机触发其他正弦弱音效果，触发两次",
-							key: function () {
-								let type = Object.keys(get.info("jlsg_qixian").effects).remove("羽").randomGet();
-								return { type, direction: "red", volume: "piano" };
-							},
+							key: { direction: "red", volume: "piano" },
 						},
 						forte: {
 							str: "随机触发其他正弦强音效果，触发两次",
-							key: function () {
-								let type = Object.keys(get.info("jlsg_qixian").effects).remove("羽").randomGet();
-								return { type, direction: "red", volume: "forte" };
-							},
+							key: { direction: "red", volume: "forte" },
 						},
 						ai(volume, key, player, target) {
 							return get.attitude(player, target);
@@ -14663,17 +14657,11 @@ const skills = {
 					black: {
 						piano: {
 							str: "随机触发其他逆弦弱音效果，触发两次",
-							key: function () {
-								let type = Object.keys(get.info("jlsg_qixian").effects).remove("羽").randomGet();
-								return { type, direction: "black", volume: "piano" };
-							},
+							key: { direction: "black", volume: "piano" },
 						},
 						forte: {
 							str: "随机触发其他逆弦强音效果，触发两次",
-							key: function () {
-								let type = Object.keys(get.info("jlsg_qixian").effects).remove("羽").randomGet();
-								return { type, direction: "black", volume: "forte" };
-							},
+							key: { direction: "black", volume: "forte" },
 						},
 						ai(volume, key, player, target) {
 							return -get.attitude(player, target);
@@ -14687,7 +14675,7 @@ const skills = {
 						},
 						forte: {
 							str: "获得两张不能造成伤害的临时基本牌或锦囊牌，获得一个与伤害无关的技能",
-							key: function (player) {
+							key(player) {
 								let skill = get.info("jlsg_qixian").getSkills("nodamage", player);
 								return skill;
 							},
@@ -14726,7 +14714,7 @@ const skills = {
 						},
 						content: async function (event, trigger, player) {
 							let cards = event.target.getDiscardableCards(event.target, "he", card => {
-								if (get.type2(card, event.target) == "equip") {
+								if (!["basic", "trick"].includes(get.type2(card, event.target))) {
 									return false;
 								}
 								return !get.tag(card, "damage");
@@ -14788,7 +14776,7 @@ const skills = {
 						},
 						content: async function (event, trigger, player) {
 							let cards = event.target.getDiscardableCards(event.target, "he", card => {
-								if (get.type2(card, event.target) == "equip") {
+								if (!["basic", "trick"].includes(get.type2(card, event.target))) {
 									return false;
 								}
 								return get.tag(card, "damage");
@@ -14808,18 +14796,20 @@ const skills = {
 			let yu = result["羽"];
 			for (let direction in yu) {
 				yu[direction].content = async function (event, trigger, player) {
-					const { type, direction, volume } = event.key;
-					const { content } = get.info("jlsg_qixian").effects[type][direction],
-						info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
-					let num = 2,
+					const { direction, volume } = event.key,
+						types = Object.keys(get.info("jlsg_qixian").effects).remove("羽"),
 						translate = {
 							red: "正弦",
 							black: "逆弦",
 							piano: "弱音",
 							forte: "强音",
 						};
+					let num = 2;
 					while (num > 0) {
 						num--;
+						const type = types.randomGet(),
+							{ content } = get.info("jlsg_qixian").effects[type][direction],
+							info = { ...get.info("jlsg_qixian").effects[type][direction][volume] };
 						let { str, key, prompt } = info;
 						if (typeof key == "function") {
 							key = key(player);
@@ -15192,6 +15182,9 @@ const skills = {
 					},
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
+							if (card.cards?.every(card => card.hasGaintag("jlsg_qixian"))) {
+								return Infinity;
+							}
 							return num + player.getStorage("jlsg_qixian_buff", {}).shaUsable;
 						}
 					},
