@@ -3454,7 +3454,7 @@ const skills = {
 	jlsgsy_zhonggu: {
 		audio: "ext:极略/audio/skill:2",
 		usable: 1,
-		trigger: { player: ["damageEnd", "loseHpAfter", "loseMaxHpAfter", "loseAfter", "changeSkillsAfter", "linkAfter", "turnOverAfter"/*, "disableSkill"*/] },
+		trigger: { player: ["damageEnd", "loseHpAfter", "loseMaxHpAfter", "loseAfter", "changeSkillsAfter", "linkAfter", "turnOverAfter", "disableSkillEnd"] },
 		filter(event, player) {
 			let key = lib.jlsg.debuffSkill.translate[event.name];
 			return get.info("jlsgsy_zhonggu").getInfo(event, player, key).bool;
@@ -3475,7 +3475,7 @@ const skills = {
 			let key = lib.jlsg.debuffSkill.translate[trigger.name],
 				info = get.info(event.name).getInfo(trigger, player, key);
 			if (key == "removeSkill") {
-				ket = "removeSkills";
+				key = "removeSkills";
 			}
 			for (const target of event.targets) {
 				if (!target.isIn()) {
@@ -3493,6 +3493,21 @@ const skills = {
 						continue;
 					}
 					await target.discard(cards.randomGets(info.num));
+				} else if (key == "disableSkill") {
+					if (trigger.type == "addSkillBlocker") {
+						target.addSkillBlocker(trigger.args[0]);
+					} else {
+						const skills = target.getSkills(null, false, false).randomGets(trigger.num);
+						if (!skills.length) return;
+						const args = get.copy(trigger.args);
+						if (trigger.type == "tempBanSkill") {
+							args[0] = skills;
+						} else {
+							args[1] = skills;
+						}
+						console.log(trigger.type, args);
+						await target[trigger.type](args);
+					}
 				} else {
 					await target[key](info.num, info.nature);
 				}
@@ -3511,14 +3526,14 @@ const skills = {
 				}
 				str = `弃置${num}张牌`;
 			} else if (key == "removeSkill") {
-				if (event) {
+				if (event.removeSkill?.length) {
 					bool = event.removeSkill.length;
 					if (!num) {
 						num = event.removeSkill.length;
 					}
-					str = `失去${num}个技能：` + get.translation(event.removeSkill);
-				} else {
 					str = `失去${num}个技能`;
+				} else {
+					str = `失去技能`
 				}
 			} else if (key == "link") {
 				if (event) {
@@ -3532,11 +3547,17 @@ const skills = {
 				str = `翻面`;
 			} else if (key == "disableSkill") {
 				if (event) {
-					bool = event.disableSkills.length;
-					num = event.num;
-					str = `失效${num}个技能：` + get.translation(event.disableSkills);
+					bool = event.num;
+					if (event.type !== "addSkillBlocker") {
+						num = event.num;
+						str = `失效${num}个技能`;
+					} else {
+						const skill = event.args[0];
+						skill = get.poptip(skill);
+						str = `受${skill}影响失效技能`;
+					}
 				} else {
-					str = `失效${num}个技能`;
+					str = `失效技能`;
 				}
 			} else {
 				if (event) {

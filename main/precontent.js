@@ -73,9 +73,54 @@ export async function precontent(config, originalPack) {
 	//失效技能时机创建
 	if (lib.config.extension_极略_jlsg_disableSkill) {
 		lib.arenaReady.push(() => {
-			lib.disable1 = lib.element.player.tempBanSkill;
-			lib.disable2 = lib.element.player.disableSkill;
-			lib.disable3 = lib.element.player.addSkillBlocker;
+			lib.disableSkill ??= {};
+			for (let item of ["tempBanSkill", "disableSkill", "addSkillBlocker"]) {
+				lib.disableSkill[item] = lib.element.player[item];
+			}
+			lib.element.content.DisableSkill = async function(event, trigger, player) {
+				if (!Array.isArray(event.disableSkills)) {
+					event.disableSkills = [event.disableSkills];
+				}
+				//适配神皇甫嵩和黄承彦先加技能后标记失效技能的写法
+				//希望本体能改一下这个写法，神皇甫嵩改的时候记得把init里面storage的重置删掉
+				if (event.type == "addSkillBlocker") {
+					event.special = [];
+					if (Array.isArray(event.args[0])) {
+						for (let i of event.args[0]) {
+							if (["hm_podai_sb", "dcjiezhen_blocker"].includes(i)) {
+								event.special.add(i);
+							}
+						}
+					} else if (["hm_podai_sb", "dcjiezhen_blocker"].includes(event.args[0])) {
+						event.special = event.args[0];
+					}
+					if (event.special.includes("dcjiezhen_blocker")) {
+						let skills = event.player.getSkills(null, false, false).filter(function (i) {
+							if (i == "bazhen") {
+								return;
+							}
+							var info = get.info(i);
+							return info && !get.is.locked(i) && !info.limited && !info.juexingji && !info.zhuSkill && !info.charlotte && !info.persevereSkill;
+						});
+						event.disableSkills.addArray(skills);
+					} else if (event.special.includes("hm_podai_sb")) {
+						event.disableSkills.add("未知");
+					}
+					event.num = event.disableSkills.length;
+				}
+				await event.trigger(event.name + "Begin");
+				await event.trigger(event.name);
+				if (event.cancel == true) {
+					await event.trigger(event.name + "Cancelled");
+					return;
+				}
+				if (event.type.endsWith("Sub")) {
+					lib.disableSkill[event.type.slice(0, -4)].apply(player, event.args);
+				} else {
+					lib.disableSkill[event.type].apply(player, event.args);
+				}
+				await event.trigger(event.name + "End");
+			}
 			lib.element.player.tempBanSkill = function (...args) {
 				let str = "disableSkill";
 				if (!_status.disableSkills && Array.isArray(args[0])) {
@@ -88,21 +133,14 @@ export async function precontent(config, originalPack) {
 					}
 					str += "Sub";
 				}
-				let evt = game.createEvent(str),
-					content = function () {
-						"step 0"
-						event.trigger(event.name);
-						"step 1"
-						if (event.disableSkills.length && !event.cancel) {
-							lib.disable1.apply(event.player, event.args);
-						}
-					};
+				let evt = game.createEvent(str);
+				evt.type = "tempBanSkill";
 				evt.player = this;
 				evt.num = Array.isArray(args[0]) ? args[0].length : 1;
 				evt.disableSkills = args[0];
 				evt.args = args;
 				evt.cancel = false;
-				evt.setContent(content);
+				evt.setContent("DisableSkill");
 			};
 			lib.element.player.disableSkill = function (...args) {
 				let str = "disableSkill";
@@ -116,97 +154,31 @@ export async function precontent(config, originalPack) {
 					}
 					str += "Sub";
 				}
-				let evt = game.createEvent(str),
-					content = function () {
-						"step 0"
-						event.trigger(event.name);
-						"step 1"
-						if (event.disableSkills.length && !event.cancel) {
-							lib.disable2.apply(event.player, event.args);
-						}
-					};
+				let evt = game.createEvent(str);
+				evt.type = "disableSkill";
 				evt.player = this;
 				evt.num = Array.isArray(args[1]) ? args[1].length : 1;
 				evt.disableSkills = args[1];
 				evt.args = args;
-				evt.cancel = false;
-				evt.setContent(content);
+				evt.setContent("DisableSkill");
 			};
-			lib.element.player.addSkillBlocker = function (...args) {
-				//addSkillBlocker不会自己调用自己所以无须_status
-				//筛选出含skillBlocker的技能
+			lib.element.player.addSkillBlocker = function (arg) {
 				let list = [],
-					skills = args[0];
-				if (this.getSkills(null, false, false)) {
-					if (!Array.isArray(skills)) {
-						skills = [skills];
-					}
-					for (let sk of skills) {
-						if (!lib.skill[sk]?.skillBlocker) {
-							list.add(sk);
-							continue;
-						}
-						for (let sk2 of this.getSkills(null, false, false)) {
-							if (lib.skill[sk]?.skillBlocker(sk2, this)) {
-								list.remove(sk);
-								break;
-							} else {
-								list.add(sk);
-							}
-						}
-					}
-					skills.removeArray(list);
-				}
-				let str = "disableSkill";
-				let evt = game.createEvent(str),
-					content = function () {
-						"step 0"
-						//适配神皇甫嵩和黄承彦先加技能后标记失效技能的写法
-						//希望本体能改一下这个写法，神皇甫嵩改的时候记得把init里面storage的重置删掉
-						event.special = [];
-						if (Array.isArray(event.args[0])) {
-							for (let i of event.args[0]) {
-								if (["hm_podai_sb", "dcjiezhen_blocker"].includes(i)) {
-									event.special.add(i);
-								}
-							}
-						} else if (["hm_podai_sb", "dcjiezhen_blocker"].includes(event.args[0])) {
-							event.special = event.args[0];
-						}
-						if (event.special.includes("dcjiezhen_blocker")) {
-							let skills = event.player.getSkills(null, false, false).filter(function (i) {
-								if (i == "bazhen") {
-									return;
-								}
-								var info = get.info(i);
-								return info && !get.is.locked(i) && !info.limited && !info.juexingji && !info.zhuSkill && !info.charlotte && !info.persevereSkill;
-							});
-							event.disableSkills.addArray(skills);
-						} else if (event.special.includes("hm_podai_sb")) {
-							event.disableSkills.add("未知");
-						}
-						event.num = event.disableSkills.length;
-						"step 1"
-						event.trigger(event.name);
-						"step 2"
-						if (event.disableSkills.length && !event.cancel) {
-							lib.disable3.apply(event.player, event.args);
-						}
-					};
+					skill = arg,
+					str = "disableSkill",
+					evt = game.createEvent(str);
+				evt.type = "addSkillBlocker";
 				evt.player = this;
-				list = [];
-				for (let sk of skills) {
-					for (let sk2 of this.getSkills(null, false, false)) {
-						if (lib.skill[sk].skillBlocker(sk2, this)) {
-							list.add(sk2);
-						}
+				for (let sk of this.getSkills(null, false, false)) {
+					if (lib.skill[skill].skillBlocker(sk, this)) {
+						list.add(sk);
 					}
 				}
 				evt.disableSkills = list;
 				evt.num = list.length;
-				evt.args = args;
-				evt.cancel = false;
-				evt.setContent(content);
+				evt.args = [arg];
+				evt.blocker = skill.skillBlocker;
+				evt.setContent("DisableSkill");
 			};
 		});
 	}
@@ -2016,7 +1988,8 @@ export async function precontent(config, originalPack) {
 						if (!num) {
 							num = event.removeSkill.length;
 						}
-						str = `失去${num}个技能：` + get.translation(event.removeSkill);
+						const translation = event.removeSkill.map(item => get.poptip(item)).join("、");
+						str = `失去${num}个技能：${translation}`;
 					} else {
 						str = `失去${num}个技能`;
 					}
@@ -2032,9 +2005,10 @@ export async function precontent(config, originalPack) {
 					str = `翻面`;
 				} else if (key == "disableSkill") {
 					if (event) {
-						bool = event.disableSkills.length;
+						bool = event.num;
 						num = event.num;
-						str = `失效${num}个技能：` + get.translation(event.disableSkills);
+						const translation = event.disableSkills?.map(item => get.poptip(item)).join("、") ?? get.poptip(event.disableSkills);
+						str = `失效${num}个技能：${translation}`;
 					} else {
 						str = `失效${num}个技能`;
 					}
@@ -2062,6 +2036,12 @@ export async function precontent(config, originalPack) {
 			},
 		},
 	};
+	const keys = Object.keys(jlsg.debuffSkill.translate);
+	for (let item of keys) {
+		for (let time of ["Before", "Begin", "End", "After"]) {
+			jlsg.debuffSkill.translate[item + time] = jlsg.debuffSkill.translate[item];
+		}
+	}
 	lib.jlsg = jlsg;
 	window.jlsg = jlsg;
 
