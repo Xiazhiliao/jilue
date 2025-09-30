@@ -3495,7 +3495,7 @@ const skills = {
 					await target.discard(cards.randomGets(info.num));
 				} else if (key == "disableSkill") {
 					if (trigger.type == "addSkillBlocker") {
-						target.addSkillBlocker(trigger.args[0]);
+						await target.addSkillBlocker(trigger.args[0]);
 					} else {
 						const skills = target.getSkills(null, false, false).randomGets(trigger.num);
 						if (!skills.length) return;
@@ -3505,8 +3505,7 @@ const skills = {
 						} else {
 							args[1] = skills;
 						}
-						console.log(trigger.type, args);
-						await target[trigger.type](args);
+						await target[trigger.type](...args);
 					}
 				} else {
 					await target[key](info.num, info.nature);
@@ -3552,7 +3551,7 @@ const skills = {
 						num = event.num;
 						str = `失效${num}个技能`;
 					} else {
-						const skill = event.args[0];
+						let skill = event.args[0];
 						skill = get.poptip(skill);
 						str = `受${skill}影响失效技能`;
 					}
