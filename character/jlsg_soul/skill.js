@@ -13792,7 +13792,7 @@ const skills = {
 		audio: "ext:极略/audio/skill:7",
 		derivation: ["jlsg_qixian_faq"],
 		init(player, skill) {
-			if (!_status.gameStarted) {
+			if (!_status.gameStarted || !player.hasSkill(skill) || player.isTempBanned(skill)) {
 				return;
 			}
 			const next = game.createEvent("jlsg_qixian_start", false, get.event());
@@ -13839,6 +13839,24 @@ const skills = {
 				return dialog;
 			},
 			select: [2, 2],
+			check(button) {
+				const player = get.player();
+				const max = get.order("jlsg_qixian", player) - 5;
+				if (max > 0) {
+					const bestMatch = get.info("jlsg_qixian").bestMatch,
+						list = player.getStorage("jlsg_qixian", {}).list;
+					if (!list?.length) {
+						return 0;
+					}
+					const indexList = list.map((v, i) => {
+						return Math.abs(bestMatch.indexOf(v) - i);
+					});
+					let maxIndex = indexList.indexOf(max);
+					let originIndex = bestMatch.indexOf(list[maxIndex]);
+					return [maxIndex, originIndex].includes(button.link[0] - 1);
+				}
+				return 0;
+			},
 			backup(links, player) {
 				return {
 					links,
@@ -13852,6 +13870,7 @@ const skills = {
 									return list.indexOf(a) - list.indexOf(b);
 								});
 						game.log(player, "调换了", `#y${first}`, "和", `#y${second}`, "的位置");
+						player.chat("我调换了弦音位置");
 						let firstIndex = storage.list.indexOf(first),
 							secondIndex = storage.list.indexOf(second);
 						storage.list[firstIndex] = second;
@@ -13980,10 +13999,10 @@ const skills = {
 							key: 3,
 						},
 						content: async function (event, trigger, player) {
-							if (!event.target.countGainableCards(player, "he")) {
-								return;
+							const cards = event.target.getGainableCards(player, "he");
+							if (cards.length) {
+								await player.gain(event.key);
 							}
-							await player.gainPlayerCard(event.target, true, "he", event.key);
 						},
 						ai(volume, key, player, target) {
 							return get.effect(target, { name: "shunshou_copy2" }, player, player);
@@ -14411,6 +14430,7 @@ const skills = {
 			}
 			return false;
 		},
+		bestMatch: ["角", "文", "宫", "羽", "商", "徵", "武"],
 		group: "jlsg_qixian_start",
 		subSkill: {
 			backup: {},
@@ -14444,6 +14464,32 @@ const skills = {
 				onremove(player) {
 					delete player.storage.jlsg_qixian;
 				},
+				mod: {
+					aiOrder(player, card, num) {
+						if (player.isDying()) {
+							return;
+						} else if (get.event().name != "chooseToUse") {
+							return;
+						} else if (get.position(card) != "h") {
+							return;
+						} else if (typeof card.number != "number" || card.number < 1) {
+							return false;
+						} else if (!["red", "black"].includes(get.color(card, false))) {
+							return false;
+						}
+						let hp = player.hp + (get.color(card) == "red" ? card.number : -card.number);
+						while (hp < 1) {
+							hp += player.maxHp;
+						}
+						while (hp > player.maxHp) {
+							hp -= player.maxHp;
+						}
+						if (hp < player.hp) {
+							hp = -hp;
+						}
+						return num + hp;
+					},
+				},
 				mark: true,
 				marktext: "弦",
 				intro: {
@@ -14471,11 +14517,11 @@ const skills = {
 				filter(event, player) {
 					if (!player.getStorage("jlsg_qixian", {})?.list?.length) {
 						return false;
+					} else if (player.isDying()) {
+						return false;
 					}
 					if (event.name == "useCard") {
-						if (player.isDying()) {
-							return false;
-						} else if (typeof event.card.number != "number" || event.card.number < 1) {
+						if (typeof event.card.number != "number" || event.card.number < 1) {
 							return false;
 						} else if (!["red", "black"].includes(get.color(event.card, false))) {
 							return false;
@@ -14511,6 +14557,9 @@ const skills = {
 					}
 					while (num > player.maxHp) {
 						num -= player.maxHp;
+					}
+					if (trigger.name == "useCard" && num == player.hp) {
+						return;
 					}
 					let type = storage.list[num - 1],
 						translate = {
@@ -14711,6 +14760,29 @@ const skills = {
 				async content(event, trigger, player) {
 					trigger.num -= player.getStorage("jlsg_qixian_debuff", {}).filterDamage;
 					player.removeSkill(event.name);
+				},
+			},
+		},
+		ai: {
+			order(item, player) {
+				player = player || get.player();
+				const bestMatch = get.info("jlsg_qixian").bestMatch,
+					list = player.getStorage("jlsg_qixian", {}).list;
+				if (!list?.length) {
+					return 0;
+				}
+				const indexList = list.map((v, i) => {
+					return Math.abs(bestMatch.indexOf(v) - i);
+				});
+				if (indexList.every(i => i == 0)) {
+					return 0;
+				}
+				let max = Math.max(...indexList);
+				return max + 5;
+			},
+			result: {
+				player(player) {
+					return get.order("jlsg_qixian", player);
 				},
 			},
 		},
