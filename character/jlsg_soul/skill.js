@@ -10774,15 +10774,10 @@ const skills = {
 					return 0;
 				} else if (get.effect(target, card, player, player) <= 0) {
 					return 114514;
-				} else {
-					return 50 - get.effect(target, card, player, player);
 				}
+				return 50 - get.effect(target, card, player, player);
 			});
-			if (result.bool) {
-				event.result = { bool: true, cards: result.links, targets: [trigger.player] };
-			} else {
-				event.result = { bool: false };
-			}
+			event.result = { bool: result?.bool, cards: result?.links, targets: [trigger.player] };
 		},
 		async content(event, trigger, player) {
 			const { cardListContent, processContent, getEffects, typeSkills, createTempCard, typePBTY } = get.info(event.name);
