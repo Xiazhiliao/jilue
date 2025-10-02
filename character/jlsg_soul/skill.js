@@ -10939,7 +10939,7 @@ const skills = {
 						}
 						name = namex;
 					} else if (name.startsWith("equip") && !name.endsWith("p")) {
-						name = typePBTY["equip"].filter(i => get.type(i[2]) == name).randomGet()?.[2];
+						name = typePBTY["equip"].filter(i => get.subtype(i[2]) == name).randomGet()?.[2];
 					}
 					if (name) {
 						if (!suit && !nature && name === null) {
@@ -11906,7 +11906,7 @@ const skills = {
 						},
 					},
 					{
-						str: "获得六张随机基本牌",
+						str: "获得六张基本牌",
 						content: async function (event, trigger, player) {
 							const cards = [],
 								cardList = lib.inpile.filter(name => get.type(name) == "basic");
@@ -11979,20 +11979,8 @@ const skills = {
 					},
 					{
 						str: "获得三张武器牌",
-						content: async function (event, trigger, player) {
-							const cards = [],
-								cardList = lib.inpile.filter(name => get.subtype(name) == "equip1");
-							let num = 3;
-							while (num > 0) {
-								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
-								if (card) {
-									cards.add(card);
-								}
-							}
-							if (cards.length) {
-								await player.gain(cards, "draw", "log");
-							}
+						cardList: {
+							equip1: 3,
 						},
 						ai() {
 							return 1;
@@ -12000,20 +11988,8 @@ const skills = {
 					},
 					{
 						str: "获得三张防具牌",
-						content: async function (event, trigger, player) {
-							const cards = [],
-								cardList = lib.inpile.filter(name => get.subtype(name) == "equip2");
-							let num = 3;
-							while (num > 0) {
-								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
-								if (card) {
-									cards.add(card);
-								}
-							}
-							if (cards.length) {
-								await player.gain(cards, "draw", "log");
-							}
+						cardList: {
+							equip2: 3,
 						},
 						ai() {
 							return 1;
@@ -12022,20 +11998,8 @@ const skills = {
 					{
 						jlsg_qs: true,
 						str: "获得三张宝物牌",
-						content: async function (event, trigger, player) {
-							const cards = [],
-								cardList = lib.inpile.filter(name => get.subtype(name) == "equip5");
-							let num = 3;
-							while (num > 0) {
-								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
-								if (card) {
-									cards.add(card);
-								}
-							}
-							if (cards.length) {
-								await player.gain(cards, "draw", "log");
-							}
+						cardList: {
+							equip5: 3,
 						},
 						ai() {
 							return 1;
@@ -12149,7 +12113,7 @@ const skills = {
 								let cardList = lib.inpile.filter(name => get.type2(name, player) == type);
 								while (num > 0) {
 									num--;
-									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet(), null, null, null, true);
 									if (card) {
 										list.add(card);
 									}
