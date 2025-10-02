@@ -10822,7 +10822,9 @@ const skills = {
 						type = "混沌";
 						break;
 				}
-				let record = Object.keys(getEffects[type]).randomGets(3).map(i => getEffects[type][i]),
+				let record = Object.keys(getEffects[type])
+						.randomGets(3)
+						.map(i => getEffects[type][i]),
 					card = createTempCard(name);
 				if (card) {
 					await trigger.player.gain(card, "draw", "log");
@@ -10866,10 +10868,18 @@ const skills = {
 					}
 				}
 				for (let i in record) {
-					if (!record[i].prompt) {
-						record[i].prompt = record[i].str;
-					} else if (typeof record[i].prompt == "function") {
-						record[i].prompt = record[i].prompt(record[i].key);
+					const info = info;
+					if (!info.prompt) {
+						info.prompt = info.str;
+					} else if (typeof info.prompt == "function") {
+						info.prompt = info.prompt(info.key);
+					}
+					if (!info.ai) {
+						if (info.cardList) {
+							info.ai = Object.values(info.cardList).reduce((sum, num) => sum + num, 0);
+						} else {
+							info.ai = 0;
+						}
 					}
 				}
 				const { result: effectChoose } = await trigger.player
@@ -10884,7 +10894,18 @@ const skills = {
 						}
 						return ["选项一", "选项二", "选项三"].randomGet();
 					})
-					.set("choice", (function () {})());
+					.set(
+						"choice",
+						(function () {
+							const aiList = record.map(i => {
+								if (typeof i.ai == "number") {
+									return i.ai;
+								}
+								return i.ai(trigger.player);
+							});
+							let index = aiList.indexOf(Max.max(...aiList));
+						})()
+					);
 				if (effectChoose.control != "cancel2") {
 					const { str, prompt, key, cardList, content } = record[list.indexOf(effectChoose.control)];
 					game.log(trigger.player, "获得的效果为", `#r${get.plainText(str)}`);
@@ -11127,6 +11148,9 @@ const skills = {
 								await player.gain(cards, "draw", "log");
 							}
 						},
+						ai(player) {
+							return 4;
+						},
 					},
 					{
 						str: "获得两张【火攻】、两张【铁索连环】",
@@ -11223,6 +11247,9 @@ const skills = {
 							check: (target, player) => target.countGainableCards(player, "he"),
 							chooseToGive: [true, 4, "player"],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "shunshou_copy2" }, player)));
+						},
 					},
 					{
 						str: "令至多两名角色各交给你两张牌",
@@ -11239,6 +11266,9 @@ const skills = {
 							check: (target, player) => target.countGainableCards(player, "he"),
 							chooseToGive: [true, 2, "player"],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "shunshou_copy2" }, player))) * 0.9;
+						},
 					},
 					{
 						str: "令所有其他角色各交给你一张牌",
@@ -11246,6 +11276,9 @@ const skills = {
 							chooseTarget: [true, "all", (_, player, target) => target != player && target.countGainableCards(player, "he")],
 							check: (target, player) => target.countGainableCards(player, "he"),
 							chooseToGive: [true, 1, "player"],
+						},
+						ai(player) {
+							return game.filterPlayer().reduce((sum, current) => sum + get.effect(current, { name: "shunshou_copy2" }, player), 0);
 						},
 					},
 					{
@@ -11263,6 +11296,9 @@ const skills = {
 							check: (target, player) => target.countDiscardableCards(target, "he"),
 							chooseToDiscard: [true, 6],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "huohe_copy2" }, player)));
+						},
 					},
 					{
 						str: "令至多两名角色各弃置四张牌",
@@ -11279,6 +11315,9 @@ const skills = {
 							check: (target, player) => target.countDiscardableCards(target, "he"),
 							chooseToDiscard: [true, 4],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "huohe_copy2" }, player))) * 0.9;
+						},
 					},
 					{
 						str: "令所有其他角色各弃置两张牌",
@@ -11287,12 +11326,18 @@ const skills = {
 							check: (target, player) => target.countDiscardableCards(target, "he"),
 							chooseToDiscard: [true, 2],
 						},
+						ai(player) {
+							return game.filterPlayer().reduce((sum, current) => sum + get.effect(current, { name: "guohe_copy2" }, player), 0);
+						},
 					},
 					{
 						str: "令任意名角色横置",
 						content: {
 							chooseTarget: [true, [1, Infinity], () => true, target => get.effect(target, { name: "tiesuo" }, get.player())],
 							link: [],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "tiesuo" }, player))) * 0.9;
 						},
 					},
 					{
@@ -11314,12 +11359,18 @@ const skills = {
 							],
 							turnOver: [],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.threaten(current, player, current.hp)));
+						},
 					},
 					{
 						str: "对一名角色造成2点伤害",
 						content: {
 							chooseTarget: [true, 1, () => true, target => get.damageEffect(target, get.player())],
 							damage: [2],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player)));
 						},
 					},
 					{
@@ -11328,12 +11379,18 @@ const skills = {
 							chooseTarget: [true, 1, () => true, target => get.damageEffect(target, get.player(), get.player(), "thunder")],
 							damage: [2, "thunder"],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player, player, "thunder")));
+						},
 					},
 					{
 						str: "对一名角色造成2点火焰伤害",
 						content: {
 							chooseTarget: [true, 1, () => true, target => get.damageEffect(target, get.player(), get.player(), "fire")],
 							damage: [2, "fire"],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player, player, "fire")));
 						},
 					},
 					{
@@ -11342,12 +11399,18 @@ const skills = {
 							chooseTarget: [true, [1, 2], () => true, target => get.damageEffect(target, get.player())],
 							damage: [1],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player))) * 0.9;
+						},
 					},
 					{
 						str: "对至多两名角色各造成1点l雷电伤害",
 						content: {
 							chooseTarget: [true, [1, 2], () => true, target => get.damageEffect(target, get.player(), get.player(), "thunder")],
 							damage: ["thunder"],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player, player, "thunder"))) * 0.9;
 						},
 					},
 					{
@@ -11356,12 +11419,18 @@ const skills = {
 							chooseTarget: [true, [1, 2], () => true, target => get.damageEffect(target, get.player(), get.player(), "fire")],
 							damage: ["fire"],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player, player, "fire"))) * 0.9;
+						},
 					},
 					{
 						str: "对所有其他角色各造成1点伤害",
 						content: {
 							chooseTarget: [true, "all", (_, player, target) => player != target, target => get.damageEffect(target, get.player())],
 							damage: [],
+						},
+						ai(player) {
+							return game.filterPlayer().reduce((sum, current) => sum + get.damageEffect(current, player), 0);
 						},
 					},
 					{
@@ -11370,12 +11439,18 @@ const skills = {
 							chooseTarget: [true, "all", (_, player, target) => player != target, target => get.damageEffect(target, get.player(), get.player(), "thunder")],
 							damage: ["thunder"],
 						},
+						ai(player) {
+							return game.filterPlayer().reduce((sum, current) => sum + get.damageEffect(current, player, player, "thunder"), 0);
+						},
 					},
 					{
 						str: "对所有其他角色各造成1点火焰伤害",
 						content: {
 							chooseTarget: [true, "all", (_, player, target) => player != target, target => get.damageEffect(target, get.player(), get.player(), "fire")],
 							damage: ["fire"],
+						},
+						ai(player) {
+							return game.filterPlayer().reduce((sum, current) => sum + get.damageEffect(current, player, player, "fire"), 0);
 						},
 					},
 					{
@@ -11384,12 +11459,18 @@ const skills = {
 							chooseTarget: [true, 1, () => true, target => get.effect(target, { name: "losehp" }, get.player())],
 							loseHp: [2],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "losehp" }, player)));
+						},
 					},
 					{
 						str: "令至多两名角色各失去1点体力",
 						content: {
 							chooseTarget: [true, [1, 2], () => true, target => get.effect(target, { name: "losehp" }, get.player())],
 							loseHp: [1],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "losehp" }, player))) * 0.9;
 						},
 					},
 					{
@@ -11398,12 +11479,18 @@ const skills = {
 							chooseTarget: [true, "all", (_, player, target) => player != target, target => et.effect(target, { name: "losehp" }, get.player())],
 							loseHp: [1],
 						},
+						ai(player) {
+							return game.filterPlayer(current => current != player).reduce((sum, current) => sum + get.effect(current, { name: "losehp" }, player), 0);
+						},
 					},
 					{
 						str: "令一名角色减少2点体力上限",
 						content: {
 							chooseTarget: [true, 1, true, () => target => -get.attitude(get.player(), target) * target.maxHp],
 							loseMaxHp: [2],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => -get.attitude(player, current) * current.maxHp));
 						},
 					},
 					{
@@ -11412,12 +11499,18 @@ const skills = {
 							chooseTarget: [true, [1, 2], () => true, target => -get.attitude(get.player(), target) * target.maxHp],
 							loseMaxHp: [1],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => -get.attitude(player, current) * current.maxHp)) * 0.9;
+						},
 					},
 					{
-						str: "令至多两名角色各减少1点体力上限",
+						str: "令所有其他角色各减少1点体力上限",
 						content: {
 							chooseTarget: [true, "all", (_, player, target) => player != target, target => -get.attitude(get.player(), target) * target.maxHp],
 							loseMaxHp: [1],
+						},
+						ai(player) {
+							return game.filterPlayer(current => current != player).reduce((sum, current) => sum - get.attitude(player, current) * current.maxHp, 0);
 						},
 					},
 					{
@@ -11433,6 +11526,9 @@ const skills = {
 							],
 							removeSkills: [2],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => -get.attitude(player, current) * current.getSkills(null, false, false).length));
+						},
 					},
 					{
 						str: "令至多两名角色各随机失去一个技能",
@@ -11446,6 +11542,9 @@ const skills = {
 								},
 							],
 							removeSkills: [1],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => -get.attitude(player, current) * current.getSkills(null, false, false).length)) * 1.1;
 						},
 					},
 				],
@@ -11620,12 +11719,18 @@ const skills = {
 							chooseTarget: [true, 1, () => true, target => get.effect(target, { name: "draw" }, get.player())],
 							draw: [6],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "draw" }, player)));
+						},
 					},
 					{
 						str: "令至多两名角色各摸四张牌",
 						content: {
 							chooseTarget: [true, [1, 2], () => true, target => get.effect(target, { name: "draw" }, get.player())],
 							draw: [4],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "draw" }, player))) * 1.1;
 						},
 					},
 					{
@@ -11634,12 +11739,18 @@ const skills = {
 							chooseTarget: [true, "all", () => true, target => get.effect(target, { name: "draw" }, get.player())],
 							draw: [2],
 						},
+						ai(player) {
+							return game.filterPlayer().reduce((sum, current) => sum + get.effect(current, { name: "draw" }, player), 0);
+						},
 					},
 					{
 						str: "令一名角色回复3点体力",
 						content: {
 							chooseTarget: [true, 1, () => true, target => get.recoverEffect(target, get.player())],
 							recover: [3],
+						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.recoverEffect(current, player)));
 						},
 					},
 					{
@@ -11648,12 +11759,18 @@ const skills = {
 							chooseTarget: [true, [1, 2], () => true, target => get.recoverEffect(target, get.player())],
 							recover: [2],
 						},
+						ai(player) {
+							return Math.max(game.filterPlayer().map(current => get.recoverEffect(current, player))) * 1.1;
+						},
 					},
 					{
 						str: "令所有角色各回复1点体力",
 						content: {
 							chooseTarget: [true, "all", () => true, target => get.recoverEffect(target, get.player())],
 							recover: [1],
+						},
+						ai(player) {
+							return game.filterPlayer().reduce((sum, current) => sum + get.recoverEffect(current, player), 0);
 						},
 					},
 					{
@@ -11662,6 +11779,9 @@ const skills = {
 							chooseTarget: [true, 1, () => true, target => get.attitude(get.player(), target)],
 							gainMaxHp: [2],
 						},
+						ai(player) {
+							return 2;
+						},
 					},
 					{
 						str: "令至多两名角色各增加1点体力上限",
@@ -11669,12 +11789,18 @@ const skills = {
 							chooseTarget: [true, [1, 2], () => true, target => get.attitude(get.player(), target)],
 							gainMaxHp: [1],
 						},
+						ai(player) {
+							return 1.5;
+						},
 					},
 					{
 						str: "令所有角色各增加1点体力上限",
 						content: {
 							chooseTarget: [true, "all", () => true, target => get.attitude(get.player(), target)],
 							gainMaxHp: [1],
+						},
+						ai(player) {
+							return game.filterPlayer().reduce((sum, current) => sum + get.attitude(player, current), 0);
 						},
 					},
 					{
@@ -11684,6 +11810,9 @@ const skills = {
 							player.storage.jlsg_lingze_buff.draw += 2;
 							player.markSkill("jlsg_lingze_buff");
 						},
+						ai(player) {
+							return 2;
+						},
 					},
 					{
 						str: "使用【杀】次数上限+4",
@@ -11692,6 +11821,9 @@ const skills = {
 							player.storage.jlsg_lingze_buff.shaUsable += 4;
 							player.markSkill("jlsg_lingze_buff");
 						},
+						ai(player) {
+							return 2;
+						},
 					},
 					{
 						str: "手牌上限+4",
@@ -11699,6 +11831,9 @@ const skills = {
 							player.addSkill("jlsg_lingze_buff");
 							player.storage.jlsg_lingze_buff.maxHandcard += 4;
 							player.markSkill("jlsg_lingze_buff");
+						},
+						ai(player) {
+							return 3;
 						},
 					},
 				],
@@ -11771,6 +11906,9 @@ const skills = {
 								await player.gain(cards, "draw", "log");
 							}
 						},
+						ai() {
+							return 4;
+						},
 					},
 					{
 						str: "获得六张随机基本牌",
@@ -11788,6 +11926,9 @@ const skills = {
 							if (cards.length) {
 								await player.gain(cards, "draw", "log");
 							}
+						},
+						ai() {
+							return 3;
 						},
 					},
 					{
@@ -11816,6 +11957,9 @@ const skills = {
 								await player.gain(cards, "draw", "log");
 							}
 						},
+						ai() {
+							return 3;
+						},
 					},
 					{
 						str: "获得四张装备牌",
@@ -11833,6 +11977,9 @@ const skills = {
 							if (cards.length) {
 								await player.gain(cards, "draw", "log");
 							}
+						},
+						ai() {
+							return 2;
 						},
 					},
 					{
@@ -11852,6 +11999,9 @@ const skills = {
 								await player.gain(cards, "draw", "log");
 							}
 						},
+						ai() {
+							return 1;
+						},
 					},
 					{
 						str: "获得三张防具牌",
@@ -11869,6 +12019,9 @@ const skills = {
 							if (cards.length) {
 								await player.gain(cards, "draw", "log");
 							}
+						},
+						ai() {
+							return 1;
 						},
 					},
 					{
@@ -11888,6 +12041,9 @@ const skills = {
 							if (cards.length) {
 								await player.gain(cards, "draw", "log");
 							}
+						},
+						ai() {
+							return 1;
 						},
 					},
 					{
@@ -11916,6 +12072,9 @@ const skills = {
 								await player.gain(cards, "draw", "log");
 							}
 						},
+						ai() {
+							return 4;
+						},
 					},
 					{
 						str: "获得五张锦囊牌",
@@ -11933,6 +12092,9 @@ const skills = {
 							if (cards.length) {
 								await player.gain(cards, "draw", "log");
 							}
+						},
+						ai() {
+							return 3.5;
 						},
 					},
 					{
@@ -11952,6 +12114,9 @@ const skills = {
 								await player.gain(cards, "draw", "log");
 							}
 						},
+						ai() {
+							return 4;
+						},
 					},
 					{
 						str: "获得五张延时锦囊牌",
@@ -11969,6 +12134,9 @@ const skills = {
 							if (cards.length) {
 								await player.gain(cards, "draw", "log");
 							}
+						},
+						ai() {
+							return 4;
 						},
 					},
 					{
@@ -11995,6 +12163,9 @@ const skills = {
 									await player.gain(list, "draw", "log");
 								}
 							}
+						},
+						ai() {
+							return 3;
 						},
 					},
 					{
@@ -12034,6 +12205,9 @@ const skills = {
 								await game.delayx();
 							}
 						},
+						ai(player) {
+							return player.getUseValue("shunshou_copy", false, false);
+						},
 					},
 					{
 						str: "选择至少两名角色，令这些角色顺时针各对你此法选择的剩余角色使用一张【杀】",
@@ -12057,6 +12231,9 @@ const skills = {
 									}
 								}
 							}
+						},
+						ai() {
+							return 4;
 						},
 					},
 					{
@@ -12170,6 +12347,9 @@ const skills = {
 								}
 							}
 						},
+						ai() {
+							return 3;
+						},
 					},
 					{
 						str: "选择任意名角色，令这些角色各随机失去一个非初始技能，然后随机获得两个技能",
@@ -12203,6 +12383,9 @@ const skills = {
 									}
 								}
 							}
+						},
+						ai() {
+							return 2;
 						},
 					},
 					{
@@ -12242,6 +12425,9 @@ const skills = {
 										}
 									});
 							}
+						},
+						ai() {
+							return 3;
 						},
 					},
 					{
@@ -12283,6 +12469,9 @@ const skills = {
 										}
 									});
 							}
+						},
+						ai() {
+							return 4;
 						},
 					},
 					{
@@ -12900,12 +13089,12 @@ const skills = {
 				charlotte: true,
 				init(player, skill) {
 					player.setStorage(
-						skill, 
+						skill,
 						{
 							shaUsable: 0,
 							maxHandcard: 0,
 							draw: 0,
-						}, 
+						},
 						true
 					);
 				},
