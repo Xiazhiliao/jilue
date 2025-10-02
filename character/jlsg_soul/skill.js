@@ -7748,7 +7748,7 @@ const skills = {
 				},
 				随机弃置四张牌: {
 					content: async function (event, trigger, player) {
-						let num = playevent.targeter.countDiscardableCards(event.target, "he");
+						let num = event.target.countDiscardableCards(event.target, "he");
 						if (num > 0) {
 							await event.target.randomDiscard(Math.min(num, 4));
 						}
