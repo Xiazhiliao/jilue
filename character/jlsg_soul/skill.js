@@ -13793,7 +13793,6 @@ const skills = {
 		derivation: ["jlsg_qixian_faq"],
 		init(player, skill) {
 			if (!_status.gameStarted || !player.hasSkill(skill) || player.isTempBanned(skill)) {
-			if (!_status.gameStarted || !player.hasSkill(skill) || player.isTempBanned(skill)) {
 				return;
 			}
 			const next = game.createEvent("jlsg_qixian_start", false, get.event());
