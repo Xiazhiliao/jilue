@@ -10669,9 +10669,12 @@ const skills = {
 				.set(
 					"choice",
 					(function () {
+						if (!player.countExpansions("jlsg_zhuxing")) {
+							return player.playerid;
+						}
 						const targets = game.filterPlayer().reduce((list, current) => {
 							let effect = get.effect(current, trigger.card, player, player);
-							list[current.playerid]??= effect;
+							list[current.playerid] ??= effect;
 							return list;
 						}, {});
 						const num = Math.max(...Object.values(targets));
@@ -10971,7 +10974,7 @@ const skills = {
 					}
 				}
 				if (skip) {
-					targets = game.filterPlayer(current => (filter||lib.filter.all)(null, player, current));
+					targets = game.filterPlayer(current => (filter || lib.filter.all)(null, player, current));
 				} else {
 					if (targets) {
 						targets.sortBySeat(_status.currentPhase);
