@@ -10820,7 +10820,7 @@ const skills = {
 				if (event.getRand() < 0.5) {
 					const skills = get
 						.gainableSkills((info, skill, character) => {
-							if (character.indexOf("zuoce") > -1 || character.indexOf("xushao")) {
+							if (character.indexOf("zuoce") > -1 || character.indexOf("xushao") > -1) {
 								return false;
 							} else if (trigger.player.hasSkill(skill, null, false, false)) {
 								return false;
@@ -10890,7 +10890,7 @@ const skills = {
 								}
 								return i.ai(trigger.player);
 							});
-							let index = aiList.indexOf(Math.max(...aiList));
+							return aiList.indexOf(Math.max(...aiList));
 						})()
 					);
 				if (effectChoose.control != "cancel2") {
@@ -11047,7 +11047,7 @@ const skills = {
 						str: "获得一张【诸葛连弩】、一张进攻马、三张随机属性【杀】",
 						cardList: {
 							zhuge: 1,
-							attackHorse: 1,
+							equip4: 1,
 							"||sha|random": 3,
 						},
 					},
@@ -11235,7 +11235,7 @@ const skills = {
 							chooseToGive: [true, 4, "player"],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "shunshou_copy2" }, player)));
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "shunshou_copy2" }, player)));
 						},
 					},
 					{
@@ -11254,7 +11254,7 @@ const skills = {
 							chooseToGive: [true, 2, "player"],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "shunshou_copy2" }, player))) * 0.9;
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "shunshou_copy2" }, player))) * 0.9;
 						},
 					},
 					{
@@ -11284,7 +11284,7 @@ const skills = {
 							chooseToDiscard: [true, 6],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player)));
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player)));
 						},
 					},
 					{
@@ -11303,7 +11303,7 @@ const skills = {
 							chooseToDiscard: [true, 4],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player))) * 0.9;
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player))) * 0.9;
 						},
 					},
 					{
@@ -11324,7 +11324,7 @@ const skills = {
 							link: [],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "tiesuo" }, player))) * 0.9;
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "tiesuo" }, player))) * 0.9;
 						},
 					},
 					{
@@ -11347,7 +11347,7 @@ const skills = {
 							turnOver: [],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.threaten(current, player, current.hp)));
+							return Math.max(...game.filterPlayer().map(current => get.threaten(current, player, current.hp)));
 						},
 					},
 					{
@@ -11357,7 +11357,7 @@ const skills = {
 							damage: [2],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player)));
+							return Math.max(...game.filterPlayer().map(current => get.damageEffect(current, player)));
 						},
 					},
 					{
@@ -11367,7 +11367,7 @@ const skills = {
 							damage: [2, "thunder"],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player, player, "thunder")));
+							return Math.max(...game.filterPlayer().map(current => get.damageEffect(current, player, player, "thunder")));
 						},
 					},
 					{
@@ -11377,7 +11377,7 @@ const skills = {
 							damage: [2, "fire"],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player, player, "fire")));
+							return Math.max(...game.filterPlayer().map(current => get.damageEffect(current, player, player, "fire")));
 						},
 					},
 					{
@@ -11387,7 +11387,7 @@ const skills = {
 							damage: [1],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player))) * 0.9;
+							return Math.max(...game.filterPlayer().map(current => get.damageEffect(current, player))) * 0.9;
 						},
 					},
 					{
@@ -11397,7 +11397,7 @@ const skills = {
 							damage: ["thunder"],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player, player, "thunder"))) * 0.9;
+							return Math.max(...game.filterPlayer().map(current => get.damageEffect(current, player, player, "thunder"))) * 0.9;
 						},
 					},
 					{
@@ -11407,7 +11407,7 @@ const skills = {
 							damage: ["fire"],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.damageEffect(current, player, player, "fire"))) * 0.9;
+							return Math.max(...game.filterPlayer().map(current => get.damageEffect(current, player, player, "fire"))) * 0.9;
 						},
 					},
 					{
@@ -11447,7 +11447,7 @@ const skills = {
 							loseHp: [2],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "losehp" }, player)));
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "losehp" }, player)));
 						},
 					},
 					{
@@ -11457,7 +11457,7 @@ const skills = {
 							loseHp: [1],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "losehp" }, player))) * 0.9;
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "losehp" }, player))) * 0.9;
 						},
 					},
 					{
@@ -11473,11 +11473,11 @@ const skills = {
 					{
 						str: "令一名角色减少2点体力上限",
 						content: {
-							chooseTarget: [true, 1, true, () => target => -get.attitude(get.player(), target) * target.maxHp],
+							chooseTarget: [true, 1, () => true, target => -get.attitude(get.player(), target) * target.maxHp],
 							loseMaxHp: [2],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => -get.attitude(player, current) * current.maxHp));
+							return Math.max(...game.filterPlayer().map(current => -get.attitude(player, current) * current.maxHp));
 						},
 					},
 					{
@@ -11487,7 +11487,7 @@ const skills = {
 							loseMaxHp: [1],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => -get.attitude(player, current) * current.maxHp)) * 0.9;
+							return Math.max(...game.filterPlayer().map(current => -get.attitude(player, current) * current.maxHp)) * 0.9;
 						},
 					},
 					{
@@ -11514,7 +11514,7 @@ const skills = {
 							removeSkills: [2],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => -get.attitude(player, current) * current.getSkills(null, false, false).length));
+							return Math.max(...game.filterPlayer().map(current => -get.attitude(player, current) * current.getSkills(null, false, false).length));
 						},
 					},
 					{
@@ -11531,7 +11531,7 @@ const skills = {
 							removeSkills: [1],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => -get.attitude(player, current) * current.getSkills(null, false, false).length)) * 1.1;
+							return Math.max(...game.filterPlayer().map(current => -get.attitude(player, current) * current.getSkills(null, false, false).length)) * 1.1;
 						},
 					},
 				],
@@ -11707,7 +11707,7 @@ const skills = {
 							draw: [6],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "draw" }, player)));
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "draw" }, player)));
 						},
 					},
 					{
@@ -11717,7 +11717,7 @@ const skills = {
 							draw: [4],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "draw" }, player))) * 1.1;
+							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "draw" }, player))) * 1.1;
 						},
 					},
 					{
@@ -11737,7 +11737,7 @@ const skills = {
 							recover: [3],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.recoverEffect(current, player)));
+							return Math.max(...game.filterPlayer().map(current => get.recoverEffect(current, player)));
 						},
 					},
 					{
@@ -11747,7 +11747,7 @@ const skills = {
 							recover: [2],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.recoverEffect(current, player))) * 1.1;
+							return Math.max(...game.filterPlayer().map(current => get.recoverEffect(current, player))) * 1.1;
 						},
 					},
 					{
