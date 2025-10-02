@@ -10863,7 +10863,7 @@ const skills = {
 					}
 				}
 				for (let i in record) {
-					const info = info;
+					const info = record[i];
 					if (!info.prompt) {
 						info.prompt = info.str;
 					} else if (typeof info.prompt == "function") {
@@ -10898,14 +10898,14 @@ const skills = {
 								}
 								return i.ai(trigger.player);
 							});
-							let index = aiList.indexOf(Max.max(...aiList));
+							let index = aiList.indexOf(Math.max(...aiList));
 						})()
 					);
 				if (effectChoose.control != "cancel2") {
 					const { str, prompt, key, cardList, content } = record[list.indexOf(effectChoose.control)];
 					game.log(trigger.player, "获得的效果为", `#r${get.plainText(str)}`);
 					const next = game.createEvent("jlsg_lingze_xuyuan", false);
-					next.player = player;
+					next.player = trigger.player;
 					next.prompt = prompt;
 					next.key = key;
 					if (cardList) {
@@ -10979,7 +10979,7 @@ const skills = {
 					}
 				}
 				if (skip) {
-					targets = game.filterPlayer(current => filter?.(_, player, current) || true);
+					targets = game.filterPlayer(current => (filter||lib.filter.all)(null, player, current));
 				} else {
 					if (targets) {
 						targets.sortBySeat(_status.currentPhase);
@@ -11235,7 +11235,7 @@ const skills = {
 								1,
 								(_, player, target) => target != player && target.countGainableCards(player, "he"),
 								target => {
-									let num = Math.min(target.countGainableCards(player, "he"), 4);
+									let num = Math.min(target.countGainableCards(get.player(), "he"), 4);
 									return num * get.effect(target, { name: "shunshou_copy2" }, get.player());
 								},
 							],
@@ -11254,7 +11254,7 @@ const skills = {
 								[1, 2],
 								(_, player, target) => target != player && target.countGainableCards(player, "he"),
 								target => {
-									let num = Math.min(target.countGainableCards(player, "he"), 2);
+									let num = Math.min(target.countGainableCards(get.player(), "he"), 2);
 									return num * get.effect(target, { name: "shunshou_copy2" }, get.player());
 								},
 							],
@@ -11292,7 +11292,7 @@ const skills = {
 							chooseToDiscard: [true, 6],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "huohe_copy2" }, player)));
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player)));
 						},
 					},
 					{
@@ -11311,7 +11311,7 @@ const skills = {
 							chooseToDiscard: [true, 4],
 						},
 						ai(player) {
-							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "huohe_copy2" }, player))) * 0.9;
+							return Math.max(game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player))) * 0.9;
 						},
 					},
 					{
@@ -11516,7 +11516,7 @@ const skills = {
 								1,
 								(_, __, target) => target.getSkills(null, false, false).length,
 								target => {
-									return -get.attitude(target, get.player) * target.getSkills(null, false, false).length;
+									return -get.attitude(target, get.player()) * target.getSkills(null, false, false).length;
 								},
 							],
 							removeSkills: [2],
@@ -11533,7 +11533,7 @@ const skills = {
 								[1, 2],
 								(_, __, target) => target.getSkills(null, false, false).length,
 								target => {
-									return -get.attitude(target, get.player) * target.getSkills(null, false, false).length;
+									return -get.attitude(target, get.player()) * target.getSkills(null, false, false).length;
 								},
 							],
 							removeSkills: [1],
@@ -12960,7 +12960,7 @@ const skills = {
 					"纵玄",
 				],
 			};
-			list.chaos.addArray(list.recover.concat(list.damage)).unique();
+			list["混沌"].addArray(list["征伐"].concat(list["宁息"])).unique();
 			delete this.typeSkills;
 			this.typeSkills = list;
 			return list;
@@ -13044,7 +13044,7 @@ const skills = {
 			return cardList;
 		},
 		subSkill: {
-			effect: {
+			buff: {
 				charlotte: true,
 				init(player, skill) {
 					player.setStorage(
@@ -13059,12 +13059,12 @@ const skills = {
 				},
 				onremove: true,
 				mod: {
-					maxHandcardBase(player, num) {
-						return num + player.storage?.jlsg_lingze_effect?.maxHandcard;
+					maxHandcard(player, num) {
+						return num + player.storage?.jlsg_lingze_buff?.maxHandcard;
 					},
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
-							return num + player.storage?.jlsg_lingze_effect?.shaUsable;
+							return num + player.storage?.jlsg_lingze_buff?.shaUsable;
 						}
 					},
 				},
@@ -13098,12 +13098,12 @@ const skills = {
 				},
 				trigger: { player: "phaseDrawBegin1" },
 				filter(event, player) {
-					return !event.numFixed && player.storage?.jlsg_lingze_effect?.draw > 0;
+					return !event.numFixed && player.storage?.jlsg_lingze_buff?.draw > 0;
 				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					trigger.num += player.storage.jlsg_lingze_effect.draw;
+					trigger.num += player.storage.jlsg_lingze_buff.draw;
 				},
 			},
 		},
