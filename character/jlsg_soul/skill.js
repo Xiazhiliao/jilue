@@ -13793,6 +13793,7 @@ const skills = {
 		derivation: ["jlsg_qixian_faq"],
 		init(player, skill) {
 			if (!_status.gameStarted || !player.hasSkill(skill) || player.isTempBanned(skill)) {
+			if (!_status.gameStarted || !player.hasSkill(skill) || player.isTempBanned(skill)) {
 				return;
 			}
 			const next = game.createEvent("jlsg_qixian_start", false, get.event());
@@ -14001,11 +14002,7 @@ const skills = {
 						content: async function (event, trigger, player) {
 							const cards = event.target.getGainableCards(player, "he");
 							if (cards.length) {
-<<<<<<< HEAD
 								await player.gain(cards.randomGets(event.key));
-=======
-								await player.gain(event.key);
->>>>>>> b996e8137b6c1387e21b83d7640dbe15be98a35c
 							}
 						},
 						ai(volume, key, player, target) {
