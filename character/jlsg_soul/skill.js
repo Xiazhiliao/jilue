@@ -10822,12 +10822,11 @@ const skills = {
 						type = "混沌";
 						break;
 				}
-				let record = Object.keys(getEffects[type]).randomGets(3),
+				let record = Object.keys(getEffects[type]).randomGets(3).map(i => getEffects[type][i]),
 					card = createTempCard(name);
 				if (card) {
 					await trigger.player.gain(card, "draw", "log");
 				}
-				record = record.map(i => getEffects[type][i]);
 				//手动添加“随机技能”选项
 				if (event.getRand() < 0.5) {
 					const skills = get
@@ -12898,22 +12897,28 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				charlotte: true,
+				init(player, skill) {
+					player.setStorage(
+						skill, 
+						{
+							shaUsable: 0,
+							maxHandcard: 0,
+							draw: 0,
+						}, 
+						true
+					);
+				},
+				onremove: true,
 				mod: {
-					maxHandcardBase: function (player, num) {
-						return num + player.storage.jlsg_lingze_effect.maxHandcard;
+					maxHandcardBase(player, num) {
+						return num + player.storage?.jlsg_lingze_effect?.maxHandcard;
 					},
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
-							return num + player.storage.jlsg_lingze_effect.sha;
+							return num + player.storage?.jlsg_lingze_effect?.shaUsable;
 						}
 					},
-				},
-				init(player) {
-					player.storage.jlsg_lingze_effect = {
-						sha: 0,
-						maxHandcard: 0,
-						draw: 0,
-					};
 				},
 				mark: true,
 				marktext: "愿",
@@ -12922,7 +12927,7 @@ const skills = {
 						const addNewRow = lib.element.dialog.addNewRow.bind(dialog),
 							itemContainerCss = { height: "20px" },
 							map = {
-								sha: "使用杀次数",
+								shaUsable: "使用杀次数",
 								maxHandcard: "手牌上限",
 								draw: "额定摸牌数",
 							};
@@ -12945,7 +12950,7 @@ const skills = {
 				},
 				trigger: { player: "phaseDrawBegin1" },
 				filter(event, player) {
-					return !event.numFixed && player.storage.jlsg_lingze_effect.draw > 0;
+					return !event.numFixed && player.storage?.jlsg_lingze_effect?.draw > 0;
 				},
 				forced: true,
 				popup: false,
