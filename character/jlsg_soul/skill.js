@@ -10707,7 +10707,7 @@ const skills = {
 		group: ["jlsg_zhuxing_begin"],
 		subSkill: {
 			begin: {
-				audio: "ext:极略/audio/skill:2",
+				audio: "jlsg_zhuxing",
 				trigger: { global: "phaseBegin" },
 				filter(event, player) {
 					if (!event.player.countExpansions("jlsg_zhuxing")) {
