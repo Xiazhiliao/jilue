@@ -10671,17 +10671,9 @@ const skills = {
 					(function () {
 						const targets = game.filterPlayer().reduce((list, current) => {
 							let effect = get.effect(current, trigger.card, player, player);
-							if (current.countExpansions("jlsg_zhuxing") > 3) {
-								effect = -114514;
-							}
-							if (!list[current.playerid]) {
-								list[current.playerid] = effect;
-							}
+							list[current.playerid]??= effect;
 							return list;
 						}, {});
-						if (targets[player.playerid] <= 0) {
-							targets[player.playerid] = -get.effect(player, trigger.card, player, player) - 1;
-						}
 						const num = Math.max(...Object.values(targets));
 						return Object.keys(targets).find(i => targets[i] == num);
 					})()
@@ -10856,8 +10848,8 @@ const skills = {
 							content: async function (event, trigger, player) {
 								await player.addSkills(event.key.skills);
 							},
-							effect() {
-								return 4;
+							ai() {
+								return 20;
 							},
 						};
 					}
