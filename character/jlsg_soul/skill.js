@@ -13986,7 +13986,7 @@ const skills = {
 							}
 						},
 						ai(volume, key, player, target) {
-							return get.attitude(player, target);
+							return get.attitude(player, target) * (20 - target.countCards("h"));
 						},
 					},
 					black: {
@@ -14326,13 +14326,6 @@ const skills = {
 				if (key == "maxHandcard") {
 					return translation.indexOf("手牌上限") > -1;
 				} else if (key == "draw") {
-					if (info.trigger) {
-						for (let role in info.trigger) {
-							if (info.trigger[role] == "phaseDrawBegin2" || (Array.isArray(info.trigger[role]) && info.trigger[role].includes("phaseDrawBegin2"))) {
-								return true;
-							}
-						}
-					}
 					if (translation.indexOf("额定摸牌数") > -1) {
 						return true;
 					} else if (translation.indexOf("摸牌阶段") > -1) {
@@ -14341,18 +14334,26 @@ const skills = {
 						}
 						return true;
 					}
+					if (info.trigger) {
+						for (let role in info.trigger) {
+							if (Array.isArray(info.trigger[role])) {
+								if (info.trigger[role].some(i => i.indexOf("phaseDraw") > -1)) {
+									return true;
+								}
+							} else if (info.trigger[role].indexOf("phaseDraw") > -1) {
+								return true;
+							}
+						}
+					}
 				} else if (key == "shaUsable") {
 					if (translation.indexOf("杀") == -1) {
 						return false;
-					}
-					{
-						if (translation.indexOf("的次数上限") > -1) {
-							return true;
-						} else if (translation.indexOf("的使用次数上限") > -1) {
-							return true;
-						} else if (translation.indexOf("且次数上限") > -1) {
-							return true;
-						}
+					} else if (translation.indexOf("的次数上限") > -1) {
+						return true;
+					} else if (translation.indexOf("的使用次数上限") > -1) {
+						return true;
+					} else if (translation.indexOf("且次数上限") > -1) {
+						return true;
 					}
 				} else if (key == "maxHp") {
 					return translation.indexOf("体力上限") > -1;
