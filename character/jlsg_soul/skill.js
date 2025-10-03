@@ -12997,6 +12997,9 @@ const skills = {
 			} else {
 				const type = get.type2(name, false);
 				const cardInfo = list[type].filter(i => i[2] == name).randomGet();
+				if (!cardInfo?.length) {
+					return;
+				}
 				suit = cardInfo[0];
 				nature = cardInfo[3] || null;
 				number = cardInfo[1];
