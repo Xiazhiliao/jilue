@@ -14004,7 +14004,7 @@ const skills = {
 						content: async function (event, trigger, player) {
 							const cards = event.target.getGainableCards(player, "he");
 							if (cards.length) {
-								await player.gain(cards.randomGets(event.key));
+								await player.gain(event.target, cards.randomGets(event.key), "giveAuto");
 							}
 						},
 						ai(volume, key, player, target) {
