@@ -540,7 +540,7 @@ export async function precontent(config, originalPack) {
 			}
 			let blobMap = new Map(required.map((f, i) => [f.sha, blobs[i]]));
 			if (!game.download) {
-				throw "Not implemented";
+				throw new Error("Not implemented");
 			}
 			cNode.innerHTML += " 成功<br>请酌情等待五秒后再重启不是不可以探测安装完了但是我太懒了";
 			console.log("writing files");

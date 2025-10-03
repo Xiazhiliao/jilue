@@ -13,6 +13,7 @@ let changelog = `
 <a onclick="if (jlsg) jlsg.showRepo()" style="cursor: pointer;text-decoration: underline;">
 Visit Repository</a><br>
 群：702142668<br>
+备用群：1058928074<br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
 汇报bug点我</span><br>
@@ -26,16 +27,6 @@ style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline
 &ensp; 对SR武将进行翻修（张辽、甄姬、许诸、司马懿、郭嘉、吕布、华佗、貂蝉、孙尚香、大乔、黄盖、吕蒙）<br>
 &ensp; 从extension.js中拆分help，并补充相关信息（许愿、临时牌）<br>
 <span style="font-size: large;">历史：</span><br>
-2025.05.08更新<br>
-&ensp; 修复bug（刚直、玲珑、武志、精策、扼绝）<br>
-&ensp; 优化技能（悍勇、反骨、魔兽）<br>
-2025.04.27更新<br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SP神关羽</div><br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="orangemm">万魂归寂</div><br>
-&ensp; 修复bug（灵泽、三绝、反骨、扶汉、才遇、枕戈）<br>
-&ensp; 优化（草船借箭、通天）<br>
-&ensp; 武将原画、语音归类<br>
-&ensp; 拆分extension.js文件<br>
 `;
 
 export let type = "extension";
