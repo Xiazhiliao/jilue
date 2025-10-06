@@ -3305,7 +3305,7 @@ const skills = {
 								if (!current.hasSkill("jlsgsy_jinmie")) {
 									return false;
 								}
-								return !current.hasSkill("counttrigger") || !current.storage.counttrigger.jlsgsy_jinmie || current.storage.counttrigger.jlsgsy_jinmie < 1;
+								return !current.hasSkill("counttrigger") || current.storage?.counttrigger?.jlsgsy_jinmie < 1;
 							});
 							if (!currents.length) {
 								return;
@@ -3498,7 +3498,9 @@ const skills = {
 						await target.addSkillBlocker(trigger.args[0]);
 					} else {
 						const skills = target.getSkills(null, false, false).randomGets(trigger.num);
-						if (!skills.length) return;
+						if (!skills.length) {
+							return;
+						}
 						const args = get.copy(trigger.args);
 						if (trigger.type == "tempBanSkill") {
 							args[0] = skills;

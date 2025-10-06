@@ -430,6 +430,10 @@ export default {
 						"step 0"
 						player.useCard({ name: "tiesuo", isCard: true }, targets);
 						"step 1"
+						if (!game.players.some(current => current.isLinked())) {
+							event.finish();
+							return;
+						}
 						player
 							.chooseTarget(true, function (_, player, target) {
 								return target.isLinked();
@@ -442,7 +446,7 @@ export default {
 								return Math.random();
 							});
 						"step 2"
-						if (result.bool) {
+						if (result.bool && result.targets?.length) {
 							result.targets[0].damage("fire");
 						}
 					},

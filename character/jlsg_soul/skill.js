@@ -5843,34 +5843,34 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
 		usable: 1,
-		filterCard: true,
-		selectCard: function () {
+		selectCard() {
 			if (ui.selected.targets.length) {
 				return [ui.selected.targets.length, Math.min(ui.selected.targets.length + 1, game.players.length - 1)];
 			}
 			return [1, Infinity];
 		},
-		check: function (card) {
-			var player = _status.event.player;
+		filterCard: lib.filter.cardDiscardable,
+		check(card) {
+			const player = _status.event.player;
 			let maxTarget = game.countPlayer(p => lib.skill.jlsg_yanlie.ai.result.target(player, p) * get.attitude(player, p) > 0);
 			if (maxTarget <= ui.selected.cards.length) {
 				return 0;
 			}
 			return 6 - get.value(card);
 		},
-		selectTarget: function () {
+		selectTarget() {
 			return ui.selected.cards.length;
 		},
 		filterTarget() {
 			return lib.filter.notMe;
 		},
-		line: false,
-		delay: false,
+		complexSelect: true,
 		multitarget: true,
 		multiline: true,
-		content: function () {
-			"step 0"
-			player.useCard(
+		line: false,
+		delay: false,
+		async content(event, trigger, player) {
+			await player.useCard(
 				{
 					name: "tiesuo",
 					isCard: true,
@@ -5878,30 +5878,24 @@ const skills = {
 						nowuxie: true,
 					},
 				},
-				targets
+				event.targets
 			);
-			"step 1"
-			player
-				.chooseTarget(true, function (_, player, target) {
-					return target.isLinked();
-				})
+			if (!game.players.some(current => current.isLinked())) {
+				return;
+			}
+			const { result } = await player
+				.chooseTarget(true, (_, player, target) => target.isLinked())
 				.set("prompt2", "对一名横置角色造成1点火焰伤害")
-				.set("ai", function (target, targets) {
-					if (target == _status.event.player) {
-						return 0;
-					}
-					return Math.random();
-				});
-			"step 2"
-			if (result.bool) {
-				result.targets[0].damage("fire");
+				.set("ai", target => get.damageEffect(target, get.player(), get, player(), "fire"));
+			if (result.bool && result.targets?.length) {
+				await result.targets[0].damage("fire");
 			}
 		},
 		ai: {
 			order: 7,
 			fireDamage: true,
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					if (target.isLinked() && !target.hasSkill("jlsg_lianti")) {
 						return 0.5;
 					}
