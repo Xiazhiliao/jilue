@@ -60,7 +60,10 @@ let jlsg_qs = {
 			onEquip: async function (event, trigger, player) {
 				const { result } = await player
 					.chooseToDiscard("h", function (card) {
-						return get.color(card) == "red";
+						if (get.color(card) != "red") {
+							return false;
+						}
+						return lib.filter.cardDiscardable.apply(this, arguments);
 					})
 					.set("ai", function (card) {
 						const player = get.player();
@@ -400,7 +403,12 @@ let jlsg_qs = {
 				const target = event.target;
 				const { result } = await target
 					.chooseToUse(player, "草船借箭：对" + get.translation(player) + "使用一张杀，或令其获得你的一张牌")
-					.set("filterCard", (card, player) => get.name(card, player) == "sha")
+					.set("filterCard", (card, player) => {
+						if (get.name(card, player) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					})
 					.set("respondTo", [player, event.card])
 					.set("targetRequired", true);
 				if (!result.bool && target.countGainableCards(player, "he") > 0) {
@@ -902,7 +910,10 @@ let jlsg_qs = {
 			async content(event, trigger, player) {
 				const { result } = await player
 					.chooseToDiscard("h", "木牛流马：请弃置一张基本牌，否则失去1点体力", function (card) {
-						return get.type(card) == "basic";
+						if (get.type(card) != "basic") {
+							return false;
+						}
+						return lib.filter.cardDiscardable.apply(this, arguments);
 					})
 					.set("ai", card => {
 						const { check, player } = get.event();
