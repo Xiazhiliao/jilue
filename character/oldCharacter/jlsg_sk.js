@@ -39,19 +39,21 @@ export default {
 					},
 					group: ["jlsg_zhengnan_damage"],
 					subSkill: {
-						audio: "jlsg_zhengnan",
-						direct: true,
-						popup: true,
-						trigger: { global: "damageEnd" },
-						filter(event, player) {
-							if (event.card?.name == "nanman") {
-								return false;
-							}
-							let evt = event.getParent("useCard", true)?.getParent(2);
-							return evt?.name === "jlsg_zhengnan" && evt?.player == player;
-						},
-						async content(event, trigger, player) {
-							await player.draw();
+						damage: {
+							audio: "jlsg_zhengnan",
+							direct: true,
+							popup: true,
+							trigger: { global: "damageEnd" },
+							filter(event, player) {
+								if (event.card?.name == "nanman") {
+									return false;
+								}
+								let evt = event.getParent("useCard", true)?.getParent(2);
+								return evt?.name === "jlsg_zhengnan" && evt?.player == player;
+							},
+							async content(event, trigger, player) {
+								await player.draw();
+							},
 						},
 					},
 					ai: {

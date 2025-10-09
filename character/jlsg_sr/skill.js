@@ -2208,12 +2208,7 @@ const skills = {
 				})
 				.set("ai", target => {
 					const player = get.player();
-					if (target.countCards("h") >= 3) {
-						return get.attitude(player, target);
-					} else if (target.countCards("h") < 2) {
-						return -get.attitude(player, target);
-					}
-					return -get.attitude(player, target);
+					return get.attitude(player, target) * target.countDiscardableCards(player, "he");
 				})
 				.forResult();
 		},

@@ -5886,7 +5886,7 @@ const skills = {
 			const { result } = await player
 				.chooseTarget(true, (_, player, target) => target.isLinked())
 				.set("prompt2", "对一名横置角色造成1点火焰伤害")
-				.set("ai", target => get.damageEffect(target, get.player(), get, player(), "fire"));
+				.set("ai", target => get.damageEffect(target, get.player(), get.player(), "fire"));
 			if (result.bool && result.targets?.length) {
 				await result.targets[0].damage("fire");
 			}
