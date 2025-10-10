@@ -15066,77 +15066,71 @@ const skills = {
 			}
 			if (evt.name != "chooseToCompare") {
 				//使用|打出
-				player.storage.jlsg_tianbian ??= Object.entries(await game.createEvent("empty", false).setContent(function () {}));
-				let args = Object.entries(evt),
-					obj = {
-						prompt: str,
-						position: "s",
-						forced: false,
-						filterCard(card, player, event) {
-							return get.event("cards").includes(card);
-						},
-						ai1(card) {
-							if (get.type(card) == "equip") {
-								return 0;
-							}
-							const evt = get.event().getParent(3),
-								player = get.event().player;
-							if (evt.type == "phase" && !player.hasValueTarget(card, null, true)) {
-								return 0;
-							}
-							if (evt && evt.ai) {
-								const tmp = _status.event;
-								_status.event = evt;
-								const result = (evt.ai || event.ai1)(card, player, evt);
-								_status.event = tmp;
-								return result;
-							}
-							return 1;
-						},
-						ai2(target) {
-							const player = get.player(),
-								card = ui.selected.cards[0];
-							return get.effect(target, card, player, player);
-						},
-					};
-				for (let arg of args) {
-					if (!obj[arg[0]] && arg[1] !== undefined && !player.storage.jlsg_tianbian.some(i => i[0] == arg[0])) {
-						obj[arg[0]] = arg[1];
+				if (!_status.emptyEvent) {
+					_status.emptyEvent = await game.createEvent("empty", false).setContent(function () {});
+					game.broadcastAll(function (info) {
+						_status.emptyEvent = info;
+					}, _status.emptyEvent);
+				}
+				const args = { ...evt };
+				for (let i in { ..._status.emptyEvent }) {
+					delete args[i];
+				}
+				for (let i in args) {
+					if (args[i] === undefined) {
+						delete args[i];
 					}
 				}
 				//重新game.check()
-				delete obj.fakeforce;
-				delete obj._checked;
-				next = player.chooseCardTarget(obj);
+				delete args.fakeforce;
+				delete args._checked;
+				next = player
+					.chooseCardTarget(args)
+					.set("ai1", card => {
+						if (get.type(card) == "equip") {
+							return 0;
+						}
+						const evt = get.event().getParent(3),
+							player = get.event().player;
+						if (evt.type == "phase" && !player.hasValueTarget(card, null, true)) {
+							return 0;
+						}
+						if (evt && evt.ai) {
+							const tmp = _status.event;
+							_status.event = evt;
+							const result = (evt.ai || event.ai1)(card, player, evt);
+							_status.event = tmp;
+							return result;
+						}
+						return 1;
+					})
+					.set("ai2", target => {
+						const player = get.player(),
+							card = ui.selected.cards[0];
+						return get.effect(target, card, player, player);
+					});
 			} else {
 				//拼点
 				const hs = player.getCards("h");
 				next = player
-					.chooseCard(str, (card, player) => get.event("cards").includes(card), "s")
+					.chooseCard()
 					.set("ai", (card, cards) => {
-						const samll = get.event().getParent().samll,
+						const samll = get.event().getParent().getTrigger().samll,
 							total = get.event("hs").concat(cards || []);
 						if (samll) {
-							return (
-								Math.min.apply(
-									Math,
-									total.map(c => get.number(c))
-								) == get.number(card)
-							);
+							return Math.min(...total.map(c => get.number(c))) == get.number(card);
 						}
-						return (
-							Math.max.apply(
-								Math,
-								total.map(c => get.number(c))
-							) == get.number(card)
-						);
+						return Math.max(...total.map(c => get.number(c))) == get.number(card);
 					})
-					.set("hs", hs.length == 1 ? [] : hs);
+					.set("hs", hs.length <= 1 ? [] : hs);
 			}
+			//公共部分
+			next.set("prompt", str);
+			next.set("position", "s");
+			next.set("filterCard", (card, player, event) => get.event("cards")?.includes(card));
 			next.set(
 				"cards",
 				cardsx.filter(card => {
-					//公共部分
 					if (evt.name != "chooseToCompare") {
 						if (get.type(card) != "basic") {
 							return false;
@@ -15208,9 +15202,7 @@ const skills = {
 				if (!card) {
 					return;
 				}
-				if (!trigger.fixedResult) {
-					trigger.fixedResult = {};
-				}
+				trigger.fixedResult ??= {};
 				trigger.fixedResult[player.playerid] = card;
 				await game.cardsGotoOrdering(card);
 			}
