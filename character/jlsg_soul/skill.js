@@ -13942,7 +13942,21 @@ const skills = {
 							}
 						},
 						ai(volume, key, player, target) {
-							return get.attitude(player, target);
+							const att = get.attitude(player, target);
+							if (["maxHandcard", "shaUsable", "attack"].includes(key)) {
+								return att * target.countCards("h");
+							} else if (key == "draw") {
+								return att * (10 - target.countCards("h"));
+							} else if (key == "maxHp") {
+								if (target == player) {
+									if (player.maxHp < 7) {
+										return 114514;
+									}
+									return -1919810;
+								}
+								return att * (10 - target.maxHp);
+							}
+							return att;
 						},
 					},
 					black: {
@@ -13972,7 +13986,7 @@ const skills = {
 									return get.attitude(player, target);
 								}
 							}
-							return -get.attitude(player, target);
+							return -get.attitude(player, target) * target.countCards("h");
 						},
 					},
 				},
