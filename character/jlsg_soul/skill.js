@@ -2429,50 +2429,58 @@ const skills = {
 	},
 	jlsg_nizhan: {
 		audio: "ext:极略/audio/skill:1",
-		trigger: { global: "phaseZhunbeiBegin" },
-		forced: true,
-		filter: function (event, player) {
-			return event.player.isDamaged() || event.player.countMark("jlsg_nizhan");
-		},
 		marktext: "逆",
 		intro: {
 			content: "mark",
 		},
-		content: function () {
+		trigger: { global: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			return event.player.isDamaged() || event.player.countMark("jlsg_nizhan");
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const { syncMark } = get.info("jlsg_weizhen");
 			if (trigger.player.isDamaged()) {
 				trigger.player.addMark(event.name);
 			} else {
 				trigger.player.removeMark(event.name);
 			}
+			syncMark(trigger.player);
 		},
 	},
 	jlsg_cuifeng: {
 		audio: "ext:极略/audio/skill:1",
 		enable: "phaseUse",
 		usable: 1,
-		selectTarget: 2,
-		filter: function (event, player) {
-			return game.countPlayer(p => p.countMark("jlsg_nizhan"));
+		filter(event, player) {
+			return game.hasPlayer(current => current.hasMark("jlsg_nizhan"));
 		},
-		filterTarget: function (card, player, target) {
+		selectTarget: 2,
+		filterTarget(card, player, target) {
 			if (ui.selected.targets.length) {
 				return true;
 			}
 			return target.countMark("jlsg_nizhan");
 		},
+		complexTarget: true,
 		targetprompt: ["失去标记", "获得标记"],
 		multitarget: true,
-		content: function () {
-			"step 0"
-			targets[0].removeMark("jlsg_nizhan");
-			targets[1].addMark("jlsg_nizhan");
-			"step 1"
-			targets[0].useCard({ name: "sha", isCard: true }, targets[1], "noai", false).animate = false;
+		async content(event, trigger, player) {
+			const [loser, gainer] = event.targets,
+				{ syncMark } = get.info("jlsg_weizhen");
+			loser.removeMark("jlsg_nizhan");
+			syncMark(loser);
+			gainer.addMark("jlsg_nizhan");
+			syncMark(gainer);
+			if (loser.canUse("sha", false, false)) {
+				await loser.useCard({ name: "sha", isCard: true }, gainer, "noai", false);
+			}
 		},
 		ai: {
+			expose: 0.3,
 			order: 8,
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					if (ui.selected.targets.length == 0) {
 						return 1;
 					} else {
@@ -2480,65 +2488,75 @@ const skills = {
 					}
 				},
 			},
-			expose: 0.3,
 		},
 	},
 	jlsg_weizhen: {
 		audio: "ext:极略/audio/skill:1",
-		trigger: { global: "phaseDrawBegin2" },
-		forced: true,
-		filter: function (event, player) {
+		onremove(player, skill) {
+			if (game.hasPlayer(current => current != player && current.hasSkill(skill, null, false, false))) {
+				return;
+			}
+			for (let current of game.players) {
+				current.removeSkill("jlsg_weizhen_debuff");
+			}
+		},
+		trigger: {
+			source: "damageBegin1",
+			global: "phaseDrawBegin2",
+		},
+		filter(event, player) {
+			if (event.name == "damage") {
+				return event.player.countMark("jlsg_nizhan") >= 3;
+			}
 			if (event.numFixed) {
 				return false;
 			}
 			if (event.player == player) {
-				return game.countPlayer(p => p.countMark("jlsg_nizhan"));
+				return game.countPlayer(current => current.hasMark("jlsg_nizhan"));
 			}
 			return event.player.countMark("jlsg_nizhan") >= 2;
 		},
-		content: function () {
+		forced: true,
+		async content(event, trigger, player) {
+			if (trigger.name == "damage") {
+				trigger.num++;
+				return;
+			}
 			if (player == trigger.player) {
-				trigger.num += game.countPlayer(p => p.hasMark("jlsg_nizhan"));
+				trigger.num += game.countPlayer(current => current.hasMark("jlsg_nizhan"));
 			}
 			if (trigger.player.countMark("jlsg_nizhan") >= 2) {
-				--trigger.num;
+				trigger.num--;
 			}
 		},
-		group: "jlsg_weizhen2",
-		// get global() {
-		//   debugger;
-		//   return 'jlsg_weizhen3';
-		// }
-		global: "jlsg_weizhen3",
-		init: function (player, skill) {
-			// global skill will not run init, so we'll move here
-			for (var p of game.players) {
-				p.addSkillBlocker("jlsg_weizhen3");
+		syncMark(player) {
+			if (!game.hasPlayer(current => current.hasSkill("jlsg_weizhen", null, false, false))) {
+				return;
+			}
+			if (player.countMark("jlsg_nizhan") >= 4) {
+				player.addSkill("jlsg_weizhen_debuff");
+			} else {
+				player.removeSkill("jlsg_weizhen_debuff");
 			}
 		},
-		onremove: function (player, skill) {
-			for (var p of game.players) {
-				p.removeSkillBlocker("jlsg_weizhen3");
-			}
-		},
-	},
-	jlsg_weizhen2: {
-		audio: "jlsg_weizhen",
-		charlotte: true,
-		trigger: { source: "damageBegin1" },
-		filter: function (event, player) {
-			return event.player.countMark("jlsg_nizhan") >= 3;
-		},
-		forced: true,
-		content: function () {
-			trigger.num++;
-		},
-	},
-	jlsg_weizhen3: {
-		audio: "jlsg_weizhen",
-		charlotte: true,
-		skillBlocker: function (skill, player) {
-			return !lib.skill[skill].charlotte && !get.is.locked(skill, player) && player.countMark("jlsg_nizhan") >= 4;
+		subSkill: {
+			debuff: {
+				audio: "jlsg_weizhen",
+				charlotte: true,
+				init(player, skill) {
+					player.addSkillBlocker(skill);
+				},
+				onremove(player, skill) {
+					player.removeSkillBlocker(skill);
+				},
+				skillBlocker(skill, player) {
+					if (player.countMark("jlsg_nizhan") < 4) {
+						return false;
+					}
+					const info = get.info(skill);
+					return !info?.charlotte && !info?.persevereSkill && !get.is.locked(skill, player);
+				},
+			},
 		},
 	},
 	jlsg_zhiming: {

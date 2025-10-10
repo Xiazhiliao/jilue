@@ -92,8 +92,6 @@ const translates = {
 	jlsg_cuifeng: "摧锋",
 	jlsg_cuifeng_info: "出牌阶段限一次，你可以移动场上的一枚「逆」，然后视为失去「逆」的角色对获得「逆」的角色使用一张不计入次数限制的【杀】。",
 	jlsg_weizhen: "威震",
-	jlsg_weizhen2: "威震",
-	jlsg_weizhen3: "威震",
 	jlsg_weizhen_info: "锁定技，若一名角色的「逆」数至少为：1，你摸牌阶段摸牌数+1；2，其摸牌阶段摸牌数-1；3，你对其造成的伤害+1；4，其非锁定技无效。",
 	jlsgsoul_sp_zhangliao: "SP神张辽",
 	jlsg_fengying: "锋影",
