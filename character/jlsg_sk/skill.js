@@ -15081,6 +15081,8 @@ const skills = {
 						delete args[i];
 					}
 				}
+				args.selectTarget ??= [0, 0];
+				args.filterTarget ??= false;
 				//重新game.check()
 				delete args.fakeforce;
 				delete args._checked;

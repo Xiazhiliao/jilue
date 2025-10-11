@@ -14551,6 +14551,9 @@ const skills = {
 						return false;
 					}
 					if (event.name == "useCard") {
+						if (!get.is.ordinaryCard(event.card)) {
+							return false;
+						}
 						if (typeof event.card.number != "number" || event.card.number < 1) {
 							return false;
 						} else if (!["red", "black"].includes(get.color(event.card, false))) {
