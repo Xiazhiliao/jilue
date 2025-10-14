@@ -3405,7 +3405,7 @@ const skills = {
 		filter(event, player) {
 			if (event.card.name != "sha" && get.type(event.card) != "trick") {
 				return false;
-			} else if (get.tag("damage", event.card) < 1) {
+			} else if (get.tag(event.card, "damage") < 1) {
 				return false;
 			}
 			return event.getParent().triggeredTargets4.length == 1;
