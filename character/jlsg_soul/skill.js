@@ -6390,14 +6390,25 @@ const skills = {
 				logTarget: "player",
 				async content(event, trigger, player) {
 					if (trigger.name != "changeSkills") {
+						if (trigger.name == "recover") {
+							const next = game.createEvent("jlsg_jieying_afterCheck", false, event);
+							next.player = trigger.player
+							event.next.remove(next);
+							trigger.after.add(next);
+							next.setContent(async function (event, trigger, player) {
+								if (player.hp < 1 && !player.nodying) {
+									await player.dying();
+								}
+							});
+						}
 						trigger.player.removeMark("jlsg_jieying");
 						trigger.player = player;
-						return;
+					} else {
+						let changed = trigger.addSkill;
+						trigger.addSkill = [];
+						trigger.player.removeMark("jlsg_jieying");
+						await player.addSkills(changed);
 					}
-					let changed = trigger.addSkill;
-					trigger.addSkill = [];
-					trigger.player.removeMark("jlsg_jieying");
-					await player.addSkills(changed);
 				},
 			},
 		},
@@ -14217,8 +14228,8 @@ const skills = {
 							key: "all",
 						},
 						content: async function (event, trigger, player) {
-							let cards = event.target.getDiscardableCards(event.target, "he", card => {
-								if (!["basic", "trick"].includes(get.type2(card, event.target))) {
+							const cards = event.target.getDiscardableCards(event.target, "he", card => {
+								if (!["basic", "trick"].includes(get.type2(card))) {
 									return false;
 								}
 								return !get.tag(card, "damage");
@@ -14226,8 +14237,8 @@ const skills = {
 							if (!cards.length) {
 								return;
 							}
-							cards = event.key == 2 ? cards.randomGets(2) : cards;
-							await event.target.discard(cards);
+							const cards2 = event.key == "all" ? cards : cards.randomGets(2);
+							await event.target.discard(cards2);
 						},
 						ai(volume, key, player, target) {
 							return get.effect(target, { name: "guohe_copy2" }, player, player) * target.countDiscardableCards(target, "he");
@@ -14279,8 +14290,8 @@ const skills = {
 							key: "all",
 						},
 						content: async function (event, trigger, player) {
-							let cards = event.target.getDiscardableCards(event.target, "he", card => {
-								if (!["basic", "trick"].includes(get.type2(card, event.target))) {
+							const cards = event.target.getDiscardableCards(event.target, "he", card => {
+								if (!["basic", "trick"].includes(get.type2(card))) {
 									return false;
 								}
 								return get.tag(card, "damage");
@@ -14288,8 +14299,8 @@ const skills = {
 							if (!cards.length) {
 								return;
 							}
-							cards = event.key == 2 ? cards.randomGets(2) : cards;
-							await event.target.discard(cards);
+							const cards2 = event.key == "all" ? cards : cards.randomGets(2);
+							await event.target.discard(cards2);
 						},
 						ai(volume, key, player, target) {
 							return get.effect(target, { name: "guohe_copy2" }, player, player) * target.countDiscardableCards(target, "he");
