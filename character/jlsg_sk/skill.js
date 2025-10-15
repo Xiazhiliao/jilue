@@ -15073,6 +15073,7 @@ const skills = {
 					}, _status.emptyEvent);
 				}
 				const args = { ...evt };
+				args.originName = args.name;
 				for (let i in { ..._status.emptyEvent }) {
 					delete args[i];
 				}
@@ -15097,16 +15098,19 @@ const skills = {
 						if (evt.type == "phase" && !player.hasValueTarget(card, null, true)) {
 							return 0;
 						}
-						if (evt && evt.ai) {
+						if (evt && (evt.ai || evt.ai1)) {
 							const tmp = _status.event;
 							_status.event = evt;
-							const result = (evt.ai || event.ai1)(card, player, evt);
+							const result = (evt.ai || evt.ai1)(card, player, evt);
 							_status.event = tmp;
 							return result;
 						}
 						return 1;
 					})
 					.set("ai2", target => {
+						if (get.event().originName == "chooseToRespond") {
+							return 1;
+						}
 						const player = get.player(),
 							card = ui.selected.cards[0];
 						return get.effect(target, card, player, player);
