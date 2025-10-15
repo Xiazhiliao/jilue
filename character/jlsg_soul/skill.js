@@ -10588,6 +10588,7 @@ const skills = {
 							return "";
 						} else {
 							return `使用牌次数上限最低为${storage}<br>
+													摸牌阶段额定摸牌数改为${storage}<br>
 													当手牌数低于${storage}时，将手牌摸至${storage}<br>
 													攻击范围最低为${storage}`;
 						}
@@ -10617,14 +10618,14 @@ const skills = {
 					},
 				},
 				trigger: {
-					player: ["loseAfter", "phaseDrawBegin1"],
+					player: ["loseAfter", "phaseDrawBegin2"],
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 				},
 				filter(event, player, name) {
 					if (!player.storage.jlsg_hualong_effect) {
 						return false;
 					}
-					if (name == "phaseDrawBegin1") {
+					if (name == "phaseDrawBegin2") {
 						return !event.numFixed;
 					}
 					let evt = event.getl(player);
@@ -10643,7 +10644,7 @@ const skills = {
 				charlotte: true,
 				async content(event, trigger, player) {
 					let num = player.storage.jlsg_hualong_effect - player.countCards("h");
-					if (event.triggername == "phaseDrawBegin1") {
+					if (event.triggername == "phaseDrawBegin2") {
 						trigger.num = player.storage.jlsg_hualong_effect;
 					} else {
 						await player.draw(num);
