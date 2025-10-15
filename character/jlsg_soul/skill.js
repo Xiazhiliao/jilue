@@ -6454,7 +6454,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.getg && event.getg?.(player)) {
-				if (event.getg(player).some(c => c.name != "muniu" && get.type(c) == "equip")) {
+				if (event.getg(player).some(c => get.type(c) == "equip")) {
 					return true;
 				}
 			}
@@ -6464,10 +6464,10 @@ const skills = {
 					evt = evt.relatedEvent || evt.getParent();
 				}
 				if (evt && evt.name != "judge") {
-					return event.cards.some(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip");
+					return event.cards.some(card => get.position(card, true) == "d" && get.type(card) == "equip");
 				}
 			} else {
-				return event.getd().some(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip");
+				return event.getd().some(card => get.position(card, true) == "d" && get.type(card) == "equip");
 			}
 			return false;
 		},
@@ -6476,7 +6476,7 @@ const skills = {
 			const cards = [],
 				gain = [];
 			if (trigger.getg && trigger.getg(player)) {
-				gain.addArray(trigger.getg(player).filter(c => c.name != "muniu" && get.type(c) == "equip"));
+				gain.addArray(trigger.getg(player).filter(c => get.type(c) == "equip"));
 				if (gain.length) {
 					const next = player.addToExpansion(gain, "give");
 					next.gaintag.add(event.name);
@@ -6489,10 +6489,10 @@ const skills = {
 					evt = evt.relatedEvent || evt.getParent();
 				}
 				if (evt && evt.name != "judge") {
-					cards.addArray(trigger.cards.filter(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip"));
+					cards.addArray(trigger.cards.filter(card => get.position(card, true) == "d" && get.type(card) == "equip"));
 				}
 			} else {
-				cards.addArray(trigger.getd().filter(card => card.name != "muniu" && get.position(card, true) == "d" && get.type(card) == "equip"));
+				cards.addArray(trigger.getd().filter(card => get.position(card, true) == "d" && get.type(card) == "equip"));
 			}
 			if (cards.length) {
 				game.log(player, "将", cards, "置于了武将牌上");
