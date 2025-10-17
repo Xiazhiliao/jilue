@@ -13852,7 +13852,7 @@ const skills = {
 	jlsg_xinghan: {
 		marktext: "汉",
 		intro: {
-			noucount: true,
+			nocount: true,
 			mark(dialog, content, player) {
 				let storage = Array.from(player.getStorage("jlsg_xinghan", new Map()).values()).slice(1);
 				if (storage?.length) {
@@ -18122,6 +18122,108 @@ const skills = {
 				player: 1,
 				target(player, target) {
 					return get.attitude(player, target);
+				},
+			},
+		},
+	},
+	jlsg_qingbei: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: { global: ["roundStart"] },
+		async cost(event, trigger, player) {
+			const control = await player
+				.chooseControl(lib.suit, "cancel2")
+				.set("prompt", get.prompt2(event.skill))
+				.set("ai", (event, player) => {
+					return get.event("check");
+				})
+				.set(
+					"check",
+					(function () {
+						const storage = player.getStorage("jlsg_qingbei_effect");
+						for (let suit of ["diamond", "heart"]) {
+							if (!(suit in storage)) {
+								return lib.suit.indexOf(suit);
+							}
+						}
+						return 0;
+					})()
+				)
+				.forResultControl();
+			event.result = {
+				bool: control != "cancel2",
+				cost_data: control,
+			};
+		},
+		async content(event, trigger, player) {
+			player.popup(event.cost_data);
+			game.log(player, "选择了", event.cost_data);
+			player.addSkill("jlsg_qingbei_effect");
+			const storage = player.getStorage("jlsg_qingbei_effect", {});
+			storage[event.cost_data] = 2;
+			player.setStorage("jlsg_qingbei_effect", storage, true);
+		},
+		getNum(event, player) {
+			const target = event.player,
+				card = event.card,
+				storage = player.getStorage("jlsg_qingbei_effect", {});
+			const suit = get.suit(card);
+			if (!(suit in storage)) {
+				return -1;
+			}
+			const historys = target.getHistory("useCard", evt => get.suit(evt.card) == suit);
+			return historys.indexOf(event);
+		},
+		subSkill: {
+			effect: {
+				audio: "jlsg_qingbei",
+				onremove: true,
+				mark: true,
+				marktext: "擎",
+				intro: {
+					nocount: true,
+					name: "剩余轮数",
+					content(storage, player) {
+						let str = [];
+						for (let suit in storage) {
+							str.push(`<li>${get.translation(suit)}：${storage[suit]}`);
+						}
+						return str.join("<br>");
+					},
+				},
+				trigger: { global: ["useCardAfter", "roundEnd"] },
+				filter(event, player) {
+					if (event.name == "useCard") {
+						let num = get.info("jlsg_qingbei").getNum(event, player);
+						return num > -1 && num < 2;
+					}
+					return true;
+				},
+				forced: true,
+				logTarget(event, player) {
+					if (event.name == "useCard") {
+						return event.player;
+					}
+					return null;
+				},
+				async content(event, trigger, player) {
+					if (trigger.name == "useCard") {
+						let num = get.info("jlsg_qingbei").getNum(trigger, player);
+						await player.draw(2 - num);
+					} else {
+						const storage = player.getStorage(event.name, {});
+						for (let suit in storage) {
+							storage[suit]--;
+							if (storage[suit] < 1) {
+								delete storage[suit];
+							}
+						}
+						player.setStorage(event.name, storage);
+						if (!Object.keys(storage).length) {
+							player.removeSkill(event.name);
+						} else {
+							player.markSkill(event.name);
+						}
+					}
 				},
 			},
 		},

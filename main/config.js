@@ -167,6 +167,29 @@ let block = {
 					}
 				},
 			},
+			jlsgsr_lvbu: {
+				jlsg_upgrade: true,
+				name: "SR吕布",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_lvbu", item);
+					if (item == "false" || Boolean(item) > 1) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_lvbu");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_lvbu")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_lvbu");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
 		},
 		sk: {
 			jlsgsk_guansuo: {

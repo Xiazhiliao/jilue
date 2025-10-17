@@ -170,6 +170,16 @@ const skills = {
 					event.info[1] = "draw|1";
 				},
 			},
+			jlsgsr_lvbu: {
+				"出【杀】次数+2": async function (event, trigger, player) {
+					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+					event.info[0] = "sha|2";
+				},
+				"摸牌数+1": async function (event, trigger, player) {
+					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+					event.info[1] = "draw|1";
+				},
+			},
 		},
 		async extraUpgrade(event, trigger, player) {
 			const { skill } = event,
@@ -1388,233 +1398,204 @@ const skills = {
 		},
 	},
 	jlsg_jiwu: {
-		audio: "ext:极略/audio/skill:true",
+		audio: ["ext:极略/audio/skill:true", "ext:极略/audio/skill/jlsg_jiwu_damage.mp3"],
 		srlose: true,
-		enable: "phaseUse",
-		usable: 1,
-		filterCard() {
-			return true;
-		},
-		selectCard() {
-			return get.select(Math.max(0, Math.min(1, _status.event.player.countCards("h") - 1)));
-		},
-		check(card) {
-			const player = get.player();
-			if (player.countCards("h") > player.maxHp) {
-				return 0;
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
 			}
-			if (get.name(card) != "sha") {
-				return 0;
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_lvbu"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
-			return player.getUseValue(card, false);
-		},
-		discard: false,
-		lose: false,
-		prompt: "选择保留的手牌",
-		async content(event, _, player) {
-			if (event.cards?.length) {
-				await player.discard(player.getCards("h").removeArray(event.cards));
-			} else if (!player.countCards("h")) {
-				await player.draw(1);
-			}
-			player.addTempSkill("jlsg_jiwu_damage");
-			player.addTempSkill("jlsg_jiwu_buff");
 		},
 		mod: {
-			selectTarget: function (card, player, range) {
-				if (card.name != "sha") {
+			attackRangeBase(player) {
+				let num = lib.card?.fangtian?.distance?.attackFrom;
+				if (typeof num != "number" || !player.hasEmptySlot(1)) {
 					return;
 				}
-				if (range[1] == -1) {
+				return Math.max(player.getEquipRange(player.getCards("e")), 1 - num);
+			},
+			selectTarget(card, player, range) {
+				if (!player.hasEmptySlot(1) || !lib.card.fangtian || player.hasSkillTag("unequip_equip1")) {
 					return;
 				}
-				if (player.countCards("e")) {
-					if (!card.cards || player.countCards("e", eCard => !card.cards.includes(eCard))) {
-						return;
+				get.info("fangtian_skill").mod.selectTarget.apply(this, arguments);
+			},
+		},
+		trigger: {
+			player: ["useCard1", "loseAfter"],
+			global: "loseAsyncAfter",
+		},
+		filter(event, player) {
+			if (event.name == "useCard") {
+				return event.card.name == "sha";
+			}
+			if (player.countCards("h")) {
+				return false;
+			}
+			if (event.type != "use" && event.getParent().name != "useCard") {
+				return false;
+			}
+			return event.getParent("useCard")?.player == player && event.getl(player)?.hs?.length > 0;
+		},
+		forced: true,
+		popup: false,
+		async content(event, trigger, player) {
+			if (trigger.name == "useCard") {
+				await player.logSkill(event.name);
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				const improve = upgradeStorage?.other?.[event.name];
+				if (trigger.jlsg_jiwu || (improve && player.getHistory("useCard").indexOf(trigger) == 0)) {
+					game.log(trigger.card, "不可响应");
+					trigger.directHit.addArray(game.players);
+					if (improve) {
+						trigger.baseDamage++;
 					}
 				}
-				range[1] += 2;
-			},
-		},
-		subSkill: {
-			damage: {
-				audio: "ext:极略/audio/skill:true",
-				trigger: { source: "damageBegin1" },
-				filter: function (event) {
-					return event.card?.name == "sha";
-				},
-				forced: true,
-				charlotte: true,
-				async content(event, trigger, player) {
-					trigger.num++;
-					player.removeSkill(event.name);
-				},
-			},
-			buff: {
-				charlotte: true,
-				mod: {
-					attackRangeBase: function (player, num) {
-						return Infinity;
-					},
-				},
-			},
-		},
-		ai: {
-			order: function () {
-				return lib.card.sha.ai.order + 0.1;
-			},
-			result: {
-				player: function (player, target) {
-					if (player.countCards("h") == 0) {
-						return 1;
-					}
-					if (player.hasSkill("jiu") || player.hasSkill("tianxianjiu")) {
-						return 3;
-					}
-					return 4 - player.countCards("h");
-				},
-			},
-			effect: {
-				target: function (card, player, target) {
-					if (get.subtype(card) == "equip1") {
-						let num = 0;
-						for (let i = 0; i < game.players.length; i++) {
-							if (get.attitude(player, game.players[i]) < 0) {
-								num++;
-								if (num > 1) {
-									return [0, 0, 0, 0];
-								}
-							}
-						}
-					}
-				},
-			},
+				if (player.hasEmptySlot(1) && lib.card.fangtian && !player.hasSkillTag("unequip_equip1")) {
+					trigger.baseDamage++;
+				}
+			} else {
+				let evt = trigger.getParent("useCard");
+				if (evt.player == player) {
+					evt.jlsg_jiwu = true;
+				}
+			}
 		},
 	},
 	jlsg_sheji: {
 		audio: "ext:极略/audio/skill:true",
 		srlose: true,
-		trigger: { global: "damageSource" },
-		filter: function (event, player) {
-			return player.countDiscardableCards(player, "he") && event.source && event.source.getEquips(1).length && event.source != player;
-		},
-		async cost(event, trigger, player) {
-			let prompt = "弃置一张牌，然后",
-				cards = trigger.source.getEquips(1).filter(card => {
-					return lib.filter.canBeGained(card, player, trigger.source);
-				});
-			if (cards.length) {
-				prompt += "获得" + get.translation(trigger.source) + "装备区中的" + get.translation(cards);
-			} else {
-				prompt += "无事发生";
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
 			}
-			event.result = await player
-				.chooseToDiscard("he", get.prompt("jlsg_sheji", trigger.source), prompt)
-				.set("ai", function (card) {
-					let eff = get.event("eff");
-					if (typeof eff === "number") {
-						return eff - get.value(card);
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_lvbu"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+			}
+		},
+		enable: "chooseToUse",
+		filter(event, player) {
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const improve = upgradeStorage?.other?.["jlsg_sheji"],
+				hs = player.getCards("h"),
+				equip1 = player.getCards("e", card => get.subtype(card) == "equip1");
+			if (improve && hs.length) {
+				for (let card of hs) {
+					if (game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
+						return false;
 					}
-					return 0;
-				})
-				.set(
-					"eff",
-					(function () {
-						let es = trigger.source.getEquips(1).filter(card => {
-							return lib.filter.canBeGained(card, player, trigger.source);
-						});
-						if (!es.length) {
-							return false;
-						}
-						if (get.attitude(player, trigger.source) > 0) {
-							return (
-								-2 *
-								es.reduce((acc, card) => {
-									return acc + get.value(card, trigger.source);
-								}, 0)
-							);
-						}
-						return es.reduce((acc, card) => {
-							return acc + get.value(card, player);
-						}, 0);
-					})()
-				)
-				.forResult();
+				}
+				if (event.filterCard(get.autoViewAs({ name: "sha", cards: hs, isCard: false }, hs), player, event)) {
+					return true;
+				}
+			}
+			if (!equip1.length) {
+				return false;
+			}
+			return equip1.some(card => event.filterCard(get.autoViewAs({ name: "sha", cards: [card], isCard: false }, [card]), player, event));
 		},
-		logTarget: "source",
-		async content(event, trigger, player) {
-			const cards = trigger.source.getEquips(1).filter(card => {
-				return lib.filter.canBeGained(card, player, trigger.source);
-			});
-			if (cards.length) {
-				await player.gain(cards, trigger.source, "give", "bySelf");
+		viewAs: {
+			name: "sha",
+		},
+		prompt(event) {
+			const player = event.player;
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const improve = upgradeStorage?.other?.["jlsg_sheji"];
+			return `将一张装备区内的武器牌${improve ? "或所有手牌" : ""}当作【杀】使用`;
+		},
+		position: "he",
+		selectCard() {
+			const player = get.player();
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const improve = upgradeStorage?.other?.["jlsg_sheji"];
+			if (improve) {
+				return [0, 1];
+			}
+			return [1, 1];
+		},
+		filterCard(card, player) {
+			return get.position(card) == "e" && get.subtype(card) == "equip1";
+		},
+		check(card) {
+			return 10 - get.value(card);
+		},
+		filterOk() {
+			const player = get.player();
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const improve = upgradeStorage?.other?.["jlsg_sheji"];
+			if (!ui.selected.cards.length) {
+				return improve;
+			}
+			return true;
+		},
+		async precontent(event, _, player) {
+			if (event.result.cards.length == 0) {
+				const hs = player.getCards("h");
+				const sha = get.autoViewAs({ name: "sha", cards: hs, isCard: true }, hs);
+				event.result.card = sha;
+				event.result.cards = hs;
 			}
 		},
-		group: ["jlsg_sheji_sha", "jlsg_sheji_wushuang"],
+		group: "jlsg_sheji_buff",
 		subSkill: {
-			sha: {
-				sub: true,
-				sourceSkill: "jlsg_sheji",
-				audio: "ext:极略/audio/skill/jlsg_sheji2.mp3",
-				enable: ["chooseToUse", "chooseToRespond"],
-				filterCard(card, player, event) {
-					return get.type(card) == "equip";
-				},
-				viewAs: { name: "sha" },
-				viewAsFilter: function (player) {
-					return player.countCards("he", card => get.type(card) == "equip") != 0;
-				},
-				position: "he",
-				prompt: "将一张装备牌当【杀】使用或打出",
-				check: function (card) {
-					if (get.subtype(card) == "equip1") {
-						return 10 - get.value(card);
+			buff: {
+				audio: "jlsg_sheji",
+				trigger: { global: "damageSource" },
+				filter(event, player) {
+					if (!event.source?.isIn()) {
+						return false;
 					}
-					return 7 - get.equipValue(card);
+					return event.source.countEnabledSlot("equip1") > 0;
 				},
-				mod: {
-					targetInRange: function (card) {
-						if (_status.event.skill == "jlsg_sheji_sha") {
-							return true;
-						}
-					},
+				async cost(event, trigger, player) {
+					const str = trigger.source.getEquips("equip1").length ? "获得其区域内的武器牌" : "将一张临时武器牌置入其装备区",
+						equip1 = trigger.source.getGainableCards(player, "e", card => get.subtype(card) == "equip1");
+					const { result } = await player
+						.chooseBool(`###${get.prompt(event.skill, trigger.source)}###${str}`)
+						.set("ai", (event, player) => {
+							const equip1 = get.event("equip1"),
+								target = event.getTrigger().source;
+							if (equip1.length) {
+								return get.attitude(player, target) < 0;
+							}
+							return get.attitude(player, target) > 0;
+						})
+						.set("equip1", equip1);
+					event.result = {
+						bool: result?.bool,
+						targets: [trigger.source],
+					};
 				},
-				ai: {
-					order: function () {
-						return lib.card.sha.ai.order + 0.1;
-					},
-					respondSha: true,
-					skillTagFilter: function (player) {
-						if (!player.countCards("he")) {
-							return false;
-						}
-					},
-				},
-			},
-			wushuang: {
-				sub: true,
-				sourceSkill: "jlsg_sheji",
-				audio: false,
-				trigger: { player: "useCardToPlayered" },
-				forced: true,
-				filter: function (event, player) {
-					let skill = get.sourceSkillFor(event);
-					return event.card.name == "sha" && !event.getParent().directHit.includes(event.target) && skill == "jlsg_sheji";
-				},
-				logTarget: "target",
 				async content(event, trigger, player) {
-					let id = trigger.target.playerid;
-					let map = trigger.getParent().customArgs;
-					if (!map[id]) {
-						map[id] = {};
-					}
-					if (typeof map[id].shanRequired == "number") {
-						map[id].shanRequired++;
+					const [target] = event.targets;
+					if (target.getEquips("equip1").length) {
+						const equip1 = target.getGainableCards(player, "e", card => get.subtype(card) == "equip1");
+						if (equip1.length) {
+							await player.gain(equip1, target, "giveAuto");
+						}
 					} else {
-						map[id].shanRequired = 2;
+						const { createTempCard, typePBTY } = get.info("jlsg_lingze");
+						const name = typePBTY["equip"].filter(i => get.subtype(i[2]) == "equip1").randomGet()?.[2];
+						const card = createTempCard(name, null, null, null, true);
+						if (card && target.canEquip(card)) {
+							await target.equip(card, true);
+						}
 					}
 				},
 			},
+		},
+		ai: {
+			order: 1,
 		},
 	},
 	jlsg_xingyi: {

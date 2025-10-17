@@ -63,5 +63,21 @@ const dynamicTranslates = {
 			return get.translation("jlsg_xionglve_info");
 		}
 	},
+	jlsg_jiwu(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_lvbu"]?.[2] || upgradeStorage.other?.jlsg_jiwu;
+		if (improve || player?.index) {
+			return "锁定技，若你的装备区里没有武器牌，你视为装备着【方天画戟】，你使用【杀】造成的伤害+1。若你使用的【杀】是你每回合使用的第一张牌或最后的手牌，你令此【杀】不能被响应且造成的伤害+1。";
+		}
+		return get.translation("jlsg_jiwu_info");
+	},
+	jlsg_sheji(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_lvbu"]?.[2] || upgradeStorage.other?.jlsg_sheji;
+		if (improve || player?.index) {
+			return "当任意角色造成伤害后，若其装备区有武器牌，你可以获得之，否则你可以将随机临时武器牌置入其装备区。你可以将装备区的武器牌或所有手牌当【杀】使用。";
+		}
+		return get.translation("jlsg_sheji_info");
+	},
 };
 export default dynamicTranslates;

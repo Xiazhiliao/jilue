@@ -137,6 +137,7 @@ const characters = {
 	jlsgsk_caojinyu: ["female", "wei", 3, ["jlsg_yuqi", "jlsg_shanshen"], ["name:曹|null"]],
 	jlsgsk_haozhao: ["male", "wei", 4, ["jlsg_zhengu"], []],
 	jlsgsk_puyuan: ["male", "shu", 4, ["jlsg_tianjiang", "jlsg_zhuren"], []],
+	jlsgsk_chenshi: ["male", "shu", 4, ["jlsg_qingbei"], []],
 };
 
 export default characters;
