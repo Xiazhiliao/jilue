@@ -18194,7 +18194,7 @@ const skills = {
 				filter(event, player) {
 					if (event.name == "useCard") {
 						let num = get.info("jlsg_qingbei").getNum(event, player);
-						return num > -1 && num < 2;
+						return num > -1;
 					}
 					return true;
 				},
@@ -18208,7 +18208,7 @@ const skills = {
 				async content(event, trigger, player) {
 					if (trigger.name == "useCard") {
 						let num = get.info("jlsg_qingbei").getNum(trigger, player);
-						await player.draw(2 - num);
+						await player.draw(2 - Math.min(1, num));
 					} else {
 						const storage = player.getStorage(event.name, {});
 						for (let suit in storage) {
