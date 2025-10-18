@@ -350,7 +350,7 @@ export async function precontent(config, originalPack) {
 				alert("游戏运行时/系统webview过老无法自动更新");
 				return;
 			}
-			import("./modules/idb-keyval.js");
+			import("../modules/idb-keyval.js");
 			var version = lib.extensionPack["极略"].version;
 			refNode.insertAdjacentHTML("afterend", `<div>当前版本${version}<br>正在获取最新版本号</div>`);
 			var cNode = refNode.nextSibling;
@@ -449,7 +449,7 @@ export async function precontent(config, originalPack) {
 			game.saveExtensionConfig("极略", "pendingFiles", JSON.stringify(files));
 			var idbKeyval;
 			try {
-				idbKeyval = await import("./modules/idb-keyval.js");
+				idbKeyval = await import("../modules/idb-keyval.js");
 			} catch (e) {
 				idbKeyval = await import("https://cdn.jsdelivr.net/npm/idb-keyval@5/+esm");
 			}

@@ -14515,9 +14515,9 @@ const skills = {
 						} else if (get.position(card) != "h") {
 							return;
 						} else if (typeof card.number != "number" || card.number < 1) {
-							return false;
+							return;
 						} else if (!["red", "black"].includes(get.color(card, false))) {
-							return false;
+							return;
 						}
 						let hp = player.hp + (get.color(card) == "red" ? card.number : -card.number);
 						while (hp < 1) {

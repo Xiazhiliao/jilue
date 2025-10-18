@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
+import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 let jlsg_qs = {
 	name: "jlsg_qs",
 	connect: true,
