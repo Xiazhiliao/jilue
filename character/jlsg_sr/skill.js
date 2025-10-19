@@ -1534,7 +1534,7 @@ const skills = {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 			const improve = upgradeStorage?.other?.["jlsg_sheji"];
 			if (!ui.selected.cards.length) {
-				return improve;
+				return improve && player.countCards("h");
 			}
 			return true;
 		},
