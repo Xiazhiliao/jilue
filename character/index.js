@@ -133,7 +133,6 @@ if (lib.config?.extension_极略_syRefactor) {
 		}
 	}
 }
-if (lib.device || lib.node) {
 	for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
 		const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
 		for (let name in pack.character) {
@@ -142,7 +141,7 @@ if (lib.device || lib.node) {
 				pack.character[name][4] = [];
 			}
 			//原画
-			pack.character[name][4].push(`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/image/character/${name}.jpg`);
+			pack.character[name][4].push(`ext:极略/image/character/${name}.jpg`);
 			//阵亡语音
 			if (!pack.character[name][4].some(j => j.startsWith("die:"))) {
 				pack.character[name][4].add("die:ext:极略/audio/die:true");
@@ -160,7 +159,6 @@ if (lib.device || lib.node) {
 			}
 		}
 	}
-}
 export const characters = {
 	jlsg_sk,
 	jlsg_sr,

@@ -2089,7 +2089,7 @@ export async function precontent(config, originalPack) {
 				if (files.length) {
 					for (let file of files) {
 						let skinName = `${character}_${get.pinyin(file.slice(0, -4), false).join("")}`;
-						pack.characterSubstitute[character].push([skinName, [`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/skin/image/${character}/${file}`]]);
+						pack.characterSubstitute[character].push([skinName, [`evt:极略/skin/image/${character}/${file}`]]);
 						//lib.config.skin[skinName] = 1;
 					}
 				}

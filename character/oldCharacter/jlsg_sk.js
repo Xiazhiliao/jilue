@@ -464,6 +464,7 @@ export default {
 						);
 						Object.defineProperty(recruit, "identity", {
 							enumerable: true,
+							// eslint-disable-next-line getter-return
 							get() {
 								if (this.storage.jlsg_xinghan_recruit) {
 									return lib.skill.jlsg_xinghan.mapIdentity(this.storage.jlsg_xinghan_recruit.identity);
@@ -472,6 +473,7 @@ export default {
 						});
 						Object.defineProperty(recruit, "identityShown", {
 							enumerable: true,
+							// eslint-disable-next-line getter-return
 							get() {
 								let recruiter = this.storage.jlsg_xinghan_recruit;
 								if (recruiter) {
