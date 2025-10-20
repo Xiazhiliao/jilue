@@ -10958,17 +10958,21 @@ const skills = {
 						}
 						if (naturex == "random") {
 							nature = ["fire", "thunder"].randomGet();
+						} else if (naturex == "null") {
+							nature = null;
 						}
-						name = namex;
+						name = namex == "null" ? null : namex;
 					} else if (name.startsWith("equip") && !name.endsWith("p")) {
 						name = typePBTY["equip"].filter(i => get.subtype(i[2]) == name).randomGet()?.[2];
 					}
 					if (name) {
-						if (!suit && !nature && name === null) {
+						if (!suit && !nature) {
 							cards.push(createTempCard(null, null, null, null, true));
 						} else {
 							cards.push(createTempCard(name, suit, nature));
 						}
+					} else if (name === null) {
+						cards.push(createTempCard(null, null, null, null, true));
 					}
 				}
 			}
@@ -11009,7 +11013,14 @@ const skills = {
 							if ((check && !check(player, target)) || !target.isIn()) {
 								continue;
 							}
-							await target[i](...args);
+							if (i == "removeSkills") {
+								let skills = target.getSkills(null, false, false).randomGets(args[0]);
+								if (skills.length) {
+									await target[i](skills);
+								}
+							} else {
+								await target[i](...args);
+							}
 						}
 					} else {
 						targets = await player.chooseTarget(event.prompt, ...args).forResultTargets();
