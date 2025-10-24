@@ -1584,27 +1584,25 @@ const skills = {
 	},
 	jlsg_tongtian: {
 		audio: "ext:极略/audio/skill:1",
-		enable: "phaseUse",
 		unique: true,
-		skillAnimation: true,
 		limited: true,
+		skillAnimation: true,
 		mark: true,
 		marktext: "通",
-		intro: { content: true },
+		intro: { content: "limited" },
+		derivation: ["jlsg_tongtian_fankui", "jlsg_tongtian_guanxing", "jlsg_tongtian_wansha", "jlsg_tongtian_zhiheng"],
+		enable: "phaseUse",
 		prompt: "通天：摸四张牌并弃置任意张花色各不相同的牌，获得各花色的技能。",
-		derivation: ["fankui", "guanxing", "wansha", "zhiheng"],
-		async contentBefore(event, trigger, player) {
+		async content(event, trigger, player) {
 			player.awakenSkill("jlsg_tongtian");
 			await player.draw(4);
-		},
-		async content(event, trigger, player) {
 			const { result } = await player
 				.chooseToDiscard("弃置任意张花色各不相同的牌，获得各花色的技能。", true, [1, 4], "he")
+				.set("complexCard", true)
 				.set("filterCard", (card, player) => {
 					let suit = get.suit(card, player);
 					return !ui.selected.cards.map(card => get.suit(card, player)).includes(suit);
 				})
-				.set("complexCard", true)
 				.set("ai", card => {
 					if (get.suit(card, get.player()) == "none") {
 						return -114514;
@@ -1630,7 +1628,7 @@ const skills = {
 		ai: {
 			order: 6,
 			result: {
-				player: function (player) {
+				player(player) {
 					if (player.hp < 3 && player.countCards("he") < 4) {
 						return 1;
 					}
@@ -1646,6 +1644,43 @@ const skills = {
 					}
 					return suits.length;
 				},
+			},
+		},
+		subSkill: {
+			fankui: {
+				audio: "ext:极略/audio/skill:true",
+				inherit: "fankui",
+			},
+			guanxing: {
+				audio: "ext:极略/audio/skill:true",
+				inherit: "guanxing",
+			},
+			wansha: {
+				audio: "ext:极略/audio/skill:true",
+				inherit: "wansha",
+				global: "jlsg_tongtian_wansha2",
+			},
+			wansha2: {
+				mod: {
+					cardSavable(card, player) {
+						if (["tao", "jlsgqs_mei"].includes(card.name) && _status.currentPhase?.isIn() && _status.currentPhase.hasSkill("jlsg_tongtian_wansha") && _status.currentPhase != player) {
+							if (!player.isDying()) {
+								return false;
+							}
+						}
+					},
+					cardEnabled(card, player) {
+						if (["tao", "jlsgqs_mei"].includes(card.name) && _status.currentPhase?.isIn() && _status.currentPhase.hasSkill("jlsg_tongtian_wansha") && _status.currentPhase != player) {
+							if (!player.isDying()) {
+								return false;
+							}
+						}
+					},
+				},
+			},
+			zhiheng: {
+				audio: "ext:极略/audio/skill:true",
+				inherit: "zhiheng",
 			},
 		},
 	},
