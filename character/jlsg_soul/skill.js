@@ -1082,7 +1082,7 @@ const skills = {
 				}
 				let skills = get.character(name).skills,
 					record = Object.values(list).flat();
-				for (let skill of skills) {
+				searchSKill: for (let skill of skills) {
 					if (player.hasSkill(skill, null, false, false) || Object.values(storage).flat().includes(skill) || record.includes(skill)) {
 						continue;
 					}
@@ -1151,7 +1151,7 @@ const skills = {
 								list[name] = [];
 							}
 							list[name].add(skill);
-							break;
+							break searchSKill;
 						}
 					}
 				}
@@ -1250,7 +1250,7 @@ const skills = {
 				}
 				let skills = get.character(name).skills,
 					record = Object.values(list).flat();
-				for (let skill of skills) {
+				searchSKill: for (let skill of skills) {
 					if (["jlsg_xianshou"].includes(skill)) {
 						continue;
 					}
@@ -1309,7 +1309,7 @@ const skills = {
 								list[name] = [];
 							}
 							list[name].add(skill);
-							break;
+							break searchSKill;
 						}
 					}
 				}
