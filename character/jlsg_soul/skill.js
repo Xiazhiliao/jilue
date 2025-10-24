@@ -2143,7 +2143,7 @@ const skills = {
 		},
 		mod: {
 			aiOrder(player, card, num) {
-				if (num <= 0 || !player.isPhaseUsing() || player.needsToDiscard() < 2) {
+				if (num <= 0 || !player.isPhaseUsing(true) || player.needsToDiscard() < 2) {
 					return num;
 				}
 				let suit = get.suit(card, player);
@@ -2217,7 +2217,7 @@ const skills = {
 			}
 			return false;
 		},
-		getValueList(event) {
+		getValue(event) {
 			const player = event.player;
 			const list = {};
 			for (let card of player.getCards("hes")) {
@@ -2232,10 +2232,24 @@ const skills = {
 			}
 			return list;
 		},
+		getUseValue(event) {
+			const player = event.player;
+			const list = {};
+			for (let name of ["sha", "shan", "tao", "wuxie"]) {
+				list[name] = player.getUseValue(name, true, event);
+			}
+			if (player.isPhaseUsing(true) && !_status.event.dying) {
+				if (list.sha == 0) {
+					list.tao = 1;
+				}
+			}
+			return list;
+		},
 		getCheck(event) {
 			const player = event.player,
 				map = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
-			event.valueList ??= lib.skill.jlsg_longhun.getValueList(event);
+			event.valueList ??= lib.skill.jlsg_longhun.getValue(event);
+			event.useValueList ??= lib.skill.jlsg_longhun.getUseValue(event);
 			let suit = null,
 				double = true,
 				max = 0;
@@ -2245,8 +2259,9 @@ const skills = {
 				} else if (!event.valueList[map[name]]?.length) {
 					continue;
 				}
-				let temp = name == "wuxie" ? 2 : name == "shan" ? 3 : get.order({ name, nature: name == "sha" ? "fire" : null }, player);
-				if (temp <= max) {
+				let temp = name == "wuxie" ? 2 : get.order({ name, nature: name == "sha" ? "fire" : null }, player),
+					useValue = event.useValueList[name];
+				if (temp <= max || useValue <= 0) {
 					continue;
 				}
 				suit = map[name];
@@ -2267,7 +2282,7 @@ const skills = {
 					if (player.countCards("hse", i => get.tag(i, "save") || get.suit(i, player) == "heart") < 3) {
 						double = false;
 					} else {
-						double = player.isPhaseUsing() ? player.needsToDiscard() > 0 : player.hp > -1;
+						double = player.isPhaseUsing(true) ? player.needsToDiscard() > 0 : player.hp > -1;
 					}
 				} else if (suit == "spade") {
 					if (event.getParent(4).name == "phaseJudge") {
@@ -2367,7 +2382,7 @@ const skills = {
 						} else if (!player.countCards("hes", i => get.suit(i, player) == map[name])) {
 							continue;
 						}
-						let temp = get.order({ name: name, nature: name == "sha" ? "fire" : null });
+						let temp = name == "wuxie" ? 2 : get.order({ name: name, nature: name == "sha" ? "fire" : null }, player);
 						if (temp > max) {
 							max = temp;
 						}
