@@ -2181,6 +2181,9 @@ const skills = {
 				if (num <= 0 || !player.isPhaseUsing(true) || player.needsToDiscard() < 2) {
 					return num;
 				}
+				if ( _status.event.skill == "jlsg_longhun" && card.name == "tao") {
+					return num + 3.6;
+				}
 				let suit = get.suit(card, player);
 				if (suit === "heart") {
 					return num - 3.6;
@@ -2267,36 +2270,22 @@ const skills = {
 			}
 			return list;
 		},
-		getUseValue(event) {
-			const player = event.player;
-			const list = {};
-			for (let name of ["sha", "shan", "tao", "wuxie"]) {
-				list[name] = player.getUseValue(name, true, event);
-			}
-			if (player.isPhaseUsing(true) && !_status.event.dying) {
-				if (list.sha == 0) {
-					list.tao = 1;
-				}
-			}
-			return list;
-		},
 		getCheck(event) {
 			const player = event.player,
 				map = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
 			event.valueList ??= lib.skill.jlsg_longhun.getValue(event);
-			event.useValueList ??= lib.skill.jlsg_longhun.getUseValue(event);
 			let suit = null,
 				double = true,
 				max = 0;
 			for (let name in map) {
-				if (!event._backup.filterCard(get.autoViewAs({ name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) {
+				let useCard = get.autoViewAs({ name, nature: name == "sha" ? "fire" : null }, "unsure");
+				if (!event._backup.filterCard(useCard, player, event)) {
 					continue;
 				} else if (!event.valueList[map[name]]?.length) {
 					continue;
 				}
-				let temp = name == "wuxie" ? 2 : get.order({ name, nature: name == "sha" ? "fire" : null }, player),
-					useValue = event.useValueList[name];
-				if (temp <= max || useValue <= 0) {
+				let temp = name == "wuxie" ? 3 : get.order(useCard, player);
+				if (temp <= max) {
 					continue;
 				}
 				suit = map[name];
@@ -2390,7 +2379,7 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player, tag) {
-				var name;
+				let name;
 				switch (tag) {
 					case "respondSha":
 						name = "diamond";
@@ -2412,12 +2401,13 @@ const skills = {
 					let max = 0;
 					const map = { sha: "diamond", shan: "club", tao: "heart" };
 					for (let name in map) {
-						if (!event.filterCard(get.autoViewAs({ name: name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) {
+						let card = get.autoViewAs({ name: name, nature: name == "sha" ? "fire" : null }, "unsure");
+						if (!event.filterCard(card, player, event)) {
 							continue;
 						} else if (!player.countCards("hes", i => get.suit(i, player) == map[name])) {
 							continue;
 						}
-						let temp = name == "wuxie" ? 2 : get.order({ name: name, nature: name == "sha" ? "fire" : null }, player);
+						let temp = name == "wuxie" ? 3 : get.order(card, player);
 						if (temp > max) {
 							max = temp;
 						}
