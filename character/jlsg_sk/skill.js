@@ -16558,10 +16558,25 @@ const skills = {
 	jlsg_jishe: {
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
-		onChooseToUse(event) {
-			if (!game.online) {
-				const cards = [];
-				for (let name of lib.inpile) {
+		filter(event, player) {
+			for (const name of lib.inpile) {
+				if (get.type(name, null, false) != "trick") {
+					continue;
+				}
+				const card = get.autoViewAs({ name, isCard: true }, []);
+				if (!get.tag(card, "natureDamage") && get.tag(card, "damage")) {
+					continue;
+				}
+				if (event.filterCard?.(card, event.player, event)) {
+					return true;
+				}
+			}
+			return false;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = [];
+				for (const name of lib.inpile) {
 					if (get.type(name, null, false) != "trick") {
 						continue;
 					}
@@ -16569,19 +16584,10 @@ const skills = {
 					if (!get.tag(card, "natureDamage") && get.tag(card, "damage")) {
 						continue;
 					}
-					if (event.filterCard(card, event.player, event)) {
-						cards.add(name);
+					if (event.filterCard?.(card, event.player, event)) {
+						list.push(["trick", "", name]);
 					}
 				}
-				event.set("jlsg_jishe", cards);
-			}
-		},
-		filter(event, player) {
-			return event.jlsg_jishe?.length;
-		},
-		chooseButton: {
-			dialog(event, player) {
-				const list = event.jlsg_jishe.map(name => ["锦囊", "", name]);
 				return ui.create.dialog("极奢", [list, "vcard"]);
 			},
 			check(button) {
