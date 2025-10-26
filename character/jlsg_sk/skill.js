@@ -11470,35 +11470,38 @@ const skills = {
 	},
 	jlsg_sanjue: {
 		init(player, skill) {
-			player.storage.jlsg_sanjue = {
-				card: {},
-				skill: {},
-				given: [],
-			};
+			player.setStorage(
+				skill,
+				{
+					card: {},
+					map: {},
+					given: [],
+				},
+				true
+			);
 		},
+		onremove: true,
 		intro: {
 			nocount: true,
 			mark(dialog, content, player) {
-				var storage = Object.entries(player.storage?.jlsg_sanjue?.skill || {});
-				if (storage && storage.length) {
+				const recordSkills = Object.entries(player.getStorage("jlsg_sanjue", {}).map || {});
+				if (recordSkills && recordSkills.length) {
 					if (player == game.me || player.isUnderControl()) {
-						dialog.addText(`储备技能数：${storage.map(i => i[1]).flat().length}`);
-						dialog.add([storage, lib.skill.jlsg_sanjue.skillInfo]);
+						dialog.addText(`储备技能数：${recordSkills.map(i => i[1]).flat().length}`);
+						dialog.add([recordSkills, lib.skill.jlsg_sanjue.$createButton]);
 					} else {
-						return "共有" + get.cnNumber(storage.length) + "个储备技能";
+						return "共有" + get.cnNumber(recordSkills.length) + "个储备技能";
 					}
 				}
 			},
 		},
 		audio: "ext:极略/audio/skill:3",
-		enable: "phaseUse",
-		direct: true,
 		onChooseToUse(event) {
 			if (game.online) {
 				return;
 			}
 			let buttons = [],
-				storage = Object.entries(event.player.storage?.jlsg_sanjue?.skill || {});
+				storage = Object.entries(event.player.getStorage("jlsg_sanjue", {}).map || {});
 			if (!storage || !storage.length) {
 				return;
 			}
@@ -11507,181 +11510,171 @@ const skills = {
 					continue;
 				}
 				for (let skill of info[1]) {
-					buttons.push([info[0], skill]);
+					buttons.push([info[0], [skill]]);
 				}
 			}
 			event.set("jlsg_sanjue", buttons);
 		},
-		filter: (event, player) => {
+		enable: "phaseUse",
+		direct: true,
+		filter(event, player) {
 			return event.jlsg_sanjue?.length;
 		},
 		chooseButton: {
 			dialog(event, player) {
 				let dialog = ui.create.dialog("三绝：请选择要给予的技能");
-				dialog.add([event.jlsg_sanjue, lib.skill.jlsg_sanjue.skillInfo]);
+				dialog.add([event.jlsg_sanjue, lib.skill.jlsg_sanjue.$createButton]);
 				return dialog;
 			},
 			check() {
 				return true;
 			},
 			backup(links, player) {
+				const [character, [skill]] = links[0];
 				return {
 					audio: "jlsg_sanjue",
-					info: links[0],
+					info: [character, skill],
 					filterTarget: () => true,
 					selectCard: -1,
 					filterCard: () => false,
 					async content(event, trigger, player) {
 						const target = event.targets[0],
-							info = lib.skill.jlsg_sanjue_backup.info,
-							storage = player.storage.jlsg_sanjue.skill;
-						for (let i in storage) {
-							if (i == info[0]) {
-								player.storage.jlsg_sanjue.skill[i].remove(info[1]);
+							[character, skill] = get.info(event.name).info,
+							storage = player.getStorage("jlsg_sanjue", { card: {}, map: {}, given: [] });
+						for (const name in storage.map) {
+							if (name == character) {
+								storage.map[name].remove(skill);
 							}
-							if (!player.storage.jlsg_sanjue.skill[i].length) {
-								delete player.storage.jlsg_sanjue.skill[i];
+							if (!storage.map[name].length) {
+								delete storage.map[name];
 							}
 						}
-						player.storage.jlsg_sanjue.given.add(info[1]);
-						await target.addSkills(info[1]);
-						player.markSkill("jlsg_sanjue");
+						storage.given.add(skill);
+						await target.addSkills(skill);
+						target.flashAvatar("jlsg_sanjue", character);
+						player.setStorage("jlsg_sanjue", storage, true);
 					},
-					ai2(target, targets) {
-						const player = get.player(),
-							skill = lib.skill.jlsg_sanjue_backup.info[1];
+					ai2(target) {
+						const event = get.event(),
+							player = get.player(),
+							skill = get.info("jlsg_sanjue_backup").info[1];
 						const info = get.info(skill);
-						let negative = info && info.ai && info.ai.neg,
-							att = get.attitude(player, target);
+						const negative = info?.ai?.neg,
+							att = Math.min(2, Math.max(-2, get.attitude(player, target)));
+						if (event.getStepCache("cntSkillsList") === undefined) {
+							const targets = get.selectableTargets().concat([target]),
+								cntSkillsList = [],
+								hsList = [],
+								hpList = [];
+							for (let targetx of targets) {
+								if (get.attitude(player, targetx) <= 0) {
+									continue;
+								}
+								const cntSkills = targetx.getSkills(null, false).length,
+									hs = targetx.countCards("h"),
+									hp = target.getHp();
+								cntSkillsList.add(cntSkills);
+								hsList.add(hs);
+								hpList.add(hp);
+							}
+							event.putStepCache(
+								"cntSkillsList",
+								cntSkillsList.sort((a, b) => b - a)
+							);
+							event.putStepCache(
+								"hsList",
+								hsList.sort((a, b) => a - b)
+							);
+							event.putStepCache(
+								"hpList",
+								hpList.sort((a, b) => a - b)
+							);
+						}
+						const cntSkills = event.getStepCache("cntSkillsList").indexOf(target.getSkills(null, false)) + 1,
+							hs = event.getStepCache("hsList").indexOf(target.countCards("h")) + 1,
+							hp = event.getStepCache("hpList").indexOf(target.getHp()) + 1;
 						if (att < 0 && negative) {
-							return -1;
+							return att;
 						} else if (att > 0 && !negative) {
 							if (info.ai?.combo ?? false) {
 								if (target.hasSkill(info.ai.combo)) {
-									return get.skillRank(skill);
+									return 2 + att * (cntSkills + hs + hp);
 								}
-								return 0;
 							}
-							return get.skillRank(skill) * Math.random();
+							return att * (cntSkills + hs + hp);
 						}
 						return 0;
 					},
 				};
 			},
 			prompt(links, player) {
-				return `令一名角色获得【${get.translation(links[0][1])}】
-			<br><div class="text">${get.skillInfoTranslation(links[0][1], player)}</div>`;
+				const [name, [skill]] = links[0];
+				return `令一名角色获得【${get.translation(name)}】
+					<br><div class="text">${get.skillInfoTranslation(skill, player)}</div>`;
 			},
 		},
-		get getCharacters() {
-			let result = [];
-			if (_status.characterlist) {
-				result = _status.characterlist;
-			} else if (_status.connectMode) {
-				result = get.charactersOL(() => true);
-			} else {
-				result = get.gainableCharacters(true);
+		$createButton(item, type, position, noclick, node) {
+			const [name, skills] = item;
+			node = ui.create.buttonPresets.character(name, "character", position, noclick);
+			const info = get.character(name);
+			if (skills.length) {
+				const skillstr = skills.map(i => `[${get.translation(i)}]`).join("<br>");
+				const skillnode = ui.create.caption(`<div class="text" data-nature=${get.groupnature(info.group, "raw")}m style="font-family: ${lib.config.name_font || "xinwei"},xinwei">${skillstr}</div>`, node);
+				skillnode.style.left = "2px";
+				skillnode.style.bottom = "2px";
 			}
-			delete this.getCharacters;
-			this.getCharacters = result;
-			return result;
-		},
-		skillInfo: function (item, type, position, noclick, node) {
-			const _item = item;
-			item = _item[1];
-			if (lib.config.extension_十周年UI_enable) {
-				node = ui.create.buttonPresets.character(_item[0], type, position, noclick, node);
-				node.node.hp.remove();
-				node.node.group.remove();
-				node.node.intro.remove();
-			} else {
-				node = ui.create.card(position, "noclick", noclick);
-				node.classList.add("button");
-				var bg = _item[0];
-				var img = get.dynamicVariable(function (mass) {
-					if (!mass) {
-						return null;
-					}
-					if (Array.isArray(mass)) {
-						let list = mass[4];
-						if (!list) {
-							return null;
-						}
-						for (let i of list) {
-							if (typeof i == "string") {
-								if (i.endsWith(".jpg") || i.endsWith(".png")) {
-									return i;
-								}
-							}
-						}
+			node.link = item;
+			node._customintro = function (uiintro, evt) {
+				const [character, skills] = node.link;
+				const characterInfo = get.character(character);
+				let capt = get.translation(character);
+				if (characterInfo) {
+					capt += `&nbsp;&nbsp;${get.translation(characterInfo.sex)}`;
+					let charactergroup;
+					const charactergroups = get.is.double(character, true);
+					if (charactergroups) {
+						charactergroup = charactergroups.map(i => get.translation(i)).join("/");
 					} else {
-						let list = mass.trashBin;
-						for (let i of list) {
-							if (typeof i == "string") {
-								if (i.endsWith(".jpg") || i.endsWith(".png")) {
-									return i;
-								}
-							}
+						charactergroup = get.translation(characterInfo.group);
+					}
+					capt += `&nbsp;&nbsp;${charactergroup}`;
+				}
+				uiintro.add(capt);
+
+				if (lib.characterTitle[character]) {
+					uiintro.addText(get.colorspan(lib.characterTitle[character]));
+				}
+				for (let i = 0; i < skills.length; i++) {
+					if (lib.translate[skills[i] + "_info"]) {
+						let translation = lib.translate[skills[i] + "_ab"] || get.translation(skills[i]).slice(0, 2);
+						if (lib.skill[skills[i]] && lib.skill[skills[i]].nobracket) {
+							uiintro.add('<div><div class="skilln">' + get.translation(skills[i]) + "</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+						} else {
+							uiintro.add('<div><div class="skill">【' + translation + "】</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+						}
+						if (lib.translate[skills[i] + "_append"]) {
+							uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skills[i] + "_append"] + "</div>");
 						}
 					}
-				}, get.character(_item[0]));
-				if (img) {
-					if (img.startsWith("db:")) {
-						img = img.slice(3);
-					} else if (!img.startsWith("ext:")) {
-						img = null;
-					}
-				}
-				node.classList.remove("fullskin");
-				node.classList.remove("fullborder");
-				node.dataset.cardName = _item[0];
-				node.classList.add("fullimage");
-				if (img) {
-					if (img.startsWith("ext:")) {
-						node.setBackgroundImage(img.replace(/^ext:/, "extension/"));
-						node.style.backgroundSize = "cover";
-					} else {
-						node.setBackgroundDB(img);
-					}
-				} else {
-					node.setBackground(bg, "character");
-				}
-			}
-			let name = "";
-			if (Array.isArray(item)) {
-				name = `<span data-nature=${get.groupnature(get.bordergroup(_item[0]))}>${get.slimName(_item[0])}</span>`;
-				node.node.info.innerHTML = "";
-				for (let i of item) {
-					node.node.info.innerHTML += `<span style='font-weight:500;color:#ffffff' data-nature='watermm'>${get.skillTranslation(i, get.player())}</span><br>`;
-				}
-			} else {
-				name = `<span style='font-weight:500;color:#ffffff' data-nature='watermm'>${get.translation(item)}</span>`;
-			}
-			node.node.name.innerHTML = name;
-			if (name.length >= 5) {
-				node.node.name.classList.add("long");
-				if (name.length >= 7) {
-					node.node.name.classList.add("longlong");
-				}
-			}
-			node.link = _item;
-			node._customintro = uiintro => {
-				if (!Array.isArray(item)) {
-					item = [item];
-				}
-				for (let i of item) {
-					uiintro.add('<div style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.skillTranslation(i, get.player()) + "】</div><div>" + get.skillInfoTranslation(i, get.player()) + "</div></div>");
 				}
 			};
 			return node;
 		},
+		get getCharacters() {
+			let result = game.initCharacterList(false).filter(name => get.character(name, 1) == "wu");
+			delete this.getCharacters;
+			this.getCharacters = result;
+			return result;
+		},
 		group: "jlsg_sanjue_use",
 		subSkill: {
+			backup: { sourceSkill: "jlsg_sanjue" },
 			use: {
 				audio: "jlsg_sanjue",
 				trigger: { player: "useCard" },
 				direct: true,
 				async content(event, trigger, player) {
+					const storage = player.getStorage("jlsg_sanjue", { card: {}, map: {}, given: [] });
 					let cardName = trigger.card.name;
 					if (cardName == "sha") {
 						let nature = get.nature(trigger.card);
@@ -11689,62 +11682,54 @@ const skills = {
 							cardName = `${nature}_sha`;
 						}
 					}
-					let s = player.storage.jlsg_sanjue.card[cardName];
-					player.storage.jlsg_sanjue.card[cardName] = (s || 0) + 1;
-					s = player.storage.jlsg_sanjue.card[cardName];
-					player.markSkill("jlsg_sanjue");
-					if (s != 1 && s != 3) {
+					storage.card[cardName] ??= 0;
+					storage.card[cardName]++;
+					let cnt = storage.card[cardName];
+					player.setStorage("jlsg_sanjue", storage, true);
+					if (cnt != 1 && cnt != 3) {
 						return;
 					}
 					await player.logSkill(event.name);
 					await player.draw();
-					let list1 = lib.skill.jlsg_sanjue.getCharacters.filter(c => get.character(c, 1) == "wu").randomSort();
-					const storage = Object.values(player.storage.jlsg_sanjue.skill).flat();
-					for (let name of list1) {
+					let characterList = get.info("jlsg_sanjue").getCharacters.randomSort();
+					const { map, given } = storage;
+					const recordSkills = Object.values(map).flat();
+					for (let name of characterList) {
 						let skills = get.character(name)[3];
 						if (!skills || !skills.length) {
 							continue;
 						}
 						skills = skills.filter(skill => {
-							if (player.storage.jlsg_sanjue.given.includes(skill)) {
+							if (given.includes(skill) || recordSkills.includes(skill)) {
 								return false;
 							}
-							if (storage.includes(skill)) {
-								return false;
-							}
-							for (let c of game.filterPlayer()) {
-								if (c.hasSkill(skill, null, false, false)) {
-									return false;
-								}
-							}
-							const info = get.info(skill);
-							if (!info) {
-								return false;
-							}
-							return !lib.filter.skillDisabled(skill) && !info.charlotte;
+							return !lib.filter.skillDisabled(skill) && !get.info(skill)?.charlotte;
 						});
+						skills.removeArray(
+							game.filterPlayer().reduce((list, current) => {
+								list.addArray(current.getSkills(null, false, false));
+								return list;
+							}, [])
+						);
 						if (!skills.length) {
 							continue;
 						}
-						if (!player.storage.jlsg_sanjue.skill[name]) {
-							player.storage.jlsg_sanjue.skill[name] = [];
-						}
-						player.storage.jlsg_sanjue.skill[name].add(skills.randomGet());
+						storage.map[name] ??= [];
+						storage.map[name].add(skills.randomGet());
+						player.setStorage("jlsg_sanjue", storage, true);
 						break;
 					}
-					player.markSkill("jlsg_sanjue");
 				},
 			},
-			backup: { sourceSkill: "jlsg_sanjue" },
 		},
 		ai: {
 			order(skill, player) {
-				const storage = Object.values(player.storage.jlsg_sanjue.skill).flat();
-				if (!storage.length) {
+				const recordSkills = Object.entries(player.getStorage("jlsg_sanjue", {}).map || {});
+				if (!recordSkills.length) {
 					return 0;
 				} else {
-					for (let s in storage) {
-						const info = get.info(s);
+					for (let skill of recordSkills) {
+						const info = get.info(skill);
 						if (!info || (info && info.ai && info.ai.neg)) {
 							if (game.hasPlayer(c => get.attitude(player, c) < 0)) {
 								return 12;
@@ -11758,6 +11743,21 @@ const skills = {
 			},
 			result: {
 				player: 1,
+			},
+			effect: {
+				player(card, player) {
+					const record = player.getStorage("jlsg_sanjue", { card: {}, map: {}, given: [] }).card;
+					let cardName = card.name;
+					if (cardName == "sha") {
+						let nature = get.nature(card);
+						if (nature) {
+							cardName = `${nature}_sha`;
+						}
+					}
+					if (!record[cardName] || record[cardName] == 2) {
+						return [1, 1];
+					}
+				},
 			},
 		},
 	},
@@ -17377,7 +17377,8 @@ const skills = {
 				choiceList,
 				prompt;
 			while (true) {
-				(choiceList = ["断玉", "附灵", "噬主"]), (prompt = "铸刃：请选择强化分支");
+				choiceList = ["断玉", "附灵", "噬主"];
+				prompt = "铸刃：请选择强化分支";
 				const control = await player
 					.chooseControlList(choiceList, prompt, (event, player) => {
 						const {
@@ -17397,7 +17398,8 @@ const skills = {
 					break;
 				}
 				choice[0] = map[control];
-				(choiceList = record[choice[0]].slice().map(i => effectsList[choice[0]][i].str)), (prompt = "铸刃：请选择强化效果");
+				choiceList = record[choice[0]].slice().map(i => effectsList[choice[0]][i].str);
+				prompt = "铸刃：请选择强化效果";
 				const result = await player.chooseControlList(choiceList, prompt, () => 0).forResult();
 				if (result.control != "cancel2") {
 					choice[1] = record[choice[0]][result.index];
