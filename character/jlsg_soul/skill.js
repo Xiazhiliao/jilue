@@ -2181,7 +2181,7 @@ const skills = {
 				if (num <= 0 || !player.isPhaseUsing(true) || player.needsToDiscard() < 2) {
 					return num;
 				}
-				if ( _status.event.skill == "jlsg_longhun" && card.name == "tao") {
+				if (_status.event.skill == "jlsg_longhun" && card.name == "tao") {
 					return num + 3.6;
 				}
 				let suit = get.suit(card, player);
@@ -10986,15 +10986,19 @@ const skills = {
 		async cardListContent(event, trigger, player) {
 			const { createTempCard, typePBTY } = get.info("jlsg_lingze");
 			let cards = [];
-			for (let name in event.cardList) {
-				let num = event.cardList[name];
+			for (let cardName in event.cardList) {
+				let num = event.cardList[cardName];
 				while (num > 0) {
 					num--;
-					let suit, nature;
+					let name = cardName,
+						suit,
+						nature;
 					if (name.includes("|")) {
 						const [suitx, _, namex, naturex] = name.split("|");
 						if (["black", "red"].includes(suitx)) {
 							suit = (suitx == "black" ? ["club", "spade"] : ["diamond", "heart"]).randomGet();
+						} else {
+							suit = suitx;
 						}
 						if (naturex == "random") {
 							nature = ["fire", "thunder"].randomGet();
@@ -11007,12 +11011,12 @@ const skills = {
 					}
 					if (name) {
 						if (!suit && !nature) {
-							cards.push(createTempCard(null, null, null, null, true));
+							cards.push(createTempCard(name, null, null, null, true));
 						} else {
 							cards.push(createTempCard(name, suit, nature));
 						}
 					} else if (name === null) {
-						cards.push(createTempCard(null, null, null, null, true));
+						cards.push(createTempCard(null, suit, nature));
 					}
 				}
 			}
@@ -12425,7 +12429,7 @@ const skills = {
 						content: async function (event, trigger, player) {
 							let num = 0;
 							while (num < 6) {
-								num--;
+								num++;
 								if (!player.isIn()) {
 									break;
 								}
@@ -12467,7 +12471,7 @@ const skills = {
 						content: async function (event, trigger, player) {
 							let num = 0;
 							while (num < 6) {
-								num--;
+								num++;
 								if (!player.isIn()) {
 									break;
 								}
