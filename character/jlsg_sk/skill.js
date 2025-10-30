@@ -5436,7 +5436,7 @@ const skills = {
 		},
 	},
 	jlsg_qianhuan: {
-		audio: "ext:极略/audio/skill:2",
+		unique: true,
 		init(player, skill) {
 			player.setStorage(skill, { list: [], num: 2 });
 			if (get.config("double_character") === true) {
@@ -5447,18 +5447,18 @@ const skills = {
 			}
 		},
 		onremove: true,
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			player: "enterGame",
-			global: "phaseBefore",
+			global: ["phaseBefore", "gameStart"],
 		},
-		forced: true,
-		unique: true,
 		filter(event, player) {
 			if (event.name == "phase") {
 				return event.player == player || game.phaseNumber == 0;
 			}
 			return true;
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			let storage = player.getStorage(event.name, { list: [], num: 2 });
 			event.num = storage.num;
