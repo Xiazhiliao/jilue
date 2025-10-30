@@ -860,127 +860,106 @@ const skills = {
 	jlsg_yanxi: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
-		frequent: true,
-		filter: function (event, player) {
-			return player.countCards("e") <= 0;
+		filter(event, player) {
+			return !player.countCards("e");
 		},
-		content: function () {
-			player.draw();
+		frequent: true,
+		async content(event, trigger, player) {
+			await player.draw();
 		},
 	},
 	jlsg_zhige: {
 		audio: "ext:极略/audio/skill:1",
-		group: ["jlsg_zhige_3", "jlsg_zhige_4"],
-	},
-	jlsg_zhige_3: {
-		audio: "ext:极略/audio/skill:true",
-		enable: ["chooseToUse", "chooseToRespond"],
-		filterCard: function () {
+		hiddenCard(player, name) {
+			if (["sha", "shan"].includes(name)) {
+				return player.countCards("e");
+			}
+		},
+		enable: "chooseToUse",
+		filter(event, player) {
+			const es = player.getCards("e");
+			if (!es.length) {
+				return false;
+			}
+			for (let name of ["sha", "shan"]) {
+				const card = get.autoViewAs({ name }, es);
+				_status.event._get_card = card;
+				if (
+					es.some(card => {
+						let mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+						return mod2 === false;
+					})
+				) {
+					continue;
+				}
+				delete _status.event._get_card;
+				if (event.filterCard(card, player, event)) {
+					return true;
+				}
+			}
+			delete _status.event._get_card;
 			return false;
 		},
-		selectCard: -1,
-		viewAs: { name: "shan" },
-		viewAsFilter: function (player) {
-			return player.getCards("e").length > 0;
-		},
-		prompt: "弃置装备区的牌，视为打出一张【闪】",
-		check: function (event, player) {
-			if (player.hp == 1 && player.countCards("h", "shan") == 0) {
-				return 1;
-			}
-			var num = 1;
-			if (player.hasSkill("jlsg_yanxi")) {
-				num++;
-			}
-			if (player.countCards("e", "bagua")) {
-				num--;
-			}
-			return (
-				player.countCards("e", function (cardx) {
-					return get.value(cardx) > 5;
-				}) <= num
-			);
-		},
-		onuse: function (result, player) {
-			game.broadcastAll(function (player) {
-				var sex = player.sex;
-				if (lib.config.background_audio) {
-					game.playAudio("card", sex, "shan");
+		direct: true,
+		chooseButton: {
+			dialog(event, player) {
+				const es = player.getCards("e");
+				let list = [];
+				for (let name of ["sha", "shan"]) {
+					const card = get.autoViewAs({ name }, es);
+					_status.event._get_card = card;
+					if (
+						es.some(card => {
+							let mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+							return mod2 === false;
+						})
+					) {
+						continue;
+					}
+					delete _status.event._get_card;
+					if (event.filterCard(card, player, event)) {
+						list.add(["basic", "", name]);
+					}
 				}
-			}, player);
-			player.discard(player.getCards("e"));
-		},
-		onrespond: function (result, player) {
-			game.broadcastAll(function (player) {
-				var sex = player.sex;
-				if (lib.config.background_audio) {
-					game.playAudio("card", sex, "shan");
+				delete _status.event._get_card;
+				let dialog = ui.create.dialog("止戈", [list, "vcard"], "hidden");
+				if (list.length == 1) {
+					dialog.direct = true;
 				}
-			}, player);
-			player.discard(player.getCards("e"));
+				return dialog;
+			},
+			check(button) {
+				return get.order({ name: button.link[2] }, get.player());
+			},
+			backup(links, player) {
+				const backup = get.copy(get.info("jlsg_zhige_backup"));
+				backup.viewAs = { name: links[0][2], isCard: false, cards: player.getCards("e") };
+				return backup;
+			},
+			prompt(links, player) {
+				return `将装备区内所有牌当做${get.translation(links[0][2])}使用`;
+			},
+		},
+		subSkill: {
+			backup: {
+				audio: "jlsg_zhige",
+				position: "e",
+				selectCard: -1,
+				filterCard: () => true,
+				popname: true,
+			},
 		},
 		ai: {
+			respondSha: true,
 			respondShan: true,
-			skillTagFilter: function (player) {
+			skillTagFilter(player) {
 				if (player.countCards("e") <= 0) {
 					return false;
 				}
 			},
-		},
-	},
-	jlsg_zhige_4: {
-		audio: "ext:极略/audio/skill:true",
-		enable: ["chooseToUse", "chooseToRespond"],
-		filterCard: function () {
-			return false;
-		},
-		selectCard: -1,
-		viewAs: { name: "sha" },
-		viewAsFilter: function (player) {
-			return player.getCards("e").length > 0;
-		},
-		prompt: "弃置装备区的牌，视为打出一张【杀】",
-		check: function (event, player) {
-			if (player.hp == 1 && player.countCards("h", "sha") == 0) {
-				return 1;
-			}
-			var num = 0;
-			if (player.hasSkill("jlsg_yanxi")) {
-				num++;
-			}
-			if (player.countCards("e") >= 2) {
-				return -1;
-			}
-			return (
-				player.countCards("e", function (cardx) {
-					return get.value(cardx) > 5;
-				}) <= num
-			);
-		},
-		onuse: function (result, player) {
-			game.broadcastAll(function (player) {
-				var sex = player.sex;
-				if (lib.config.background_audio) {
-					game.playAudio("card", sex, "sha");
-				}
-			}, player);
-			player.discard(player.getCards("e"));
-		},
-		onrespond: function (result, player) {
-			game.broadcastAll(function (player) {
-				var sex = player.sex;
-				if (lib.config.background_audio) {
-					game.playAudio("card", sex, "sha");
-				}
-			}, player);
-			player.discard(player.getCards("e"));
-		},
-		ai: {
-			respondSha: true,
-			skillTagFilter: function (player) {
-				if (player.countCards("e") <= 0) {
-					return false;
-				}
+			order: 1,
+			result: {
+				player: 1,
 			},
 		},
 	},
