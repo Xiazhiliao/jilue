@@ -8123,9 +8123,6 @@ const skills = {
 						if (!player.hasStorage("jlsg_zhidi", "2")) {
 							return false;
 						}
-						if (tag === "directHit_ai") {
-							return arg?.card?.name == "sha";
-						}
 						return arg?.card?.name == "sha";
 					},
 				},
