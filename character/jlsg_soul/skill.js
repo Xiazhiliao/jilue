@@ -11644,7 +11644,7 @@ const skills = {
 						jlsg_qs: true,
 						str: "获得三张【梅】",
 						cardList: {
-							jlshqs_mei: 3,
+							jlsgqs_mei: 3,
 						},
 					},
 					{
@@ -11654,7 +11654,7 @@ const skills = {
 							shan: 1,
 							tao: 1,
 							jiu: 1,
-							jlshqs_mei: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
