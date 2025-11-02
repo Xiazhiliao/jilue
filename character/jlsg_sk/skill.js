@@ -17313,7 +17313,7 @@ const skills = {
 			},
 		},
 	},
-	jlsg_zhuren: {
+	/*jlsg_zhuren: {
 		intro: {
 			markcount: "mark",
 			content: "mark",
@@ -18102,6 +18102,876 @@ const skills = {
 		},
 		ai: {
 			order: 11,
+			result: {
+				player: 1,
+				target(player, target) {
+					return get.attitude(player, target);
+				},
+			},
+		},
+	},*/
+	jlsg_zhuren: {
+		intro: {
+			markcount: "mark",
+			content: "mark",
+		},
+		audio: "ext:极略/audio/skill:2",
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.hasMark("jlsg_zhuren");
+		},
+		filterTarget(card, player, target) {
+			return target.countVCards("e", card => get.subtype(card, false) == "equip1");
+		},
+		async precontent(event, trigger, player) {
+			const [target] = event.result.targets;
+			const es1 = target.getVCards("e", card => get.subtype(card, false) == "equip1"),
+				phaseUse = event.getParent("phaseUse"),
+				{ checkEffect } = get.info("jlsg_zhuren");
+			let vcard = es1[0];
+			if (es1.length > 1) {
+				[vcard] = await player.chooseButton(true, [`###铸刃###请选择${get.translation(target)}的一张武器牌进行附魔`, [es1, "vcard"]], () => true).forResultLinks();
+				event.result.cards = vcard.cards || [];
+				phaseUse.jlsg_zhuren_vcard = vcard;
+			} else {
+				event.result.cards = vcard.cards || [];
+				phaseUse.jlsg_zhuren_vcard = vcard;
+			}
+			if (!phaseUse.jlsg_zhuren_record?.length) {
+				phaseUse.jlsg_zhuren_record = [];
+				for (let i of ["1", "2", "3"]) {
+					phaseUse.jlsg_zhuren_record.addArray(checkEffect(vcard, i));
+				}
+			}
+			let choice, choiceList, prompt, result;
+			while (true) {
+				choiceList = ["断玉", "附灵", "噬主"];
+				prompt = "铸刃：请选择强化分支";
+				result = await player
+					.chooseControlList(choiceList, prompt, (event, player) => {
+						const [target] = event.result.targets;
+						if (get.attitude(player, target) < 0) {
+							return 2;
+						} else {
+							if (target.hp < 3) {
+								return 1;
+							}
+							return 0;
+						}
+					})
+					.forResult();
+				if (!result?.control || result?.control == "cancel2") {
+					break;
+				}
+				choice = String(result.index + 1);
+				choiceList = phaseUse.jlsg_zhuren_record.filter(i => i.jlsg_zhuren_type == choice).map(i => i.jlsg_zhuren_name);
+				prompt = "铸刃：请选择强化效果";
+				result = await player.chooseControlList(choiceList, prompt, () => 0).forResult();
+				if (result.control != "cancel2") {
+					choice = phaseUse.jlsg_zhuren_record.filter(i => i.jlsg_zhuren_type == choice)[result.index];
+					break;
+				} else {
+					choice = undefined;
+				}
+			}
+			if (!choice) {
+				delete event.getParent().result;
+				event.getParent().goto(0);
+			} else {
+				phaseUse.jlsg_zhuren_choice = choice;
+				delete phaseUse.jlsg_zhuren_record;
+			}
+		},
+		lose: false,
+		discard: false,
+		async content(event, trigger, player) {
+			player.removeMark(event.name);
+			const { jlsg_zhuren_vcard: vcard, jlsg_zhuren_choice: info } = event.getParent("phaseUse");
+			game.log(player, "对", vcard, "选择", `#y${{ 1: "断玉", 2: "附灵", 3: "噬主" }[info.jlsg_zhuren_type]}`, "效果为：", `#y${info.jlsg_zhuren_name}`);
+			lib.skill.jlsg_zhuren.syncRecord(vcard, info);
+			event.targets[0].addEquipTrigger(vcard);
+			await game.delay();
+			if (!_status.jlsg_zhuren) {
+				game.broadcastAll(function () {
+					_status.jlsg_zhuren = true;
+					for (let i in lib.card) {
+						const info = lib.card[i];
+						if (info?.subtype != "equip1") {
+							continue;
+						}
+						if (info.jlsg_zhuren_cardPrompt) {
+							continue;
+						}
+						if (info.cardPrompt) {
+							const { cardPrompt } = info;
+							info.jlsg_zhuren_cardPrompt = cardPrompt;
+						}
+						info.cardPrompt = function (card, player) {
+							let str = "",
+								info;
+							if (!card?.name) {
+								info = this;
+							} else {
+								info = get.info(card, false);
+							}
+							if (info.jlsg_zhuren_cardPrompt) {
+								str += info.jlsg_zhuren_cardPrompt(card, player);
+							} else if (lib.translate[card.name + "_info"]) {
+								str += lib.translate[card.name + "_info"];
+							}
+							if (card) {
+								let cardx = card;
+								const cardSymbol = card[card.cardSymbol];
+								if (cardSymbol) {
+									cardx = cardSymbol;
+								}
+								if (Object.keys(cardx.storage?.jlsg_zhuren || {}).length) {
+									const effectsList = get.info("jlsg_zhuren").jlsg_zhuren_contents,
+										str2 = [`<br><span style="color: #8b2caeff" data-nature="graymm">附魔效果</span>：`];
+									for (let info of effectsList) {
+										const { jlsg_zhuren_type, jlsg_zhuren_subtype } = info;
+										let skillName = `jlsg_zhuren_${jlsg_zhuren_type}|${jlsg_zhuren_subtype}`,
+											num = cardx.storage.jlsg_zhuren?.[jlsg_zhuren_type]?.[jlsg_zhuren_subtype];
+										if (!cardx.skills?.includes(skillName) || !num) {
+											continue;
+										}
+										str2.push(info.jlsg_zhuren_name.replaceAll(/\d+/g, num));
+									}
+									str += str2.join("<br><li>");
+								}
+							}
+							return str;
+						};
+					}
+				});
+			}
+		},
+		checkEffect(card, type, ignore = null) {
+			const effectsList = lib.skill.jlsg_zhuren.jlsg_zhuren_contents.filter(i => i.jlsg_zhuren_type == type),
+				record = card.storage?.jlsg_zhuren || {};
+			if (!Object.keys(record).length) {
+				return effectsList;
+			}
+			return effectsList.reduce((list, info) => {
+				let str = info.jlsg_zhuren_name;
+				if (str.match(/\d+/g)) {
+					list.push(info);
+				} else if (str.includes("强化")) {
+					if (ignore && str.includes(ignore)) {
+						return list;
+					}
+					list.push(info);
+				} else if (!record[info.jlsg_zhuren_subtype]) {
+					list.push(info);
+				}
+				return list;
+			}, []);
+		},
+		syncRecord(vcard, info) {
+			game.broadcastAll(
+				function (vcard, info) {
+					const { jlsg_zhuren_name, jlsg_zhuren_type, jlsg_zhuren_subtype, skill } = info;
+					const skillName = `jlsg_zhuren_${jlsg_zhuren_type}|${jlsg_zhuren_subtype}`,
+						{ filter: extraFilter, content: extraContent, ...other } = skill;
+					if (!(skillName in lib.skill)) {
+						lib.skill[skillName] = {
+							priority: -Number(jlsg_zhuren_type + jlsg_zhuren_subtype) / 1000,
+							sub: true,
+							sourceSkill: "jlsg_zhuren",
+							equipSkill: true,
+							charlotte: true,
+							forced: true,
+							popup: false,
+							jlsg_zhuren_name,
+							jlsg_zhuren_type,
+							jlsg_zhuren_subtype,
+							...other,
+							extraFilter,
+							extraContent,
+							filter(...args) {
+								const card = args[3];
+								if (!card.storage?.jlsg_zhuren?.[jlsg_zhuren_type]?.[jlsg_zhuren_subtype]) {
+									return false;
+								}
+								return extraFilter ? extraFilter(...args) : true;
+							},
+							async content(event, trigger, player) {
+								game.log(event.indexedData, "的附魔效果触发了");
+								let extraContent = get.info(event.name).extraContent;
+								if (extraContent) {
+									await extraContent(event, trigger, player);
+								}
+							},
+						};
+						lib.translate[skillName] = "铸刃附魔";
+						lib.translate[skillName + "_info"] = jlsg_zhuren_name;
+						game.finishSkill(skillName);
+					}
+					const addSkill = function (card) {
+						card.skills ??= [];
+						card.skills.add(skillName);
+						card.storage ??= {};
+						card.storage.jlsg_zhuren ??= {};
+						card.storage.jlsg_zhuren[jlsg_zhuren_type] ??= {};
+						card.storage.jlsg_zhuren[jlsg_zhuren_type][jlsg_zhuren_subtype] ??= 0;
+						card.storage.jlsg_zhuren[jlsg_zhuren_type][jlsg_zhuren_subtype]++;
+					};
+					addSkill(vcard);
+					if (get.itemtype(vcard) == "vcard" && get.is.ordinaryCard(vcard)) {
+						addSkill(vcard.cards[0]);
+					}
+				},
+				vcard,
+				info
+			);
+		},
+		getInfo(player, isCards) {
+			let es = player.getVCards("e"),
+				//判定区仍然生效的装备牌
+				equipEnabled = player
+					.getVCards("j", vcard => {
+						if (get.type(vcard) != "equip" || !vcard.storage?.equipEnable) {
+							return false;
+						}
+						return vcard.cards.some(card => get.type(card) == "equip");
+					})
+					.flatMap(vcard => vcard.cards.filter(card => get.type(card) == "equip")),
+				//额外生效卡牌（【锦龙】）
+				extraCards = [player.getExpansions("jlsg_jinlong")].flat().unique();
+			const cards = es.concat(equipEnabled).concat(extraCards);
+			if (isCards) {
+				return cards;
+			}
+			let result = cards.reduce((list, card) => {
+				const storage = card.storage?.jlsg_zhuren || {};
+				for (let type in storage) {
+					list[type] ??= {};
+					for (let subtype in storage[type]) {
+						list[type][subtype] ??= 0;
+						list[type][subtype] += storage[type][subtype];
+					}
+				}
+				return list;
+			}, {});
+			return result;
+		},
+		jlsg_zhuren_contents: [
+			//断玉
+			{
+				jlsg_zhuren_type: "1",
+				jlsg_zhuren_subtype: "1",
+				jlsg_zhuren_name: "锁定技，你使用【杀】造成伤害+1",
+				skill: {
+					trigger: { player: "useCard" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					filter(event) {
+						return event.card.name == "sha";
+					},
+					async content(event, trigger, player) {
+						const storage = event.indexedData.storage?.jlsg_zhuren?.["1"]?.["1"];
+						trigger.baseDamage += storage;
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "1",
+				jlsg_zhuren_subtype: "2",
+				jlsg_zhuren_name: "锁定技，你使用的【杀】的目标上限+1",
+				skill: {
+					mod: {
+						selectTarget(card, player, range) {
+							range = get.select(range);
+							if (card.name == "sha" && range[1] > 0) {
+								const storage = get.info("jlsg_zhuren").getInfo(player);
+								range[1] += storage["1"]?.["2"];
+							}
+						},
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "1",
+				jlsg_zhuren_subtype: "3",
+				jlsg_zhuren_name: "锁定技，当你使用【杀】时，你摸1张牌",
+				skill: {
+					trigger: { player: "useCard" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					filter(event) {
+						return event.card.name == "sha";
+					},
+					async content(event, trigger, player) {
+						const storage = event.indexedData.storage?.jlsg_zhuren?.["1"]?.["3"];
+						await player.draw(storage);
+					},
+					ai: {
+						effect: {
+							player_use(card, player) {
+								if (card.name != "sha") {
+									return;
+								}
+								const storage = get.info("jlsg_zhuren").getInfo(player);
+								return [1, storage["1"]?.["3"] || 0];
+							},
+						},
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(player.hasUseTarget("sha") ? get.effect(player, { jlsg_zhuren_name: "draw" }, player, viewer) : 0) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "1",
+				jlsg_zhuren_subtype: "4",
+				jlsg_zhuren_name: "锁定技，攻击范围+1，使用【杀】的次数上限+1",
+				skill: {
+					mod: {
+						attackRange(player, num) {
+							const storage = get.info("jlsg_zhuren").getInfo(player);
+							return num + storage["1"]?.["4"];
+						},
+						cardUsable(card, player, num) {
+							if (card.name == "sha") {
+								const storage = get.info("jlsg_zhuren").getInfo(player);
+								return num + storage["1"]?.["4"];
+							}
+						},
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "1",
+				jlsg_zhuren_subtype: "5",
+				jlsg_zhuren_name: "锁定技，你使用的【杀】不能被【闪】响应",
+				skill: {
+					trigger: { player: "useCard" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					filter(event, player) {
+						if (!game.players.some(current => !event.directHit.includes(current))) {
+							return false;
+						}
+						return event.card.name == "sha";
+					},
+					async content(event, trigger, player) {
+						trigger.directHit.addArray(game.players);
+					},
+					ai: {
+						directHit_ai: true,
+						skillTagFilter(player, tag, arg) {
+							if (arg?.card?.name != "sha") {
+								return false;
+							}
+							const storage = get.info("jlsg_zhuren").getInfo(player);
+							return storage["1"]?.["5"];
+						},
+					},
+				},
+				ai_effect(player, viewer) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
+				},
+			},
+			{
+				jlsg_zhuren_type: "1",
+				jlsg_zhuren_subtype: "6",
+				jlsg_zhuren_name: "锁定技，你使用的【杀】无视防具",
+				skill: {
+					ai: {
+						unequip: true,
+						unequip_ai: true,
+						skillTagFilter(player, tag, arg) {
+							if (arg?.card?.name != "sha") {
+								return false;
+							}
+							if (arg?.card?.name != "sha") {
+								return false;
+							}
+							const storage = get.info("jlsg_zhuren").getInfo(player);
+							return storage["1"]?.["6"];
+						},
+					},
+				},
+				ai_effect(player, viewer) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
+				},
+			},
+			//附灵
+			{
+				jlsg_zhuren_type: "2",
+				jlsg_zhuren_subtype: "1",
+				jlsg_zhuren_name: "锁定技，结束阶段，你视为使用1张【杀】",
+				skill: {
+					trigger: { player: "phaseJieshuBegin" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					async content(event, trigger, player) {
+						let num = event.indexedData.storage.jlsg_zhuren["2"]["1"];
+						while (num-- > 0) {
+							if (player.hasUseTarget("sha", true, false)) {
+								await player.chooseUseTarget("sha", true, false);
+							}
+						}
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "2",
+				jlsg_zhuren_subtype: "2",
+				jlsg_zhuren_name: "锁定技，出牌阶段开始时，你获得1张随机属性的临时【杀】",
+				skill: {
+					trigger: { player: "phaseUseBegin" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					async content(event, trigger, player) {
+						let num = event.indexedData.storage.jlsg_zhuren["2"]?.["2"],
+							cards = [];
+						while (num-- > 0) {
+							let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.randomGet());
+							if (card) {
+								cards.add(card);
+							}
+						}
+						if (cards.length) {
+							await player.gain(cards, "draw2");
+						}
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "2",
+				jlsg_zhuren_subtype: "3",
+				jlsg_zhuren_name: "锁定技，当装备或从装备区失去此牌后，你加1点体力上限并回复1点体力",
+				skill: {
+					trigger: { player: ["equipAfter", "loseBegin"] },
+					getIndex(event, player) {
+						if (event.name == "equip") {
+							return [event.card];
+						}
+						const es = player.getCards("e"),
+							cards = event.cards.slice();
+						let result = [];
+						for (const card of cards) {
+							if (!es.includes(card)) {
+								continue;
+							} else if (card.parentNode) {
+								if (card.parentNode.classList.contains("equips")) {
+									const VEquip = card[card.cardSymbol];
+									if (VEquip) {
+										result.add(VEquip);
+									}
+								}
+							}
+						}
+						return result;
+					},
+					async content(event, trigger, player) {
+						const vcard = event.indexedData;
+						if (trigger.name == "equip") {
+							const num = vcard.storage.jlsg_zhuren["2"]["3"];
+							await player.gainMaxHp(num);
+							await player.recover(num);
+						} else {
+							if (vcard.cards?.length) {
+								player
+									.when({
+										player: "loseAfter",
+										global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+									})
+									.filter((evt, player) => {
+										const getl = evt.getl(player);
+										for (const card of getl.es) {
+											const Vcard = getl.vcard_map.get(card);
+											if (Vcard?.name && Vcard.vcardID == vcard.vcardID) {
+												return Vcard.storage.jlsg_zhuren["2"]["3"] > 0;
+											}
+										}
+										return false;
+									})
+									.step(async function (event, trigger, player) {
+										let getl = trigger.getl(player),
+											num = 0;
+										for (const card of getl.es) {
+											const Vcard = getl.vcard_map.get(card);
+											if (Vcard?.name && Vcard.vcardID == vcard.vcardID) {
+												num = Vcard.storage.jlsg_zhuren["2"]["3"];
+											}
+										}
+										await player.gainMaxHp(num);
+										await player.recover(num);
+									});
+							}
+						}
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(get.effect(player, { name: "recover" }, player, viewer)) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "2",
+				jlsg_zhuren_subtype: "4",
+				jlsg_zhuren_name: "锁定技，当你受到其他角色造成的伤害后，你视为对其使用1张【杀】",
+				skill: {
+					trigger: { player: "damageEnd" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					filter(event, player, triggername, card) {
+						return event.source?.isIn() && event.source != player;
+					},
+					async content(event, trigger, player) {
+						let num = event.indexedData.storage.jlsg_zhuren["2"]?.["4"];
+						while (num-- > 0) {
+							if (trigger.source.isIn() && player.canUse("sha", trigger.source, false, false)) {
+								await player.useCard({ name: "sha", isCard: true }, trigger.source, false);
+							}
+						}
+					},
+					ai: {
+						maixie_defend: true,
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "2",
+				jlsg_zhuren_subtype: "5",
+				jlsg_zhuren_name: "锁定技，准备阶段或结束阶段，随机获得一项“断玉”强化",
+				skill: {
+					trigger: { player: ["phaseZhubeiBegin", "phaseJieshuBegin"] },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					async content(event, trigger, player) {
+						let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "duanyu", "断玉");
+						if (effectsList.length) {
+							event.effect = effectsList.randomGet();
+							game.log(player, "的", event.card, "获得", `#y断玉`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["duanyu"][event.effect].str}`);
+							lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
+						}
+					},
+				},
+				ai_effect(player, viewer) {
+					return get.sgnAttitude(viewer, player);
+				},
+			},
+			{
+				jlsg_zhuren_type: "2",
+				jlsg_zhuren_subtype: "6",
+				jlsg_zhuren_name: "锁定技，准备阶段或结束阶段，随机获得一项“附灵”强化",
+				skill: {
+					trigger: { player: ["phaseZhubeiBegin", "phaseJieshuBegin"] },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					async content(event, trigger, player) {
+						let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "fuling", "附灵");
+						if (effectsList.length) {
+							event.effect = effectsList.randomGet();
+							game.log(player, "的", event.card, "获得", `#y附灵`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["fuling"][event.effect].str}`);
+							lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
+						}
+					},
+				},
+				ai_effect(player, viewer) {
+					return get.sgnAttitude(viewer, player);
+				},
+			},
+			//噬主
+			{
+				jlsg_zhuren_type: "3",
+				jlsg_zhuren_subtype: "1",
+				jlsg_zhuren_name: "锁定技，当你装备或从装备区失去此牌后，你失去1点体力并减1点体力上限",
+				skill: {
+					trigger: { player: ["equipAfter", "loseBegin"] },
+					getIndex(event, player) {
+						if (event.name == "equip") {
+							return [event.card];
+						}
+						const es = player.getCards("e"),
+							cards = event.cards.slice();
+						let result = [];
+						for (const card of cards) {
+							if (!es.includes(card)) {
+								continue;
+							} else if (card.parentNode) {
+								if (card.parentNode.classList.contains("equips")) {
+									const VEquip = card[card.cardSymbol];
+									if (VEquip) {
+										result.add(VEquip);
+									}
+								}
+							}
+						}
+						return result;
+					},
+					async content(event, trigger, player) {
+						const vcard = event.indexedData;
+						if (trigger.name == "equip") {
+							const num = vcard.storage.jlsg_zhuren["3"]["1"];
+							await player.loseHp(num);
+							await player.loseMaxHp(num);
+						} else {
+							if (vcard.cards?.length) {
+								player
+									.when({
+										player: "loseAfter",
+										global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+									})
+									.filter((evt, player) => {
+										const getl = evt.getl(player);
+										for (const card of getl.es) {
+											const loseVcard = getl.vcard_map.get(card);
+											if (loseVcard?.name && loseVcard.vcardID == vcard.vcardID) {
+												return true;
+											}
+										}
+										return false;
+									})
+									.step(async function (event, trigger, player) {
+										const num = vcard.storage.jlsg_zhuren["3"]["1"];
+										await player.loseHp(num);
+										await player.loseMaxHp(num);
+									});
+							}
+						}
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(get.effect(player, { name: "losehp" }, player, viewer)) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "3",
+				jlsg_zhuren_subtype: "2",
+				jlsg_zhuren_name: "锁定技，出牌阶段开始时，你视为对自己使用1张【杀】",
+				skill: {
+					trigger: { player: "phaseUseBegin" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					async content(event, trigger, player) {
+						let num = event.indexedData.storage.jlsg_zhuren["3"]["2"];
+						while (num-- > 0) {
+							if (player.isIn()) {
+								await player.useCard({ name: "sha", isCard: true }, player, false);
+							}
+						}
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(get.effect(player, { name: "sha" }, player, viewer)) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "3",
+				jlsg_zhuren_subtype: "3",
+				jlsg_zhuren_name: "锁定技，当你使用【杀】时，你随机弃置1张除此牌外的牌",
+				skill: {
+					trigger: { player: "useCard" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					filter(event) {
+						return event.card.name == "sha";
+					},
+					async content(event, trigger, player) {
+						const ignore = event.indexedData;
+						const num = ignore.storage.jlsg_zhuren["3"]["3"];
+						const cards = player.getDiscardableCards(player, "he", card => {
+							if (get.position(card) == "e") {
+								return card[card.cardSymbol] != ignore;
+							}
+							return true;
+						});
+						if (cards.length) {
+							await player.discard(cards.randomGets(num));
+						}
+					},
+					ai: {
+						effect: {
+							player_use(card, player) {
+								if (card.name != "sha") {
+									return false;
+								}
+								const storage = get.info("jlsg_zhuren").getInfo(player);
+								return [1, -storage["3"]?.["3"] || 0];
+							},
+						},
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return Math.sign(get.effect(player, { name: "guohe_copy2" }, player, viewer)) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "3",
+				jlsg_zhuren_subtype: "4",
+				jlsg_zhuren_name: "锁定技，攻击范围+1，手牌上限-1",
+				skill: {
+					mod: {
+						attackRange(player, num) {
+							const storage = get.info("jlsg_zhuren").getInfo(player);
+							return num + storage["3"]?.["4"];
+						},
+						maxHandcard(player, num) {
+							const storage = get.info("jlsg_zhuren").getInfo(player);
+							return num - storage["3"]?.["4"];
+						},
+					},
+				},
+				ai_effect(player, viewer, num = 1) {
+					return get.sgnAttitude(viewer, player) * num;
+				},
+			},
+			{
+				jlsg_zhuren_type: "3",
+				jlsg_zhuren_subtype: "5",
+				jlsg_zhuren_name: "锁定技，准备阶段，你随机将一个与【杀】无关的技能替换为与【杀】有关的技能",
+				skill: {
+					trigger: { player: "phaseZhunbeiBegin" },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					filter(event, player, triggername, card) {
+						const skills = player.getSkills(null, false, false).filter(skill => {
+							let info = get.info(skill);
+							if (!info || info.charlotte) {
+								return false;
+							}
+							return lib.translate[skill] && !get.plainText(get.skillInfoTranslation(skill, player)).includes("【杀】");
+						});
+						return skills.length;
+					},
+					async content(event, trigger, player) {
+						const skills = player.getSkills(null, false, false).filter(skill => {
+							let info = get.info(skill);
+							if (!info || info.charlotte) {
+								return false;
+							}
+							return lib.translate[skill] && !get.plainText(get.skillInfoTranslation(skill, player)).includes("【杀】");
+						});
+						if (!skills.length) {
+							return;
+						}
+						if (!_status.jlsg_luocha_list_hidden?.length) {
+							lib.skill.jlsg_luocha.initList();
+						}
+						let shaRelatedList = _status.jlsg_luocha_list_hidden.filter(skill => !player.hasSkill(skill, null, false, false));
+						if (!shaRelatedList.length) {
+							game.log("没有与“杀”有关的技能了");
+							return;
+						}
+						await player.changeSkills(shaRelatedList.randomGets(1), skills.randomGets(1));
+					},
+				},
+				ai_effect(player, viewer) {
+					return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
+				},
+			},
+			{
+				jlsg_zhuren_type: "3",
+				jlsg_zhuren_subtype: "6",
+				jlsg_zhuren_name: "锁定技，准备阶段或结束阶段。随机获得一项“噬主”强化",
+				skill: {
+					trigger: { player: ["phaseZhubeiBegin", "phaseJieshuBegin"] },
+					getIndex(event, player) {
+						return get.info("jlsg_zhuren").getInfo(player, true);
+					},
+					async content(event, trigger, player) {
+						let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.indexedData, "3", "噬主");
+						if (effectsList.length) {
+							event.effect = effectsList.randomGet();
+							game.log(event.indexedData, "获得", `#y噬主`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["shizhu"][event.effect].str}`);
+							lib.skill.jlsg_zhuren.syncRecord(event.indexedData, event.effect);
+						}
+					},
+				},
+				ai_effect(player, viewer) {
+					return get.sgnAttitude(viewer, player);
+				},
+			},
+		],
+		group: "jlsg_zhuren_addMark",
+		global: "jlsg_zhuren_extraAi",
+		subSkill: {
+			addMark: {
+				trigger: {
+					player: "phaseZhunbeiBegin",
+					global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				getIndex(event, player) {
+					if (event.name == "phaseZhunbei") {
+						return 1;
+					}
+					return game.filterPlayer2(current => {
+						const evt = event.getl(current);
+						const lostCards = [];
+						evt.es.forEach(card => {
+							const vcard = evt.vcard_map.get(card);
+							if (vcard?.name && get.subtype(vcard) == "equip1") {
+								lostCards.add(vcard);
+							}
+						});
+						return lostCards.length;
+					});
+				},
+				filter(event, player, name, target) {
+					return true;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.addMark("jlsg_zhuren", 1);
+				},
+			},
+			extraAi: {
+				charlotte: true,
+				mod: {
+					aiValue(player, card, num) {
+						const storage = card?.storage?.jlsg_zhuren || {};
+						let list = { 1: 0, 2: 0, 3: 0 };
+						for (let i in list) {
+							for (let j in storage) {
+								if (j == i) {
+									list[i] += storage[j];
+								}
+							}
+						}
+						let numx = list["1"] + list["2"] - list["3"];
+						return num + numx;
+					},
+					aiUseful(player, card, num) {
+						return lib.skill.jlsg_zhuren_extraAi.mod.aiValue.apply(this, arguments);
+					},
+				},
+			},
+		},
+		ai: {
+			order: 20,
 			result: {
 				player: 1,
 				target(player, target) {
