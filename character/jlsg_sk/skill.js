@@ -5428,12 +5428,12 @@ const skills = {
 		onremove: true,
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
-			player: "enterGame",
-			global: ["phaseBefore", "gameStart"],
+			player: ["enterGame", "phaseBegin"],
+			global: "phaseBefore",
 		},
-		filter(event, player) {
+		filter(event, player, name) {
 			if (event.name == "phase") {
-				return event.player == player || game.phaseNumber == 0;
+				return name == "phaseBegin" || game.phaseNumber == 0;
 			}
 			return true;
 		},
@@ -5494,7 +5494,7 @@ const skills = {
 					skills: skills.slice(0, event.num),
 				});
 			};
-			const chooseButton = function (list, skills, num) {
+			const chooseButton = function (map, num) {
 				const { promise, resolve } = Promise.withResolvers();
 				const event = _status.event;
 				event.num ??= num;
@@ -5504,43 +5504,63 @@ const skills = {
 				}
 				event._result.skills = [];
 				let rSkill = event._result.skills;
-				event.dialog = ui.create.dialog(`千幻：请选择获得至多${get.cnNumber(event.num)}个技能`, [list, "character"], "hidden");
-				const table = document.createElement("div");
-				table.classList.add("add-setting");
-				table.style.margin = "0";
-				table.style.width = "100%";
-				table.style.position = "relative";
-				for (let i = 0; i < skills.length; i++) {
-					const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
-					td.link = skills[i];
-					table.appendChild(td);
-					td.innerHTML = "<span>" + get.translation(skills[i]) + "</span>";
-					td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
-						if (_status.dragged) {
-							return;
+				event.dialog = ui.create.dialog(`千幻：请选择获得至多${get.cnNumber(event.num)}个技能`, "hidden");
+				for (const name of Object.keys(map)) {
+					const table = document.createElement("div");
+					table.classList.add("add-setting");
+					table.style.margin = "0";
+					table.style.width = "100%";
+					table.style.position = "relative";
+					table.style.display = "flex";
+					table.style.justifyContent = "flex-start";
+					table.style.alignItems = "center";
+					const tdc = ui.create.buttonPresets.character(name, "character");
+					for (const item in tdc.node) {
+						if (item == "name") {
+							tdc.node.name.style.writingMode = "horizontal-tb";
+						} else {
+							tdc.node[item].hide();
 						}
-						if (_status.justdragged) {
-							return;
-						}
-						_status.tempNoButton = true;
-						setTimeout(function () {
-							_status.tempNoButton = false;
-						}, 500);
-						let link = this.link;
-						if (!this.classList.contains("bluebg")) {
-							if (rSkill.length >= event.num) {
+					}
+					tdc.style.height = "40px";
+					table.appendChild(tdc);
+					const skills = map[name];
+					for (let i = 0; i < skills.length; i++) {
+						const td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
+						td.link = skills[i];
+						td.innerHTML = "<span>" + get.translation(skills[i]) + "</span>";
+						td.setNodeIntro(get.translation(skills[i]), get.skillInfoTranslation(skills[i], player));
+						td.addEventListener(lib.config.touchscreen ? "touchend" : "click", function () {
+							if (_status.dragged) {
 								return;
 							}
-							rSkill.add(link);
-							this.classList.add("bluebg");
-						} else {
-							this.classList.remove("bluebg");
-							rSkill.remove(link);
-						}
-					});
+							if (_status.justdragged) {
+								return;
+							}
+							_status.tempNoButton = true;
+							setTimeout(function () {
+								_status.tempNoButton = false;
+							}, 500);
+							let link = this.link;
+							if (!this.classList.contains("bluebg")) {
+								if (rSkill.length >= event.num) {
+									return;
+								}
+								rSkill.add(link);
+								this.classList.add("bluebg");
+							} else {
+								this.classList.remove("bluebg");
+								rSkill.remove(link);
+							}
+						});
+						table.appendChild(td);
+					}
+					event.dialog.content.appendChild(table);
 				}
-				event.dialog.content.appendChild(table);
 				event.dialog.add("　　");
+				if (!map[player.name]) {
+					event.dialog.add("　　");
+				}
 				event.dialog.open();
 				event.switchToAuto = function () {
 					_status.imchoosing = false;
@@ -5570,10 +5590,10 @@ const skills = {
 			};
 			let next;
 			if (event.isMine()) {
-				next = chooseButton(Object.keys(map), Object.values(map).flat(), event.num);
+				next = chooseButton(map, event.num);
 			} else if (event.isOnline()) {
 				const { promise, resolve } = Promise.withResolvers();
-				event.player.send(chooseButton, Object.keys(map), Object.values(map).flat(), event.num);
+				event.player.send(chooseButton, map, event.num);
 				event.player.wait(async result => {
 					if (result == "ai") {
 						result = await switchToAuto();
