@@ -14890,6 +14890,318 @@ const skills = {
 			},
 		},
 	},
+	jlsg_taocan: {
+		updateShaUsableMap() {
+			const obj = {};
+			for (const i of game.players) {
+				let num = game.checkMod(get.autoViewAs({ name: "sha" }), i, 1, "cardUsable", i);
+				if (typeof num != "number") {
+					num = 1;
+				}
+				obj[i.playerid] = num;
+			}
+			_status.playerShaUsableMap = obj;
+		},
+		hasShaUsableChanged() {
+			if (!_status.playerShaUsableMap) {
+				lib.skill.jlsg_taocan.updateShaUsableMap();
+			}
+			const map = _status.playerShaUsableMap;
+			let list = {};
+			for (const i of game.players) {
+				let num = game.checkMod(get.autoViewAs({ name: "sha" }), i, 1, "cardUsable", i);
+				if (typeof num != "number") {
+					num = 1;
+				}
+				if (map[i.playerid] != num) {
+					list[i.playerid] = map[i.playerid] - num;
+				}
+			}
+			lib.skill.jlsg_taocan.updateShaUsableMap();
+			return list;
+		},
+		init: (player, skill) => get.info(skill).updateShaUsableMap(),
+		usable(skill, player) {
+			return player.getHp();
+		},
+		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "loseHpAfter", "loseMaxHpAfter", "changeSkillsAfter"] },
+		getIndex(event, player) {
+			if (!["loseHp", "loseMaxHp", "changeSkills"].includes(event.name)) {
+				return game.filterPlayer(current => event.getl?.(current)?.cards2?.length).sortBySeat(_status.currentPhase);
+			}
+			return [event.player];
+		},
+		filter(event, player, triggername, target) {
+			if (target == player) {
+				return false;
+			} else if (event.name == "changeSkills") {
+				return event.removeSkill.length;
+			} else if (event.name == "loseHp") {
+				return player.isDamaged();
+			} else if (event.name != "loseMaxHp") {
+				if (["lose", "loseAsync"].includes(event.name)) {
+					if (event.type == "use" || ["useCard", "respond"].includes(event.getParent().name)) {
+						return false;
+					}
+				}
+				return event.getl(target).cards2.someInD("od");
+			}
+			return true;
+		},
+		forced: true,
+		logTarget: (event, player, triggername, target) => target,
+		async content(event, trigger, player) {
+			if (trigger.name == "loseHp") {
+				await player.recover(trigger.num);
+			} else if (trigger.name == "loseMaxHp") {
+				await player.gainMaxHp(trigger.num);
+			} else if (trigger.name == "changeSkills") {
+				await player.addSkills(trigger.removeSkill);
+			} else {
+				const cards = trigger.getl(event.indexedData).cards2.filterInD("od");
+				await player.gain(cards, "gain2");
+			}
+		},
+		group: ["jlsg_taocan_check"],
+		subSkill: {
+			check: {
+				trigger: { global: ["jlsg_yaolingAfter", "logSkill", "useSkillAfter", "dieAfter", "changeHp", "equipAfter", "changeSkillsAfter"] },
+				getIndex(event, player, triggername) {
+					if (triggername == "jlsg_yaolingAfter" && event.drawReduce) {
+						return [event.drawReduce];
+					}
+					let list = Object.entries(lib.skill.jlsg_taocan.hasShaUsableChanged());
+					return list;
+				},
+				filter(event, player, triggername, info) {
+					if (player.countSkill("jlsg_taocan") >= player.getHp()) {
+						return false;
+					}
+					console.log(triggername, info);
+					if (triggername == "jlsg_yaolingAfter" && event.drawReduce) {
+						return true;
+					}
+					return player.playerid != info[0] && info[1] > 0;
+				},
+				forced: true,
+				popup: false,
+				logTarget(event, player, triggername, info) {
+					let target = (_status.connectMode ? lib.playerOL : game.playerMap)[info[0]];
+					return target;
+				},
+				async content(event, trigger, player) {
+					await player.logSkill("jlsg_taocan", event.targets);
+					let storage = player.getStorage("jlsg_taocan_buff", { sha: 0, draw: 0 });
+					if (event.triggername == "jlsg_yaolingAfter" && trigger.drawReduce) {
+						storage.draw += trigger.drawReduce[1];
+					} else {
+						storage.sha += event.indexedData[1];
+					}
+					player.addSkill("jlsg_taocan_buff");
+					player.setStorage("jlsg_taocan_buff", storage, true);
+				},
+			},
+			buff: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					cardUsable(card, player, num) {
+						if (card.name == "sha") {
+							return num + player.getStorage("jlsg_taocan_buff", { sha: 0 }).sha;
+						}
+					},
+				},
+				intro: {
+					content(storage, player) {
+						storage = storage || { sha: 0, draw: 0 };
+						let str = [];
+						if (storage.sha > 0) {
+							str.add("出杀次数：+" + storage.sha);
+						}
+						if (storage.draw > 0) {
+							str.add("摸牌数：+" + storage.draw);
+						}
+						return str.join("<br>");
+					},
+				},
+				trigger: { player: "phaseDrawBegin2" },
+				filter(event, player) {
+					return !event.numFixed && player.getStorage("jlsg_taocan_buff", { draw: 0 }).draw > 0;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num += player.getStorage(event.name, { draw: 0 }).draw;
+				},
+			},
+		},
+	},
+	jlsg_yaoling: {
+		trigger: { global: "phaseUseBegin" },
+		filter(event, player) {
+			if (event.player == player) {
+				return false;
+			}
+			return event.player.hasCard(card => {
+				let sha = get.autoViewAs({ name: "sha", isCard: false }, [card]);
+				return player.canUse(sha, event.player, false);
+			}, "he");
+		},
+		async cost(event, trigger, player) {
+			const { result } = await player.choosePlayerCard(trigger.player, "he");
+			event.result = {
+				bool: result?.bool,
+				targets: [trigger.player],
+				cards: result?.links,
+			};
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cards,
+			} = event;
+			const sha = get.autoViewAs({ name: "sha", isCard: false }, cards);
+			const next = player.useCard(sha, cards, target);
+			await next;
+			if (!target.isIn()) {
+				return;
+			}
+			let damaged = player.hasHistory("sourceDamage", evt => evt.getParent(2) == next),
+				result;
+			if (!damaged) {
+				result = await player
+					.chooseBool(`耀令：是否失去1点体力，视为以此法对${get.translation(target)}造成了伤害？`)
+					.set("ai", (event, player) => {
+						if (get.effect(player, { name: "losehp" }, player, player) > 0) {
+							return true;
+						}
+						return player.hp > 2;
+					})
+					.forResult();
+				if (result?.bool) {
+					await player.loseHp(1);
+				} else {
+					return;
+				}
+			}
+			let list = ["失去1点属性", "失去一个技能"];
+			if (!target.getSkills(null, false, false).length) {
+				list = list.slice(0, -1);
+			}
+			if (list.length == 1) {
+				result = { control: list[0] };
+			} else {
+				result = await target
+					.chooseControl(list)
+					.set("prompt", "耀令：请选择一项")
+					.set("ai", (event, player) => {
+						const controls = get.event().controls;
+						if (controls.includes("失去一个技能")) {
+							if (player.getSkills(null, false, false).some(skill => get.info(skill)?.ai?.neg)) {
+								return 1;
+							}
+							return 0;
+						}
+					})
+					.forResult();
+			}
+			if (result?.control) {
+				if (result.control == "失去1点属性") {
+					list = ["体力", "体力上限", "出杀次数", "摸牌数"];
+					if (!_status.playerShaUsableMap) {
+						lib.skill.jlsg_taocan.updateShaUsableMap();
+					}
+					if (_status.playerShaUsableMap[target.playerid] <= 0) {
+						list.remove("出杀次数");
+					}
+					result = await target
+						.chooseControl(list)
+						.set("prompt", "耀令：请选择失去1点属性")
+						.set("ai", (event, player) => {
+							const controls = get.event().controls;
+							if (controls.includes("出杀次数")) {
+								if (_status.playerShaUsableMap[player.playerid] > 1) {
+									return 2;
+								}
+							}
+							if (player.getDamagedHp() > 3 && player.hp > 0) {
+								return 1;
+							}
+							return 0;
+						})
+						.forResult();
+					if (result?.control) {
+						game.log(target, "失去了1点", result.control);
+						if (result.control == "体力") {
+							await target.loseHp(1);
+						} else if (result.control == "体力上限") {
+							await target.loseMaxHp(1);
+						} else {
+							let storage = target.getStorage("jlsg_yaoling_debuff", { sha: 0, draw: 0 });
+							if (result.control == "出杀次数") {
+								storage.sha++;
+							} else {
+								event.drawReduce = [target.playerid, 1];
+								storage.draw++;
+							}
+							target.addSkill("jlsg_yaoling_debuff");
+							target.setStorage("jlsg_yaoling_debuff", storage, true);
+						}
+					}
+				} else {
+					const buttons = target.getSkills(null, false, false).map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
+					result = await target
+						.chooseButton(true, ["耀令：请选择失去一个技能", [buttons, "textbutton"]])
+						.set("ai", ({ link }) => {
+							const info = get.info(link);
+							if (info?.ai?.neg) {
+								return 114514;
+							}
+							return 100 - get.skillRank(link);
+						})
+						.forResult();
+					if (result?.bool && result.links?.length) {
+						await target.removeSkills(result.links);
+					}
+				}
+			}
+		},
+		subSkill: {
+			debuff: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					cardUsable(card, player, num) {
+						if (card.name == "sha") {
+							return num - player.getStorage("jlsg_yaoling_debuff", { sha: 0 }).sha;
+						}
+					},
+				},
+				intro: {
+					content(storage, player) {
+						storage = storage || { sha: 0, draw: 0 };
+						let str = [];
+						if (storage.sha > 0) {
+							str.add("出杀次数：-" + storage.sha);
+						}
+						if (storage.draw > 0) {
+							str.add("摸牌数：-" + storage.draw);
+						}
+						return str.join("<br>");
+					},
+				},
+				trigger: { player: "phaseDrawBegin2" },
+				filter(event, player) {
+					return !event.numFixed && player.getStorage("jlsg_yaoling_debuff", { draw: 0 }).draw > 0;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num -= player.getStorage("jlsg_yaoling_debuff", { draw: 0 }).draw;
+				},
+			},
+		},
+	},
 };
 
 export default skills;

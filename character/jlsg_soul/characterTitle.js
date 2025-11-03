@@ -7,6 +7,8 @@ const characterTitle = {
 	jlsgsoul_caiwenji: "霜弦哀世",
 	jlsgsoul_sp_guanyu: "青龙",
 	jlsgsoul_zhoutai: "百战不灭",
+	jlsg_soul_sp_zhenji: "弦落九天",
+	jlsgsoul_dongzhuo: "贪欲无餍",
 };
 
 export default characterTitle;
