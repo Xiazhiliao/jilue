@@ -12276,7 +12276,7 @@ const skills = {
 						str: "选择一名角色，令其对其余所有角色连续使用六张随机普通锦囊牌",
 						content: async function (event, trigger, player) {
 							const list = lib.inpile.filter(name => {
-								if (get.type2(name) != "trick") {
+								if (get.type(name) != "trick") {
 									return false;
 								}
 								let info = lib.card[name];
@@ -12311,7 +12311,7 @@ const skills = {
 						str: "选择一名角色，令其对其余所有角色连续使用六张同名普通锦囊牌",
 						content: async function (event, trigger, player) {
 							const list = lib.inpile.filter(name => {
-								if (get.type2(name) != "trick") {
+								if (get.type(name) != "trick") {
 									return false;
 								}
 								let info = lib.card[name];
@@ -12364,7 +12364,7 @@ const skills = {
 								});
 								if (result.bool) {
 									let gains = get.gainableSkills((info, skill, character) => {
-										if (character.indexOf("zuoce") > -1 || character.indexOf("xushao")) {
+										if (character.indexOf("zuoce") > -1 || character.indexOf("xushao") > -1) {
 											return false;
 										} else if (player.hasSkill(skill, null, false, false)) {
 											return false;
@@ -12400,7 +12400,7 @@ const skills = {
 									}
 									const addList = get
 										.gainableSkills((info, skill, character) => {
-											if (character.indexOf("zuoce") > -1 || character.indexOf("xushao")) {
+											if (character.indexOf("zuoce") > -1 || character.indexOf("xushao") > -1) {
 												return false;
 											} else if (target.hasSkill(skill, null, false, false)) {
 												return false;
