@@ -13303,10 +13303,10 @@ const skills = {
 				num =
 					trigger.name == "lose"
 						? trigger.cards.filter(card => {
-								if (get.owner(card) == target) {
+								if (get.owner(card) != target) {
 									return false;
 								}
-								return !["h", "e"].includes(get.position(card));
+								return ["h", "e"].includes(get.position(card));
 							}).length
 						: trigger.num;
 			const prompt = `${get.translation(target)}即将${trigger.name == "lose" ? "弃置" : "摸"}${get.cnNumber(num)}张牌，是否取消此操作改为其以外的角色各${trigger.name == "lose" ? "随机弃置" : "摸"}一张牌？`;
