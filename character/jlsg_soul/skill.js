@@ -14925,10 +14925,22 @@ const skills = {
 		usable(skill, player) {
 			return player.getHp();
 		},
-		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "loseHpAfter", "loseMaxHpAfter", "changeSkillsAfter"] },
+		trigger: { global: ["useCardAfter", "respondAfter", "loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "loseHpAfter", "loseMaxHpAfter", "changeSkillsAfter"] },
 		getIndex(event, player) {
 			if (!["loseHp", "loseMaxHp", "changeSkills"].includes(event.name)) {
-				return game.filterPlayer(current => event.getl?.(current)?.cards2?.length).sortBySeat(_status.currentPhase);
+				if (["useCard", "respond"].includes(event.name)) {
+					return game
+						.filterPlayer2(current => {
+							return current.hasHistory("lose", evtx => {
+								if (evtx.type != "use") {
+									return false;
+								}
+								return event == (evtx.relatedEvent || evtx.getParent());
+							});
+						})
+						.sortBySeat(_status.currentPhase);
+				}
+				return game.filterPlayer2(current => event.getl?.(current)?.cards2?.length).sortBySeat(_status.currentPhase);
 			}
 			return [event.player];
 		},
@@ -14940,7 +14952,20 @@ const skills = {
 			} else if (event.name == "loseHp") {
 				return player.isDamaged();
 			} else if (event.name != "loseMaxHp") {
-				if (["lose", "loseAsync"].includes(event.name)) {
+				if (["useCard", "respond"].includes(event.name)) {
+					let cards = [];
+					let historys = target.getHistory("lose", evt => {
+						let evtx = evt.relatedEvent || evt.getParent();
+						if (evt.type != "use") {
+							return false;
+						} else if (event != evtx) {
+							return false;
+						}
+						cards.addArray(evt.getl(target).cards2);
+						return true;
+					});
+					return cards.someInD("od");
+				} else if (["lose", "loseAsync"].includes(event.name)) {
 					if (event.type == "use" || ["useCard", "respond"].includes(event.getParent().name)) {
 						return false;
 					}
@@ -14959,8 +14984,25 @@ const skills = {
 			} else if (trigger.name == "changeSkills") {
 				await player.addSkills(trigger.removeSkill);
 			} else {
-				const cards = trigger.getl(event.indexedData).cards2.filterInD("od");
-				await player.gain(cards, "gain2");
+				let cards = [];
+				if (["useCard", "respond"].includes(trigger.name)) {
+					let historys = event.indexedData.getHistory("lose", evt => {
+						let evtx = evt.relatedEvent || evt.getParent();
+						if (evt.type != "use") {
+							return false;
+						} else if (trigger != evtx) {
+							return false;
+						}
+						cards.addArray(evt.getl(event.indexedData).cards2);
+						return true;
+					});
+					cards = cards.filterInD("od");
+				} else {
+					cards = trigger.getl(event.indexedData).cards2.filterInD("od");
+				}
+				if (cards.length) {
+					await player.gain(cards, "gain2");
+				}
 			}
 		},
 		group: ["jlsg_taotie_check"],
@@ -14977,10 +15019,6 @@ const skills = {
 				filter(event, player, triggername, info) {
 					if (player.countSkill("jlsg_taotie") >= player.getHp()) {
 						return false;
-					}
-					console.log(triggername, info);
-					if (triggername == "jlsg_yaolingAfter" && event.drawReduce) {
-						return true;
 					}
 					return player.playerid != info[0] && info[1] > 0;
 				},
@@ -15062,8 +15100,7 @@ const skills = {
 				targets: [target],
 				cards,
 			} = event;
-			const sha = get.autoViewAs({ name: "sha", isCard: false }, cards);
-			const next = player.useCard(sha, cards, target);
+			const next = player.useCard({ name: "sha", isCard: false }, cards, target);
 			await next;
 			if (!target.isIn()) {
 				return;
@@ -15133,7 +15170,7 @@ const skills = {
 						})
 						.forResult();
 					if (result?.control) {
-						game.log(target, "失去了1点", result.control);
+						game.log(target, "选择失去1点", "#y" + result.control);
 						if (result.control == "体力") {
 							await target.loseHp(1);
 						} else if (result.control == "体力上限") {
