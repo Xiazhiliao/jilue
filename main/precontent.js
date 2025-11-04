@@ -2101,8 +2101,8 @@ export async function precontent(config, originalPack) {
 		});
 	}
 
-	let name = jlsg_qs.name;
 	await game.import("card", function () {
+		lib.config.all.cards.push("jlsg_qs");
 		return jlsg_qs;
 	});
 }
