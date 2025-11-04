@@ -14890,7 +14890,8 @@ const skills = {
 			},
 		},
 	},
-	jlsg_taocan: {
+	jlsg_taotie: {
+		audio: "ext:极略/audio/skill:2",
 		updateShaUsableMap() {
 			const obj = {};
 			for (const i of game.players) {
@@ -14904,7 +14905,7 @@ const skills = {
 		},
 		hasShaUsableChanged() {
 			if (!_status.playerShaUsableMap) {
-				lib.skill.jlsg_taocan.updateShaUsableMap();
+				lib.skill.jlsg_taotie.updateShaUsableMap();
 			}
 			const map = _status.playerShaUsableMap;
 			let list = {};
@@ -14917,7 +14918,7 @@ const skills = {
 					list[i.playerid] = map[i.playerid] - num;
 				}
 			}
-			lib.skill.jlsg_taocan.updateShaUsableMap();
+			lib.skill.jlsg_taotie.updateShaUsableMap();
 			return list;
 		},
 		init: (player, skill) => get.info(skill).updateShaUsableMap(),
@@ -14962,7 +14963,7 @@ const skills = {
 				await player.gain(cards, "gain2");
 			}
 		},
-		group: ["jlsg_taocan_check"],
+		group: ["jlsg_taotie_check"],
 		subSkill: {
 			check: {
 				trigger: { global: ["jlsg_yaolingAfter", "logSkill", "useSkillAfter", "dieAfter", "changeHp", "equipAfter", "changeSkillsAfter"] },
@@ -14970,11 +14971,11 @@ const skills = {
 					if (triggername == "jlsg_yaolingAfter" && event.drawReduce) {
 						return [event.drawReduce];
 					}
-					let list = Object.entries(lib.skill.jlsg_taocan.hasShaUsableChanged());
+					let list = Object.entries(lib.skill.jlsg_taotie.hasShaUsableChanged());
 					return list;
 				},
 				filter(event, player, triggername, info) {
-					if (player.countSkill("jlsg_taocan") >= player.getHp()) {
+					if (player.countSkill("jlsg_taotie") >= player.getHp()) {
 						return false;
 					}
 					console.log(triggername, info);
@@ -14990,15 +14991,15 @@ const skills = {
 					return target;
 				},
 				async content(event, trigger, player) {
-					await player.logSkill("jlsg_taocan", event.targets);
-					let storage = player.getStorage("jlsg_taocan_buff", { sha: 0, draw: 0 });
+					await player.logSkill("jlsg_taotie", event.targets);
+					let storage = player.getStorage("jlsg_taotie_buff", { sha: 0, draw: 0 });
 					if (event.triggername == "jlsg_yaolingAfter" && trigger.drawReduce) {
 						storage.draw += trigger.drawReduce[1];
 					} else {
 						storage.sha += event.indexedData[1];
 					}
-					player.addSkill("jlsg_taocan_buff");
-					player.setStorage("jlsg_taocan_buff", storage, true);
+					player.addSkill("jlsg_taotie_buff");
+					player.setStorage("jlsg_taotie_buff", storage, true);
 				},
 			},
 			buff: {
@@ -15007,7 +15008,7 @@ const skills = {
 				mod: {
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
-							return num + player.getStorage("jlsg_taocan_buff", { sha: 0 }).sha;
+							return num + player.getStorage("jlsg_taotie_buff", { sha: 0 }).sha;
 						}
 					},
 				},
@@ -15026,7 +15027,7 @@ const skills = {
 				},
 				trigger: { player: "phaseDrawBegin2" },
 				filter(event, player) {
-					return !event.numFixed && player.getStorage("jlsg_taocan_buff", { draw: 0 }).draw > 0;
+					return !event.numFixed && player.getStorage("jlsg_taotie_buff", { draw: 0 }).draw > 0;
 				},
 				forced: true,
 				popup: false,
@@ -15037,6 +15038,7 @@ const skills = {
 		},
 	},
 	jlsg_yaoling: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
 			if (event.player == player) {
@@ -15109,7 +15111,7 @@ const skills = {
 				if (result.control == "失去1点属性") {
 					list = ["体力", "体力上限", "出杀次数", "摸牌数"];
 					if (!_status.playerShaUsableMap) {
-						lib.skill.jlsg_taocan.updateShaUsableMap();
+						lib.skill.jlsg_taotie.updateShaUsableMap();
 					}
 					if (_status.playerShaUsableMap[target.playerid] <= 0) {
 						list.remove("出杀次数");
