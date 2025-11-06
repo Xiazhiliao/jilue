@@ -10158,10 +10158,10 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { ResultEvent } = event.cost_data;
-			event.next.push(ResultEvent);
-			await ResultEvent;
-			let damage = player.hasHistory("sourceDamage", evt => evt.getParent("useCard") == ResultEvent);
+			const { result } = event.cost_data;
+			const next = player.useResult(result, event);
+			await next;
+			let damage = player.hasHistory("sourceDamage", evt => evt.getParent("useCard") == next);
 			if (damage && trigger.player.isIn()) {
 				const cards = trigger.player.getGainableCards(player, "he");
 				if (cards.length) {
