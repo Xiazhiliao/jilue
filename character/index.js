@@ -41,7 +41,7 @@ for (let character in config) {
 	}
 }
 //导入jlsgZhu里的skill和translate
-if (lib.config?.extension_极略_jlsg_zhugong_buff) {
+if (lib.config?.extension_极略_jlsg_zhuBuff) {
 	//清除原有主公技
 	for (let character in jlsg_sr.character) {
 		const skills = jlsg_sr.character[character][3];
