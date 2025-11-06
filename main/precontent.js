@@ -69,6 +69,61 @@ export async function precontent(config, originalPack) {
 			},
 		});
 	}
+	//七杀包规则重构
+	if (lib.config?.extension_极略_qsRelic) {
+		lib.arenaReady.push(function () {
+			game.broadcastAll(function () {
+				const cardPacks = _status.connectMode ? lib.configOL.cardPack : lib.cardPack,
+					prepareEquip = async function (event, trigger, player) {
+						const emptySlots = player.countEmptySlot("equip3") + player.countEmptySlot("equip5");
+						if (emptySlots) {
+							if (player.countEmptySlot("equip3")) {
+								event.card.subtypes = ["equip3"];
+							} else {
+								event.card.subtypes = ["equip5"];
+							}
+						} else {
+							const subtypesList = player
+								.getCards("e", card => get.subtypes(card).includes("equip3") || get.subtypes(card).includes("equip5"))
+								.flatMap(card => get.subtypes(card))
+								.unique();
+							let result;
+							if (subtypesList.length == 1) {
+								result = { control: subtypesList[0] };
+							} else {
+								result = await player
+									.chooseControl(subtypesList)
+									.set("prompt", `请选择置入【${get.translation(event.card)}】的装备栏`)
+									.forResult();
+							}
+							if (result?.control) {
+								event.card.subtypes = [result.control];
+							}
+						}
+					};
+				for (const pack in cardPacks) {
+					const cards = cardPacks[pack];
+					for (const i of cards) {
+						const info = lib.card[i];
+						if (!info) {
+							continue;
+						}
+						if (["equip3", "equip4", "equip5"].includes(info.subtype)) {
+							info.prepareEquip = prepareEquip;
+						} else if (get.mode() == "boss" && get.subtype(i) == "equip1") {
+							info.recastable = true;
+						}
+					}
+				}
+				if (_status.connect) {
+					lib.configOL.mount_combine = true;
+				} else {
+					lib.config.mount_combine = true;
+				}
+				_status.mountCombined = true;
+			});
+		});
+	}
 
 	//失效技能时机创建
 	if (lib.config.extension_极略_jlsg_disableSkill) {
@@ -77,7 +132,7 @@ export async function precontent(config, originalPack) {
 			for (let item of ["tempBanSkill", "disableSkill", "addSkillBlocker"]) {
 				lib.disableSkill[item] = lib.element.player[item];
 			}
-			lib.element.content.DisableSkill = async function(event, trigger, player) {
+			lib.element.content.DisableSkill = async function (event, trigger, player) {
 				if (!Array.isArray(event.disableSkills)) {
 					event.disableSkills = [event.disableSkills];
 				}
@@ -120,7 +175,7 @@ export async function precontent(config, originalPack) {
 					lib.disableSkill[event.type].apply(player, event.args);
 				}
 				await event.trigger(event.name + "End");
-			}
+			};
 			lib.element.player.tempBanSkill = function (...args) {
 				let str = "disableSkill";
 				if (!_status.disableSkills && Array.isArray(args[0])) {
@@ -2090,7 +2145,6 @@ export async function precontent(config, originalPack) {
 					for (let file of files) {
 						let skinName = `${character}_${get.pinyin(file.slice(0, -4), false).join("")}`;
 						pack.characterSubstitute[character].push([skinName, [`evt:极略/skin/image/${character}/${file}`]]);
-						//lib.config.skin[skinName] = 1;
 					}
 				}
 			}
