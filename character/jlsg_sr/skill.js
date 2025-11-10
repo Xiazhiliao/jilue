@@ -1519,32 +1519,36 @@ const skills = {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 			const improve = upgradeStorage?.other?.["jlsg_sheji"];
 			if (improve) {
-				return [0, 1];
+				return [1, player.countCards("h")];
 			}
 			return [1, 1];
 		},
 		filterCard(card, player) {
-			return get.position(card) == "e" && get.subtype(card) == "equip1";
+			if (get.position(card) == "e") {
+				return get.subtype(card) == "equip1";
+			}
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const improve = upgradeStorage?.other?.["jlsg_sheji"];
+			if (!improve) {
+				return false;
+			}
+			return get.position(card) == "h";
 		},
 		check(card) {
+			if (get.position(card) == "e") {
+				return 114514;
+			}
 			return 10 - get.value(card);
 		},
+		allowChooseAll: true,
 		filterOk() {
+			if (ui.selected.cards.length == 1) {
+				return get.position(ui.selected.cards[0]) == "e";
+			}
 			const player = get.player();
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 			const improve = upgradeStorage?.other?.["jlsg_sheji"];
-			if (!ui.selected.cards.length) {
-				return improve && player.countCards("h");
-			}
-			return true;
-		},
-		async precontent(event, _, player) {
-			if (event.result.cards.length == 0) {
-				const hs = player.getCards("h");
-				const sha = get.autoViewAs({ name: "sha", cards: hs, isCard: true }, hs);
-				event.result.card = sha;
-				event.result.cards = hs;
-			}
+			return improve && ui.selected.cards.length == player.countCards("h");
 		},
 		group: "jlsg_sheji_buff",
 		subSkill: {
@@ -1595,7 +1599,9 @@ const skills = {
 			},
 		},
 		ai: {
-			order: 1,
+			order(item, player) {
+				return get.order({ name: "sha" }, player || get.player()) + 1;
+			},
 		},
 	},
 	jlsg_xingyi: {
