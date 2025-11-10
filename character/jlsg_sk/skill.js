@@ -355,7 +355,7 @@ const skills = {
 				});
 			event.result = {
 				bool: result?.bool,
-				cards: result?.moved[1] || [],
+				cards: result?.moved?.[1] || [],
 			};
 		},
 		async content(event, trigger, player) {
