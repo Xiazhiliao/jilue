@@ -11698,7 +11698,7 @@ const skills = {
 							jlsgqs_yuxi: 1,
 							equip2: 1,
 							wuxie: 1,
-							mei: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
@@ -11708,7 +11708,7 @@ const skills = {
 							jlsgqs_taipingyaoshu: 1,
 							equip2: 1,
 							wuxie: 1,
-							mei: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
@@ -11718,6 +11718,7 @@ const skills = {
 							jlsgqs_jinnangdai: 1,
 							equip2: 1,
 							wuzhong: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
@@ -11727,6 +11728,7 @@ const skills = {
 							jlsgqs_muniu: 1,
 							equip2: 1,
 							wuzhong: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
