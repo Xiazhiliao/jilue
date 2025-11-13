@@ -419,7 +419,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event,
 				num = target.countDiscardableCards(target, "he");
-			await target.chooseToDiscard(num, true);
+			await target.chooseToDiscard(num, true, "he");
 			await target.draw(num);
 			await target.showHandcards();
 			const cards = target.getDiscardableCards(target, "he", card => get.type(card) != "basic");
