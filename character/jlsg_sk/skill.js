@@ -355,7 +355,7 @@ const skills = {
 				});
 			event.result = {
 				bool: result?.bool,
-				cards: result?.moved[1] || [],
+				cards: result?.moved?.[1] || [],
 			};
 		},
 		async content(event, trigger, player) {
@@ -10158,10 +10158,17 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { ResultEvent } = event.cost_data;
-			event.next.push(ResultEvent);
-			await ResultEvent;
-			let damage = player.hasHistory("sourceDamage", evt => evt.getParent("useCard") == ResultEvent);
+			//旧版本兼容 —— 流年（2025.11.13）
+			const { ResultEvent, result } = event.cost_data;
+			let next;
+			if (ResultEvent) {
+				event.next.push(ResultEvent);
+				next = ResultEvent;
+			} else {
+				next = player.useResult(result, event);
+			}
+			await next;
+			let damage = player.hasHistory("sourceDamage", evt => evt.getParent("useCard") == next);
 			if (damage && trigger.player.isIn()) {
 				const cards = trigger.player.getGainableCards(player, "he");
 				if (cards.length) {
@@ -18160,7 +18167,7 @@ const skills = {
 			if (!phaseUse.jlsg_zhuren_record?.length) {
 				phaseUse.jlsg_zhuren_record = [];
 				for (let i of ["1", "2", "3"]) {
-					phaseUse.jlsg_zhuren_record.addArray(checkEffect(vcard, i));
+					phaseUse.jlsg_zhuren_record.addArray(checkEffect(vcard, i).randomGets(2));
 				}
 			}
 			let choice, choiceList, prompt, result;
@@ -18207,7 +18214,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.removeMark(event.name);
 			const { jlsg_zhuren_vcard: vcard, jlsg_zhuren_choice: info } = event.getParent("phaseUse");
-			game.log(player, "对", vcard, "选择", `#y${{ 1: "断玉", 2: "附灵", 3: "噬主" }[info.jlsg_zhuren_type]}`, "效果为：", `#y${info.jlsg_zhuren_name}`);
+			game.log(player, "对", vcard, "选择", `#y${{ 1: "断玉", 2: "附灵", 3: "噬主" }[info.jlsg_zhuren_type]}`, "效果为：", `#r${info.jlsg_zhuren_name}`);
 			lib.skill.jlsg_zhuren.syncRecord(vcard, info);
 			event.targets[0].addEquipTrigger(vcard);
 			await game.delay();
@@ -18328,7 +18335,7 @@ const skills = {
 						game.finishSkill(skillName);
 					}
 					const addSkill = function (card) {
-						card.skills ??= [];
+						card.skills ??= get.skillsFromEquips([card]);
 						card.skills.add(skillName);
 						card.storage ??= {};
 						card.storage.jlsg_zhuren ??= {};
@@ -18681,16 +18688,16 @@ const skills = {
 				jlsg_zhuren_subtype: "5",
 				jlsg_zhuren_name: "锁定技，准备阶段或结束阶段，随机获得一项“断玉”强化",
 				skill: {
-					trigger: { player: ["phaseZhubeiBegin", "phaseJieshuBegin"] },
+					trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 					getIndex(event, player) {
 						return get.info("jlsg_zhuren").getInfo(player, true);
 					},
 					async content(event, trigger, player) {
-						let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "duanyu", "断玉");
+						let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.indexedData, "2", "断玉");
 						if (effectsList.length) {
-							event.effect = effectsList.randomGet();
-							game.log(player, "的", event.card, "获得", `#y断玉`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["duanyu"][event.effect].str}`);
-							lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
+							const info = effectsList.randomGet();
+							game.log(player, "的", event.indexedData, "获得", `#y断玉`, "效果为：", `#r${info.jlsg_zhuren_name}`);
+							lib.skill.jlsg_zhuren.syncRecord(event.indexedData, info);
 						}
 					},
 				},
@@ -18703,16 +18710,16 @@ const skills = {
 				jlsg_zhuren_subtype: "6",
 				jlsg_zhuren_name: "锁定技，准备阶段或结束阶段，随机获得一项“附灵”强化",
 				skill: {
-					trigger: { player: ["phaseZhubeiBegin", "phaseJieshuBegin"] },
+					trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 					getIndex(event, player) {
 						return get.info("jlsg_zhuren").getInfo(player, true);
 					},
 					async content(event, trigger, player) {
-						let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.card, "fuling", "附灵");
+						let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.indexedData, "2", "附灵");
 						if (effectsList.length) {
-							event.effect = effectsList.randomGet();
-							game.log(player, "的", event.card, "获得", `#y附灵`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["fuling"][event.effect].str}`);
-							lib.skill.jlsg_zhuren.syncRecord(event.card, event.effect);
+							const info = effectsList.randomGet();
+							game.log(player, "的", event.indexedData, "获得", `#y附灵`, "效果为：", `#r${info.jlsg_zhuren_name}`);
+							lib.skill.jlsg_zhuren.syncRecord(event.indexedData, info);
 						}
 					},
 				},
@@ -18917,16 +18924,16 @@ const skills = {
 				jlsg_zhuren_subtype: "6",
 				jlsg_zhuren_name: "锁定技，准备阶段或结束阶段。随机获得一项“噬主”强化",
 				skill: {
-					trigger: { player: ["phaseZhubeiBegin", "phaseJieshuBegin"] },
+					trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 					getIndex(event, player) {
 						return get.info("jlsg_zhuren").getInfo(player, true);
 					},
 					async content(event, trigger, player) {
 						let effectsList = lib.skill.jlsg_zhuren.checkEffect(event.indexedData, "3", "噬主");
 						if (effectsList.length) {
-							event.effect = effectsList.randomGet();
-							game.log(event.indexedData, "获得", `#y噬主`, "效果为：", `#y${lib.skill.jlsg_zhuren.effects["shizhu"][event.effect].str}`);
-							lib.skill.jlsg_zhuren.syncRecord(event.indexedData, event.effect);
+							const info = effectsList.randomGet();
+							game.log(event.indexedData, "获得", `#y噬主`, "效果为：", `#r${info.jlsg_zhuren_name}`);
+							lib.skill.jlsg_zhuren.syncRecord(event.indexedData, info);
 						}
 					},
 				},

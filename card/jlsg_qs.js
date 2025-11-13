@@ -306,7 +306,7 @@ let jlsg_qs = {
 			},
 			modTarget: true,
 			async content(event, trigger, player) {
-				const target = event.targets[0];
+				const target = event.target;
 				await target.draw();
 				if (target.countGainableCards(player, "h") < 2) {
 					await target.damage("fire");

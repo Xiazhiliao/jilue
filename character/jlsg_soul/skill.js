@@ -419,7 +419,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event,
 				num = target.countDiscardableCards(target, "he");
-			await target.chooseToDiscard(num, true);
+			await target.chooseToDiscard(num, true, "he");
 			await target.draw(num);
 			await target.showHandcards();
 			const cards = target.getDiscardableCards(target, "he", card => get.type(card) != "basic");
@@ -11698,7 +11698,7 @@ const skills = {
 							jlsgqs_yuxi: 1,
 							equip2: 1,
 							wuxie: 1,
-							mei: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
@@ -11708,7 +11708,7 @@ const skills = {
 							jlsgqs_taipingyaoshu: 1,
 							equip2: 1,
 							wuxie: 1,
-							mei: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
@@ -11718,6 +11718,7 @@ const skills = {
 							jlsgqs_jinnangdai: 1,
 							equip2: 1,
 							wuzhong: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
@@ -11727,6 +11728,7 @@ const skills = {
 							jlsgqs_muniu: 1,
 							equip2: 1,
 							wuzhong: 1,
+							jlsgqs_mei: 1,
 						},
 					},
 					{
@@ -14895,7 +14897,7 @@ const skills = {
 		updateShaUsableMap() {
 			const obj = {};
 			for (const i of game.players) {
-				let num = game.checkMod(get.autoViewAs({ name: "sha" }), i, 1, "cardUsable", i);
+				let num = get.info("jlsgsy_longbian").countShaUsable(i);
 				if (typeof num != "number") {
 					num = 1;
 				}
@@ -14910,7 +14912,7 @@ const skills = {
 			const map = _status.playerShaUsableMap;
 			let list = {};
 			for (const i of game.players) {
-				let num = game.checkMod(get.autoViewAs({ name: "sha" }), i, 1, "cardUsable", i);
+				let num = get.info("jlsgsy_longbian").countShaUsable(i);
 				if (typeof num != "number") {
 					num = 1;
 				}

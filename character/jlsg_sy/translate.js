@@ -112,7 +112,7 @@ const translates = {
 	jlsgsy_miluan_info: "当你受到伤害后，你可以获得所有其他角色的手牌，然后将一半数量（向下取整）的手牌随机分配给其他角色。",
 	jlsgsy_yuanshao: "专行魔君",
 	jlsgsy_mojian: "魔箭",
-	jlsgsy_mojian_info: "锁定技，准备阶段，你视为使用【万箭齐发】，若有角色打出【闪】响应此牌，结束阶段，你视为使用【万箭齐发]】。",
+	jlsgsy_mojian_info: "锁定技，准备阶段，你视为使用【万箭齐发】，若有角色打出【闪】响应此牌，结束阶段，你视为使用【万箭齐发】。",
 	jlsgsy_baonuyuanshao: "暴怒",
 	jlsgsy_baonuyuanshao_info: "锁定技，当你的体力值降至4或更低时，你进入暴怒状态并立即开始你的回合。",
 	jlsgsy_yuanshaobaonu: "专行魔君",
