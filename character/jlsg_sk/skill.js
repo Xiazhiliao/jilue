@@ -10158,8 +10158,15 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { result } = event.cost_data;
-			const next = player.useResult(result, event);
+			//旧版本兼容 —— 流年（2025.11.13）
+			const { ResultEvent, result } = event.cost_data;
+			let next;
+			if (ResultEvent) {
+				event.next.push(ResultEvent);
+				next = ResultEvent;
+			} else {
+				next = player.useResult(result, event);
+			}
 			await next;
 			let damage = player.hasHistory("sourceDamage", evt => evt.getParent("useCard") == next);
 			if (damage && trigger.player.isIn()) {
