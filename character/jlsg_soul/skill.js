@@ -3710,14 +3710,17 @@ const skills = {
 					targetInRange: () => true,
 					playerEnabled(card, player, target) {
 						let info = get.info(card);
-						if (!info) {
+						if (!info || player.storage.jlsg_lihun_mod) {
 							return;
 						}
 						if (info.modTarget) {
 							if (typeof info.modTarget == "boolean") {
 								return info.modTarget;
 							} else if (typeof info.modTarget == "function") {
-								return Boolean(info.modTarget(card, player, target));
+								player.storage.jlsg_lihun_mod = true;
+								let bool = Boolean(info.modTarget(card, player, target));
+								delete player.storage.jlsg_lihun_mod;
+								return bool;
 							}
 						}
 						if (info.selectTarget) {

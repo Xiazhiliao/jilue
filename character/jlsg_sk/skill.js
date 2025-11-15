@@ -18221,6 +18221,7 @@ const skills = {
 			if (!_status.jlsg_zhuren) {
 				game.broadcastAll(function () {
 					_status.jlsg_zhuren = true;
+					const effectsList = get.info("jlsg_zhuren").jlsg_zhuren_contents;
 					for (let i in lib.card) {
 						const info = lib.card[i];
 						if (info?.subtype != "equip1") {
@@ -18253,8 +18254,7 @@ const skills = {
 									cardx = cardSymbol;
 								}
 								if (Object.keys(cardx.storage?.jlsg_zhuren || {}).length) {
-									const effectsList = get.info("jlsg_zhuren").jlsg_zhuren_contents,
-										str2 = [`<br><span style="color: #8b2caeff" data-nature="graymm">附魔效果</span>：`];
+									const str2 = [`<br><span style="color: #8b2caeff" data-nature="graymm">附魔效果</span>：`];
 									for (let info of effectsList) {
 										const { jlsg_zhuren_type, jlsg_zhuren_subtype } = info;
 										let skillName = `jlsg_zhuren_${jlsg_zhuren_type}|${jlsg_zhuren_subtype}`,
