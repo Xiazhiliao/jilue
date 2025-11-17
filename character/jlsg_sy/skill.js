@@ -2747,7 +2747,7 @@ const skills = {
 							return false;
 						}
 					} else if (key == "discard") {
-						let discarder = event.discarder || event.getParent().player;
+						let discarder = event.discarder || event.getParent(2).player;
 						if (discarder && discarder == player) {
 							return false;
 						}
