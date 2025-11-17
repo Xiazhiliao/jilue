@@ -378,191 +378,128 @@ const skills = {
 	},
 	jlsg_cangshu: {
 		audio: "ext:极略/audio/skill:2",
+		usable: 1,
 		trigger: { global: "useCard" },
-		// usable: 1,
-		direct: true,
-		filter: function (event, player) {
-			if (event.player == player || get.type(event.card) != "trick" || player.hasSkill("jlsg_cangshu2")) {
+		filter(event, player) {
+			if (event.player == player || get.type(event.card) != "trick") {
 				return false;
 			}
-			return game.online ? player.countCards("h") : player.countCards("h", { type: "basic" });
+			return player.countCards("h", { type: "basic" });
 		},
-		content: function () {
-			"step 0"
-			player.chooseCard("是否对" + get.translation(trigger.player) + "发动藏书？<p>交给" + get.translation(trigger.player) + "一张基本牌，令" + get.translation(trigger.card) + "无效并获得之</p>", { type: "basic" }).ai = function (card) {
-				if (get.attitude(player, trigger.player) < 0) {
-					return 10 - get.value(card);
-				}
-				return 0;
-			};
-			"step 1"
-			if (result.bool) {
-				player.logSkill("jlsg_cangshu", trigger.player);
-				player.addTempSkill("jlsg_cangshu2");
-				trigger.player.gain(result.cards, player, "giveAuto");
-			} else {
-				event.finish();
-			}
-			"step 2"
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard(`###${get.prompt(event.skill)}###交给其一张基本牌，获得${get.translation(trigger.card)}并令此牌无效`)
+				.set("filterCard", (card, player, event) => {
+					if (get.type(card) != "basic") {
+						return false;
+					}
+					return lib.filter.canBeGained(card, get.event("target"), player, event);
+				})
+				.set("ai", card => {
+					if (get.event("att") < 0) {
+						return 10 - get.value(card);
+					}
+					return 0;
+				})
+				.set("target", trigger.player)
+				.set("att", get.attitude(player, trigger.player))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await trigger.player.gain(event.cards, player, "giveAuto");
 			if (trigger.cards) {
 				player.gain(trigger.cards, "gain2");
 			}
-			trigger.cancel();
+			game.log(player, "取消了", trigger.card, "的结算");
+			trigger.all_excluded = true;
 		},
 	},
-	jlsg_cangshu2: {},
 	jlsg_kanwu: {
 		audio: "ext:极略/audio/skill:1",
 		enable: ["chooseToUse", "chooseToRespond"],
-		hiddenCard: function (player, name) {
-			if (get.type(name) != "basic" || name == "shan") {
+		hiddenCard(player, name) {
+			if (get.type(name) != "basic") {
 				return false;
 			}
-			return _status.currentPhase != player && player.countCards("h") && (game.online ? player.countCards("h") : player.countCards("h", { type: ["delay", "trick"] }));
+			return _status.currentPhase != player && player.countCards("h", card => get.type2(card) == "trick");
 		},
-		filter: function (event, player) {
-			if (_status.currentPhase == player || !player.countCards("h", { type: ["delay", "trick"] })) {
+		filter(event, player) {
+			if (_status.currentPhase == player || !player.countCards("h", card => get.type2(card) == "trick")) {
 				return false;
 			}
-			for (var i of lib.inpile) {
-				if (get.type(i) != "basic" || i == "shan") {
+			for (let i of lib.inpile) {
+				if (get.type(i) != "basic") {
 					continue;
 				}
-				if (event.filterCard({ name: i }, player, event)) {
+				if (event.filterCard(get.autoViewAs({ name: i }, []), player, event)) {
 					return true;
 				}
-				if (i == "sha" && lib.inpile_nature.some(nat => event.filterCard({ name: i, nature: nat }, player, event))) {
+				if (i == "sha" && lib.inpile_nature.some(nat => event.filterCard(get.autoViewAs({ name: i, nature: nat }, []), player, event))) {
 					return true;
 				}
 			}
 			return false;
 		},
 		chooseButton: {
-			dialog: function (event, player) {
-				var list = [];
-				for (var i of lib.inpile) {
-					if (get.type(i) != "basic" || i == "shan") {
-						continue;
-					}
-					list.push(["basic", "", i]);
-					if (i == "sha") {
-						for (var j of lib.inpile_nature) {
-							list.push(["basic", "", i, j]);
-						}
-					}
-				}
+			dialog(event, player) {
+				const list = get.inpileVCardList(([type]) => type == "basic");
 				return ui.create.dialog("勘误", [list, "vcard"]);
 			},
-			filter: function (button, player) {
-				var evt = _status.event.getParent();
+			filter(button, player) {
+				const evt = _status.event.getParent();
 				return evt.filterCard({ name: button.link[2], nature: button.link[3] }, player, evt);
 			},
-			check: function (button) {
-				var player = _status.event.player;
-				var shaTarget = false;
-				for (var i = 0; i < game.players.length; i++) {
-					if (player.canUse("sha", game.players[i]) && ai.get.effect(game.players[i], { name: "sha" }, player) > 0) {
-						shaTarget = true;
-					}
+			check({link:[_,__,name,nature]}) {
+				if (get.info({ name })?.notarget) {
+					return get.order({ name });
 				}
-				if (player.isDamaged()) {
-					return button.link[2] == "tao" ? 1 : -1;
-				}
-				if (shaTarget && player.num("h", "sha") && !player.num("h", "jiu")) {
-					return button.link[2] == "jiu" ? 1 : -1;
-				}
-				if (shaTarget && !player.num("h", "sha")) {
-					return button.link[2] == "sha" ? 1 : -1;
-				}
-				return button.link[2] == "sha" ? 1 : -1;
+				return get.player().getUseValue({ name, nature });
 			},
-			backup: function (links, player) {
+			backup(links, player) {
 				return {
-					filterCard: function (card) {
-						return get.type(card, "trick") == "trick";
-					},
 					audio: false,
-					popname: true,
-					// ignoreMod:true,
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
 						suit: "none",
-						number: null,
+						number: "none",
 						isCard: true,
 					},
-					ai1: function (card) {
+					filterCard(card) {
+						return get.type2(card) == "trick";
+					},
+					ai1(card) {
 						return 6 - get.value(card);
 					},
-					precontent: function () {
-						"step 0"
-						player.logSkill("jlsg_kanwu");
-						var card = event.result.cards[0];
+					log: false,
+					popname: true,
+					async precontent(event, _, player) {
+						await player.logSkill("jlsg_kanwu");
+						let card = event.result.cards[0];
 						event.card = card;
-						player.discard(card);
-						event.result.card = {
-							name: event.result.card.name,
-							nature: event.result.card.nature,
-							// cards: [],
-						};
+						await player.discard(card);
+						event.result.card = get.autoViewAs({ ...event.result.card }, []);
 						event.result.cards = [];
 					},
 				};
 			},
-			// prompt: function (links, player) {
-			//   return '弃置一张锦囊牌，视为使用或打出' + get.translation({ name: links[0][2], nature: links[0][3] });
-			// }
+			prompt(links, player) {
+				return "弃置一张锦囊牌，视为使用或打出" + get.translation({ name: links[0][2], nature: links[0][3] });
+			},
 		},
 		ai: {
+			respondSha: true,
+			fireattack: true,
+			skillTagFilter: function (player) {
+				return _status.currentPhase != player && player.countCards("he", card => get.type2(card) == "trick");
+			},
 			order: 6,
 			result: {
 				player: 1,
 			},
-			// threaten: 1.3,
-			respondSha: true,
-			fireattack: true,
-			skillTagFilter: function (player) {
-				return _status.currentPhase != player && (game.online ? player.countCards("h") : player.countCards("h", c => get.type2(c) == "trick"));
-			},
 		},
-		group: ["jlsg_kanwu_shan"],
 		subSkill: {
-			shan: {
-				audio: "jlsg_kanwu", // audio: ["jieyue1", 2],
-				enable: ["chooseToUse", "chooseToRespond"],
-				filter: function (event, player) {
-					return _status.currentPhase != player && (game.online ? player.countCards("h") : player.countCards("h", { type: ["delay", "trick"] }));
-				},
-				filterCard: function (card, player) {
-					return get.type(card, "trick") == "trick";
-				},
-				// check: () => true,
-				viewAs: {
-					name: "shan",
-					suit: "none",
-					number: null,
-				},
-				onrespond: function (result, player) {
-					player.discard(result.cards);
-					result.card = {
-						name: result.card.name,
-					};
-					result.cards = [];
-				},
-				onuse: function (result, player) {
-					player.discard(result.cards);
-					result.card = {
-						name: result.card.name,
-					};
-					result.cards = [];
-				},
-				ai: {
-					skillTagFilter: function (player) {
-						return _status.currentPhase != player && (game.online ? player.countCards("h") : player.countCards("h", c => get.type2(c) == "trick"));
-					},
-					respondShan: true,
-				},
-			},
+			backup: {},
 		},
 	},
 	jlsg_huage: {
