@@ -1310,6 +1310,229 @@ const skills = {
 			},
 		},
 	},
+	jlsg_lhsh_dade: {
+		audio: "ext:极略/audio/skill:3",
+		enable: "phaseUse",
+		filter(event, player) {
+			if (player.getStorage("jlsg_lhsh_dade_mark", false)) {
+				return player.countCards("he");
+			}
+			return true;
+		},
+		selectCard() {
+			const player = get.player();
+			return player.getStorage("jlsg_lhsh_dade_mark", false) ? [1, 1] : [0, 0];
+		},
+		filterCard(card, player) {
+			return player.getStorage("jlsg_lhsh_dade_mark", false) ? true : false;
+		},
+		check(card) {
+			const player = get.owner(card);
+			let useValue = player.getUseValue(card, false, false);
+			if (player.hp == player.maxHp || player.countCards("h") <= 1) {
+				const players = game.filterPlayer();
+				for (let i = 0; i < players.length; i++) {
+					if (players[i].hasSkill("haoshi") && !players[i].isTurnedOver() && !players[i].hasJudge("lebu") && get.attitude(player, players[i]) >= 3 && get.attitude(players[i], player) >= 3) {
+						return 11 - get.value(card) + useValue;
+					}
+				}
+				if (player.countCards("h") > player.hp) {
+					return 10 - get.value(card) + useValue;
+				}
+				if (player.countCards("h") > 2) {
+					return 6 - get.value(card) + useValue;
+				}
+				return -1;
+			}
+			return 10 - get.value(card) + useValue;
+		},
+		selectTarget: [1, 1],
+		filterTarget(card, player, target) {
+			if (player.getStorage("jlsg_lhsh_dade_mark", false)) {
+				return target != player;
+			}
+			return true;
+		},
+		prompt(event) {
+			event = event || get.event();
+			const player = event.player;
+			if (player.countSkill("jlsg_lhsh_dade") < 2) {
+				return "你可以令一名角色从你拥有的蜀势力武将中发现一个技能，然后你回复1点体力";
+			} else if (!player.getStorage("jlsg_lhsh_dade_mark", false)) {
+				return "你可以令一名角色展示并获得牌堆顶牌，然后你可以视为使用此牌（无距离和次数限制）";
+			}
+			return "你可以将一张手牌交给其他角色，然后你可以视为使用此牌（无距离和次数限制）";
+		},
+		lose: false,
+		discard: false,
+		async content(event, _, player) {
+			const func = get.info(event.name).func;
+			if (player.getStorage("jlsg_lhsh_dade_mark", false)) {
+				await func[2](event, null, player);
+			} else {
+				const num = player.countSkill("jlsg_lhsh_dade");
+				if (num <= 2) {
+					await func[0](event, null, player);
+				} else if (!player.getStorage("jlsg_lhsh_dade_mark", false)) {
+					await func[1](event, null, player);
+				}
+			}
+		},
+		get characterInfo() {
+			const result = game
+				.initCharacterList(true)
+				.filter(name => get.character(name, 1) == "shu")
+				.reduce((list, name) => {
+					const skills = get.character(name).skills;
+					if (!skills.length) {
+						return list;
+					}
+					list[name] = skills;
+					return list;
+				}, {});
+			delete this.characterInfo;
+			this.characterInfo = result;
+			return result;
+		},
+		func: [
+			async function (event, _, player) {
+				const {
+						targets: [target],
+					} = event,
+					map = {},
+					characterInfo = get.info(event.name).characterInfo;
+				const characterList = Object.keys(characterInfo).randomSort();
+				for (let name of characterList) {
+					const skills = characterInfo[name].filter(skill => {
+						if (lib.filter.skillDisabled(skill)) {
+							return false;
+						}
+						if (target.hasSkill(skill, null, false, false)) {
+							return false;
+						}
+						const info = get.info(skill);
+						if (info?.groupSkill && target.group != info.groupSkill) {
+							return false;
+						} else if (info?.ai?.combo && !target.hasSkill(info?.ai?.combo, null, false, false)) {
+							return false;
+						}
+						return !info.zhuSkill || target.isZhu2();
+					});
+					if (skills.length) {
+						map[name] = skills.randomGet();
+					}
+					if (Object.values(map).length >= 3) {
+						break;
+					}
+				}
+				const info = Object.entries(map).map(i => i.reverse());
+				if (info.length) {
+					const { result } = await target.chooseButton(["请选择获得一个技能", [info, "skill"]]).set("ai", ({ link }) => {
+						return get.skillRank(link);
+					});
+					if (result?.bool && result?.links?.length) {
+						await target.addSkills(result.links);
+						await player.recover(1);
+					}
+				}
+			},
+			async function (event, _, player) {
+				const {
+						targets: [target],
+					} = event,
+					phaseUse = event.getParent("phaseUse");
+				let [card] = get.cards(1, true);
+				const next = target.showCards([card], `${get.translation(target)}【大德】展示的牌`).set("clearArena", false);
+				await next;
+				await target.gain(card, "gain2");
+				game.broadcastAll(ui.clear);
+				const vcard = get.autoViewAs(card, []);
+				if (["basic", "trick"].includes(get.type(vcard)) && player.hasUseTarget(vcard, false, false)) {
+					await player.chooseUseTarget(vcard, false, "nodistance");
+				}
+				function getStr(card) {
+					let name = card.name,
+						nature = get.nature(card);
+					if (nature) {
+						return `${nature}_${name}`;
+					}
+					return name;
+				}
+				let cardname = getStr(card);
+				const check = game.hasGlobalHistory("everything", evt => {
+					if (evt.name != "showCards" || evt == next) {
+						return false;
+					} else if (evt.getParent().name != "jlsg_lhsh_dade" || evt.getParent("phaseUse") != phaseUse) {
+						return false;
+					}
+					let str = getStr(evt.cards[0]);
+					return str == cardname;
+				});
+				if (check) {
+					player.addTempSkill(`${event.name}_mark`, { player: "phaseUseEnd" });
+				}
+			},
+			async function (event, _, player) {
+				const {
+					targets: [target],
+					cards: [card],
+				} = event;
+				await player.give(card, target);
+				const vcard = get.autoViewAs(card, []);
+				if (["basic", "trick"].includes(get.type(vcard)) && player.hasUseTarget(vcard, false, false)) {
+					await player.chooseUseTarget(vcard, false, "nodistance");
+				}
+			},
+		],
+		subSkill: {
+			mark: {
+				charlotte: true,
+				init: (player, skill) => player.setStorage(skill, true, true),
+				onremove: true,
+			},
+		},
+		ai: {
+			order(item, player) {
+				if (!player.getStorage("jlsg_lhsh_dade_mark", false)) {
+					if (player.hp < player.maxHp && player.storage.rende < 2 && player.countCards("h") > 1) {
+						return 10;
+					}
+					return 1;
+				}
+				return 20;
+			},
+			result: {
+				player(player, target) {
+					if (!player.getStorage("jlsg_lhsh_dade_mark", false)) {
+						return 1;
+					}
+					return -0.5;
+				},
+				target(player, target) {
+					if (!player.getStorage("jlsg_lhsh_dade_mark", false)) {
+						return get.sgnAttitude(player, target);
+					}
+					if (target.hasSkillTag("nogain")) {
+						return 0;
+					}
+					if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+						return target.hasSkillTag("nodu") ? 0 : -10;
+					}
+					if (target.hasJudge("lebu")) {
+						return 0;
+					}
+					const nh = target.countCards("h");
+					const np = player.countCards("h");
+					if (player.hp == player.maxHp || player.countCards("h") <= 1) {
+						if (nh >= np - 1 && np <= player.hp && !target.hasSkill("haoshi")) {
+							return 0;
+						}
+					}
+					return Math.max(1, 5 - nh);
+				},
+			},
+		},
+	},
 };
 
 export default skills;

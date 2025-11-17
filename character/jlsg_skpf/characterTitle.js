@@ -9,6 +9,7 @@ const characterTitle = {
 	jlsgsk_gygs_sunce: "冠勇盖世",
 	jlsgsk_lffw_huangyueying: "鸾飞凤舞",
 	jlsgsk_shhs_guojia: "神毫绘世",
+	jlsgsk_lhsh_liubei: "龙横蜀汉",
 };
 
 export default characterTitle;
