@@ -19109,6 +19109,155 @@ const skills = {
 			},
 		},
 	},
+	jlsg_chongxing: {
+		audio: "ext:极略/audio/skill:2",
+		usable: 1,
+		trigger: {
+			player: "gainAfter",
+			global: ["gameDrawAfter", "loseAsyncAfter"],
+		},
+		filter(event, player) {
+			if (event.name == "gameDraw") {
+				return player.countCards("h");
+			}
+			return event.getg?.(player)?.length;
+		},
+		async cost(event, trigger, player) {
+			if (trigger.name == "gameDraw") {
+				event.result = { bool: true };
+			} else {
+				event.result = await player
+					.chooseBool(`###${get.prompt(event.skill)}###获得${get.cnNumber(trigger.getg(player).length)}张临时牌`)
+					.set("ai", () => true)
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			let num = 0,
+				cards = [];
+			if (trigger.name == "gameDraw") {
+				num = player.countCards();
+			} else {
+				num = trigger.getg(player).length;
+			}
+			while (num-- > 0) {
+				let card = lib.skill.jlsg_lingze.createTempCard(null, undefined, undefined, undefined, true);
+				if (card) {
+					cards.push(card);
+				}
+			}
+			if (cards.length) {
+				await player.gain(cards, "draw2");
+			}
+		},
+	},
+	jlsg_liunian: {
+		audio: "ext:极略/audio/skill:2",
+		mark: true,
+		intro: {
+			markcount(storage, player) {
+				return typeof storage == "number" ? storage : 0;
+			},
+			mark(dialog, storage, player, event, skill) {
+				dialog.addText(`已累计销毁：${typeof storage == "number" ? storage : 0}/3`, false);
+				const effect = player.getStorage(`${skill}_effect`, []);
+				if (effect?.length) {
+					effect.sortBySeat(player);
+					dialog.addText(`已偷取${get.translation(effect)}的额定摸牌数`, false);
+				}
+			},
+		},
+		onremove: true,
+		trigger: { global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "replaceEquipAfter"] },
+		filter(event, player) {
+			let cards;
+			if (event.name == "replaceEquip") {
+				cards = event.result?.cards || [];
+			} else {
+				cards = event.getd();
+			}
+			return cards.some(i => i.classList.contains("jlsg_tempCard-glow") || i.hasGaintag("eternal_zuoyou_manjuan"));
+		},
+		forced: true,
+		popup: false,
+		async content(event, trigger, player) {
+			let cards;
+			if (trigger.name == "replaceEquip") {
+				cards = trigger.result?.cards || [];
+			} else {
+				cards = trigger.getd();
+			}
+			cards = cards.filter(i => i.classList.contains("jlsg_tempCard-glow") || i.hasGaintag("eternal_zuoyou_manjuan"));
+			let num = player.getStorage(event.name, 0);
+			num += cards.length;
+			player.setStorage(event.name, num, true);
+			while (num > 2) {
+				num -= 3;
+				player.setStorage(event.name, num, true);
+				player.markSkill(event.name);
+				const loseHp = game.filterPlayer(current => player.hasHistory("useSkill", evt => evt.skill == event.name && evt.targets?.includes?.(current)));
+				const next = player
+					.chooseTarget(`###是否发动【${get.translation(event.name)}】选择一名其他角色？###偷取其一点额定摸牌数，或令其失去一点体力`)
+					.set("filterTarget", (_, player, target) => target != player)
+					.set("ai", target => {
+						const { loseHp, player } = get.event();
+						if (loseHp.includes(target)) {
+							return get.effect(target, { name: "losehp" }, player, player);
+						}
+						return -get.attitude(player, target);
+					})
+					.set("loseHp", loseHp);
+				next.set(
+					"targetprompt2",
+					next.targetprompt2.concat([
+						target => {
+							const { loseHp, player } = get.event();
+							if (target == player) {
+								return;
+							}
+							return loseHp?.includes(target) ? "失去体力" : "偷摸牌数";
+						},
+					])
+				);
+				const result = await next.forResult();
+				if (result?.bool && result.targets?.length) {
+					await player.logSkill(event.name, result.targets);
+					if (loseHp.includes(result.targets[0])) {
+						await result.targets[0].loseHp(1);
+					} else {
+						game.log(player, "偷取了", result.targets[0], "的1点额定摸牌数");
+						player.markAuto(`${event.name}_effect`, result.targets);
+						if (!player.hasSkill(`${event.name}_effect`)) {
+							player.addSkill(`${event.name}_effect`);
+						}
+					}
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				trigger: { global: "phaseDrawBegin2" },
+				filter(event, player) {
+					if (event.numFixed || !player.getStorage("jlsg_liunian_effect").length) {
+						return false;
+					}
+					return event.player == player || player.getStorage("jlsg_liunian_effect").includes(event.player);
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const storage = player.getStorage(event.name, []);
+					if (trigger.player == player) {
+						trigger.num += storage.length;
+					} else {
+						trigger.num--;
+					}
+				},
+			},
+		},
+	},
 };
 
 export default skills;

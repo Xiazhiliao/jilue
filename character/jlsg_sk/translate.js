@@ -685,6 +685,11 @@ const translates = {
 	jlsgsk_chenshi: "SK陈式",
 	jlsg_qingbei: "擎北",
 	jlsg_qingbei_info: "每轮开始时，你可以选择一个花色，若如此做，两个轮次内，当任意角色于一个回合内首次使用此花色的牌后，你摸两张牌，于一个回合内再次使用此花色的牌后，你摸一张牌。",
+	jlsgsk_tenggongzhu: "SK滕公主",
+	jlsg_chongxing: "宠幸",
+	jlsg_chongxing_info: "分发起始手牌后，你获得等量的临时牌。每回合限一次，当你获得牌后，你可以获得等量的临时牌。",
+	jlsg_liunian: "流年",
+	jlsg_liunian_info: "每当累计三张临时牌从弃牌堆销毁后，你可以选择一名其他角色，令其额定摸牌数-1且你的额定摸牌数+1，若如此做，当你再次对其发动此技能时，效果改为其失去1点体力。",
 };
 
 export default translates;
