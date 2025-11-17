@@ -77,7 +77,7 @@ export async function precontent(config, originalPack) {
 			for (let item of ["tempBanSkill", "disableSkill", "addSkillBlocker"]) {
 				lib.disableSkill[item] = lib.element.player[item];
 			}
-			lib.element.content.DisableSkill = async function(event, trigger, player) {
+			lib.element.content.DisableSkill = async function (event, trigger, player) {
 				if (!Array.isArray(event.disableSkills)) {
 					event.disableSkills = [event.disableSkills];
 				}
@@ -120,7 +120,7 @@ export async function precontent(config, originalPack) {
 					lib.disableSkill[event.type].apply(player, event.args);
 				}
 				await event.trigger(event.name + "End");
-			}
+			};
 			lib.element.player.tempBanSkill = function (...args) {
 				let str = "disableSkill";
 				if (!_status.disableSkills && Array.isArray(args[0])) {
@@ -1965,7 +1965,7 @@ export async function precontent(config, originalPack) {
 				if (key == "discard") {
 					if (event) {
 						bool =
-							event.type == "discard" &&
+							(event.type == "discard" || event.getParent().name == "discard") &&
 							event.cards.some(card => {
 								if (get.owner(card) != event.player) {
 									return false;
