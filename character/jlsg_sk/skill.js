@@ -9968,7 +9968,7 @@ const skills = {
 			}
 		},
 		ai: {
-			maixue_hp: true,
+			maixie_hp: true,
 		},
 	},
 	jlsg_zuilun: {
@@ -12615,7 +12615,7 @@ const skills = {
 		},
 		ai: {
 			maixie: true,
-			maixue_hp: true,
+			maixie_hp: true,
 			effect: {
 				target: function (card, player, target) {
 					if (get.tag(card, "fireDamage") && target.hasSkillTag("nofire", null, { player: target, card: card })) {

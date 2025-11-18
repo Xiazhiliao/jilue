@@ -1025,7 +1025,7 @@ const skills = {
 		ai: {
 			nofire: true,
 			nodamage: true,
-			maixue_hp: true,
+			maixie_hp: true,
 			effect: {
 				target: function (card, player, target, current) {
 					if (player.hasSkillTag("jueqing")) {
@@ -2128,7 +2128,7 @@ const skills = {
 		},
 		ai: {
 			maixie: true,
-			maixue_hp: true,
+			maixie_hp: true,
 			skillTagFilter(player) {
 				if (player.hasSkill("jlsg_longhun")) {
 					return player.hasCard(card => {
@@ -5978,17 +5978,20 @@ const skills = {
 	jlsg_fengying: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "drawBegin" },
-		getIndex(event) {
-			return event.num;
-		},
 		filter(event, player) {
 			return player.getHistory("useSkill", e => e.skill == "jlsg_fengying").length < 4;
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			const sha = get.autoViewAs({ name: "sha", nature: "thunder", isCard: true }, []);
-			const { result } = await player.chooseUseTarget("nodistance", get.prompt2("jlsg_fengying"), sha, false).set("logSkill", "jlsg_fengying");
-			if (result.bool) {
+			while (trigger.num > 0 && player.getHistory("useSkill", e => e.skill == "jlsg_fengying").length < 4) {
+				let result = await player
+					.chooseUseTarget(get.prompt2(event.name), { name: "sha", nature: "thunder" }, false, "nodistance")
+					.set("ai", target => get.effect(target, { name: "sha", nature: "thunder" }, get.player(), get.player()))
+					.set("logSkill", event.name)
+					.forResult();
+				if (!result?.bool) {
+					break;
+				}
 				--trigger.num;
 			}
 		},
@@ -6000,121 +6003,176 @@ const skills = {
 			if (event.player == player) {
 				return false;
 			}
-			return event.player.getStorage("jlsg_zhiti").length < 5;
+			return (player.getStorage("jlsg_zhiti", new Map())?.get(event.player) || []).length < 5;
 		},
-		direct: true,
-		content() {
-			"step 0"
-			event._options = ["取其1点体力和体力上限", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"];
-			event.options = event._options.filter(c => !trigger.player.getStorage(event.name).includes(c));
-			event.skills = trigger.player.getSkills(null, false, false).filter(i => {
-				let info = get.info(i);
-				if (!info) {
-					return false;
-				}
-				return !info.persevereSkill && !info.charlotte;
-			});
-			if (!event.skills.length) {
-				event.options.remove(event._options[2]);
+		async cost(event, trigger, player) {
+			const record = player.getStorage("jlsg_zhiti", new Map()).get(trigger.player) || [],
+				list = ["取其1点体力和体力上限", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
+				options = list.filter((_, i) => !record.includes(i)),
+				skills = trigger.player.getStockSkills();
+			if (!skills.length) {
+				options.remove(list[2]);
 			}
-			player.chooseControlList(get.prompt(event.name, trigger.player), event.options, function () {
-				return Math.floor(Math.random() * _status.event.parent.options.length);
-			});
-			"step 1"
-			if (result.control == "cancel2") {
-				event.finish();
+			if (!options.length) {
+				event.result = { bool: false };
 				return;
 			}
-			player.logSkill(event.name, trigger.player);
-			event.choice = event.options[result.index];
-			trigger.player.storage[event.name] = trigger.player.getStorage(event.name).concat(event.choice);
-			game.log(player, "选择" + event.choice);
-			switch (event.choice) {
-				case event._options[0]:
-					trigger.player.loseHp();
-					trigger.player.loseMaxHp();
+			const { result } = await player.chooseControlList(get.prompt(event.skill, trigger.player), options).set("ai", (event, player) => {
+				const controls = get.event().controls,
+					target = event.getTrigger().player;
+				let sortList = ["令其翻面", "取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力和体力上限", "令其不能使用装备牌"];
+				if (game.countPlayer() > 4 || target.hasSkillTag("maixie")) {
+					sortList = ["取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力和体力上限", "令其翻面", "令其不能使用装备牌"];
+				}
+				for (let text of sortList) {
+					if (controls.includes(text)) {
+						return controls.indexOf(text);
+					}
+				}
+				return 0;
+			});
+			console.log(result?.index, options[result?.index]);
+			event.result = {
+				bool: result?.control && result?.control != "cancel2",
+				targets: [trigger.player],
+				cost_data: { choice: options[result?.index], skills },
+			};
+		},
+		async content(event, trigger, player) {
+			const { choice, skills } = event.cost_data,
+				list = ["取其1点体力和体力上限", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
+				storage = player.getStorage(event.name, new Map());
+			const record = storage.get(trigger.player) || [];
+			const num = list.indexOf(choice);
+			record.add(num);
+			storage.set(trigger.player, record);
+			player.setStorage(event.name, storage, true);
+			game.log(player, "选择了", "#r" + choice);
+			switch (num) {
+				case 0:
+					{
+						await trigger.player.loseHp();
+						await player.recover();
+						await trigger.player.loseMaxHp();
+						await player.gainMaxHp();
+					}
 					break;
-				case event._options[1]:
-					trigger.player.addSkill("jlsg_zhiti2");
-					trigger.player.storage.jlsg_zhiti2 = (trigger.player.storage.jlsg_zhiti2 || 0) - 1;
+				case 1:
+					let storage = trigger.player.getStorage("jlsg_zhiti_2", 0);
+					storage--;
+					trigger.player.setStorage("jlsg_zhiti_2", storage, true);
+					trigger.player.addSkill("jlsg_zhiti_2");
+					storage = player.getStorage("jlsg_zhiti_2", 0);
+					storage++;
+					player.setStorage("jlsg_zhiti_2", storage, true);
+					player.addSkill("jlsg_zhiti_2");
 					break;
-				case event._options[2]:
-					player
-						.chooseControl(event.skills)
-						.set("ai", () => Math.random())
-						.set("prompt", `获取${get.translation(trigger.player)}一个技能`);
+				case 2:
+					{
+						const { result } = await player
+							.chooseControl(skills)
+							.set("ai", (event, player) => {
+								const hasPositive = ai => {
+										if (!ai) {
+											return false;
+										}
+										const text = ["save", "recover", "maixie", "maixie2", "noh", "nothunder", "nodamage", "notrick", "filterDamage"];
+										return text.some(tag => ai[tag]);
+									},
+									hasNegative = ai => {
+										if (!ai) {
+											return false;
+										}
+										const text = ["neg", "halfneg", "combo"];
+										return text.some(tag => ai[tag]);
+									};
+								let list = [];
+								let list2 = [];
+								for (let i of get.event("controls")) {
+									const info = get.info(i);
+									const ai = info?.ai;
+									const aitag = info?.ai?.tag;
+									if (!info || get.is.empty(info) || info.charlotte || hasNegative(ai) || hasNegative(aitag)) {
+										continue;
+									}
+									if (hasPositive(ai) || hasPositive(aitag)) {
+										list.add(i);
+									} else {
+										list2.add(i);
+									}
+								}
+								list.sort((a, b) => get.skillCount(b) - get.skillCount(a));
+								list2.sort((a, b) => get.skillCount(b) - get.skillCount(a));
+								return list.length > 0 ? list.randomGet() : list2.randomGet();
+							})
+							.set("prompt", `获取${get.translation(trigger.player)}一个技能`);
+						if (result?.control && result.control != "cancel2") {
+							await trigger.player.removeSkills(result.control);
+							await player.addSkills(result.control);
+						}
+					}
 					break;
-				case event._options[3]:
-					trigger.player.addSkill("jlsg_zhiti3");
+				case 3:
+					trigger.player.addSkill("jlsg_zhiti_3");
 					break;
-				case event._options[4]:
-					trigger.player.turnOver();
+				case 4:
+					await trigger.player.turnOver();
 					break;
-
 				default:
 					break;
 			}
-			"step 2"
-			switch (event.choice) {
-				case event._options[0]:
-					player.gainMaxHp();
-					player.recover();
-					break;
-				case event._options[1]:
-					player.addSkill("jlsg_zhiti2");
-					player.storage.jlsg_zhiti2 = (player.storage.jlsg_zhiti2 || 0) + 1;
-					break;
-				case event._options[2]:
-					trigger.player.removeSkills(result.control);
-					player.addSkills(result.control);
-					break;
-
-				default:
-					break;
-			}
-			"step 3"
-			game.delayx();
+			await game.delayx();
 		},
-	},
-	jlsg_zhiti2: {
-		charlotte: true,
-		mark: true,
-		trigger: { player: "phaseDrawBegin" },
-		forced: true,
-		filter: function (event, player) {
-			return !event.numFixed;
-		},
-		content: function () {
-			trigger.num += player.storage.jlsg_zhiti2;
-			if (trigger.num < 0) {
-				trigger.num = 0;
-			}
-		},
-		intro: {
-			content: function (storage, player) {
-				if (player.storage.jlsg_zhiti2 > 0) {
-					return "摸牌阶段的额定摸牌数+" + player.storage.jlsg_zhiti2;
-				}
-				return "摸牌阶段的额定摸牌数-" + -player.storage.jlsg_zhiti2;
+		subSkill: {
+			2: {
+				charlotte: true,
+				mark: true,
+				intro: {
+					markcount(storage) {
+						return Math.abs(storage);
+					},
+					content(storage) {
+						let str = "额定摸牌数";
+						if (storage > 0) {
+							str += `+${storage}`;
+						} else {
+							str += storage || 0;
+						}
+						return str;
+					},
+				},
+				trigger: { player: "phaseDrawBegin2" },
+				filter(event, player) {
+					if (event.numFixed) {
+						return false;
+					}
+					return player.getStorage("jlsg_zhiti_2", 0) != 0;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num += player.getStorage(event.name, 0);
+					if (trigger.num < 0) {
+						trigger.num = 0;
+					}
+				},
+				ai: {
+					halfneg: true,
+				},
 			},
-			markcount: function (storage, player) {
-				return Math.abs(player.storage.jlsg_zhiti2);
-			},
-		},
-		ai: {
-			halfneg: true,
-		},
-	},
-	jlsg_zhiti3: {
-		intro: {
-			content: "不能使用装备牌",
-		},
-		mark: true,
-		mod: {
-			cardEnabled: function (card, player) {
-				if (get.type(card) == "equip") {
-					return false;
-				}
+			3: {
+				charlotte: true,
+				mark: true,
+				intro: {
+					content: "不能使用装备牌",
+				},
+				mod: {
+					cardEnabled(card) {
+						if (get.type(card) == "equip") {
+							return false;
+						}
+					},
+				},
 			},
 		},
 	},
