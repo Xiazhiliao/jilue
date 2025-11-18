@@ -2079,18 +2079,13 @@ export async function precontent(config, originalPack) {
 				if (!characterSkinList.includes(character)) {
 					continue;
 				}
-				if (!("characterSubstitute" in pack)) {
-					pack.characterSubstitute = {};
-				}
-				if (!(character in pack.characterSubstitute)) {
-					pack.characterSubstitute[character] = [];
-				}
+				pack.characterSubstitute ??= {};
+				pack.characterSubstitute[character] ??= [];
 				const [folders, files] = await game.promises.getFileList(`extension/极略/skin/image/${character}`);
 				if (files.length) {
 					for (let file of files) {
 						let skinName = `${character}_${get.pinyin(file.slice(0, -4), false).join("")}`;
-						pack.characterSubstitute[character].push([skinName, [`evt:极略/skin/image/${character}/${file}`]]);
-						//lib.config.skin[skinName] = 1;
+						pack.characterSubstitute[character].push([skinName, [`img:${lib.assetURL}extension/极略/skin/image/${character}/${file}`]]);
 					}
 				}
 			}
