@@ -19132,7 +19132,7 @@ const skills = {
 				num -= 3;
 				player.setStorage(event.name, num, true);
 				player.markSkill(event.name);
-				const loseHp = game.filterPlayer(current => player.hasHistory("useSkill", evt => evt.skill == event.name && evt.targets?.includes?.(current)));
+				const loseHp = game.filterPlayer(current => player.hasAllHistory("useSkill", evt => evt.skill == event.name && evt.targets?.includes?.(current)));
 				const next = player
 					.chooseTarget(`###是否发动【${get.translation(event.name)}】选择一名其他角色？###偷取其一点额定摸牌数，或令其失去一点体力`)
 					.set("filterTarget", (_, player, target) => target != player)

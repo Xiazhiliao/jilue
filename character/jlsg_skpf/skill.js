@@ -1494,12 +1494,12 @@ const skills = {
 		ai: {
 			order(item, player) {
 				if (!player.getStorage("jlsg_lhsh_dade_mark", false)) {
-					if (player.hp < player.maxHp && player.storage.rende < 2 && player.countCards("h") > 1) {
-						return 10;
-					}
-					return 1;
+					return 20;
 				}
-				return 20;
+				if (player.hp < player.maxHp && player.storage.rende < 2 && player.countCards("h") > 1) {
+					return 10;
+				}
+				return 1;
 			},
 			result: {
 				player(player, target) {
