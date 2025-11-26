@@ -937,7 +937,7 @@ export default {
 						}
 					},
 					ai: {
-						maixue: true,
+						maixie: true,
 						maixie_hp: true,
 					},
 				},

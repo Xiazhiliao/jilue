@@ -133,32 +133,30 @@ if (lib.config?.extension_极略_syRefactor) {
 		}
 	}
 }
-	for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
-		const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
-		for (let name in pack.character) {
-			//初始化第五格
-			if (!pack.character[name][4]) {
-				pack.character[name][4] = [];
+const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
+for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
+	for (let name in pack.character) {
+		//初始化第五格
+		pack.character[name][4] ??= [];
+		//原画
+		pack.character[name][4].push(`img:${lib.assetURL}extension/极略/image/character/${name}.jpg`);
+		//阵亡语音
+		pack.character[name][4].add("die:ext:极略/audio/die:true");
+		//Character类化
+		pack.character[name] = get.convertedCharacter(pack.character[name]);
+		//前缀
+		if (name in pack.translate && !name.startsWith("jlsgsy") && !name.startsWith("jlsgrm")) {
+			let translate = pack.translate[name];
+			if (!(name + "_ab" in pack.translate)) {
+				pack.translate[name + "_ab"] = "极略" + translate;
 			}
-			//原画
-			pack.character[name][4].push(`ext:极略/image/character/${name}.jpg`);
-			//阵亡语音
-			if (!pack.character[name][4].some(j => j.startsWith("die:"))) {
-				pack.character[name][4].add("die:ext:极略/audio/die:true");
-			}
-			//前缀
-			if (name in pack.translate && !name.startsWith("jlsgsy") && !name.startsWith("jlsgrm")) {
-				let translate = pack.translate[name];
-				if (!(name + "_ab" in pack.translate)) {
-					pack.translate[name + "_ab"] = "极略" + translate;
-				}
-				let prefix = prefixList.find(prefix => translate.startsWith(prefix));
-				if (prefix) {
-					pack.translate[name + "_prefix"] = "极略" + prefix;
-				}
+			let prefix = prefixList.find(prefix => translate.startsWith(prefix));
+			if (prefix) {
+				pack.translate[name + "_prefix"] = "极略" + prefix;
 			}
 		}
 	}
+}
 export const characters = {
 	jlsg_sk,
 	jlsg_sr,

@@ -1442,10 +1442,9 @@ const skills = {
 					} = event,
 					phaseUse = event.getParent("phaseUse");
 				let [card] = get.cards(1, true);
-				const next = target.showCards([card], `${get.translation(target)}【大德】展示的牌`).set("clearArena", false);
+				const next = target.showCards([card], `${get.translation(target)}【大德】展示的牌`);
 				await next;
 				await target.gain(card, "gain2");
-				game.broadcastAll(ui.clear);
 				const vcard = get.autoViewAs(card, []);
 				if (["basic", "trick"].includes(get.type(vcard)) && player.hasUseTarget(vcard, false, false)) {
 					await player.chooseUseTarget(vcard, false, "nodistance");
@@ -1494,12 +1493,12 @@ const skills = {
 		ai: {
 			order(item, player) {
 				if (!player.getStorage("jlsg_lhsh_dade_mark", false)) {
-					if (player.hp < player.maxHp && player.storage.rende < 2 && player.countCards("h") > 1) {
-						return 10;
-					}
-					return 1;
+					return 20;
 				}
-				return 20;
+				if (player.hp < player.maxHp && player.storage.rende < 2 && player.countCards("h") > 1) {
+					return 10;
+				}
+				return 1;
 			},
 			result: {
 				player(player, target) {

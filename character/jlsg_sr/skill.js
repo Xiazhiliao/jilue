@@ -1548,7 +1548,7 @@ const skills = {
 			const player = get.player();
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 			const improve = upgradeStorage?.other?.["jlsg_sheji"];
-			return improve && ui.selected.cards.length == player.countCards("h");
+			return improve && ui.selected.cards.every(card => get.position(card) == "h") && ui.selected.cards.length == player.countCards("h");
 		},
 		group: "jlsg_sheji_buff",
 		subSkill: {
