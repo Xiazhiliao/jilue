@@ -6031,7 +6031,6 @@ const skills = {
 				}
 				return 0;
 			});
-			console.log(result?.index, options[result?.index]);
 			event.result = {
 				bool: result?.control && result?.control != "cancel2",
 				targets: [trigger.player],
@@ -6050,22 +6049,22 @@ const skills = {
 			game.log(player, "选择了", "#r" + choice);
 			switch (num) {
 				case 0:
-					{
-						await trigger.player.loseHp();
-						await player.recover();
-						await trigger.player.loseMaxHp();
-						await player.gainMaxHp();
-					}
+					await trigger.player.loseHp();
+					await player.recover();
+					await trigger.player.loseMaxHp();
+					await player.gainMaxHp();
 					break;
 				case 1:
-					let storage = trigger.player.getStorage("jlsg_zhiti_2", 0);
-					storage--;
-					trigger.player.setStorage("jlsg_zhiti_2", storage, true);
-					trigger.player.addSkill("jlsg_zhiti_2");
-					storage = player.getStorage("jlsg_zhiti_2", 0);
-					storage++;
-					player.setStorage("jlsg_zhiti_2", storage, true);
-					player.addSkill("jlsg_zhiti_2");
+					{
+						let storage = trigger.player.getStorage("jlsg_zhiti_2", 0);
+						storage--;
+						trigger.player.setStorage("jlsg_zhiti_2", storage, true);
+						trigger.player.addSkill("jlsg_zhiti_2");
+						storage = player.getStorage("jlsg_zhiti_2", 0);
+						storage++;
+						player.setStorage("jlsg_zhiti_2", storage, true);
+						player.addSkill("jlsg_zhiti_2");
+					}
 					break;
 				case 2:
 					{
