@@ -1529,10 +1529,7 @@ const skills = {
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 			const improve = upgradeStorage?.other?.["jlsg_sheji"];
-			if (!improve) {
-				return false;
-			}
-			return get.position(card) == "h";
+			return improve && get.position(card) == "h";
 		},
 		check(card) {
 			if (get.position(card) == "e") {
@@ -1542,8 +1539,8 @@ const skills = {
 		},
 		allowChooseAll: true,
 		filterOk() {
-			if (ui.selected.cards.length == 1) {
-				return get.position(ui.selected.cards[0]) == "e";
+			if (ui.selected.cards.length == 1 && get.position(ui.selected.cards[0]) == "e") {
+				return true;
 			}
 			const player = get.player();
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
