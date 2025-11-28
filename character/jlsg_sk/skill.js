@@ -19195,6 +19195,78 @@ const skills = {
 			},
 		},
 	},
+	jlsg_jixu: {
+		audio: "ext:极略/audio/skill:2",
+		usable: 2,
+		trigger: { global: "damageBegin2" },
+		filter(event, player) {
+			return event.source == player || event.player == player;
+		},
+		check() {
+			return true;
+		},
+		async content(event, trigger, player) {
+			await player.draw(2);
+			const sha = { name: "sha", isCard: true, storage: { jlsg_jixu: true } };
+			if (!player.hasUseTarget(sha, null, false)) {
+				return;
+			}
+			const next = player.chooseUseTarget(`###${get.translation(event.name)}：是否视为使用一张【杀】？###此【杀】结算后可将此伤害转移给所有受到此【杀】伤害的角色`, sha, [1, 2], false);
+			let { result } = await next;
+			if (!result?.bool) {
+				return;
+			}
+			const targets = game
+				.filterPlayer(current => {
+					return current.hasHistory("damage", evt => {
+						if (evt.source != player || !evt.card?.storage?.jlsg_jixu) {
+							return false;
+						} else if (evt.getParent(2).name != "useCard" || evt.getParent(3).name != "chooseUseTarget") {
+							return false;
+						}
+						return evt.getParent(3) == next;
+					});
+				})
+				.sortBySeat();
+			if (!targets.length) {
+				return;
+			}
+			result = await player
+				.chooseBool(`###${get.translation(event.name)}：是否将${trigger.num}点${game.hasNature(trigger) ? get.translation(trigger.nature) : ""}伤害转移给这些角色？###${get.translation(targets)}`)
+				.set("ai", (event, player) => {
+					const { targets } = get.event(),
+						trigger = event.getTrigger();
+					return targets.reduce((sum, target) => sum + get.damageEffect(target, trigger.source, trigger.source, trigger.nature), 0) > 0;
+				})
+				.set("targets", targets)
+				.forResult();
+			if (result?.bool) {
+				game.log(player, "将伤害转移给了", targets);
+				const { ...arg } = trigger;
+				delete arg.player;
+				trigger.cancel();
+				if (!_status.emptyEvent) {
+					_status.emptyEvent = await game.createEvent("empty", false).setContent(function () {});
+					game.broadcastAll(function (info) {
+						_status.emptyEvent = info;
+					}, _status.emptyEvent);
+				}
+				let empty = { ..._status.emptyEvent };
+				for (let i in empty) {
+					if (empty[i]) {
+						delete arg[i];
+					}
+				}
+				for (const target of targets) {
+					const damage = target.damage();
+					for (let i in arg) {
+						damage[i] = arg[i];
+					}
+					await damage;
+				}
+			}
+		},
+	},
 };
 
 export default skills;
