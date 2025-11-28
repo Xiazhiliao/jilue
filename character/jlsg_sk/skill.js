@@ -19244,6 +19244,7 @@ const skills = {
 				game.log(player, "将伤害转移给了", targets);
 				const { ...arg } = trigger;
 				delete arg.player;
+				arg._triggered = 0;
 				trigger.cancel();
 				if (!_status.emptyEvent) {
 					_status.emptyEvent = await game.createEvent("empty", false).setContent(function () {});

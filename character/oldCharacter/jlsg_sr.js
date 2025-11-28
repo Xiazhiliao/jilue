@@ -1,5 +1,208 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export default {
+	jlsgsr_simayi: {
+		1: {
+			skill: {
+				jlsg_guicai: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					trigger: { global: "judge" },
+					check: function (event, player) {
+						const judge = event.judge(event.player.judging[0]);
+						if (get.attitude(player, event.player) < 0) {
+							return judge > 0;
+						}
+						if (get.attitude(player, event.player) > 0) {
+							return judge < 0;
+						}
+						return 0;
+					},
+					async content(event, trigger, player) {
+						let str = `${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为
+						${get.translation(trigger.player.judging[0])}，打出一张手牌代替之或亮出牌顶的一张牌代替之`;
+						const { result } = await player
+							.chooseCard(str, "h")
+							.set("filterCard", (card, player, event) => {
+								const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+								if (mod2 != "unchanged") {
+									return mod2;
+								}
+								const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+								if (mod != "unchanged") {
+									return mod;
+								}
+								return true;
+							})
+							.set("ai", function (card) {
+								const trigger = get.event().getParent().getTrigger();
+								const player = get.player(),
+									judging = _status.event.judging,
+									result = trigger.judge(card) - trigger.judge(judging);
+								const attitude = get.attitude(player, trigger.player);
+								if (attitude == 0 || result == 0) {
+									return 0;
+								}
+								if (attitude > 0) {
+									return result - get.value(card) / 2;
+								} else {
+									return -result - get.value(card) / 2;
+								}
+							})
+							.set("judging", trigger.player.judging[0]);
+						if (result.bool && result.cards?.length) {
+							event.cards = result.cards;
+						} else {
+							event.cards = get.cards(1);
+							game.log(player, "亮出了牌堆顶的", event.cards);
+							await game.cardsGotoOrdering(event.cards);
+							player.showCards(event.cards);
+						}
+						await player.respond(event.cards, "highlight", "noOrdering");
+						if (trigger.player.judging[0].clone) {
+							trigger.player.judging[0].clone.classList.remove("thrownhighlight");
+							game.broadcast(function (card) {
+								if (card.clone) {
+									card.clone.classList.remove("thrownhighlight");
+								}
+							}, trigger.player.judging[0]);
+							game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+						}
+						await game.cardsDiscard(trigger.player.judging[0]);
+						trigger.player.judging[0] = event.cards[0];
+						trigger.orderingCards.addArray(event.cards);
+						game.log(trigger.player, "的判定牌改为", event.cards[0]);
+						await game.delay(2);
+					},
+					ai: {
+						tag: {
+							rejudge: 1,
+						},
+					},
+				},
+				jlsg_langgu: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					trigger: {
+						player: "damageEnd",
+						source: "damageSource",
+					},
+					filter: function (event, player) {
+						const target = lib.skill.jlsg_langgu.logTarget(event, player);
+						if (!target?.isIn()) {
+							return false;
+						}
+						return target.countGainableCards(player, "he");
+					},
+					check: function (event, player) {
+						const target = lib.skill.jlsg_langgu.logTarget(event, player);
+						if (target == player && !player.getVEquips("baiyin").length) {
+							return false;
+						}
+						return get.effect(target, { name: "shunshou_copy2" }, player, player) > 0;
+					},
+					logTarget(event, player) {
+						if (event.source == event.player) {
+							return player;
+						} else if (event.source == player) {
+							return event.player;
+						}
+						return event.source;
+					},
+					async content(event, trigger, player) {
+						const target = lib.skill.jlsg_langgu.logTarget(trigger, player);
+						const { result } = await player
+							.judge(function (card) {
+								if (get.color(card, get.player()) == "black") {
+									return 2;
+								}
+								return -2;
+							})
+							.set("judge2", result => result.bool);
+						if (result.bool && target.countGainableCards(player, "he")) {
+							await player.gainPlayerCard(target, "he", true);
+						}
+					},
+					ai: {
+						expose: 0.2,
+						maixie_defend: true,
+						effect: {
+							target(card, player, target) {
+								if (player.countCards("he") > 1 && get.tag(card, "damage")) {
+									if (player.hasSkillTag("jueqing", false, target)) {
+										return [1, -1.5];
+									}
+									if (get.attitude(target, player) < 0) {
+										return [1, 1];
+									}
+								}
+							},
+						},
+					},
+				},
+				jlsg_zhuizun: {
+					audio: "ext:极略/audio/skill:true",
+					srlose: true,
+					enable: "chooseToUse",
+					mark: true,
+					intro: {
+						content: "limited",
+					},
+					limited: true,
+					skillAnimation: true,
+					animationStr: "追尊",
+					animationColor: "water",
+					filter: function (event, player) {
+						if (event.type != "dying") {
+							return false;
+						} else if (player != event.dying) {
+							return false;
+						} else if (player.storage.jlsg_zhuizun) {
+							return false;
+						}
+						return true;
+					},
+					async content(event, trigger, player) {
+						player.awakenSkill("jlsg_zhuizun");
+						await player.recoverTo(1);
+						const targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
+						player.line(targets);
+						for (const target of targets) {
+							if (!target?.isIn()) {
+								continue;
+							}
+							await target.chooseToGive("选择一张手牌交给" + get.translation(player), player, true, "h");
+						}
+						player.insertPhase("jlsg_zhuizun");
+					},
+					ai: {
+						order: 1,
+						threaten: function (player, target) {
+							if (!target.storage.jlsg_zhuizun) {
+								return 0.6;
+							}
+						},
+						save: true,
+						skillTagFilter: function (player) {
+							if (player.storage.jlsg_zhuizun) {
+								return false;
+							}
+							if (player.hp > 0) {
+								return false;
+							}
+						},
+						result: {
+							player: 10,
+						},
+					},
+				},
+			},
+			translate: {
+				jlsg_guicai_info: "在任意角色的判定牌生效前，你可以选择一项：1、打出一张手牌代替之。2、亮出牌堆顶的一张牌代替之。",
+				jlsg_langgu_info: "每当你造成或受到一次伤害后，你可以进行一次判定，若为黑色，你获得对方一张牌。",
+				jlsg_zhuizun_info: "限定技，当你进入濒死状态时，你可以恢复体力至1点，令所有其他角色依次交给你一张手牌。然后当前回合结束后，你进行1个额外的回合。",
+			},
+		},
+	},
 	jlsgsr_sunquan: {
 		1: {
 			skill: {
@@ -1526,7 +1729,7 @@ export default {
 												return 1;
 											}
 											return 0;
-									  });
+										});
 							if (!bool) {
 								return;
 							}

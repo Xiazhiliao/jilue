@@ -1,6 +1,30 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
+	jlsg_guicai(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_simayi"]?.[2] || upgradeStorage.other?.jlsg_sheji;
+		if (improve || player?.index) {
+			return "当判定牌生效前，你可以打出一张牌或用牌堆顶牌代替之，然后摸两张牌。";
+		}
+		return lib.translate["jlsg_guicai_info"];
+	},
+	jlsg_langgu(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_simayi"]?.[2] || upgradeStorage.other?.jlsg_sheji;
+		if (improve || player?.index) {
+			return "当你对其他角色造成伤害时，或其他角色对你造成伤害时，你可以摸一张牌并判定，若结果为：黑桃，此伤害+1；红桃，此伤害-1；梅花，你弃置其一张牌；方片，你摸一张牌。";
+		}
+		return lib.translate["jlsg_langgu_info"];
+	},
+	jlsg_zhuizun(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_simayi"]?.[2] || upgradeStorage.other?.jlsg_sheji;
+		if (improve || player?.index) {
+			return "限定技，当你进入濒死状态时，你可以回复体力至体力上限，然后判定，若如此做，你获得其他角色手牌里和弃牌堆里的与判定结果花色相同的所有牌。此回合结束后，你进行一个额外回合。";
+		}
+		return lib.translate["jlsg_zhuizun_info"];
+	},
 	jlsg_zhaoxiang(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player?.playerid] || {},
 			storage = player?.getStorage?.("jlsg_zhaoxiang", [true, true, true]) || [true, true, true];

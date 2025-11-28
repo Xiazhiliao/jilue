@@ -136,6 +136,37 @@ const skills = {
 		},
 		//属性突破列表
 		upgradeContent: {
+			jlsgsr_simayi: {
+				"初始手牌数+3": async function (event, trigger, player) {
+					player.when({ global: "gameDrawBegin" }).step(async function (event, trigger, player) {
+						const me = player,
+							numx = trigger.num;
+						trigger.num =
+							typeof numx == "function"
+								? function (player) {
+										if (player == me) {
+											return numx(player) + 3;
+										}
+										return numx(player);
+									}
+								: function (player) {
+										if (player == me) {
+											return numx + 3;
+										}
+										return numx;
+									};
+					});
+					event.info[0] = true;
+				},
+				"体力上限+1": async function (event, trigger, player) {
+					game.broadcastAll(function (player) {
+						player.maxHp++;
+						player.hp++;
+						player.update();
+					}, player);
+					event.info[1] = true;
+				},
+			},
 			jlsgsr_caocao: {
 				"手牌上限+3": async function (event, trigger, player) {
 					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
@@ -1107,8 +1138,20 @@ const skills = {
 	jlsg_guicai: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
+			}
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+			}
+		},
 		trigger: { global: "judge" },
-		check: function (event, player) {
+		check(event, player) {
 			const judge = event.judge(event.player.judging[0]);
 			if (get.attitude(player, event.player) < 0) {
 				return judge > 0;
@@ -1173,6 +1216,9 @@ const skills = {
 			trigger.orderingCards.addArray(event.cards);
 			game.log(trigger.player, "的判定牌改为", event.cards[0]);
 			await game.delay(2);
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const improve = upgradeStorage?.other?.[event.name];
+			await player.draw(improve ? 2 : 1);
 		},
 		ai: {
 			tag: {
@@ -1183,76 +1229,103 @@ const skills = {
 	jlsg_langgu: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		trigger: {
-			player: "damageEnd",
-			source: "damageSource",
-		},
-		filter: function (event, player) {
-			const target = lib.skill.jlsg_langgu.logTarget(event, player);
-			if (!target?.isIn()) {
-				return false;
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
 			}
-			return target.countGainableCards(player, "he");
-		},
-		check: function (event, player) {
-			const target = lib.skill.jlsg_langgu.logTarget(event, player);
-			if (target == player && !player.getVEquips("baiyin").length) {
-				return false;
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
-			return get.effect(target, { name: "shunshou_copy2" }, player, player) > 0;
+		},
+		trigger: { global: "damageBegin1" },
+		filter(event, player) {
+			const target = lib.skill.jlsg_langgu.logTarget(event, player);
+			return target?.isIn() && target != player;
+		},
+		check(event, player) {
+			return true;
 		},
 		logTarget(event, player) {
-			if (event.source == event.player) {
-				return player;
+			if (event.player == player) {
+				return event.source;
 			} else if (event.source == player) {
 				return event.player;
 			}
-			return event.source;
+			return null;
 		},
 		async content(event, trigger, player) {
-			const target = lib.skill.jlsg_langgu.logTarget(trigger, player);
-			const { result } = await player
-				.judge(function (card) {
-					if (get.color(card, get.player()) == "black") {
-						return 2;
-					}
-					return -2;
-				})
-				.set("judge2", result => result.bool);
-			if (result.bool && target.countGainableCards(player, "he")) {
-				await player.gainPlayerCard(target, "he", true);
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const improve = upgradeStorage?.other?.[event.name];
+			if (improve) {
+				await player.draw();
 			}
+			await player
+				.judge(event.name, result => {
+					let bool = result.suit != "heart";
+					if (get.attitude(get.player(), get.event().target) > 0) {
+						return !bool;
+					}
+					return bool;
+				})
+				.set("judge2", result => result?.bool)
+				.set("target", event.targets[0])
+				.set("callback", async function (event, _, player) {
+					const { judgeResult: result } = event,
+						trigger = event.getParent(2).getTrigger();
+					const target = lib.skill.jlsg_langgu.logTarget(trigger, player);
+					switch (result?.suit) {
+						case "spade":
+							trigger.num++;
+							break;
+						case "heart":
+							trigger.num--;
+							break;
+						case "club":
+							if (target.countDiscardableCards(player, "he")) {
+								await player.discardPlayerCard(target, true, "he");
+							}
+							break;
+						case "diamond":
+							await player.draw(1);
+							break;
+					}
+				});
 		},
 		ai: {
 			expose: 0.2,
 			maixie_defend: true,
-			effect: {
-				target(card, player, target) {
-					if (player.countCards("he") > 1 && get.tag(card, "damage")) {
-						if (player.hasSkillTag("jueqing", false, target)) {
-							return [1, -1.5];
-						}
-						if (get.attitude(target, player) < 0) {
-							return [1, 1];
-						}
-					}
-				},
-			},
 		},
 	},
 	jlsg_zhuizun: {
 		audio: "ext:极略/audio/skill:true",
 		srlose: true,
-		enable: "chooseToUse",
+		limited: true,
+		xiandingji: true,
+		skillAnimation: true,
+		animationStr: "追尊",
+		animationColor: "water",
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
+			}
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+			}
+		},
 		mark: true,
 		intro: {
 			content: "limited",
 		},
-		limited: true,
-		skillAnimation: true,
-		animationStr: "追尊",
-		animationColor: "water",
-		filter: function (event, player) {
+		enable: "chooseToUse",
+		filter(event, player) {
 			if (event.type != "dying") {
 				return false;
 			} else if (player != event.dying) {
@@ -1263,27 +1336,53 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("jlsg_zhuizun");
-			await player.recoverTo(1);
-			const targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
+			player.awakenSkill(event.name);
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const improve = upgradeStorage?.other?.[event.name];
+			await player.recoverTo(improve ? player.maxHp : 1);
+			const { result } = await player.judge(event.name);
+			if (!result || !result?.suit) {
+				return;
+			}
+			const suit = result.suit,
+				targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase),
+				cards = [];
 			player.line(targets);
-			for (const target of targets) {
-				if (!target?.isIn()) {
-					continue;
+			for (let target of targets) {
+				let hs = target.getGainableCards(player, "h", card => get.suit(card) == suit);
+				if (hs.length) {
+					target.$giveAuto(hs, player, true);
+					cards.addArray(hs);
 				}
-				await target.chooseToGive("选择一张手牌交给" + get.translation(player), player, true, "h");
+			}
+			if (improve) {
+				let discardPile = _status.discarded.filter(card => get.suit(card) == suit && get.position(card) == "d");
+				if (discardPile.length) {
+					player.$gain2(discardPile, false);
+					game.log(player, "从弃牌堆中获得了", discardPile);
+					cards.addArray(discardPile);
+				}
+			}
+			if (cards.length) {
+				await game
+					.loseAsync({
+						gain_list: [[player, cards]],
+						cards,
+						animate: false,
+					})
+					.setContent("gaincardMultiple");
 			}
 			player.insertPhase("jlsg_zhuizun");
 		},
 		ai: {
 			order: 1,
-			threaten: function (player, target) {
+			threaten(player, target) {
 				if (!target.storage.jlsg_zhuizun) {
 					return 0.6;
 				}
 			},
 			save: true,
-			skillTagFilter: function (player) {
+			skillTagFilter(player) {
 				if (player.storage.jlsg_zhuizun) {
 					return false;
 				}
