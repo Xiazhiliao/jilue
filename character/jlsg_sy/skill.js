@@ -479,9 +479,8 @@ const skills = {
 			}
 			return event.player.isAlive();
 		},
-		unique: true,
-		content: function () {
-			trigger.player.executeDelayCardEffect("shandian");
+		async content(event, trigger, player) {
+			await trigger.player.executeDelayCardEffect("shandian");
 		},
 	},
 	jlsgsy_tianyou: {
@@ -928,7 +927,6 @@ const skills = {
 		audio: "ext:极略/audio/skill:2", // audio: ['dihui', 2],
 		enable: "phaseUse",
 		usable: 1,
-		unique: true,
 		complexCard: true,
 		filter: function (event, player) {
 			let players = game.filterPlayer();
@@ -979,7 +977,6 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
 		usable: 1,
-		unique: true,
 		filterTarget: function (card, player, target) {
 			if (!target.countCards("h")) {
 				return false;
@@ -1044,7 +1041,6 @@ const skills = {
 			return event.source && event.source.isIn();
 		},
 		forced: true,
-		unique: true,
 		logTarget: "source",
 		async content(event, trigger, player) {
 			const { result } = await trigger.source.chooseBool(`###${get.translation(player)}对你发动了祸心###是否令${get.translation(player)}获得你区域里的各一张牌？否则其防止此次伤害且你失去一点体力`).set("ai", (event, source) => {
