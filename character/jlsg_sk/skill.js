@@ -449,7 +449,7 @@ const skills = {
 				const evt = _status.event.getParent();
 				return evt.filterCard({ name: button.link[2], nature: button.link[3] }, player, evt);
 			},
-			check({link:[_,__,name,nature]}) {
+			check({ link: [_, __, name, nature] }) {
 				if (get.info({ name })?.notarget) {
 					return get.order({ name });
 				}
@@ -10120,42 +10120,43 @@ const skills = {
 		filter(event, player) {
 			if (!event.source || event.source !== _status.currentPhase) {
 				return false;
-			}
-			return (
-				!event.source.getHistory("sourceDamage").length &&
+			} else if (
 				player
 					.getDiscardableCards(player, "he")
 					.map(c => get.suit(c))
-					.some((s, i, arr) => arr[i + 1] && arr[i + 1] != s)
-			);
+					.unique().length < 2
+			) {
+				return false;
+			}
+			return game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == event.source).indexOf(event) == 0;
 		},
-		direct: true,
-		content() {
-			"step 0"
-			var cnt = 0;
+		async cost(event, trigger, player) {
+			let cnt = 0;
 			if (get.attitude(player, trigger.player) * get.attitude(player, trigger.source) < -4) {
 				cnt = trigger.source.getHistory("useCard").length;
 			}
-			let prompt = `###${get.prompt(event.name, trigger.source)}###${get.translation(trigger.source)}将对${get.translation(trigger.player)}造成伤害`;
-			player
-				.chooseToDiscard(prompt, "he", 2, c => ui.selected.cards.every(c0 => get.suit(c0) != get.suit(c)))
-				.set("logSkill", [event.name, trigger.source])
+			let prompt = `###${get.prompt(event.skill, trigger.source)}###${get.translation(trigger.source)}将对${get.translation(trigger.player)}造成伤害`;
+			event.result = await player
+				.chooseToDiscard(prompt, "he", 2, card => ui.selected.cards.every(cardx => get.suit(cardx) != get.suit(card)))
 				.set("complexCard", true)
 				.set("ai", c => 4 * _status.event.cnt - get.value(c) - 2 * Math.random())
-				.set("cnt", cnt);
-			"step 1"
-			if (!result.bool) {
-				event.finish();
-				return;
-			}
-			player
+				.set("logSkill", [event.name, trigger.source])
+				.set("chooseonly", true)
+				.set("cnt", cnt)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			const { result } = await player
 				.chooseControl("伤害+1", "伤害-1")
 				.set("ai", () => _status.event.choice)
 				.set("choice", get.attitude(player, trigger.player) > get.attitude(player, trigger.source) ? 1 : 0)
 				.set("prompt", "撷翠")
 				.set("prompt2", "请选择一项");
-			"step 2"
-			var cnt = trigger.source.getHistory("useCard").length;
+			if (!result?.control || result.control == "cancel2") {
+				return;
+			}
+			let cnt = trigger.source.getHistory("useCard").length;
 			if (trigger.source.ai.shown > player.ai.shown || trigger.player.ai.shown > player.ai.shown) {
 				player.addExpose(0.2);
 			}
@@ -10163,13 +10164,13 @@ const skills = {
 				game.log(player, "令", trigger.source, "对", trigger.player, "造成的伤害+1");
 				trigger.num += 1;
 				if (cnt) {
-					trigger.source.draw(cnt, player);
+					await trigger.source.draw(cnt, player);
 				}
 			} else {
 				game.log(player, "令", trigger.source, "对", trigger.player, "造成的伤害-1");
 				trigger.num -= 1;
 				if (cnt) {
-					trigger.source.chooseToDiscard(cnt, "he", true);
+					await trigger.source.chooseToDiscard(cnt, "he", true);
 				}
 			}
 		},
