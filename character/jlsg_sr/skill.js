@@ -1159,7 +1159,7 @@ const skills = {
 			if (get.attitude(player, event.player) > 0) {
 				return judge < 0;
 			}
-			return 0;
+			return 2;
 		},
 		async content(event, trigger, player) {
 			let str = `${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为
@@ -1265,9 +1265,9 @@ const skills = {
 			}
 			await player
 				.judge(event.name, result => {
-					let bool = result.suit != "heart";
+					let bool = result.suit != "heart" ? 1 : -1;
 					if (get.attitude(get.player(), get.event().target) > 0) {
-						return !bool;
+						bool = -bool;
 					}
 					return bool;
 				})
