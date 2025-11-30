@@ -19208,11 +19208,11 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.draw(2);
-			const sha = { name: "sha", isCard: true, storage: { jlsg_jixu: true } };
-			if (!player.hasUseTarget(sha, null, false)) {
+			const sha = { name: "sha", isCard: true };
+			if (!player.hasUseTarget(sha, false, false)) {
 				return;
 			}
-			const next = player.chooseUseTarget(`###${get.translation(event.name)}：是否视为使用一张【杀】？###此【杀】结算后可将此伤害转移给所有受到此【杀】伤害的角色`, sha, [1, 2], false);
+			const next = player.chooseUseTarget(`###${get.translation(event.name)}：是否视为使用一张【杀】？###此【杀】结算后可将此伤害转移给所有受到此【杀】伤害的角色`, sha, [1, 2], false, "nodistance");
 			let { result } = await next;
 			if (!result?.bool) {
 				return;
@@ -19220,7 +19220,7 @@ const skills = {
 			const targets = game
 				.filterPlayer(current => {
 					return current.hasHistory("damage", evt => {
-						if (evt.source != player || !evt.card?.storage?.jlsg_jixu) {
+						if (evt.source != player || !evt.card) {
 							return false;
 						} else if (evt.getParent(2).name != "useCard" || evt.getParent(3).name != "chooseUseTarget") {
 							return false;
@@ -19237,16 +19237,16 @@ const skills = {
 				.set("ai", (event, player) => {
 					const { targets } = get.event(),
 						trigger = event.getTrigger();
-					return targets.reduce((sum, target) => sum + get.damageEffect(target, trigger.source, trigger.source, trigger.nature), 0) > 0;
+					return targets.reduce((sum, target) => sum + get.damageEffect(target, trigger.source, player, trigger.nature), 0) > 0;
 				})
 				.set("targets", targets)
 				.forResult();
 			if (result?.bool) {
-				game.log(player, "将伤害转移给了", targets);
+				game.log(player, "将", trigger.player == player ? "自己" : trigger.player, `受到的${trigger.num}点${trigger.nature ? get.translation(trigger.nature) : ""}伤害转移给了`, targets);
 				const { ...arg } = trigger;
 				delete arg.player;
-				arg._triggered = 0;
 				trigger.cancel();
+				delete arg._triggered;
 				if (!_status.emptyEvent) {
 					_status.emptyEvent = await game.createEvent("empty", false).setContent(function () {});
 					game.broadcastAll(function (info) {
@@ -19267,6 +19267,44 @@ const skills = {
 					await damage;
 				}
 			}
+		},
+		ai: {
+			threaten: 0.6,
+			maixie: true,
+			maixie_hp: true,
+			maixie_defend: true,
+			skillTagFilter(player) {
+				return player.countSkill("jlsg_jixu") < 2;
+			},
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "damage")) {
+						if (player.hasSkillTag("jueqing", false, target)) {
+							return [1, -2];
+						}
+						if (!target.hasFriend()) {
+							return;
+						}
+						let num = 1;
+						if (get.attitude(player, target) > 0) {
+							if (player.needsToDiscard()) {
+								num = 0.7;
+							} else {
+								num = 0.5;
+							}
+						}
+						if (target.hp >= 4) {
+							return [1, num * 2];
+						}
+						if (target.hp == 3) {
+							return [1, num * 1.5];
+						}
+						if (target.hp == 2) {
+							return [1, num * 0.5];
+						}
+					}
+				},
+			},
 		},
 	},
 };
