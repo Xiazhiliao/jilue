@@ -1163,9 +1163,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let str = `${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为
-						${get.translation(trigger.player.judging[0])}，打出一张手牌代替之或亮出牌顶的一张牌代替之`;
+						${get.translation(trigger.player.judging[0])}，打出一张牌代替之或亮出牌顶的一张牌代替之`;
 			const { result } = await player
-				.chooseCard(str, "h")
+				.chooseCard(str, "he")
 				.set("filterCard", (card, player, event) => {
 					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 					if (mod2 != "unchanged") {
