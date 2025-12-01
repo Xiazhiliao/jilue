@@ -1155,11 +1155,7 @@ const skills = {
 			const judge = event.judge(event.player.judging[0]);
 			if (get.attitude(player, event.player) <= 0) {
 				return judge >= 0;
-			if (get.attitude(player, event.player) <= 0) {
-				return judge >= 0;
 			}
-			if (get.attitude(player, event.player) >= 0) {
-				return judge <= 0;
 			if (get.attitude(player, event.player) >= 0) {
 				return judge <= 0;
 			}
@@ -1185,21 +1181,14 @@ const skills = {
 					const trigger = get.event().getTrigger();
 					const { player, judging } = get.event();
 					const result = trigger.judge(card) - trigger.judge(judging);
-					const trigger = get.event().getTrigger();
-					const { player, judging } = get.event();
-					const result = trigger.judge(card) - trigger.judge(judging);
 					const attitude = get.attitude(player, trigger.player);
-					let val = get.value(card);
-					if (attitude == 0) {
 					let val = get.value(card);
 					if (attitude == 0) {
 						return 0;
 					}
 					if (attitude > 0) {
 						return result - val / 5;
-						return result - val / 5;
 					} else {
-						return -result - val / 5;
 						return -result - val / 5;
 					}
 				})
@@ -1291,29 +1280,10 @@ const skills = {
 						if (source.countDiscardableCards(player, "he")) {
 							return get.effect(source, { name: "guohe_copy2" }, player, player);
 						}
-				.judge(event.name, card => {
-					const event = get.event().getParent("jlsg_langgu"),
-						suit = get.suit(card);
-					const trigger = event.getTrigger();
-					player = event.player;
-					const { source, player: target } = trigger;
-					if (suit == "heart") {
-						return -get.damageEffect(target, source, player, trigger.nature);
-					} else if (suit == "diamond") {
-						return get.effect(player, { name: "draw" }, player, player);
-					} else if (suit == "spade") {
-						return get.damageEffect(target, source, player, trigger.nature);
-					} else if (suit == "club") {
-						if (source.countDiscardableCards(player, "he")) {
-							return get.effect(source, { name: "guohe_copy2" }, player, player);
-						}
 					}
-					return 0;
 					return 0;
 				})
 				.set("judge2", result => result?.bool)
-				.set("source", trigger.source)
-				.set("target", trigger.player)
 				.set("source", trigger.source)
 				.set("target", trigger.player)
 				.set("callback", async function (event, _, player) {
