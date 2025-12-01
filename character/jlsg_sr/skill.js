@@ -1153,11 +1153,11 @@ const skills = {
 		trigger: { global: "judge" },
 		check(event, player) {
 			const judge = event.judge(event.player.judging[0]);
-			if (get.attitude(player, event.player) < 0) {
-				return judge > 0;
+			if (get.attitude(player, event.player) <= 0) {
+				return judge >= 0;
 			}
-			if (get.attitude(player, event.player) > 0) {
-				return judge < 0;
+			if (get.attitude(player, event.player) >= 0) {
+				return judge <= 0;
 			}
 			return 2;
 		},
@@ -1178,18 +1178,18 @@ const skills = {
 					return true;
 				})
 				.set("ai", function (card) {
-					const trigger = get.event().getParent().getTrigger();
-					const player = get.player(),
-						judging = _status.event.judging,
-						result = trigger.judge(card) - trigger.judge(judging);
+					const trigger = get.event().getTrigger();
+					const { player, judging } = get.event();
+					const result = trigger.judge(card) - trigger.judge(judging);
 					const attitude = get.attitude(player, trigger.player);
-					if (attitude == 0 || result == 0) {
+					let val = get.value(card);
+					if (attitude == 0) {
 						return 0;
 					}
 					if (attitude > 0) {
-						return result - get.value(card) / 2;
+						return result - val / 5;
 					} else {
-						return -result - get.value(card) / 2;
+						return -result - val / 5;
 					}
 				})
 				.set("judging", trigger.player.judging[0]);
@@ -1264,15 +1264,28 @@ const skills = {
 				await player.draw();
 			}
 			await player
-				.judge(event.name, result => {
-					let bool = result.suit != "heart" ? 1 : -1;
-					if (get.attitude(get.player(), get.event().target) > 0) {
-						bool = -bool;
+				.judge(event.name, card => {
+					const event = get.event().getParent("jlsg_langgu"),
+						suit = get.suit(card);
+					const trigger = event.getTrigger();
+					player = event.player;
+					const { source, player: target } = trigger;
+					if (suit == "heart") {
+						return -get.damageEffect(target, source, player, trigger.nature);
+					} else if (suit == "diamond") {
+						return get.effect(player, { name: "draw" }, player, player);
+					} else if (suit == "spade") {
+						return get.damageEffect(target, source, player, trigger.nature);
+					} else if (suit == "club") {
+						if (source.countDiscardableCards(player, "he")) {
+							return get.effect(source, { name: "guohe_copy2" }, player, player);
+						}
 					}
-					return bool;
+					return 0;
 				})
 				.set("judge2", result => result?.bool)
-				.set("target", event.targets[0])
+				.set("source", trigger.source)
+				.set("target", trigger.player)
 				.set("callback", async function (event, _, player) {
 					const { judgeResult: result } = event,
 						trigger = event.getParent(2).getTrigger();
@@ -1298,6 +1311,20 @@ const skills = {
 		ai: {
 			expose: 0.2,
 			maixie_defend: true,
+			effect: {
+				target(card, player, target) {
+					if (!get.tag(card, "damage") || player.hasSkillTag("jueqing", false, target)) {
+						return;
+					}
+					return [0.8, 0.5, 0.8, -0.5];
+				},
+				player(card, player, target) {
+					if (!get.tag(card, "damage") || player.hasSkillTag("jueqing", false, target)) {
+						return;
+					}
+					return [0.8, 0.5, 0.8, -0.5];
+				},
+			},
 		},
 	},
 	jlsg_zhuizun: {
