@@ -17278,7 +17278,7 @@ const skills = {
 			},
 		},
 	},
-	jlsg_zhuren: {
+	/*jlsg_zhuren: {
 		intro: {
 			markcount: "mark",
 			content: "mark",
@@ -18074,8 +18074,8 @@ const skills = {
 				},
 			},
 		},
-	},
-	/*jlsg_zhuren: {
+	},*/
+	jlsg_zhuren: {
 		intro: {
 			markcount: "mark",
 			content: "mark",
@@ -18944,7 +18944,7 @@ const skills = {
 				},
 			},
 		},
-	},*/
+	},
 	jlsg_qingbei: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { global: ["roundStart"] },
