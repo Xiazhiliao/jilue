@@ -1,11 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 import { config } from "../main/config.js";
 import { oldCharacter } from "./oldCharacter/index.js";
-import jlsg_sk from "./jlsg_sk.js";
-import jlsg_sr from "./jlsg_sr.js";
-import jlsg_soul from "./jlsg_soul.js";
-import jlsg_sy from "./jlsg_sy.js";
-import jlsg_skpf from "./jlsg_skpf.js";
+import jlsg_sr from "./jlsg_sr/index.js";
+import jlsg_sk from "./jlsg_sk/index.js";
+import jlsg_soul from "./jlsg_soul/index.js";
+import jlsg_sy from "./jlsg_sy/index.js";
+import jlsg_skpf from "./jlsg_skpf/index.js";
 import jlsgZhu from "./jlsg_zhu.js";
 
 const packList = [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf];
@@ -41,7 +41,7 @@ for (let character in config) {
 	}
 }
 //导入jlsgZhu里的skill和translate
-if (lib.config?.extension_极略_jlsg_zhugong_buff) {
+if (lib.config?.extension_极略_jlsg_zhuBuff) {
 	//清除原有主公技
 	for (let character in jlsg_sr.character) {
 		const skills = jlsg_sr.character[character][3];
@@ -133,30 +133,26 @@ if (lib.config?.extension_极略_syRefactor) {
 		}
 	}
 }
-if (lib.device || lib.node) {
-	for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
-		const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
-		for (let name in pack.character) {
-			//初始化第五格
-			if (!pack.character[name][4]) {
-				pack.character[name][4] = [];
+const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
+for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
+	for (let name in pack.character) {
+		//初始化第五格
+		pack.character[name][4] ??= [];
+		//原画
+		pack.character[name][4].push(`img:${lib.assetURL}extension/极略/image/character/${name}.jpg`);
+		//阵亡语音
+		pack.character[name][4].add("die:ext:极略/audio/die:true");
+		//Character类化
+		pack.character[name] = get.convertedCharacter(pack.character[name]);
+		//前缀
+		if (name in pack.translate && !name.startsWith("jlsgsy") && !name.startsWith("jlsgrm")) {
+			let translate = pack.translate[name];
+			if (!(name + "_ab" in pack.translate)) {
+				pack.translate[name + "_ab"] = "极略" + translate;
 			}
-			//原画
-			pack.character[name][4].push(`${lib.device || lib.node ? "ext:" : "db:extension-"}极略/image/character/${name}.jpg`);
-			//阵亡语音
-			if (!pack.character[name][4].some(j => j.startsWith("die:"))) {
-				pack.character[name][4].add("die:ext:极略/audio/die:true");
-			}
-			//前缀
-			if (name in pack.translate && !name.startsWith("jlsgsy") && !name.startsWith("jlsgrm")) {
-				let translate = pack.translate[name];
-				if (!(name + "_ab" in pack.translate)) {
-					pack.translate[name + "_ab"] = "极略" + translate;
-				}
-				let prefix = prefixList.find(prefix => translate.startsWith(prefix));
-				if (prefix) {
-					pack.translate[name + "_prefix"] = "极略" + prefix;
-				}
+			let prefix = prefixList.find(prefix => translate.startsWith(prefix));
+			if (prefix) {
+				pack.translate[name + "_prefix"] = "极略" + prefix;
 			}
 		}
 	}

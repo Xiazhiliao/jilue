@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
+import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 let jlsg_qs = {
 	name: "jlsg_qs",
 	connect: true,
@@ -60,7 +60,10 @@ let jlsg_qs = {
 			onEquip: async function (event, trigger, player) {
 				const { result } = await player
 					.chooseToDiscard("h", function (card) {
-						return get.color(card) == "red";
+						if (get.color(card) != "red") {
+							return false;
+						}
+						return lib.filter.cardDiscardable.apply(this, arguments);
 					})
 					.set("ai", function (card) {
 						const player = get.player();
@@ -303,7 +306,7 @@ let jlsg_qs = {
 			},
 			modTarget: true,
 			async content(event, trigger, player) {
-				const target = event.targets[0];
+				const target = event.target;
 				await target.draw();
 				if (target.countGainableCards(player, "h") < 2) {
 					await target.damage("fire");
@@ -400,7 +403,12 @@ let jlsg_qs = {
 				const target = event.target;
 				const { result } = await target
 					.chooseToUse(player, "草船借箭：对" + get.translation(player) + "使用一张杀，或令其获得你的一张牌")
-					.set("filterCard", (card, player) => get.name(card, player) == "sha")
+					.set("filterCard", (card, player) => {
+						if (get.name(card, player) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					})
 					.set("respondTo", [player, event.card])
 					.set("targetRequired", true);
 				if (!result.bool && target.countGainableCards(player, "he") > 0) {
@@ -636,138 +644,6 @@ let jlsg_qs = {
 		},
 	},
 	skill: {
-		_jlsgqs_relic: {
-			trigger: {
-				player: "enterGame",
-				global: "phaseBefore",
-			},
-			firstDo: true,
-			forced: true,
-			popup: false,
-			filter(event, player) {
-				if (!lib.config.extension_极略_qsRelic) {
-					return false;
-				}
-				return event.name != "phase" || game.phaseNumber == 0;
-			},
-			async content(event, trigger, player) {
-				if (!_status._jlsgqs_relic) {
-					game.broadcastAll(function () {
-						_status._jlsgqs_relic = true;
-						const cardPacks = _status.connectMode ? lib.configOL.cardPack : lib.cardPack,
-							baowuEquip = async function (event, trigger, player) {
-								if (!event.card) {
-									return;
-								}
-								if (!player.getVEquips(event.card.name)) {
-									return;
-								}
-								const baowu = player.getVCards("e", i => {
-									if (event.card == i) {
-										return false;
-									}
-									if (!lib.filter.canBeReplaced(i, player)) {
-										return false;
-									}
-									const subtype = get.subtype(i);
-									return ["equip3", "equip4", "equip5", "equip6"].includes(subtype);
-								});
-								if (baowu.length > 1) {
-									const num = baowu.length - 1;
-									const { result } = await game
-										.createEvent("replaceEquip")
-										.set("player", player)
-										.set("vcards", baowu)
-										.setContent(async function (event, trigger, player) {
-											const replacedCards = [];
-											const { result } = await player.chooseButton([`选择替换掉${get.cnNumber(num)}张装备牌`, [baowu, "vcard"]], true, num).set("ai", button => {
-												const player = get.player();
-												return 10 - get.value(button.link, player);
-											});
-											if (result?.bool && result?.links?.length) {
-												replacedCards.addArray(result.links);
-											}
-											event.result = {
-												vcards: replacedCards,
-												cards: replacedCards.reduce((cards, vcard) => {
-													if (vcard.cards) {
-														cards.addArray(vcard.cards);
-													}
-													return cards;
-												}, []),
-											};
-										});
-									if (result?.vcards?.length) {
-										if (result.cards.length) {
-											const loseEvent = player.lose(result.cards, "visible").set("type", "equip").set("getlx", false);
-											player.$throw(result.cards, 1000);
-											await loseEvent;
-											for (let cardx of result.cards) {
-												if (cardx.willBeDestroyed("discardPile", player, event)) {
-													cardx.selfDestroy(event);
-												}
-											}
-										}
-										for (let i of result.vcards) {
-											player.removeVirtualEquip(i);
-										}
-									}
-								}
-								if (lib.card[event.card.name].onEquip2) {
-									const onEquip2 = lib.card[event.card.name].onEquip2;
-									let next = game.createEvent("equip_" + event.card.name);
-									if (Array.isArray(onEquip2)) {
-										for (var i = 0; i < onEquip2.length; i++) {
-											next.player = player;
-											next.card = event.card;
-											next.setContent(onEquip2[i]);
-											await next;
-										}
-									} else {
-										next.player = player;
-										next.card = event.card;
-										next.setContent(onEquip2);
-										await next;
-									}
-								}
-							};
-						for (const pack in cardPacks) {
-							const cards = cardPacks[pack];
-							for (const i of cards) {
-								const info = lib.card[i];
-								if (!info) {
-									continue;
-								}
-								if (info.subtype == "equip5") {
-									if (pack != "jlsg_qs") {
-										if (info.onEquip) {
-											info.onEquip2 = info.onEquip;
-										}
-									}
-									info.onEquip = baowuEquip;
-								} else if (["equip3", "equip4", "equip6"].includes(info.subtype)) {
-									if (pack != "jlsg_qs" && info.onEquip) {
-										info.onEquip2 = info.onEquip;
-									}
-									info.onEquip = baowuEquip;
-								}
-								if (get.mode() == "boss" && get.subtype(i) == "equip1") {
-									info.recastable = true;
-								}
-							}
-						}
-						if (_status.connect) {
-							lib.configOL.mount_combine = true;
-						} else {
-							lib.config.mount_combine = true;
-						}
-						_status.mountCombined = true;
-					});
-				}
-				await player.expandEquip(5);
-				player.update();
-			},
-		},
 		jlsgqs_kongmingdeng_skill: {
 			equipSkill: true,
 			popname: true,
@@ -902,7 +778,10 @@ let jlsg_qs = {
 			async content(event, trigger, player) {
 				const { result } = await player
 					.chooseToDiscard("h", "木牛流马：请弃置一张基本牌，否则失去1点体力", function (card) {
-						return get.type(card) == "basic";
+						if (get.type(card) != "basic") {
+							return false;
+						}
+						return lib.filter.cardDiscardable.apply(this, arguments);
 					})
 					.set("ai", card => {
 						const { check, player } = get.event();
@@ -1270,56 +1149,6 @@ let jlsg_qs = {
 		jlsgqs_mei: "梅",
 		jlsgqs_mei_info: "出牌阶段，对一名角色使用，若其体力值大于1，则摸两张牌；否则其回复1点体力。一名其他角色处于濒死状态时，对其使用，其回复1点体力，若因此脱离濒死状态，该角色摸一张牌。",
 	},
-	/*
-	list: [
-		["heart", 5, "sha", "fire"],
-		["heart", 12, "sha", "fire"],
-		["heart", 6, "sha", "fire"],
-		["diamond", 9, "sha", "fire"],
-		["heart", 6, "sha"],
-		["spade", 7, "sha"],
-		["heart", 8, "sha"],
-		["club", 5, "sha"],
-		["diamond", 6, "sha"],
-		["diamond", 7, "sha"],
-		["heart", 8, "sha"],
-		["club", 3, "jiu"],
-		["heart", 12, "shan"],
-		["diamond", 6, "shan"],
-		["diamond", 5, "shan"],
-		["heart", 2, "shan"],
-		["heart", 4, "shan"],
-		["diamond", 8, "shan"],
-		["heart", 8, "jlsgqs_kongmingdeng"],
-		["heart", 2, "jlsgqs_muniu"],
-		["diamond", 9, "jlsgqs_taipingyaoshu"],
-		["club", 5, "jlsgqs_dunjiatianshu"],
-		["spade", 8, "jlsgqs_qixingbaodao"],
-		["diamond", 3, "jlsgqs_xiujian"],
-		["spade", 12, "jlsgqs_yuxi"],
-		["heart", 4, "jlsgqs_mei"],
-		["heart", 6, "jlsgqs_mei"],
-		["diamond", 5, "jlsgqs_mei"],
-		["diamond", 12, "jlsgqs_mei"],
-		["heart", 9, "jlsgqs_mei"],
-		["heart", 11, "jlsgqs_mei"],
-		["heart", 5, "jlsgqs_qingmeizhujiu"],
-		["diamond", 3, "jlsgqs_qingmeizhujiu"],
-		["diamond", 8, "jlsgqs_qingmeizhujiu"],
-		["club", 8, "jlsgqs_shuiyanqijun"],
-		["diamond", 9, "jlsgqs_shuiyanqijun"],
-		["diamond", 7, "jlsgqs_wangmeizhike"],
-		["spade", 10, "jlsgqs_caochuanjiejian"],
-		["heart", 6, "jlsgqs_caochuanjiejian"],
-		["diamond", 10, "jlsgqs_yuqingguzong"],
-		["heart", 12, "jlsgqs_yuqingguzong"],
-		["diamond", 8, "jlsgqs_yuqingguzong"],
-		["heart", 5, "jlsgqs_yuqingguzong"],
-		["heart", 13, "wuxie"],
-		["club", 12, "wuxie"],
-		["diamond", 3, "jlsgqs_jinnangdai"],
-	],
-	*/
 	list: [
 		["spade", 4, "sha"],
 		["spade", 5, "sha"],
@@ -1371,6 +1200,33 @@ let jlsg_qs = {
 		["spade", 12, "jlsgqs_qixingbaodao"],
 	],
 };
+async function prepareEquip(event, trigger, player) {
+	const emptySlots = player.countEmptySlot("equip3") + player.countEmptySlot("equip5");
+	if (emptySlots) {
+		if (player.countEmptySlot("equip3")) {
+			event.card.subtypes = ["equip3"];
+		} else {
+			event.card.subtypes = ["equip5"];
+		}
+	} else {
+		const subtypesList = player
+			.getCards("e", card => get.subtypes(card).includes("equip3") || get.subtypes(card).includes("equip5"))
+			.flatMap(card => get.subtypes(card))
+			.unique();
+		let result;
+		if (subtypesList.length == 1) {
+			result = { control: subtypesList[0] };
+		} else {
+			result = await player
+				.chooseControl(subtypesList)
+				.set("prompt", `请选择置入【${get.translation(event.card)}】的装备栏`)
+				.forResult();
+		}
+		if (result?.control) {
+			event.card.subtypes = [result.control];
+		}
+	}
+}
 for (let cardName in jlsg_qs.card) {
 	let card = jlsg_qs.card[cardName];
 	if (card.fullskin) {
@@ -1384,93 +1240,17 @@ for (let cardName in jlsg_qs.card) {
 		card.audio = `ext:audio/card/极略`;
 	}
 	// 七杀特殊宝物规则
-	if (["equip1", "equip3", "equip4", "equip5", "equip6"].includes(card.subtype) && lib.config.extension_极略_qsRelic) {
+	if (!lib.config.extension_极略_qsRelic || card.type != "equip") {
+		continue;
+	}
+	if (["equip1", "equip3", "equip4", "equip5", "equip6"].includes(card.subtype)) {
 		if (card.subtype != "equip1") {
 			if (card.subtype == "equip5") {
 				if (!card.recastable) {
 					card.recastable = true;
 				}
-				if (cardName == "jlsgqs_taipingyaoshu") {
-					let { onEquip } = card;
-					card.onEquip2 = onEquip;
-				}
 			}
-			card.onEquip = async function (event, trigger, player) {
-				if (!event.card) {
-					return;
-				}
-				if (!player.getVEquips(event.card.name).length) {
-					return;
-				}
-				const baowu = player.getVCards("e", i => {
-					if (event.card == i) {
-						return false;
-					}
-					if (!lib.filter.canBeReplaced(i, player)) {
-						return false;
-					}
-					const subtype = get.subtype(i);
-					return ["equip3", "equip4", "equip5", "equip6"].includes(subtype);
-				});
-				if (baowu.length > 1) {
-					const num = baowu.length - 1;
-					const { result } = await game
-						.createEvent("replaceEquip")
-						.set("player", player)
-						.set("vcards", baowu)
-						.setContent(async function (event, trigger, player) {
-							const replacedCards = [];
-							const { result } = await player.chooseButton([`选择替换掉${get.cnNumber(num)}张装备牌`, [baowu, "vcard"]], true, num).set("ai", button => {
-								const player = get.player();
-								return 10 - get.value(button.link, player);
-							});
-							if (result?.bool && result?.links?.length) {
-								replacedCards.addArray(result.links);
-							}
-							event.result = {
-								vcards: replacedCards,
-								cards: replacedCards.reduce((cards, vcard) => {
-									if (vcard.cards) {
-										cards.addArray(vcard.cards);
-									}
-									return cards;
-								}, []),
-							};
-						});
-					if (result?.vcards?.length) {
-						if (result.cards.length) {
-							const loseEvent = player.lose(result.cards, "visible").set("type", "equip").set("getlx", false);
-							player.$throw(result.cards, 1000);
-							await loseEvent;
-							for (let cardx of result.cards) {
-								if (cardx.willBeDestroyed("discardPile", player, event)) {
-									cardx.selfDestroy(event);
-								}
-							}
-						}
-						for (let i of result.vcards) {
-							player.removeVirtualEquip(i);
-						}
-					}
-				}
-				if (lib.card[event.card.name].onEquip2) {
-					const onEquip2 = lib.card[event.card.name].onEquip2;
-					let next = game.createEvent("equip_" + event.card.name);
-					if (Array.isArray(onEquip2)) {
-						for (var i = 0; i < onEquip2.length; i++) {
-							next.player = player;
-							next.card = event.card;
-							next.setContent(onEquip2[i]);
-							await next;
-						}
-					} else {
-						next.player = player;
-						next.card = event.cards;
-						next.setContent(onEquip2);
-						await next;
-					}
-				}
-			};
+			card.prepareEquip = prepareEquip;
 		} else if (get.mode() == "boss") {
 			card.recastable = true;
 		}

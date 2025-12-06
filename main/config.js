@@ -23,7 +23,7 @@ let block = {
 			name: "挑战模式背景＆音乐",
 			init: false,
 		},
-		jlsg_zhugong_buff: {
+		jlsg_zhuBuff: {
 			name: "极略主公buff",
 			intro: "极略武将做主公时从三个随机极略主公技中选择并获得一个",
 			init: false,
@@ -64,6 +64,29 @@ let block = {
 	},
 	oldCharacterReplace = {
 		sr: {
+			jlsgsr_simayi: {
+				jlsg_upgrade: true,
+				name: "SR司马懿",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_simayi", item);
+					if (item == "false" || Boolean(item) > 1) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_simayi");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_simayi")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_simayi");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
 			jlsgsr_caocao: {
 				jlsg_upgrade: true,
 				name: "SR曹操",
@@ -162,6 +185,29 @@ let block = {
 						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_sunquan")) {
 							let upgradeList = lib.config.extension_极略_upgradeList || [];
 							upgradeList.remove("jlsgsr_sunquan");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
+			jlsgsr_lvbu: {
+				jlsg_upgrade: true,
+				name: "SR吕布",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_lvbu", item);
+					if (item == "false" || Boolean(item) > 1) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_lvbu");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_lvbu")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_lvbu");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
 					}
