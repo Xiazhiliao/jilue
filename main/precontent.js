@@ -363,24 +363,6 @@ export async function precontent(config, originalPack) {
 				}
 			}, ele);
 		},
-		/**
-		 *
-		 * @param {Array<Number>} dist
-		 * @returns {Number}
-		 */
-		distributionGet(dist) {
-			var res = Math.random();
-			let sum = dist.reduce((a, b) => a + b);
-			console.assert(sum > 0, `utils.distributionGet received param ${JSON.stringify(dist)}`);
-			dist = dist.map(v => v / sum);
-			for (let i = 0; ; ) {
-				if (res < dist[i]) {
-					return i;
-				}
-				res -= dist[i];
-				++i;
-			}
-		},
 		showRepo() {
 			var mirrorURL = lib.extensionPack["极略"] && lib.extensionPack["极略"].mirrorURL;
 			if (!mirrorURL) {

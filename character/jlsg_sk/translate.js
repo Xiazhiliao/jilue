@@ -548,8 +548,6 @@ const translates = {
 	jlsg_lingruo: "凌弱",
 	jlsg_lingruo_info: "当你使用【杀】或非延时锦囊牌指定一名其他角色为目标后，或成为其他角色对你使用这些牌的目标后，你可以随机执行以下效果之一:摸一张牌;随机获得其一张牌;令其随机弃置一张牌。共执行X次(X为你的基本牌/锦囊牌/装备牌中数量多于该角色的类别数)。",
 	jlsg_fujian: "伏间",
-	jlsg_fujian2: "伏间",
-	jlsg_fujian3: "伏间",
 	jlsg_fujian_info: "回合开始阶段，你可以观看一名其他角色的手牌并标记其中一张，若如此做，当该角色失去此牌后，你令其失去1点体力，然后你摸X张牌(X为其拥有此标记牌时使用的牌数)。",
 	jlsgsk_mayunlu: "SK马云禄",
 	jlsg_rongzhuang: "戎妆",

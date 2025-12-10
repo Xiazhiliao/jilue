@@ -11957,148 +11957,149 @@ const skills = {
 			}
 			return event.player;
 		},
-		content() {
-			"step 0"
-			event.target = trigger.target;
-			if (event.target == player) {
-				event.target = trigger.player;
-			}
-			if (event.target.countCards("he") > 0 && event.target.ai.shown > player.ai.shown) {
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			if (target.countCards("he") > 0 && target.ai.shown > player.ai.shown) {
 				player.addExpose(0.1);
 			}
-			event.cnt = ["basic", "trick", "equip"].filter(t => player.countCards("he", { type: t }) > event.target.countCards("he", { type: t })).length;
-			"step 1"
-			if (event.cnt > 0) {
-				--event.cnt;
-			} else {
-				event.finish();
-				return;
-			}
-			let choice;
-			if (event.target.countCards("he") == 0) {
-				choice = 0;
-			} else {
-				let dist = [1, 1, 1];
-				// option 1 & 2 are less likely to happen consecutively
-				if (event.choice) {
-					dist[event.choice] -= 0.5;
+			let cnt = ["basic", "trick", "equip"].filter(type => player.countCards("he", { type }) > target.countCards("he", { type })).length;
+			while (cnt-- > 0) {
+				let choice = Math.floor(event.getRand(cnt) * 3);
+				switch (choice) {
+					case 0:
+						game.log(player, "获得效果：", "#r摸一张牌");
+						await player.draw();
+						break;
+					case 1:
+						{
+							game.log(player, "获得效果：", "#r随机获得其一张牌");
+							let cards = target.getGainableCards(player, "he");
+							if (cards.length) {
+								await player.gain(target, cards.randomGet(), "giveAuto");
+							}
+						}
+						break;
+					case 2:
+						{
+							game.log(player, "获得效果：", "#r随机弃置其一张牌");
+							let cards = target.getDiscardableCards(player, "he");
+							if (cards) {
+								await target.discard(cards.randomGet(), "notBySelf").set("discarder", player);
+							}
+						}
+						break;
 				}
-				choice = jlsg.distributionGet(dist);
 			}
-			event.choice = choice;
-			switch (choice) {
-				case 0:
-					player.draw();
-					break;
-				case 1:
-					var card = target.getCards("he").randomGet();
-					if (card) {
-						player.gain(card, target, "giveAuto");
+		},
+		ai: {
+			effect: {
+				player(card, player, target) {
+					if (card.name != "sha" && get.type(card) != "trick") {
+						return;
 					}
-					break;
-				case 2:
-					var card = target.getCards("he").randomGet();
-					if (card) {
-						target.discard(card, "notBySelf").discarder = player;
+					if (player.countCards("h") > target.countCards("h")) {
+						return [1, 0.3, 1, -0.3];
 					}
-					break;
-			}
-			event.redo();
+				},
+				target(card, player, target) {
+					if (card.name != "sha" && get.type(card) != "trick") {
+						return;
+					}
+					if (target.countCards("h") > player.countCards("h")) {
+						return [1, 0.3, 1, -0.3];
+					}
+				},
+			},
 		},
 	},
 	jlsg_fujian: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0"
-			player.chooseTarget(get.prompt2(event.name), (_, player, target) => player != target && target.countCards("h")).set("ai", target => (get.attitude(_status.event.player, target) > 0 ? 0 : target.countCards("h") + 2 * Math.random()));
-			"step 1"
-			if (!result.bool) {
-				event.finish();
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (_, player, target) => player != target && target.countCards("h"))
+				.set("ai", target => {
+					if (get.attitude(get.player(), target) > 0) {
+						return 0;
+					}
+					return target.countCards("h") + 2 * (get.event().getRand(target.playerid) + 0.1);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			await player.viewHandcards(target);
+			const { result } = await player.choosePlayerCard(target, "h", true, "visible", ({ link }) => get.value(link, get.event().target));
+			if (!result?.bool || !result.links?.length) {
 				return;
 			}
-			var target = result.targets[0];
-			event.target = target;
-			player.logSkill(event.name, result.targets);
-			player.choosePlayerCard(target, "h", true, "visible", () => Math.random());
-			"step 2"
-			if (!result.bool) {
-				event.finish();
-				return;
-			}
-			var target = event.target;
-			if (!target.storage.jlsg_fujian) {
-				target.storage.jlsg_fujian = new Map();
-			}
-			var cards = target.storage.jlsg_fujian.get(player) || [];
-			cards.push([result.cards[0], 0]);
-			target.storage.jlsg_fujian.set(player, cards);
-
-			target.addSkill("jlsg_fujian2");
+			const storage = player.getStorage(event.name, new Map());
+			const info = storage.get(target) || new Map();
+			info.set(result.links[0], 0);
+			storage.set(target, info);
+			player.setStorage(event.name, storage);
+			player.addSkill("jlsg_fujian_useCard");
 		},
-	},
-	jlsg_fujian2: {
-		charlotte: true,
-		silent: true,
-		trigger: { player: "useCard" },
-		content() {
-			let added = false;
-			for (let v of player.storage.jlsg_fujian.values()) {
-				for (let a of v) {
-					added = true;
-					a[1] += 1;
-				}
-			}
-			if (!added) {
-				player.removeSkill(event.name);
-			}
-		},
-		group: "jlsg_fujian3",
-	},
-	jlsg_fujian3: {
-		audio: "jlsg_fujian",
-		trigger: {
-			player: "loseAfter",
-			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
-		charlotte: true,
-		silent: true,
-		content() {
-			"step 0"
-			var evt = trigger.getl(player);
-			var cards = (evt.hs || []).concat(evt.es || []);
-			if (!cards.length) {
-				event.finish();
-				return;
-			}
-			var result = [];
-			event.result = result;
-			var sources = [...player.storage.jlsg_fujian.keys()].sortBySeat();
-			for (let lostCard of cards) {
-				for (let source of sources) {
-					let cards = player.storage.jlsg_fujian.get(source);
-					cards = cards.filter(([card, cnt]) => {
-						if (lostCard == card) {
-							result.push([source, cnt]);
-						}
-						return lostCard != card;
+		group: "jlsg_fujian_lose",
+		subSkill: {
+			useCard: {
+				charlotte: true,
+				trigger: { global: "useCard" },
+				filter(event, player) {
+					const storage = player.getStorage("jlsg_fujian", new Map());
+					return storage.has(event.player);
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					const storage = player.getStorage("jlsg_fujian", new Map());
+					const info = Array.from(storage.get(trigger.player).entries());
+					info.forEach(([card, num]) => {
+						num++;
 					});
-					player.storage.jlsg_fujian.set(source, cards);
-				}
-			}
-			"step 1"
-			if (!event.result.length) {
-				event.finish();
-				return;
-			}
-			let [source, cnt] = event.result.shift();
-			if (source.isIn() && source.hasSkill("jlsg_fujian")) {
-				source.logSkill("jlsg_fujian", player);
-				player.loseHp();
-				source.draw(cnt);
-			}
-			event.redo();
+					storage.set(trigger.player, new Map([info]));
+					player.setStorage("jlsg_fujian", storage, true);
+				},
+			},
+			lose: {
+				audio: "jlsg_fujian",
+				charlotte: true,
+				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
+				getIndex(event, player) {
+					return game.filterPlayer(current => event.getl?.(current)?.cards2?.length).sortBySeat();
+				},
+				filter(event, player, name, target) {
+					const storage = player.getStorage("jlsg_fujian", new Map());
+					return target?.isIn() && storage.has(target);
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					const target = event.indexedData;
+					let evt = trigger.getl(target);
+					const cards = evt.cards2;
+					if (!cards.length) {
+						return;
+					}
+					const storage = player.getStorage("jlsg_fujian", new Map());
+					const info = storage.get(target);
+					for (let card of cards) {
+						if (info.has(card)) {
+							let num = info.get(card);
+							info.delete(card);
+							await player.logSkill("jlsg_fujian", target);
+							if (target.isIn()) {
+								await target.loseHp();
+							}
+							await player.draw(num);
+						}
+					}
+					if (!info.size) {
+						storage.delete(target);
+					} else {
+						storage.set(target, info);
+					}
+					player.setStorage("jlsg_fujian", storage, true);
+				},
+			},
 		},
 	},
 	jlsg_fengyin: {
