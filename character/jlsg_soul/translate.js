@@ -306,8 +306,7 @@ const translates = {
 	jlsg_qixian_wǔ: "武",
 	jlsgsoul_dongzhuo: "SK神董卓",
 	jlsg_taotie: "饕餮",
-	jlsg_taotie_info: "锁定技，每回合限X次（X为你的体力），当其他角色失去牌、失去属性或失去技能后，你获得之。",
-	jlsg_taotie_append:'<span style="font-family: yuanli">失去的牌的额外定义：<br>使用或打出的牌结算后的牌，不包括使用的装备但包括因使用装备而替换的牌</span>',
+	jlsg_taotie_info: "锁定技，每回合限X次（X为你的体力），当其他角色失去的牌进入弃牌堆、失去属性或失去技能后，你获得之。",
 	jlsg_yaoling: "耀令",
 	jlsg_yaoling_info: "其他角色的出牌阶段开始时，你可以将该角色的一张牌当【杀】对其使用。若你以此法造成了伤害，该角色选择一项：1．失去1点属性；2．失去一个技能；否则你可以失去1点体力，视为你以此法造成了伤害。",
 };

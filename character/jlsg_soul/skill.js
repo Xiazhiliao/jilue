@@ -15055,82 +15055,57 @@ const skills = {
 		usable(skill, player) {
 			return player.getHp();
 		},
-		trigger: { global: ["useCardAfter", "respondAfter", "loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "loseHpAfter", "loseMaxHpAfter", "changeSkillsAfter"] },
+		trigger: { global: ["loseAfter", "equipAfter", "loseAsyncAfter", "cardsDiscardAfter", "loseHpAfter", "damageEnd", "loseMaxHpAfter", "changeSkillsAfter"] },
 		getIndex(event, player) {
-			if (!["loseHp", "loseMaxHp", "changeSkills"].includes(event.name)) {
-				if (["useCard", "respond"].includes(event.name)) {
-					return game
-						.filterPlayer2(current => {
-							return current.hasHistory("lose", evtx => {
-								if (evtx.type != "use") {
-									return false;
-								}
-								return event == (evtx.relatedEvent || evtx.getParent());
-							});
-						})
-						.sortBySeat(_status.currentPhase);
-				}
-				return game.filterPlayer2(current => event.getl?.(current)?.cards2?.length).sortBySeat(_status.currentPhase);
+			if (["damage", "loseHp", "loseMaxHp", "changeSkills"].includes(event.name)) {
+				return [event.player];
 			}
-			return [event.player];
+			return game.filterPlayer().sortBySeat();
 		},
 		filter(event, player, triggername, target) {
 			if (target == player) {
 				return false;
 			} else if (event.name == "changeSkills") {
 				return event.removeSkill.length;
-			} else if (event.name == "loseHp") {
-				return player.isDamaged();
-			} else if (event.name != "loseMaxHp") {
-				if (["useCard", "respond"].includes(event.name)) {
-					let cards = [];
-					let historys = target.getHistory("lose", evt => {
-						let evtx = evt.relatedEvent || evt.getParent();
-						if (evt.type != "use") {
-							return false;
-						} else if (event != evtx) {
-							return false;
-						}
-						cards.addArray(evt.getl(target).cards2);
-						return true;
-					});
-					return cards.someInD("od");
-				} else if (["lose", "loseAsync"].includes(event.name)) {
-					if (event.type == "use" || ["useCard", "respond"].includes(event.getParent().name)) {
+			} else if (["damage", "loseHp", "loseMaxHp"].includes(event.name)) {
+				return true;
+			}
+			if (event.name != "cardsDiscard") {
+				return event.getd(target, "cards2").length > 0;
+			} else {
+				if (event.cards.filterInD("d").length <= 0) {
+					return false;
+				}
+				const evt = event.getParent();
+				if (evt.name != "orderingDiscard") {
+					return false;
+				}
+				const evtx = evt.relatedEvent || evt.getParent();
+				if (evtx.player != target) {
+					if (evtx.name != "useCard" || evtx.player != player || evtx.getParent().name != "jlsg_yaoling") {
 						return false;
 					}
 				}
-				return event.getl(target).cards2.someInD("od");
+				return target.hasHistory("lose", evtxx => evtx == (evtxx.relatedEvent || evtxx.getParent()));
 			}
-			return true;
 		},
 		forced: true,
 		logTarget: (event, player, triggername, target) => target,
 		async content(event, trigger, player) {
-			if (trigger.name == "loseHp") {
+			if (["damage", "loseHp"].includes(trigger.name)) {
 				await player.recover(trigger.num);
 			} else if (trigger.name == "loseMaxHp") {
 				await player.gainMaxHp(trigger.num);
 			} else if (trigger.name == "changeSkills") {
 				await player.addSkills(trigger.removeSkill);
 			} else {
-				let cards = [];
-				if (["useCard", "respond"].includes(trigger.name)) {
-					let historys = event.indexedData.getHistory("lose", evt => {
-						let evtx = evt.relatedEvent || evt.getParent();
-						if (evt.type != "use") {
-							return false;
-						} else if (trigger != evtx) {
-							return false;
-						}
-						cards.addArray(evt.getl(event.indexedData).cards2);
-						return true;
-					});
-					cards = cards.filterInD("od");
+				let cards;
+				if (trigger.name != "cardsDiscard") {
+					cards = trigger.getd(event.indexedData, "cards2");
 				} else {
-					cards = trigger.getl(event.indexedData).cards2.filterInD("od");
+					cards = trigger.cards.filterInD("d");
 				}
-				if (cards.length) {
+				if (cards?.length) {
 					await player.gain(cards, "gain2");
 				}
 			}
