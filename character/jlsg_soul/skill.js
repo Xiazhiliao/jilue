@@ -15081,11 +15081,6 @@ const skills = {
 					return false;
 				}
 				const evtx = evt.relatedEvent || evt.getParent();
-				if (evtx.player != target) {
-					if (evtx.name != "useCard" || evtx.player != player || evtx.getParent().name != "jlsg_yaoling") {
-						return false;
-					}
-				}
 				return target.hasHistory("lose", evtxx => evtx == (evtxx.relatedEvent || evtxx.getParent()));
 			}
 		},
