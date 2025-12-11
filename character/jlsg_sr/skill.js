@@ -1267,8 +1267,8 @@ const skills = {
 				.judge(event.name, card => {
 					const event = get.event().getParent("jlsg_langgu"),
 						suit = get.suit(card);
-					const trigger = event.getTrigger();
-					player = event.player;
+					const trigger = event.getTrigger(),
+						player = event.player;
 					const { source, player: target } = trigger;
 					if (suit == "heart") {
 						return -get.damageEffect(target, source, player, trigger.nature);
@@ -1283,7 +1283,7 @@ const skills = {
 					}
 					return 0;
 				})
-				.set("judge2", result => result?.bool)
+				.set("judge2", () => true)
 				.set("source", trigger.source)
 				.set("target", trigger.player)
 				.set("callback", async function (event, _, player) {
