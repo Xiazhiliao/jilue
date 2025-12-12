@@ -19308,6 +19308,199 @@ const skills = {
 			},
 		},
 	},
+	jlsg_guanchao: {
+		audio: "ext:极略/audio/skill:2",
+		onremove: true,
+		mark: true,
+		marktext: "潮",
+		intro: {
+			markcount(storage, player) {
+				storage = storage || { increase: true, record: [] };
+				return storage.record.at(-1) || 0;
+			},
+			mark(dialog, storage) {
+				storage = storage || { increase: true, record: [] };
+				const { increase, record } = storage;
+				dialog.add(`当前判断：${increase ? "大" : "小"}于`);
+				dialog.add(`当前点数：${record.length ? record.at(-1) : "无"}`);
+			},
+		},
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card.number != "number") {
+					return;
+				}
+				const { increase, record } = player.getStorage("jlsg_guanchao", { increase: true, record: [] });
+				if (record.length == 0) {
+					return num + 10 * (increase ? 14 - card.number : card.number);
+				}
+				num = record.at(-1);
+				if (increase && card.number > num) {
+					return num + 10 * (14 - card.number);
+				} else if (!increase && card.number < num) {
+					return num + 10 * card.number;
+				}
+			},
+		},
+		trigger: { global: "useCardAfter" },
+		filter(event, player) {
+			let number = get.number(event.card);
+			if (typeof number != "number" || isNaN(number)) {
+				return false;
+			}
+			const { increase, record } = player.getStorage("jlsg_guanchao", { increase: true, record: [] });
+			if (!increase) {
+				return number == 1 || record.every(num => num > number);
+			}
+			return number == 13 || record.every(num => num < number);
+		},
+		prompt2(event, trigger, player) {
+			let name = get.name(event.card),
+				number = get.number(event.card);
+			return `获得${[1, 13].includes(number) ? "两" : "一"}张点数随机的【${get.translation(name, "card")}】`;
+		},
+		frequent: true,
+		async content(event, trigger, player) {
+			const name = get.name(trigger.card),
+				number = get.number(trigger.card),
+				cards = [],
+				{ createTempCard } = get.info("jlsg_lingze"),
+				storage = player.getStorage(event.name, { increase: true, record: [] });
+			if (storage.record.length == 0) {
+				game.broadcastAll(
+					function (ind) {
+						let bgColor = lib.skill.jlsg_guanchao.markColor[ind][0],
+							text = '<span style="color: ' + lib.skill.jlsg_guanchao.markColor[ind][1] + '">潮</span>';
+						if (player.marks.jlsg_guanchao) {
+							player.marks.jlsg_guanchao.firstChild.style.backgroundColor = bgColor;
+							player.marks.jlsg_guanchao.firstChild.innerHTML = text;
+						}
+					},
+					storage.increase ? 0 : 1
+				);
+			}
+			storage.record.add(number);
+			let num = [1, 13].includes(number) ? 2 : 1;
+			while (num-- > 0) {
+				let card = createTempCard(name);
+				if (card) {
+					cards.add(card);
+				}
+			}
+			if (cards.length) {
+				await player.gain(cards, "draw2");
+			}
+			if ([1, 13].includes(number)) {
+				if (!storage.increase && number == 1) {
+					storage.increase = true;
+					storage.record = [1];
+				} else {
+					storage.increase = false;
+					storage.record = [13];
+				}
+				game.broadcastAll(
+					function (ind) {
+						let bgColor = lib.skill.jlsg_guanchao.markColor[ind][0],
+							text = '<span style="color: ' + lib.skill.jlsg_guanchao.markColor[ind][1] + '">潮</span>';
+						if (player.marks.jlsg_guanchao) {
+							player.marks.jlsg_guanchao.firstChild.style.backgroundColor = bgColor;
+							player.marks.jlsg_guanchao.firstChild.innerHTML = text;
+						}
+					},
+					storage.increase ? 0 : 1
+				);
+				game.log(player, "将“观潮”的", `#y${storage.increase ? "小" : "大"}于`, "改为", `#y${storage.increase ? "大" : "小"}于`);
+			}
+			player.setStorage(event.name, storage, true);
+		},
+
+		markColor: [
+			["rgba(241, 42, 42, 0.75)", "black"],
+			["rgba(18, 4, 4, 0.75)", "rgb(200, 200, 200)"],
+		],
+	},
+	jlsg_xunxian: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: { target: "useCardToTarget" },
+		usable: 1,
+		filter(event, player) {
+			if (get.name(event.card) != "sha" && get.type(event.card) != "trick") {
+				return false;
+			}
+			let number = get.number(event.card);
+			if (typeof number != "number" || isNaN(number)) {
+				return false;
+			}
+			return game.hasPlayer(current => !event.targets.includes(current));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(`###${get.translation(event.skill)}###选择一名非此牌目标角色，你令其交给你一张点数大于或小于此牌点数的牌，否则其代替你成为此牌目标`)
+				.set("filterTarget", (_, player, target) => !get.event().targets.includes(target))
+				.set("ai", target => {
+					const { player, source, card } = get.event();
+					return get.effect(target, card, source, player);
+				})
+				.set("source", trigger.player)
+				.set("targets", trigger.targets)
+				.set("card", trigger.card)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			let result;
+			if (target.countCards("he")) {
+				const { result: result2 } = await player
+					.chooseControl("大于", "小于")
+					.set("prompt", `###逊贤###选择令${get.translation(target)}交给你点数大于或小于${get.number(trigger.card)}的一张牌`)
+					.set("ai", () => {
+						const { controls } = get.event();
+						if (get.event().getRand() < 0.5) {
+							return controls[0];
+						}
+						return controls[1];
+					})
+				if (result2?.control && result2.control != "cancel2") {
+					result = await target
+						.chooseToGive(player, "he", `###${get.translation(player)}对你发动“${get.translation(event.name)}”###请交给其一张点数${result2.control}${get.number(trigger.card)}的牌，否则你代替其成为${get.translation(trigger.card)}的目标`)
+						.set("filterCard", (card, player) => {
+							const { increase, num } = get.event(),
+								number = get.number(card, player);
+							if (increase) {
+								return number > num;
+							}
+							return number < num;
+						})
+						.set("ai", card => {
+							const { check } = get.event();
+							if (check) {
+								return 0;
+							}
+							return 7 - get.value();
+						})
+						.set(
+							"check",
+							(function () {
+								const { player: source, card } = trigger;
+								return get.effect(target, card, source, target) >= 0;
+							})()
+						)
+						.set("increase", result2.control == "大于")
+						.set("num", get.number(trigger.card))
+						.forResult();
+				}
+			}
+			if (!result?.bool || !result.cards?.length) {
+				trigger.getParent().targets.remove(player);
+				trigger.getParent().triggeredTargets2.remove(player);
+				trigger.getParent().targets.add(target);
+				game.log(target, "代替", player, "成为", trigger.card, "的目标");
+			}
+		},
+		ai: {
+			maixie_defend: true,
+		},
+	},
 };
 
 export default skills;
