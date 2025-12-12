@@ -15081,7 +15081,13 @@ const skills = {
 					return false;
 				}
 				const evtx = evt.relatedEvent || evt.getParent();
-				return target.hasHistory("lose", evtxx => evtx == (evtxx.relatedEvent || evtxx.getParent()));
+				return target.hasHistory("lose", evtxx => {
+					let cards2 = evtxx.getl(target).cards2.filterInD("d");
+					if (!cards2) {
+						return false;
+					}
+					return evtx == (evtxx.relatedEvent || evtxx.getParent());
+				});
 			}
 		},
 		forced: true,
@@ -15094,13 +15100,23 @@ const skills = {
 			} else if (trigger.name == "changeSkills") {
 				await player.addSkills(trigger.removeSkill);
 			} else {
-				let cards;
+				let cards = [];
 				if (trigger.name != "cardsDiscard") {
 					cards = trigger.getd(event.indexedData, "cards2");
 				} else {
-					cards = trigger.cards.filterInD("d");
+					const evt = trigger.getParent();
+					const evtx = evt.relatedEvent || evt.getParent();
+					event.indexedData.getHistory("lose", evtxx => {
+						let cards2 = evtxx.getl(event.indexedData).cards2.filterInD("d");
+						if (!cards2) {
+							return false;
+						}
+						if (evtx == (evtxx.relatedEvent || evtxx.getParent())) {
+							cards.addArray(cards2);
+						}
+					});
 				}
-				if (cards?.length) {
+				if (cards.length) {
 					await player.gain(cards, "gain2");
 				}
 			}
