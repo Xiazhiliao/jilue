@@ -19476,7 +19476,7 @@ const skills = {
 							if (check) {
 								return 0;
 							}
-							return 7 - get.value();
+							return 7 - get.value(card);
 						})
 						.set(
 							"check",
