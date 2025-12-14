@@ -2329,23 +2329,28 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		enable: "phaseUse",
 		filter: function (event, player) {
-			return !player.get("e", "2") && game.countPlayer(p => p.countCards("he") && player != p && !p.hasSkill("jlsg_shejian2"));
+			return !player.getEquip(2) && game.hasPlayer(current => player != current && current.countDiscardableCards(player, "he") && !player.hasStorage("jlsg_shejian_used", current));
 		},
-		filterTarget: function (card, player, target) {
-			return target.countCards("he") && player != target && !target.hasSkill("jlsg_shejian2");
+		filterTarget(card, player, target) {
+			return player != target && target.countDiscardableCards(player, "he") && !player.hasStorage("jlsg_shejian_used", target);
 		},
-		content: function () {
-			"step 0"
-			target.addTempSkill("jlsg_shejian2");
-			player.discardPlayerCard("he", target, true);
-			"step 1"
-			target.chooseBool("是否对" + get.translation(player) + "使用一张【杀】？").ai = function (event, player) {
-				return get.effect(player, { name: "sha" }, target, target) + 3;
-			};
-			"step 2"
-			if (result.bool) {
-				target.useCard({ name: "sha" }, player, false);
+		async content(event, trigger, player) {
+			player.addTempSkill("jlsg_shejian_used", "phaseUseEnd");
+			player.markAuto("jlsg_shejian_used", event.targets);
+			const [target] = event.targets;
+			await player.discardPlayerCard("he", target, true);
+			const { result } = await target.chooseBool("是否对" + get.translation(player) + "使用一张【杀】？").set("ai", (event, source) => {
+				return get.effect(source, { name: "sha" }, get.player(), get.player()) + 3;
+			});
+			if (result?.bool) {
+				await target.useCard({ name: "sha" }, player, false);
 			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
 		},
 		ai: {
 			order: 9,
@@ -2363,22 +2368,21 @@ const skills = {
 			},
 		},
 	},
-	jlsg_shejian2: {},
 	jlsg_kuangao: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { target: "shaAfter" },
-		filter: function (event, player) {
-			if (!event.player) {
+		filter(event, player) {
+			if (!event.player?.isIn()) {
 				return false;
 			}
 			return (
-				player.countCards("he") || // && event.player.countCards('he')
+				player.countDiscardableCards(player, "he") || // && event.player.countCards('he')
 				event.player.countCards("h") < Math.min(5, event.player.maxHp)
 			);
 		},
-		check: function (event, player) {
-			var phe = player.countCards("he");
-			var the = event.player.countCards("he");
+		check(event, player) {
+			let phe = player.countCards("he"),
+				the = event.player.countCards("he");
 			if (the > phe && get.attitude(player, event.player) < 0) {
 				return 1;
 			}
@@ -2387,81 +2391,56 @@ const skills = {
 			}
 			return 0;
 		},
-		direct: true,
-		content: function () {
-			"step 0"
-			event.target = trigger.player;
-			var prompts = [`弃置所有牌，然后${get.translation(event.target)}弃置所有牌`, `令${get.translation(event.target)}摸牌至体力上限（至多摸至五张）`];
-			event.prompts = [];
-			if (player.countCards("he")) {
-				event.prompts.push(0);
-			}
-			if (event.target.countCards("h") < Math.min(5, event.target.maxHp)) {
-				event.prompts.push(1);
-			}
-			var coeff = 0.5 * Math.random() + 0.75; // target card guess coeff
-			var ai = function (event, player) {
-				if (get.attitude(player, event.target) > 0) {
-					if (!event.prompts.includes(1)) {
-						return "cancel2";
-					}
-					return prompts[1];
-				} else {
-					if (!event.prompts.includes(0)) {
-						return "cancel2";
-					}
-					var targetHEValue = coeff * event.target.getCards("h").reduce((a, b) => a + get.value(b, event.target), 0) + event.target.getCards("e").reduce((a, b) => a + get.value(b, event.target), 0);
-					var playerHEValue = player.getCards("he").reduce((a, b) => a + get.value(b, player), 0);
-					return -coeff * targetHEValue * get.attitude(player, event.target) - playerHEValue * get.attitude(player, player) > 0 ? event.prompts.indexOf(0) : "cancel2";
-				}
-			};
-			player.chooseControlList(
-				event.prompts.map(n => prompts[n]),
-				ai,
-				get.prompt(event.name, event.target)
-			);
-			"step 1"
-			if (result.control == "cancel2") {
-				event.finish();
-				return;
-			}
-			player.logSkill(event.name, event.target);
-			if (event.prompts[result.index] == 0) {
-				player.discard(player.getCards("he"));
-				event.target.discard(event.target.getCards("he"));
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			event.target = target;
+			const choiceList = [`弃置所有牌，然后${get.translation(target)}弃置所有牌`, `令${get.translation(target)}摸牌至体力上限（至多摸至五张）`],
+				list = [];
+			if (player.countDiscardableCards(player, "he")) {
+				list.push("选项一");
 			} else {
-				event.target.drawTo(event.target.maxHp);
+				choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
+			}
+			if (target.countCards("h") < Math.min(5, target.maxHp)) {
+				list.push("选项二");
+			} else {
+				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
+			}
+			const { result } = await player
+				.chooseControl(list, "cancel2")
+				.set("choiceList", choiceList)
+				.set("ai", (event, player) => {
+					const { controls } = get.event();
+					if (get.attitude(player, event.target) > 0) {
+						return controls[1] ? controls[1] : "cancel2";
+					} else {
+						if (!controls.includes("选项一")) {
+							return "cancel2";
+						}
+						let coeff = 0.5 * event.getRand() + 0.75;
+						let targetHEValue = coeff * event.target.getCards("h").reduce((a, b) => a + get.value(b, event.target), 0) + event.target.getCards("e").reduce((a, b) => a + get.value(b, event.target), 0),
+							playerHEValue = player.getCards("he").reduce((a, b) => a + get.value(b, player), 0);
+						return -coeff * targetHEValue * get.attitude(player, event.target) - playerHEValue * get.attitude(player, player) > 0 ? 0 : "cancel2";
+					}
+				});
+			event.result = {
+				bool: result?.control && result.control != "cancel2",
+				targets: [target],
+				cost_data: result.index,
+			};
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: index,
+			} = event;
+			if (index == 0) {
+				await player.chooseToDiscard(true, player.countCards("he"));
+				await target.chooseToDiscard(true, target.countCards("he"));
+			} else {
+				await target.drawTo(Math.min(5, target.maxHp));
 			}
 		},
-		// contentx: function () {
-		//   'step 0'
-		//   player.chooseControl('选项一', '选项二', function () {
-		//     var phe = player.countCards('he');
-		//     var the = trigger.player.countCards('he');
-		//     if (the > phe && get.attitude(player, trigger.player) < 0) return '选项一';
-		//     if (get.attitude(player, trigger.player) > 0) return '选项二';
-		//     return '选项二';
-		//   }).set('prompt', '狂傲<br><br><div class="text">1:弃置所有牌(至少一张),然后' + get.translation(trigger.player) + '弃置所有牌.</div><br><div class="text">2:令' + get.translation(trigger.player) + '将手牌补至其体力上限的张数(至多5张).</div></br>');
-		//   'step 1'
-		//   if (result.control == '选项一') {
-		//     player.discard(player.get('he'));
-		//     trigger.player.discard(trigger.player.get('he'));
-		//   } else {
-		//     if (Math.min(5, trigger.player.maxHp) - trigger.player.countCards('h')) {
-		//       trigger.player.drawTo(trigger.player.maxHp);
-		//     }
-		//   }
-		// },
-		// ai: {
-		//   effect: {
-		//     target: function (card, player, target, current) {
-		//       if (card.name != 'sha') return;
-		//       if (get.attitude(player, target) < 0) return [1, -target.countCards('he'), 1, -player.countCards('he')];
-		//       if (get.attitude(player, target) > 3 && player.countCards('h') < player.maxHp - 2 && target.hp > 2) return [1, 0.5, 1, Math.min(5, player.maxHp) - player.countCards('h')];
-		//       return [1, -target.countCards('he'), 1, -player.countCards('he')];
-		//     }
-		//   }
-		// }
 	},
 	jlsg_yinbing: {
 		audio: "ext:极略/audio/skill:1",
@@ -19459,7 +19438,7 @@ const skills = {
 							return controls[0];
 						}
 						return controls[1];
-					})
+					});
 				if (result2?.control && result2.control != "cancel2") {
 					result = await target
 						.chooseToGive(player, "he", `###${get.translation(player)}对你发动“${get.translation(event.name)}”###请交给其一张点数${result2.control}${get.number(trigger.card)}的牌，否则你代替其成为${get.translation(trigger.card)}的目标`)
