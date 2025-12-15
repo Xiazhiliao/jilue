@@ -15060,7 +15060,7 @@ const skills = {
 			if (["damage", "loseHp", "loseMaxHp", "changeSkills"].includes(event.name)) {
 				return [event.player];
 			}
-			return game.filterPlayer().sortBySeat();
+			return game.filterPlayer2().sortBySeat();
 		},
 		filter(event, player, triggername, target) {
 			if (target == player) {
