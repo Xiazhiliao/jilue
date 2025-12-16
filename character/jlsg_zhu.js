@@ -582,7 +582,7 @@ export default {
 						target.chat("我来助你！");
 						let node = target.node.avatar;
 						if (node._jlsg_zhugong_fuzheng) {
-							node._jlsg_zhugong_fuzheng.push(`extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`);
+							node._jlsg_zhugong_fuzheng.push(`${lib.assetURL}extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`);
 						} else {
 							const func = function () {
 								if (node._jlsg_zhugong_fuzheng.length) {
@@ -604,7 +604,7 @@ export default {
 									target.setAvatar(target.name, target.name, false, false);
 								}
 							};
-							node._jlsg_zhugong_fuzheng = [`extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`];
+							node._jlsg_zhugong_fuzheng = [`${lib.assetURL}extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`];
 							node._jlsg_zhugong_fuzhengInterval = setInterval(func, 1000);
 							func();
 						}
@@ -643,12 +643,15 @@ export default {
 				for (let target of playerList) {
 					if (target.hasSha()) {
 						await target
-							.chooseToUse(function (card, player, event) {
-								if (get.name(card) != "sha") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							}, "协力：是否对" + get.translation(targetx) + "使用一张杀？")
+							.chooseToUse(
+								function (card, player, event) {
+									if (get.name(card) != "sha") {
+										return false;
+									}
+									return lib.filter.filterCard.apply(this, arguments);
+								},
+								"协力：是否对" + get.translation(targetx) + "使用一张杀？"
+							)
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
