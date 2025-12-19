@@ -14640,153 +14640,116 @@ const skills = {
 	},
 	jlsg_yanjiao: {
 		audio: "ext:极略/audio/skill:2",
-		init(player) {
-			player.storage.jlsg_yanjiao = [null, false, false, false, false];
+		init(player, skill) {
+			player.setStorage(skill, Array.from({ length: 5 }), true);
+		},
+		onremove: true,
+		onChooseToUse(event) {
+			if (game.online) {
+				return;
+			}
+			const player = event.player,
+				record = player.getStorage("jlsg_yanjiao", Array.from({ length: 4 })).slice(),
+				hs = player.getCards("h");
+			const numberList = {},
+				suitList = {};
+			for (let card of hs) {
+				const number = get.number(card, player),
+					suit = get.suit(card, player);
+				numberList[number] ??= 0;
+				numberList[number]++;
+				suitList[suit] ??= [];
+				suitList[suit].push(number);
+			}
+			if (hs.length && !record[0]) {
+				let list = Math.max(...Object.keys(numberList).map(i => Number(i)));
+				if (!isNaN(list)) {
+					record[0] = list;
+				}
+			}
+			if (hs.length > 1 && !record[1]) {
+				let list = Object.keys(numberList)
+					.map(i => Number(i))
+					.filter(num => numberList[num] > 1);
+				if (list.length) {
+					record[1] = list;
+				}
+			}
+			if (hs.length > 2 && !record[2]) {
+				let list = Object.keys(suitList).filter(suit => suitList[suit].length > 2);
+				if (list.length) {
+					record[2] = list;
+				}
+			}
+			if (hs.length > 3 && !record[3]) {
+				let list = Object.keys(numberList)
+					.map(i => Number(i))
+					.unique()
+					.reduce((total, v, _, arr) => {
+						let listx = Array.from({ length: 4 }, (_, i) => v + i);
+						if (listx.every(i => arr.includes(i))) {
+							total.add(listx);
+						}
+						return total;
+					}, []);
+				if (list.length) {
+					record[3] = list;
+				}
+			}
+			if (hs.length > 4 && !record[4]) {
+				let list = Object.entries(suitList).map(info => [info[0], info[1].unique()]),
+					list2 = {};
+				for (let info of list) {
+					const [suit, numbers] = info;
+					list2[suit] = numbers.reduce((total, v, _, arr) => {
+						let listx = Array.from({ length: 5 }, (_, i) => v + i);
+						if (listx.every(i => arr.includes(i))) {
+							total.add(listx);
+						}
+						return total;
+					}, []);
+				}
+				if (Object.values(list2).flat().length) {
+					record[4] = list2;
+				}
+			}
+			event.set(
+				"jlsg_yanjiao",
+				record.map(i => (typeof i == "boolean" ? false : i))
+			);
 		},
 		enable: "phaseUse",
 		filter(event, player) {
-			let invalid = [];
-			let hand = player.getCards("h");
-			invalid.push(player.storage.jlsg_yanjiao[1] || hand.length < 1);
-			let nums = new Set(hand.map(c => get.number(c, player)));
-			invalid.push(player.storage.jlsg_yanjiao[2] || hand.length < 2 || hand.length == nums.size);
-			let suits = hand.map(c => get.suit(c, player));
-			invalid.push(player.storage.jlsg_yanjiao[3] || hand.length < 3 || lib.suits.every(s => suits.filter(cs => cs == s).length < 3));
-			let continuous = Array.from(new Array(14).keys()).some(n => nums.has(n) && nums.has(n + 1) && nums.has(n + 2) && nums.has(n + 3));
-			invalid.push(player.storage.jlsg_yanjiao[4] || hand.length < 4 || !continuous);
-			let valid5 = !player.storage.jlsg_yanjiao[5] && hand.length >= 5;
-			if (valid5) {
-				valid5 = lib.suits.some(s => {
-					let nums = new Set(hand.filter(c => get.suit(c, player) == s).map(c => get.number(c, player)));
-					return Array.from(new Array(14).keys()).some(n => nums.has(n) && nums.has(n + 1) && nums.has(n + 2) && nums.has(n + 3) && nums.has(n + 4));
-				});
-			}
-			invalid.push(!valid5);
-			return invalid.some(invalid => !invalid);
-		},
-		filterCard(card, player) {
-			return lib.skill.jlsg_yanjiao.mayValid(ui.selected.cards.concat(card));
-		},
-		check(card) {
-			return Math.random();
+			return (event.jlsg_yanjiao || []).filter(i => i).length;
 		},
 		selectCard: [1, 5],
+		filterCard(card, player) {
+			return lib.skill.jlsg_yanjiao.mayValid(ui.selected.cards.slice().concat(card));
+		},
 		complexCard: true,
-		discard: false,
-		lose: false,
-		delay: false,
+		check(card) {
+			return 10 - get.value(card);
+		},
 		filterTarget(_, player, target) {
 			if (!lib.skill.jlsg_yanjiao.isValid(ui.selected.cards)) {
 				return false;
 			}
-			return player != target;
+			return player != target && ui.selected.cards.every(card => lib.filter.canBeGained(card, target, player));
 		},
 		filterOk() {
 			return lib.skill.jlsg_yanjiao.isValid(ui.selected.cards);
 		},
-		isValid(cards) {
-			let player = _status.event.player;
-			let hand = player.getCards("h");
-			if (player.storage.jlsg_yanjiao[cards.length]) {
-				return false;
-			}
-			let nums;
-			switch (cards.length) {
-				case 1:
-					return hand.every(c => get.number(c, player) <= get.number(cards[0], player));
-				case 2:
-					return get.number(cards[0], player) === get.number(cards[1], player);
-				case 3: {
-					let suit0 = get.suit(cards[0], player);
-					return suit0 == get.suit(cards[1], player) && suit0 == get.suit(cards[2], player);
-				}
-				case 4:
-					nums = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
-					return nums.every((n, i) => n - nums[0] == i);
-				case 5: {
-					let suit = get.suit(cards[0], player);
-					if (cards.some(c => get.suit(c, player) != suit)) {
-						return false;
-					}
-					nums = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
-					return nums.every((n, i) => n - nums[0] == i);
-				}
-				default:
-					return false;
-			}
-		},
-		mayValid(cards) {
-			let player = _status.event.player;
-			if (cards.length == 0) {
-				return this.filter(null, player);
-			}
-			if (this.isValid(cards)) {
-				return true;
-			}
-			let hand = player.getCards("h");
-			hand.removeArray(cards);
-			let nums = cards.map(c => get.number(c, player));
-			let suits = cards.map(c => get.suit(c, player));
-			let suit;
-			if (suits.every(s => s == suits[0])) {
-				suit = suits[0];
-			}
-			switch (cards.length) {
-				case 1:
-					if (!player.storage.jlsg_yanjiao[2] && hand.some(c => get.number(c, player) == nums[0])) {
-						return true;
-					}
-					break;
-				// fall through
-				case 2:
-					if (!player.storage.jlsg_yanjiao[3] && suit && hand.filter(c => get.suit(c, player) == suit).length + cards.length >= 3) {
-						return true;
-					}
-					break;
-				case 3:
-				case 4: {
-					nums.sort((a, b) => a - b);
-					let num0 = nums[0],
-						num1 = nums[nums.length - 1];
-					if (player.storage.jlsg_yanjiao[4] && (player.storage.jlsg_yanjiao[5] || !suit)) {
-						return false;
-					}
-					if (nums.some((n, i) => i != 0 && n == nums[i - 1])) {
-						return false;
-					}
-					if (num1 - num0 + 1 > (player.storage.jlsg_yanjiao[4] ? 5 : 4)) {
-						return false;
-					}
-					let allNums = hand.map(c => get.number(c, player));
-					for (let i = num0; i <= num1; ++i) {
-						if (!nums.includes(i) && !allNums.includes(i)) {
-							return false;
-						}
-					}
-					while (allNums.includes(num1 + 1)) {
-						num1 += 1;
-						if (num1 - num0 + 1 >= (player.storage.jlsg_yanjiao[4] ? 5 : 4)) {
-							return true;
-						}
-					}
-					while (allNums.includes(num0 - 1)) {
-						num0 -= 1;
-						if (num1 - num0 + 1 >= (player.storage.jlsg_yanjiao[4] ? 5 : 4)) {
-							return true;
-						}
-					}
-					return false;
-				}
-				default:
-					return false;
-			}
-		},
+		discard: false,
+		lose: false,
+		delay: false,
 		async content(event, trigger, player) {
-			let num = event.cards.length;
-			let target = event.target;
-			player.storage.jlsg_yanjiao[num] = true;
+			const num = event.cards.length,
+				target = event.target,
+				storage = player.getStorage("jlsg_yanjiao", Array.from({ length: 5 }));
+			storage[num - 1] = true;
+			player.setStorage("jlsg_yanjiao", storage, true);
 			player.when({ player: "phaseUseAfter", global: "phaseAfter" }).then(() => {
-				player.storage.jlsg_yanjiao = [null, false, false, false, false];
+				player.setStorage("jlsg_yanjiao", Array.from({ length: 5 }), true);
 			});
 			await player.give(event.cards, target);
 			await player.draw(num);
@@ -14797,7 +14760,66 @@ const skills = {
 				}
 			}
 		},
-		combo: "jlsg_xingshen",
+		isValid(cards) {
+			const player = get.player();
+			const hs = player.getCards("h");
+			if (player.getStorage("jlsg_yanjiao", Array.from({ length: 5 }))[cards.length - 1]) {
+				return false;
+			}
+			let nums;
+			switch (cards.length) {
+				case 1:
+					return hs.every(c => get.number(c, player) <= get.number(cards[0], player));
+				case 2: {
+					let number = get.number(cards[0], player);
+					return cards.every(card => get.number(card, player) == number);
+				}
+				case 3: {
+					let suit = get.suit(cards[0], player);
+					return cards.every(card => get.suit(card, player) == suit);
+				}
+				case 4:
+					nums = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
+					return nums.every((n, i) => n - nums[0] == i);
+				case 5: {
+					let suit = get.suit(cards[0], player);
+					if (cards.some(card => get.suit(card, player) != suit)) {
+						return false;
+					}
+					nums = cards.map(c => get.number(c, player)).sort((a, b) => a - b);
+					return nums.every((n, i) => n - nums[0] == i);
+				}
+				default:
+					return false;
+			}
+		},
+		mayValid(cards) {
+			if (get.info("jlsg_yanjiao").isValid(cards)) {
+				return true;
+			}
+			const event = get.event();
+			const player = event.player,
+				record = event.jlsg_yanjiao || [];
+			const [one, two, three, four, five] = record;
+			if (typeof one == "number" && cards.length == 1 && get.number(cards[0], player) == one) {
+				return true;
+			}
+			const numbers = [...new Set(cards.map(card => get.number(card, player)))],
+				suits = [...new Set(cards.map(card => get.suit(card, player)))];
+			if (cards.length <= 2 && two && numbers.length == 1 && two.includes(numbers[0])) {
+				return true;
+			}
+			if (cards.length <= 3 && three && suits.length == 1 && three.includes(suits[0])) {
+				return true;
+			}
+			if (cards.length <= 4 && four && numbers.length == cards.length && four.some(info => numbers.every(num => info.includes(num)))) {
+				return true;
+			}
+			if (cards.length <= 5 && five && suits.length == 1 && numbers.length == cards.length && five[suits[0]]?.some(info => numbers.every(num => info.includes(num)))) {
+				return true;
+			}
+			return false;
+		},
 		ai: {
 			order: 7,
 			result: {
@@ -14808,10 +14830,14 @@ const skills = {
 					return get.attitude(player, target) >= 0 ? 2 : -1;
 				},
 			},
+			combo: "jlsg_xingshen",
 		},
 	},
 	jlsg_xingshen: {
 		audio: "ext:极略/audio/skill:2",
+		intro: {
+			content: "mark",
+		},
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return event.num > 0;
@@ -14830,8 +14856,38 @@ const skills = {
 				});
 			}
 		},
-		intro: {
-			content: "mark",
+		ai: {
+			maixie: true,
+			maixie_hp: true,
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "damage")) {
+						if (player.hasSkillTag("jueqing", false, target)) {
+							return [1, -2];
+						}
+						if (!target.hasFriend()) {
+							return;
+						}
+						let num = 1;
+						if (get.attitude(player, target) > 0) {
+							if (player.needsToDiscard()) {
+								num = 0.7;
+							} else {
+								num = 0.5;
+							}
+						}
+						if (target.hp >= 4) {
+							return [1, num * 2];
+						}
+						if (target.hp == 3) {
+							return [1, num * 1.5];
+						}
+						if (target.hp == 2) {
+							return [1, num * 0.5];
+						}
+					}
+				},
+			},
 		},
 	},
 
