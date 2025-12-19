@@ -486,16 +486,13 @@ let jlsg_qs = {
 			enable: true,
 			selectTarget: -1,
 			filterTarget: true,
-			ignoreTarget(card, player, target) {
-				return (target.isHealthy() && target.hp == 1) || target.hp < 1;
-			},
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (target.hp > 1) {
-					await target.draw(2, "nodelay");
-				} else {
+				if (target.getHp() == 1 && target.isDamaged()) {
 					await target.recover(1);
+				} else {
+					await target.draw(2, "nodelay");
 				}
 			},
 			ai: {
@@ -553,10 +550,10 @@ let jlsg_qs = {
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (target.hp > 1) {
-					await target.draw(2);
+				if (target.getHp() == 1 && target.isDamaged()) {
+					await target.recover(1);
 				} else {
-					await target.recover();
+					await target.draw(2, "nodelay");
 				}
 				if (target.hp > 0 && event.getParent(2).type == "dying") {
 					await target.draw(1);
@@ -1145,9 +1142,9 @@ let jlsg_qs = {
 		jlsgqs_caochuanjiejian: "草船借箭",
 		jlsgqs_caochuanjiejian_info: "出牌阶段，对除你以外的所有角色使用。每名目标角色须依次选择一项：对你使用一张【杀】；或令你获得其一张牌。",
 		jlsgqs_wangmeizhike: "望梅止渴",
-		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1，则回复1点体力；若体力值大于1，则摸两张牌",
+		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1且已受伤，则回复1点体力；否则其摸两张牌",
 		jlsgqs_mei: "梅",
-		jlsgqs_mei_info: "出牌阶段，对一名角色使用，若其体力值大于1，则摸两张牌；否则其回复1点体力。一名其他角色处于濒死状态时，对其使用，其回复1点体力，若因此脱离濒死状态，该角色摸一张牌。",
+		jlsgqs_mei_info: "出牌阶段，对一名角色使用。令其摸两张牌；若其体力值为1且已受伤，则改为回复1点体力。一名其他角色濒死时，对其使用，令其回复1点体力；若其因此脱离濒死状态，其摸一张牌。",
 	},
 	list: [
 		["spade", 4, "sha"],
