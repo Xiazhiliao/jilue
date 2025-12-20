@@ -2662,6 +2662,7 @@ const skills = {
 					return event.num > 0;
 				},
 				forced: true,
+				charlotte: true,
 				async content(event, trigger, player) {
 					if (trigger.player.countDiscardableCards(player, "he")) {
 						await trigger.player.randomDiscard("he", 1);
@@ -2703,6 +2704,7 @@ const skills = {
 					return evt && evt.player == player && evt.es && evt.es.length;
 				},
 				forced: true,
+				charlotte: true,
 				popup: false,
 				firstDo: true,
 				async content(event, trigger, player) {
@@ -2751,6 +2753,7 @@ const skills = {
 					return true;
 				},
 				forced: true,
+				charlotte: true,
 				async content(event, trigger, player) {
 					let key = lib.jlsg.debuffSkill.translate[trigger.name];
 					const { str } = lib.jlsg.debuffSkill.getInfo(trigger, player, key);
