@@ -2372,8 +2372,8 @@ const skills = {
 			if (_status.connectMode && name == "wuxie" && player.countCards("hes") > 0) {
 				return true;
 			}
-			let suit = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" }[name];
-			return name && player.countCards("hes", { suit: suit }) > 0;
+			let suit = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
+			return name && Object.keys(suit).includes(name) && player.countCards("hes", { suit: suit[name] }) > 0;
 		},
 		ai: {
 			respondSha: true,
