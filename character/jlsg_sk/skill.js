@@ -15585,7 +15585,7 @@ const skills = {
 			return [list2, list];
 		},
 		filter(event, player) {
-			if (!player.isPhaseUsing(true) || player.hasSkill("jlsg_jingce_used")) {
+			if (!player.isPhaseUsing() || player.hasSkill("jlsg_jingce_used")) {
 				return false;
 			}
 			let checkList = lib.skill.jlsg_jingce.checkList(event)[1];
