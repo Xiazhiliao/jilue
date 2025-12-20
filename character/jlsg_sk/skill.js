@@ -15524,7 +15524,6 @@ const skills = {
 				dialog.addText(`摸牌阶段摸牌数(${list2[1]})`);
 			},
 		},
-		usable: 1,
 		trigger: { player: "useCardAfter" },
 		countShaUsable(player) {
 			const card = get.autoViewAs({ name: "sha" }),
@@ -15586,7 +15585,7 @@ const skills = {
 			return [list2, list];
 		},
 		filter(event, player) {
-			if (!player.isPhaseUsing(true)) {
+			if (!player.isPhaseUsing(true) || player.hasSkill("jlsg_jingce_used")) {
 				return false;
 			}
 			let checkList = lib.skill.jlsg_jingce.checkList(event)[1];
@@ -15626,9 +15625,13 @@ const skills = {
 			}
 			player.markSkill("jlsg_jingce");
 			await player.draw(2);
+			player.addTempSkill(event.name + "_used", { player: "phaseUseAfter" });
 		},
 		group: ["jlsg_jingce_effect"],
 		subSkill: {
+			used: {
+				charlotte: true,
+			},
 			effect: {
 				sub: true,
 				charlotte: true,
