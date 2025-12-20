@@ -2732,10 +2732,7 @@ const skills = {
 						if (!event.source || event.source == player) {
 							return false;
 						}
-					} else if (["loseHp", "loseMaxHp", "loseSkill", "link", "turnOver"].includes(key)) {
-						if (key == "loseSkill" && !event.removeSkill.length) {
-							return false;
-						}
+					} else if (["loseHp", "loseMaxHp", "removeSkill", "link", "turnOver", "disableSkill"].includes(key)) {
 						if (event.getParent().player && event.getParent().player == player) {
 							return false;
 						}
@@ -2769,8 +2766,6 @@ const skills = {
 						if (!trigger.cards.length) {
 							trigger.cancel();
 						}
-					} else if (key == "disableSkill") {
-						trigger.cancel = true;
 					} else {
 						trigger.cancel();
 					}
@@ -3453,7 +3448,7 @@ const skills = {
 		trigger: { player: ["damageEnd", "loseHpAfter", "loseMaxHpAfter", "loseAfter", "changeSkillsAfter", "linkAfter", "turnOverAfter", "disableSkillEnd"] },
 		filter(event, player) {
 			let key = lib.jlsg.debuffSkill.translate[event.name];
-			return get.info("jlsgsy_zhonggu").getInfo(event, player, key).bool;
+			return lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -3469,7 +3464,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let key = lib.jlsg.debuffSkill.translate[trigger.name],
-				info = get.info(event.name).getInfo(trigger, player, key);
+				info = lib.jlsg.debuffSkill.getInfo(trigger, player, key);
 			if (key == "removeSkill") {
 				key = "removeSkills";
 			}
@@ -3509,75 +3504,6 @@ const skills = {
 					await target[key](info.num, info.nature);
 				}
 			}
-		},
-		getInfo(event, player, name, num, nature = null) {
-			let key = name || lib.jlsg.debuffSkill.translate[event.name],
-				bool = true,
-				str = "";
-			if (key == "discard") {
-				if (event) {
-					bool = event.type == "discard" && !event.getlx && event.getl?.(player)?.cards2?.length;
-					if (!num) {
-						num = event.getl?.(player)?.cards2.length;
-					}
-				}
-				str = `弃置${num}张牌`;
-			} else if (key == "removeSkill") {
-				if (event.removeSkill?.length) {
-					bool = event.removeSkill.length;
-					if (!num) {
-						num = event.removeSkill.length;
-					}
-					str = `失去${num}个技能`;
-				} else {
-					str = `失去技能`
-				}
-			} else if (key == "link") {
-				if (event) {
-					bool = player.isLinked();
-				}
-				str = `横置`;
-			} else if (key == "turnOver") {
-				if (event) {
-					bool = player.isTurnedOver();
-				}
-				str = `翻面`;
-			} else if (key == "disableSkill") {
-				if (event) {
-					bool = event.num;
-					if (event.type !== "addSkillBlocker") {
-						num = event.num;
-						str = `失效${num}个技能`;
-					} else {
-						let skill = event.args[0];
-						skill = get.poptip(skill);
-						str = `受${skill}影响失效技能`;
-					}
-				} else {
-					str = `失效技能`;
-				}
-			} else {
-				if (event) {
-					num = event.num;
-				}
-				if (key == "damage") {
-					if (event) {
-						num = event.num;
-						nature = event.nature;
-					}
-					str = `受到${num}点${nature ? get.translation(nature) : ""}伤害`;
-				} else if (key == "loseHp") {
-					str = `失去${num}点体力`;
-				} else if (key == "loseMaxHp") {
-					str = `减少${num}点体力上限`;
-				}
-			}
-			return {
-				bool: bool,
-				num: num,
-				nature: nature,
-				str: str,
-			};
 		},
 	},
 };

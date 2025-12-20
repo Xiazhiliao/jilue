@@ -10521,7 +10521,7 @@ const skills = {
 			},
 		},
 		trigger: {
-			player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkill"],
+			player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkillBefore"],
 		},
 		filter(event, player) {
 			let storage = player.storage.jlsg_qianyuan,
@@ -10635,8 +10635,6 @@ const skills = {
 				if (!trigger.cards.length) {
 					trigger.cancel();
 				}
-			} else if (key == "disableSkill") {
-				trigger.cancel = true;
 			} else {
 				trigger.cancel();
 			}
@@ -10727,11 +10725,12 @@ const skills = {
 				} else if (key == "removeSkill") {
 					await target.removeSkills(target.getSkills(null, false, false).randomGets(number));
 				} else if (key == "disableSkill") {
-					await target.awakenSkill(
+					await target.tempBanSkill(
 						target
 							.getSkills(null, false, false)
 							?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
-							?.randomGets(number)
+							?.randomGets(number),
+						{ player: "phaseEnd" }
 					);
 				} else if (key == "link") {
 					await target.link();
@@ -13900,8 +13899,6 @@ const skills = {
 				if (!trigger.cards.length) {
 					trigger.cancel();
 				}
-			} else if (key == "disableSkill") {
-				trigger.cancel = true;
 			} else {
 				trigger.cancel();
 			}

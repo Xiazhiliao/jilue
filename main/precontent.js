@@ -163,10 +163,9 @@ export async function precontent(config, originalPack) {
 					}
 					event.num = event.disableSkills.length;
 				}
+				await event.trigger(event.name + "Before");
 				await event.trigger(event.name + "Begin");
-				await event.trigger(event.name);
-				if (event.cancel == true) {
-					await event.trigger(event.name + "Cancelled");
+				if (event._cancelled) {
 					return;
 				}
 				if (event.type.endsWith("Sub")) {
@@ -174,7 +173,7 @@ export async function precontent(config, originalPack) {
 				} else {
 					lib.disableSkill[event.type].apply(player, event.args);
 				}
-				await event.trigger(event.name + "End");
+				await event.trigger(event.name + "Omitted");
 			};
 			lib.element.player.tempBanSkill = function (...args) {
 				let str = "disableSkill";
@@ -194,7 +193,8 @@ export async function precontent(config, originalPack) {
 				evt.num = Array.isArray(args[0]) ? args[0].length : 1;
 				evt.disableSkills = args[0];
 				evt.args = args;
-				evt.cancel = false;
+				//Before, Begin, Omitted手动trigger，方便修改
+				evt._triggered = 2;
 				evt.setContent("DisableSkill");
 			};
 			lib.element.player.disableSkill = function (...args) {
@@ -215,6 +215,8 @@ export async function precontent(config, originalPack) {
 				evt.num = Array.isArray(args[1]) ? args[1].length : 1;
 				evt.disableSkills = args[1];
 				evt.args = args;
+				//Before, Begin, Omitted手动trigger，方便修改
+				evt._triggered = 2;
 				evt.setContent("DisableSkill");
 			};
 			lib.element.player.addSkillBlocker = function (arg) {
@@ -232,6 +234,8 @@ export async function precontent(config, originalPack) {
 				evt.disableSkills = list;
 				evt.num = list.length;
 				evt.args = [arg];
+				//Before, Begin, Omitted手动trigger，方便修改
+				evt._triggered = 2;
 				evt.blocker = skill.skillBlocker;
 				evt.setContent("DisableSkill");
 			};
@@ -1930,7 +1934,7 @@ export async function precontent(config, originalPack) {
 			},
 		},
 		debuffSkill: {
-			trigger: { player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBefore", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkill"] },
+			trigger: { player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBefore", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkillBefore"] },
 			filter(event, player) {
 				let key = lib.jlsg.debuffSkill.translate[event.name];
 				return lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
@@ -2021,11 +2025,11 @@ export async function precontent(config, originalPack) {
 					str = `弃置${num}张牌`;
 				} else if (key == "removeSkill") {
 					if (event) {
-						bool = event.removeSkill.length;
+						bool = event.removeSkill?.length;
 						if (!num) {
-							num = event.removeSkill.length;
+							num = event.removeSkill?.length;
 						}
-						const translation = event.removeSkill.map(item => get.poptip(item)).join("、");
+						const translation = event.removeSkill?.map(item => get.poptip(item)).join("、");
 						str = `失去${num}个技能：${translation}`;
 					} else {
 						str = `失去${num}个技能`;
@@ -2045,7 +2049,16 @@ export async function precontent(config, originalPack) {
 						bool = event.num;
 						num = event.num;
 						const translation = event.disableSkills?.map(item => get.poptip(item)).join("、") ?? get.poptip(event.disableSkills);
-						str = `失效${num}个技能：${translation}`;
+						if (event.type !== "addSkillBlocker") {
+							str = `失效${num}个技能：${translation}`;
+						} else {
+							let skill = event.args[0];
+							if (skill.endsWith("_block")) {
+								skill = skill.slice(0, -6);
+							}
+							skill = get.poptip(skill);
+							str = `受${skill}影响失效技能：${translation}`;
+						}
 					} else {
 						str = `失效${num}个技能`;
 					}
