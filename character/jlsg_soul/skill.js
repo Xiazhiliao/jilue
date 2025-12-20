@@ -10730,7 +10730,7 @@ const skills = {
 							.getSkills(null, false, false)
 							?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
 							?.randomGets(number),
-						{ player: "phaseEnd" }
+						"phaseEnd"
 					);
 				} else if (key == "link") {
 					await target.link();
