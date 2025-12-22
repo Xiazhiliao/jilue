@@ -2620,18 +2620,20 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			await player.draw(2);
-			player.addTempSkill("jlsg_shixue_miss", "shaAfter");
+			trigger.card.jlsg_shixue = true;
 		},
+		group: "jlsg_shixue_miss",
 		subSkill: {
 			miss: {
 				sourceSkill: "jlsg_shixue",
 				trigger: { player: "shaMiss" },
-				charlotte: true,
+				filter(event) {
+					return event.card.jlsg_shixue;
+				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
 					await player.chooseToDiscard(2, true, "he");
-					player.removeSkill(event.name);
 				},
 			},
 		},
