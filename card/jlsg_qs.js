@@ -489,7 +489,7 @@ let jlsg_qs = {
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (target.getHp() == 1 && target.isDamaged()) {
+				if (target.getHp() <= 1 && target.isDamaged()) {
 					await target.recover(1);
 				} else {
 					await target.draw(2, "nodelay");
@@ -550,7 +550,7 @@ let jlsg_qs = {
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (target.getHp() == 1 && target.isDamaged()) {
+				if (target.getHp() <= 1 && target.isDamaged()) {
 					await target.recover(1);
 				} else {
 					await target.draw(2, "nodelay");
