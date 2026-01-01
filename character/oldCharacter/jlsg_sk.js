@@ -1,5 +1,131 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export default {
+	jlsgsk_xiahoushi: {
+		1: {
+			skill: {
+				jlsg_yingge: {
+					audio: "ext:极略/audio/skill:2",
+					trigger: { global: "phaseUseBegin" },
+					filter(event, player) {
+						return player.countCards("h");
+					},
+					async cost(event, trigger, player) {
+						const target = trigger.player;
+						const num = target.getCardUsable("sha"),
+							hs = player.getDiscardableCards(player, "h"),
+							att = get.attitude(player, target) / get.attitude(player, player);
+						const valueMap = hs.reduce((list, card) => {
+							const number = get.number(card);
+							let shaCount = (target.countCards("h") * (14 - number)) / 13;
+							if (target == player || player.hasSkillTag("viewHandcard", null, target, true)) {
+								shaCount = target.countCards("h", c => get.number(c) >= number);
+							}
+							if (shaCount > number + num) {
+								shaCount = number + num;
+							}
+							let disCount = target.countCards("h") - shaCount;
+							let disValue = ((-disCount * att) / 3) * 2;
+							if (disCount > target.getHandcardLimit()) {
+								disValue += ((-(disCount - target.getHandcardLimit()) * att) / 3) * 2;
+							}
+							let shaValue = (1 / 3 + att) * shaCount;
+							list[number] = disValue + shaValue;
+							return list;
+						}, {});
+						event.result = await player
+							.chooseToDiscard(get.prompt2("jlsg_yingge", target))
+							.set("ai", function (card) {
+								const { player, target, valueMap } = get.event();
+								let att = get.attitude(player, target);
+								//防止忠臣开局丢主公但主公不知道打谁浪费一张牌，不过这样好像算透（
+								if (!game.players.some(current => get.attitude(target, current) < 0) && att > 0) {
+									return 0;
+								}
+								if (att < 0) {
+									if (card.number == 13) {
+										return 114514;
+									}
+									if (target.countCards("h") >= card.number * 10) {
+										return 13 - card.number;
+									}
+								}
+								return -get.value(card) / 2 + valueMap[card.number];
+							})
+							.set("chooseonly", true)
+							.set("logSkill", ["jlsg_yingge", target])
+							.set("target", target)
+							.set("valueMap", valueMap)
+							.forResult();
+					},
+					popup: false,
+					async content(event, trigger, player) {
+						await player.discard(event.cards);
+						trigger.player.storage.jlsg_yingge_buff = event.cards[0].number;
+						trigger.player.addTempSkill("jlsg_yingge_buff", "phaseUseAfter");
+					},
+					subSkill: {
+						buff: {
+							sub: true,
+							sourceSkill: "jlsg_yingge",
+							charlotte: true,
+							onremove: true,
+							mark: true,
+							intro: {
+								name: "莺歌",
+								content(event, player) {
+									return `圣数：<b>${Number(player.storage.jlsg_yingge_buff)}`;
+								},
+							},
+							mod: {
+								cardEnabled(card, player) {
+									let number = get.number(card, player);
+									if (!number || typeof number != "number") {
+										return;
+									}
+									if (get.is.virtualCard(card) || get.is.convertedCard(card)) {
+										return;
+									}
+									if (number < Number(player.storage.jlsg_yingge_buff)) {
+										return false;
+									}
+								},
+								cardSavable() {
+									return lib.skill.jlsg_yingge_buff.mod.cardEnabled.apply(this, arguments);
+								},
+								cardname(card, player, name) {
+									if (name == "sha") {
+										return;
+									}
+									let number = get.number(card, player);
+									if (!number || typeof number != "number") {
+										return;
+									}
+									if (number >= Number(player.storage.jlsg_yingge_buff)) {
+										return "sha";
+									}
+								},
+								cardUsable(card, player, num) {
+									if (get.name(card, player) == "sha") {
+										return num + Number(player.storage.jlsg_yingge_buff);
+									}
+								},
+								attackRange(player, num) {
+									return num + Number(player.storage.jlsg_yingge_buff);
+								},
+							},
+						},
+					},
+					ai: {
+						expose: 0.1,
+						threaten: 0.4,
+					},
+				},
+			},
+			translate: {
+				jlsg_yingge_info: "一名角色的出牌阶段开始时，你可以弃置一张手牌，令其不能使用点数小于X的非转化非虚拟牌、点数不小于X的手牌均视为【杀】、攻击范围和【杀】的使用次数上限+X，直到该阶段结束。（X为你弃置牌的点数）",
+			},
+		},
+	},
 	jlsgsk_guansuo: {
 		1: {
 			skill: {
@@ -105,7 +231,7 @@ export default {
 						return game.filterPlayer(current => !targets.includes(current) && lib.filter.targetEnabled2(event.card, event.player, current) && lib.filter.targetInRange(event.card, event.player, current)).length;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						var prompt2 = "为" + get.translation(trigger.card) + "增加或减少一个目标";
 						player
 							.chooseTarget(get.prompt(event.name), function (card, player, target) {
@@ -125,7 +251,7 @@ export default {
 							.set("targets", trigger.targets)
 							.set("card", trigger.card)
 							.set("user", trigger.player);
-						"step 1"
+						("step 1");
 						if (result.bool) {
 							if (!event.isMine() && !event.isOnline()) {
 								game.delayx();
@@ -134,7 +260,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						"step 2"
+						("step 2");
 						player.logSkill(event.name, event.targets);
 						for (let p of event.targets) {
 							if (player.ai.shown < p.ai.shown) {
@@ -658,7 +784,7 @@ export default {
 						return !player.hasSkill("jlsg_jueyong2") && event.player.isIn() && event.notLink() && event.card && event.card.name == "sha" && (player.hp != player.maxHp || player.hp != event.player.countCards("h"));
 					},
 					content() {
-						"step 0"
+						"step 0";
 						var choices = [];
 						let choice = -1,
 							curEff = -Infinity;
@@ -697,7 +823,7 @@ export default {
 							choice = choices.length - 1;
 						}
 						player.chooseControl(choices).set("prompt", get.prompt2(event.name)).set("choice", choice);
-						"step 1"
+						("step 1");
 						if (result.control == "cancel2") {
 							event.finish();
 							return;
@@ -716,13 +842,13 @@ export default {
 								player.loseMaxHp(-event.diff);
 							}
 						}
-						"step 2"
+						("step 2");
 						if (player.hp <= 0 && player.maxHp > 0) {
 							game.delayx();
 							event._dyinged = true;
 							player.dying(event);
 						}
-						"step 3"
+						("step 3");
 						player.draw(Math.abs(event.diff));
 						if (event.diff < 0) {
 							trigger.num *= 2;
@@ -744,7 +870,7 @@ export default {
 					},
 					selectCard: -1,
 					precontent() {
-						"step 0"
+						"step 0";
 						let cnt = Math.max(1, Math.floor(player.maxHp / 2));
 						player.loseMaxHp(cnt);
 						event.getParent().addCount = false;
@@ -843,9 +969,9 @@ export default {
 					trigger: { player: "phaseUseBegin" },
 					direct: true,
 					content() {
-						"step 0"
+						"step 0";
 						player.chooseTarget(get.prompt2(event.name)).set("ai", p => get.attitude(player, p) - Math.random() * 2);
-						"step 1"
+						("step 1");
 						if (!result.bool) {
 							event.finish();
 							return;

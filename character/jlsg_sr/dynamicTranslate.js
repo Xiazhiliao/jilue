@@ -1,6 +1,35 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
+	jlsg_guanxing(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_guanxing;
+		if (improve || player?.index) {
+			return "回合开始阶段，或回合结束阶段，你可以观看牌堆顶的五张牌，将这些牌以任意顺序置于牌堆顶或牌堆底，然后你可以将牌堆底牌置于你的武将牌上，称为“星”。出牌阶段限一次，你可以获得任意张“星”，然后摸等量的牌，你以此法获得的牌无次数限制。";
+		}
+		return lib.translate["jlsg_guanxing_info"];
+	},
+	jlsg_sanfen(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_sanfen;
+		if (improve || player?.index) {
+			return "出牌阶段限一次，你可以展示牌堆顶的两张牌并分别交给两名角色，若如此做，视为以此法获得点数较大的牌的角色对另一名角色使用【杀】，然后你可以视为对其中任意名角色使用【杀】。当以此法使用的【杀】造成伤害后，你获得受伤角色的一张牌。若你以此法给出的牌里有【杀】，你可以重复此流程。";
+		}
+		return lib.translate["jlsg_sanfen_info"];
+	},
+	jlsg_weiwo(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_weiwo;
+		let bool = player.storage?.jlsg_weiwo;
+		if (improve || player?.index) {
+			if (bool) {
+				return "锁定技，当你受到属性伤害时，若你有手牌，你防止此伤害；当你受到非属性伤害时，若你没有手牌，你防止此伤害。任意角色的回合结束时，若你于本回合内没有受到过伤害，你可以摸一张牌，然后对调此技能的“若你有手牌”和“若你没有手牌”。";
+			} else {
+				return "锁定技，当你受到属性伤害时，若你没有手牌，你防止此伤害；当你受到非属性伤害时，若你有手牌，你防止此伤害。任意角色的回合结束时，若你于本回合内没有受到过伤害，你可以摸一张牌，然后对调此技能的“若你有手牌”和“若你没有手牌”。";
+			}
+		}
+		return lib.translate["jlsg_weiwo_info"];
+	},
 	jlsg_guicai(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_simayi"]?.[2] || upgradeStorage.other?.jlsg_sheji;
