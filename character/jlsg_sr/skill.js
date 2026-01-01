@@ -4288,8 +4288,6 @@ const skills = {
 	jlsg_sanfen: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		enable: "phaseUse",
-		usable: 1,
 		init(player, skill) {
 			if (!_status.gameStarted) {
 				return;
@@ -4302,9 +4300,12 @@ const skills = {
 				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
 		},
+		enable: "phaseUse",
+		usable: 1,
 		filter(event, player) {
 			return ui.cardPile.childNodes.length > 1;
 		},
+		direct: true,
 		chooseButton: {
 			dialog(event, player) {
 				let dialog = ui.create.dialog("牌堆顶两张牌为", "hidden"),
@@ -4431,7 +4432,7 @@ const skills = {
 				};
 			},
 			prompt(links) {
-				get.prompt2("jlsg_sanfen");
+				return get.prompt2("jlsg_sanfen");
 			},
 		},
 		group: ["jlsg_sanfen_effect"],
@@ -4447,9 +4448,7 @@ const skills = {
 					return event.getParent()?.card?.storage?.jlsg_sanfen && event.player.countCards("hej");
 				},
 				async content(event, trigger, player) {
-					let next = player.gainPlayerCard(trigger.player);
-					next.set("position", "hej");
-					await next;
+					await player.gainPlayerCard(trigger.player, "hej");
 				},
 			},
 		},
@@ -4528,7 +4527,7 @@ const skills = {
 				};
 			},
 			prompt(links) {
-				get.prompt2("jlsg_guanxing");
+				return get.prompt2("jlsg_guanxing");
 			},
 		},
 		group: ["jlsg_guanxing_effect", "jlsg_guanxing_use"],
@@ -4579,9 +4578,8 @@ const skills = {
 	jlsg_weiwo: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		mark: true,
 		init(player, skill) {
-			player.setStorage("jlsg_weiwo", true);
+			player.setStorage("jlsg_weiwo", true, true);
 			if (!_status.gameStarted) {
 				return;
 			}
@@ -4593,6 +4591,7 @@ const skills = {
 				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
 		},
+		mark: true,
 		intro: {
 			content: function (storage, player) {
 				let bool = player.storage.jlsg_weiwo ? player.countCards("h") : !player.countCards("h");
@@ -4629,12 +4628,12 @@ const skills = {
 				filter(event, player) {
 					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 					const upgrade = upgradeStorage?.other?.["jlsg_weiwo"];
-					return !player.hasHistory("damage");
+					return upgrade && !player.hasHistory("damage");
 				},
 				prompt: "是否交换【帷幄】中的“若你有手牌”和“若你没有手牌”",
 				async content(event, trigger, player) {
 					await player.draw();
-					player.setStorage("jlsg_weiwo", false);
+					player.setStorage("jlsg_weiwo", false, true);
 				},
 			},
 		},
