@@ -907,13 +907,14 @@ export default {
 						};
 						while (num < 4) {
 							num++;
-							const control = await player
+							const result = await player
 								.chooseControl(["basic", "trick", "equip"], (event, player) => {
 									return ["basic", "trick", "equip"].randomGet();
 								})
 								.set("prompt", "涉猎")
 								.set("prompt2", "请选择想要获得的第" + get.cnNumber(num, true) + "张牌的类型")
-								.forResultControl();
+								.forResult();
+							const control = result?.control;
 							const card = get.cardPile2(card => get.type(card) == control && !event.cards.includes(card));
 							if (card) {
 								event.cards.add(card);

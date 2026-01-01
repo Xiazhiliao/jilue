@@ -791,7 +791,7 @@ export default {
 							};
 							next.logSkill = ["jlsg_zhaoxiang", trigger.player];
 						}
-						("step 1");
+						"step 1";
 						if (result.bool) {
 							if (!result.cards) {
 								player.logSkill("jlsg_zhaoxiang", trigger.player);
@@ -814,7 +814,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2";
 						if (!result.bool) {
 							trigger.untrigger();
 							trigger.finish();
@@ -874,11 +874,11 @@ export default {
 								})
 								.set("nono", nono);
 						}
-						("step 1");
+						"step 1";
 						if (cards[0].name == "shan" && result.cards) {
 							target.showCards(result.cards[0]);
 						}
-						("step 2");
+						"step 2";
 						if (result.bool) {
 							player.recover();
 							target.recover();
@@ -937,7 +937,7 @@ export default {
 							};
 							next.logSkill = ["jlsg_zhaoxiang", trigger.player];
 						}
-						("step 1");
+						"step 1";
 						if (result.bool) {
 							if (!result.cards) {
 								player.logSkill("jlsg_zhaoxiang", trigger.player);
@@ -960,7 +960,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2";
 						if (!result.bool) {
 							trigger.untrigger();
 							trigger.finish();
@@ -997,7 +997,7 @@ export default {
 							}
 							return -1;
 						};
-						("step 1");
+						"step 1";
 						if (result.bool) {
 							target.recover();
 						} else {
