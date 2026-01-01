@@ -3021,8 +3021,8 @@ const skills = {
 					.set("card", cards[0])
 					.forResult();
 				if (result?.bool && result.targets?.length) {
-					player.line(targets[0]);
-					await targets[0].gain(cards, "gain2");
+					player.line(result.targets[0]);
+					await result.targets[0].gain(cards, "gain2");
 				}
 			}
 		},
@@ -8355,7 +8355,7 @@ const skills = {
 			if (!cards.length || !game.hasPlayer(p => p.hasSex("male"))) {
 				return;
 			}
-			const hooseTarget = await player
+			const chooseTarget = await player
 				.chooseTarget(`###${get.prompt(event.name)}###令一名男性角色弃置牌或失去体力`)
 				.set("filterTarget", (_, player, target) => target.hasSex("male"))
 				.set("ai", target => {
@@ -19678,7 +19678,7 @@ const skills = {
 					return num1 < num2 ? typex : type;
 				}, null);
 				if (maxType) {
-					await player.gain(typeCount[maxType].filterInD(), "gain2");
+					await player.gain(typeCount[maxType].filterInD("d"), "gain2");
 				}
 				if (Object.keys(typeCount).length == cards.length) {
 					const drawResult = await player
