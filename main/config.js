@@ -64,6 +64,29 @@ let block = {
 	},
 	oldCharacterReplace = {
 		sr: {
+			jlsgsr_zhugeliang: {
+				jlsg_upgrade: true,
+				name: "SR诸葛亮",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_zhugeliang", item);
+					if (item == "false" || Boolean(item) > 1) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_zhugeliang");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_zhugeliang")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_zhugeliang");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
 			jlsgsr_simayi: {
 				jlsg_upgrade: true,
 				name: "SR司马懿",
@@ -215,6 +238,14 @@ let block = {
 			},
 		},
 		sk: {
+			jlsgsk_xiahoushi: {
+				name: "Sk夏侯氏",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
 			jlsgsk_guansuo: {
 				name: "SK关索",
 				init: "false",

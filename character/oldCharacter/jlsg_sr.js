@@ -1,5 +1,125 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export default {
+	jlsgsr_zhugeliang: {
+		1: {
+			skill: {
+				jlsg_sanfen: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					enable: "phaseUse",
+					usable: 1,
+					filter(event, player) {
+						return game.players.length >= 3;
+					},
+					filterTarget(card, player, target) {
+						return target != player && target.countDiscardableCards(player, "he");
+					},
+					targetprompt: ["先出杀", "对你出杀"],
+					selectTarget: 2,
+					multitarget: true,
+					async content(event, trigger, player) {
+						const {
+							targets: [target1, target2],
+						} = event;
+						const { result: result1 } = await target1
+							.chooseToUse(`######请对${get.translation(target2)}使用一张【杀】，否则${get.translation(player)}弃置你一张牌`)
+							.set("target2", target2)
+							.set("filterCard", (card, player) => get.name(card, player) == "sha")
+							.set("filterTarget", (card, player, target) => target == get.event("target2"));
+						if (!result1?.bool) {
+							await player.discardPlayerCard("he", target1);
+						}
+						const { result: result2 } = await target2
+							.chooseToUse(`######请对${get.translation(player)}使用一张【杀】，否则其弃置你一张牌`)
+							.set("source", player)
+							.set("filterCard", (card, player) => get.name(card, player) == "sha")
+							.set("filterTarget", (card, player, target) => target == get.event("source"));
+						if (!result2?.bool) {
+							await player.discardPlayerCard("he", target2);
+						}
+					},
+					ai: {
+						order: 8,
+						result: {
+							target: -3,
+						},
+						expose: 0.4,
+						threaten: 3,
+					},
+				},
+				jlsg_guanxing: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
+					frequent: true,
+					async content(event, trigger, player) {
+						let num = Math.min(3, game.countPlayer());
+						await player.chooseToGuanxing(num);
+					},
+					ai: {
+						threaten: 1.2,
+					},
+				},
+				jlsg_weiwo: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					mark: true,
+					intro: {
+						content: function (storage, player) {
+							var str = "";
+							if (player.countCards("h")) {
+								str += "防止属性伤害";
+							} else {
+								str += "防止非属性伤害";
+							}
+							return str;
+						},
+					},
+					trigger: { player: "damageBegin4" },
+					filter(event, player) {
+						if (event.hasNature() && player.countCards("h")) {
+							return true;
+						}
+						if (!event.hasNature() && !player.countCards("h")) {
+							return true;
+						}
+						return false;
+					},
+					forced: true,
+					async content(event, trigger, player) {
+						trigger.cancel();
+					},
+					ai: {
+						nofire: true,
+						nothunder: true,
+						skillTagFilter(player, tag, arg) {
+							if (tag == "nofire") {
+								return player.countCards("h");
+							} else if (tag == "nothunder") {
+								return player.countCards("h");
+							}
+						},
+						effect: {
+							target(card, player, target, current) {
+								if (get.tag(card, "natureDamage") && target.countCards("h") > 0) {
+									return 0;
+								} else if (card.name == "tiesuo" && target.countCards("h") > 0) {
+									return [0, 0];
+								} else if (!get.tag(card, "natureDamage") && !target.countCards("h")) {
+									return [0, 0];
+								}
+							},
+						},
+					},
+				},
+			},
+			translate: {
+				jlsg_sanfen_info: "出牌阶段限一次，你可以选择两名其他角色，其中一名你选择的角色须对另一名角色使用一张【杀】，然后另一名角色须对你使用一张【杀】，你弃置不如此做者一张牌。（有距离限制）",
+				jlsg_guanxing_info: "回合开始/结束阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且最多为3），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。",
+				jlsg_weiwo_info: "锁定技，当你有手牌时，你防止受到的属性伤害；当你没有手牌时，你防止受到的非属性伤害。",
+			},
+		},
+	},
 	jlsgsr_simayi: {
 		1: {
 			skill: {
@@ -651,7 +771,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						if (trigger.player.inRangeOf(player)) {
 							var next = player.chooseBool(get.prompt("jlsg_zhaoxiang", trigger.player));
 							next.ai = function () {
@@ -671,7 +791,7 @@ export default {
 							};
 							next.logSkill = ["jlsg_zhaoxiang", trigger.player];
 						}
-						"step 1"
+						("step 1");
 						if (result.bool) {
 							if (!result.cards) {
 								player.logSkill("jlsg_zhaoxiang", trigger.player);
@@ -694,7 +814,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						"step 2"
+						("step 2");
 						if (!result.bool) {
 							trigger.untrigger();
 							trigger.finish();
@@ -724,7 +844,7 @@ export default {
 					discard: false,
 					lose: false,
 					content: function () {
-						"step 0"
+						"step 0";
 						player.showCards(cards[0]);
 						var nono = false;
 						if (ai.get.damageEffect(target, player, player)) {
@@ -754,11 +874,11 @@ export default {
 								})
 								.set("nono", nono);
 						}
-						"step 1"
+						("step 1");
 						if (cards[0].name == "shan" && result.cards) {
 							target.showCards(result.cards[0]);
 						}
-						"step 2"
+						("step 2");
 						if (result.bool) {
 							player.recover();
 							target.recover();
@@ -797,7 +917,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						if (trigger.player.inRangeOf(player)) {
 							var next = player.chooseBool(get.prompt("jlsg_zhaoxiang", trigger.player));
 							next.ai = function () {
@@ -817,7 +937,7 @@ export default {
 							};
 							next.logSkill = ["jlsg_zhaoxiang", trigger.player];
 						}
-						"step 1"
+						("step 1");
 						if (result.bool) {
 							if (!result.cards) {
 								player.logSkill("jlsg_zhaoxiang", trigger.player);
@@ -840,7 +960,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						"step 2"
+						("step 2");
 						if (!result.bool) {
 							trigger.untrigger();
 							trigger.finish();
@@ -861,7 +981,7 @@ export default {
 						return player != target;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						if (!target.countDiscardableCards(target, "h")) {
 							target.damage(player);
 							target.recover();
@@ -877,7 +997,7 @@ export default {
 							}
 							return -1;
 						};
-						"step 1"
+						("step 1");
 						if (result.bool) {
 							target.recover();
 						} else {
