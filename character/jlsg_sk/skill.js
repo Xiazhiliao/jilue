@@ -19271,7 +19271,7 @@ const skills = {
 				return;
 			}
 			result = await player
-				.chooseBool(`###${get.translation(event.name)}：是否将${trigger.num}点${game.hasNature(trigger) ? get.translation(trigger.nature) : ""}伤害转移给这些角色？###${get.translation(targets)}`)
+				.chooseBool(`###${get.translation(event.name)}：是否将${trigger.num}点${game.hasNature(trigger) ? get.translation(trigger.nature) : ""}属性伤害转移给这些角色？###${get.translation(targets)}`)
 				.set("ai", (event, player) => {
 					const { targets } = get.event(),
 						trigger = event.getTrigger();
@@ -19280,11 +19280,10 @@ const skills = {
 				.set("targets", targets)
 				.forResult();
 			if (result?.bool) {
-				game.log(player, "将", trigger.player == player ? "自己" : trigger.player, `受到的${trigger.num}点${trigger.nature ? get.translation(trigger.nature) : ""}伤害转移给了`, targets);
-				const { ...arg } = trigger;
-				delete arg.player;
-				trigger.cancel();
-				delete arg._triggered;
+				game.log(player, "将", trigger.player == player ? "自己" : trigger.player, `受到的${trigger.num}点${trigger.nature ? get.translation(trigger.nature) : ""}属性伤害转移给了`, targets);
+				const { ...args } = trigger;
+				delete args.player;
+				delete args._triggered;
 				if (!_status.emptyEvent) {
 					_status.emptyEvent = await game.createEvent("empty", false).setContent(function () {});
 					game.broadcastAll(function (info) {
@@ -19294,16 +19293,30 @@ const skills = {
 				let empty = { ..._status.emptyEvent };
 				for (let i in empty) {
 					if (empty[i]) {
-						delete arg[i];
+						delete args[i];
 					}
 				}
-				for (const target of targets) {
-					const damage = target.damage();
-					for (let i in arg) {
-						damage[i] = arg[i];
-					}
-					await damage;
+				let refinish = false;
+				if (trigger.parent.finished) {
+					refinish = true;
+					trigger.parent.finished = false;
 				}
+				for (const i in targets) {
+					const target = targets[i];
+					const next = target.damage();
+					for (let i in args) {
+						next[i] = args[i];
+					}
+					let tarIndex = i + 1;
+					let index = trigger.parent.next.indexOf(trigger) + tarIndex;
+					trigger.parent.next.splice(index, 0, next);
+					if (tarIndex == targets.length && refinish) {
+						next.then(() => {
+							trigger.parent.finish();
+						});
+					}
+				}
+				trigger.cancel();
 			}
 		},
 		ai: {
