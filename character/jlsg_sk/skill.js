@@ -8935,13 +8935,13 @@ const skills = {
 				mod: {
 					cardUsable(card, player, num) {
 						let number = get.number(card, false);
-						if (number >= player.storage.jlsg_yingge_buff) {
+						if (number >= player.storage.jlsg_yingge_buff && card.name == "sha") {
 							return Infinity;
 						}
 					},
 					targetInRange(card, player, target) {
 						let num = get.number(card, false);
-						if (num >= player.storage.jlsg_yingge_buff) {
+						if (num >= player.storage.jlsg_yingge_buff && card.name == "sha") {
 							return true;
 						}
 					},
