@@ -25,7 +25,7 @@ export default {
 							.chooseToUse(`######请对${get.translation(target2)}使用一张【杀】，否则${get.translation(player)}弃置你一张牌`)
 							.set("target2", target2)
 							.set("filterCard", (card, player) => get.name(card, player) == "sha")
-							.set("filterTarget", (card, player, target) => target == get.event("target2"));
+							.set("filterTarget", (card, player, target) => target == get.event().target2);
 						if (!result1?.bool) {
 							await player.discardPlayerCard("he", target1);
 						}
@@ -33,7 +33,7 @@ export default {
 							.chooseToUse(`######请对${get.translation(player)}使用一张【杀】，否则其弃置你一张牌`)
 							.set("source", player)
 							.set("filterCard", (card, player) => get.name(card, player) == "sha")
-							.set("filterTarget", (card, player, target) => target == get.event("source"));
+							.set("filterTarget", (card, player, target) => target == get.event().source);
 						if (!result2?.bool) {
 							await player.discardPlayerCard("he", target2);
 						}
@@ -801,7 +801,7 @@ export default {
 									.chooseBool("令" + get.translation(player) + "获得你的一张牌或令打出的杀无效")
 									.set("ai", function (event, player) {
 										const trigger = event.getTrigger(),
-											source = get.event("source");
+											source = get.event().source;
 										let num = trigger.targets.reduce((n, target) => n + get.effect(target, trigger.card, player, player), 0);
 										return get.effect(player, { name: "shunshou_copy2" }, source, player) < num;
 									})
@@ -947,7 +947,7 @@ export default {
 									.chooseBool("令" + get.translation(player) + "获得你的一张牌或令打出的杀无效")
 									.set("ai", function (event, player) {
 										const trigger = event.getTrigger(),
-											source = get.event("source");
+											source = get.event().source;
 										let num = trigger.targets.reduce((n, target) => n + get.effect(target, trigger.card, player, player), 0);
 										return get.effect(player, { name: "shunshou_copy2" }, source, player) < num;
 									})
@@ -1047,7 +1047,7 @@ export default {
 						event.result = await player
 							.gainPlayerCard(get.prompt2("jlsg_zhaoxiang", trigger.player), trigger.player, "h")
 							.set("ai", button => {
-								if (get.event("check")) {
+								if (get.event().check) {
 									return get.event().getRand(button.link.cardid.toString());
 								}
 								return 0;
@@ -1077,7 +1077,7 @@ export default {
 						await player.gain(cards, target, "bySelf").set("ainimate", false);
 						const { result } = await player
 							.chooseControlList("招降", ["令此【杀】不能被响应", "将此【杀】的目标改为你"], true)
-							.set("ai", () => get.event("choice"))
+							.set("ai", () => get.event().choice)
 							.set(
 								"choice",
 								(function () {
@@ -1285,10 +1285,10 @@ export default {
 						const num = player.countGainableCards(trigger.player, "h");
 						event.result = await player
 							.chooseCard(get.prompt("jlsg_rende", trigger, player), [1, num])
-							.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event("source"), player, event))
+							.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event().source, player, event))
 							.set("ai", card => {
 								const player = get.player(),
-									source = get.event("source");
+									source = get.event().source;
 								if (player == source) {
 									return 6;
 								}
@@ -1359,14 +1359,14 @@ export default {
 						}
 						const { result: discard } = await target
 							.chooseToDiscard((card, player) => {
-								return !get.event("types").includes(get.type2(card, player));
+								return !get.event().types.includes(get.type2(card, player));
 							})
 							.set("dialog", [prompt, "hidden", cards])
 							.set("ai", card => {
 								if (card.name == "tao") {
 									return -1;
 								}
-								return get.event("diff") - get.value(card);
+								return get.event().diff - get.value(card);
 							})
 							.set("types", types)
 							.set("diff", 2.5 * get.damageEffect(target, player) - cardDiff);
@@ -1396,7 +1396,7 @@ export default {
 									.chooseControl(types)
 									.set("dialog", ["仇袭：选择一种类型的卡牌卡牌获得之", cards])
 									.set("ai", () => {
-										return get.event("choice");
+										return get.event().choice;
 									})
 									.set("choice", choice);
 								const list = [
@@ -1553,7 +1553,7 @@ export default {
 								event.result = await player
 									.chooseToDiscard(get.prompt("jlsg_youdi", trigger.respondTo[0]), [1, Infinity])
 									.set("chooseonly", true)
-									.set("ai", card => (get.event("check") ? 4 - get.value(card) : 0))
+									.set("ai", card => (get.event().check ? 4 - get.value(card) : 0))
 									.set(
 										"check",
 										(function () {
@@ -1706,7 +1706,7 @@ export default {
 						event.result = await player
 							.chooseToDiscard("he", get.prompt("jlsg_sheji", trigger.source), prompt)
 							.set("ai", function (card) {
-								let eff = get.event("eff");
+								let eff = get.event().eff;
 								if (typeof eff === "number") {
 									return eff - get.value(card);
 								}

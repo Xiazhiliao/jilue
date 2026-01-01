@@ -493,7 +493,7 @@ export default {
 						event.result = await player
 							.chooseToDiscard("h", get.prompt2("jlsg_zhiming", trigger.player))
 							.set("ai", card => {
-								if (get.attitude(get.player(), get.event("target")) < 0) {
+								if (get.attitude(get.player(), get.event().target) < 0) {
 									return 10 - get.value(card);
 								}
 								return 0;
@@ -515,7 +515,7 @@ export default {
 							.discardPlayerCard(trigger.player, "知命", "h", true)
 							.set("ai", button => {
 								const event = get.event();
-								const isVisible = get.event("isVisible") || event.visible;
+								const isVisible = get.event().isVisible || event.visible;
 								if (isVisible) {
 									const color1 = event.color1;
 									if (get.color(button.link) == color1) {
@@ -2553,7 +2553,7 @@ export default {
 							result: { index },
 						} = await player
 							.chooseControl("令其摸三张牌", "令其弃三张牌")
-							.set("ai", () => get.event("choice"))
+							.set("ai", () => get.event().choice)
 							.set(
 								"choice",
 								(function () {
@@ -2640,7 +2640,7 @@ export default {
 						event.result = await player
 							.chooseTarget(get.prompt("jlsg_nizhan"), "令一名角色获得一枚「袭」标记")
 							.set("filterTarget", (_, player, target) => {
-								const targetx = get.event("targetsx");
+								const targetx = get.event().targetsx;
 								return targetx.includes(target) && target != player;
 							})
 							.set("ai", target => -get.attitude(get.player(), target))

@@ -28,14 +28,14 @@ export default {
 				while (list.length) {
 					let skills = list.filter(skill => !player.hasSkill(skill, null, false, false)).randomGets(3);
 					const buttons = skills.map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
-					let links = await player
+					let result = await player
 						.chooseButton(["极略主公buff：请选择一项主公技获得", [buttons, "textbutton"]])
 						.set("selectButton", [1, 1])
 						.set("forced", true)
 						.set("ai", () => get.event().getRand())
-						.forResultLinks();
+						.forResult();
 					event.num++;
-					if (links?.length) {
+					if (result?.bool && resultlinks?.length) {
 						player.addSkill(links);
 					}
 					//双将适配
@@ -571,10 +571,13 @@ export default {
 			async content(event, trigger, player) {
 				let playerList = game.filterPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target));
 				for (let target of playerList) {
-					const { result } = await target.chooseBool("是否令" + get.translation(player) + "摸一张牌").set("ai", (event, player) => {
-						const source = event.player;
-						return get.effect(source, { name: "draw" }, player, player) > 0;
-					});
+					const result = await target
+						.chooseBool("是否令" + get.translation(player) + "摸一张牌")
+						.set("ai", (event, player) => {
+							const source = event.player;
+							return get.effect(source, { name: "draw" }, player, player) > 0;
+						})
+						.forResult();
 					if (result.bool) {
 						game.log(target, "响应了", player);
 						target.line(player, "green");
@@ -715,7 +718,7 @@ export default {
 							if (!lib.skill._jlsg_zhuBuff.groupCheck(target, player)) {
 								return false;
 							}
-							return lib.filter.canBeGained(card, player, target) && get.event("list").includes(target);
+							return lib.filter.canBeGained(card, player, target) && get.event().list.includes(target);
 						},
 						list,
 						ai1(card) {
