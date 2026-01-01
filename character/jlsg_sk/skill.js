@@ -19689,6 +19689,158 @@ const skills = {
 			},
 		},
 	},
+	/*
+	jlsg_jieyuan: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: { source: "damageBegin2" },
+		filter(event, player) {
+			return event.player != player;
+		},
+		forced: true,
+		locked: false,
+		async content(event, trigger, player) {
+			await player.draw(3);
+			if (player.countCards("h")) {
+				const { result } = await player.chooseCardTarget({
+					prompt: `${get.translation(event.name)}：选择一张牌和一名角色，将牌置于其武将排上称为“缘”`,
+					prompt2: `其回合开始时失去1点体力。若其对你造成伤害，其失去所有“缘”`,
+					selectCard: [1, 1],
+					filterCard: () => true,
+					selectTarget: [1, 1],
+					filterTarget: () => true,
+					forced: true,
+					ai1(card) {
+						return 7.5 - get.value(card);
+					},
+					ai2(target) {
+						return get.effect(target, { name: "losehp" }, get.player(), get.player());
+					},
+				});
+				if (result?.bool && result.cards?.length && result.targets?.length) {
+					const {
+						targets: [target],
+						cards,
+					} = result;
+					game.log(player, "将", cards, "置于了", target, "的武将牌上");
+					await target.addToExpansion(player, cards, event.name, "give").set("log", false);
+				}
+			}
+		},
+		global: "jlsg_jieyuan_effect",
+		subSkill: {
+			effect: {
+				audio: false,
+				charlotte: true,
+				trigger: {
+					player: "phaseBegin",
+					source: "damageSource",
+				},
+				filter(event, player) {
+					if (!player.hasExpansions("jlsg_jieyuan")) {
+						return false;
+					}
+					return event.name == "phase" || event.player.hasSkill("jlsg_jieyuan");
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					if (trigger.name == "phase") {
+						await player.loseHp(1);
+					} else {
+						await player.loseToDiscardpile(player.getExpansions("jlsg_jieyuan"));
+					}
+				},
+			},
+		},
+	},
+	jlsg_fenxin: {
+		audio: "ext:极略/audio/skill:2",
+		usable: 1,
+		trigger: {
+			player: "loseAfter",
+			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		filter(event, player) {
+			if (player.countCards("h")) {
+				return false;
+			}
+			const evt = event.getl(player);
+			return evt && evt.player == player && evt.hs && evt.hs.length > 0;
+		},
+		forced: true,
+		locked: false,
+		async content(event, trigger, player) {
+			const { result } = await player
+				.chooseTarget(`###${get.translation(event.name)}:选择一名其他角色，令其弃置所有红色牌###若弃置的牌数不小于剩余黑色牌数，则你对其造成X点真实伤害（X为其体力上限），然后若其未死亡，你失去3点体力`)
+				.set("filterTarget", (_, player, target) => {
+					return target != player;
+				})
+				.set("ai", target => {
+					const { player } = event;
+					const att = get.attitude(player, target);
+					if (att > 0) {
+						return 0;
+					}
+					return att * target.countCards("he");
+				});
+			if (result?.bool && result.targets?.length) {
+				const [target] = result.targets;
+				const red = target.getDiscardableCards(target, "he", { color: "red" });
+				let redNum = 0;
+				if (red.length) {
+					const next = target.discard(red);
+					await next;
+					redNum = target.getHistory("lose", evt => evt.getParent() == next).map(evt => evt.getl?.(target)?.cards2?.length || 0);
+				}
+				let blackNum = target.getCards("he", { color: "black" });
+				if (redNum >= blackNum) {
+					const { jlsg_trueDamageEvent } = get.info(event.name),
+						next = target.damage(target.maxHp, player).set("nature", "jlsg_true");
+					jlsg_trueDamageEvent(next);
+					await next;
+				}
+			}
+		},
+		jlsg_trueDamageEvent(event) {
+			if (!game.hasNature(event, "jlsg_true")) {
+				game.setNature(event, "jlsg_true", true);
+			}
+			const player = event.source || get.player(),
+				target = event.player,
+				hookmap = ["damageBegin", "damageBegin1", "damageBegin2", "damageBegin3", "damageBegin4", "damageZero", "damage", "damageSource", "damageEnd", "dyingBefore", "dyingBegin", "dying", "dieBgein", "die"];
+			game.broadcastAll(
+				function (target, hookmap) {
+					_status.jlsg_trueDamage_restore ??= {};
+					_status.jlsg_trueDamage_restore[target.playerid] ??= {};
+					const map = Object.entries(lib.hook[target.playerid] || {}).filter(i => {
+						const [name] = i;
+						return name.startsWith(target.playerid + "_");
+					});
+					for (let info of map) {
+						const [name, infox] = info;
+						if (hookmap.some(evt => name.endsWith("_" + evt))) {
+							_status.jlsg_trueDamage_restore[target.playerid][name] = lib.hook[name];
+							delete lib.hook[name];
+						}
+					}
+				},
+				target,
+				hookmap
+			);
+			player
+				.when({ global: "damageAfter" })
+				.filter(evt => evt == event && game.hasNature(evt, "jlsg_true"))
+				.step(async function (event, trigger, player) {
+					game.broadcastAll(function (target) {
+						if (_status.jlsg_trueDamage_restore?.[target.playerid]) {
+							Object.assign(lib.hook, _status.jlsg_trueDamage_restore[target.playerid]);
+							delete _status.jlsg_trueDamage_restore[target.playerid];
+						}
+					}, target);
+				});
+		},
+	},
+	*/
 };
 
 export default skills;

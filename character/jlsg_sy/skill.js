@@ -214,7 +214,7 @@ const skills = {
 			return event.card.name != "juedou";
 		},
 		content: function () {
-			"step 0"
+			"step 0";
 			player.draw();
 			trigger.card.name = "juedou";
 			if (trigger.card.isCard && trigger.cards.length) {
@@ -270,12 +270,12 @@ const skills = {
 		animationColor: "thunder",
 		check: () => true,
 		content: function () {
-			"step 0"
+			"step 0";
 			player.awakenSkill(event.name);
 			event.cnt = game.filterPlayer().length;
 			player.recover(event.cnt - player.hp);
 			event.targets = game.filterPlayer(p => p != player).sortBySeat();
-			"step 1"
+			"step 1";
 			if (!event.targets.length) {
 				event.finish();
 				return;
@@ -375,7 +375,7 @@ const skills = {
 			return event.card.name == "sha" && event.target.countCards("he");
 		},
 		content: function () {
-			"step 0"
+			"step 0";
 			var num = 1 + Math.floor(Math.random() * 3);
 			trigger.target.randomDiscard(num);
 		},
@@ -449,7 +449,7 @@ const skills = {
 			};
 		},
 		content: function () {
-			"step 0"
+			"step 0";
 			if (!_status.jlsgsy_bolue_list) {
 				lib.skill.jlsgsy_bolue.initList();
 			}
@@ -498,7 +498,7 @@ const skills = {
 			return cnt != 0 || player.isDamaged();
 		},
 		content: function () {
-			"step 0"
+			"step 0";
 			let cnt = game.getAllGlobalHistory("changeHp", e => {
 				let p = e.getParent();
 				if (p.name != "damage") {
@@ -553,9 +553,9 @@ const skills = {
 		},
 		frequent: true,
 		content: function () {
-			"step 0"
+			"step 0";
 			player.draw(2);
-			"step 1"
+			"step 1";
 			player.gainMaxHp();
 		},
 	},
@@ -568,7 +568,7 @@ const skills = {
 		},
 		logTarget: "player",
 		content: function () {
-			"step 0"
+			"step 0";
 			trigger.player
 				.chooseCard(`交给${get.translation(event.player)}一张锦囊牌`, function (card) {
 					return get.type(card, "trick") == "trick";
@@ -583,7 +583,7 @@ const skills = {
 					return v;
 				})
 				.set("source", player);
-			"step 1"
+			"step 1";
 			if (result.bool) {
 				if (get.attitude(trigger.player, player) > 0 && trigger.player.ai.shown < player.ai.shown) {
 					trigger.player.addExpose(0.2);
@@ -610,19 +610,19 @@ const skills = {
 		logTarget: "source",
 		line: false,
 		content: function () {
-			"step 0"
+			"step 0";
 			if (trigger.source.countCards("e") == 0) {
 				event.goto(2);
 				return;
 			}
 			let choice = trigger.source.getCards("e").reduce((a, b) => a + get.value(b), 0) < get.effect(trigger.source, { name: "sha" }, player, trigger.source);
 			trigger.source.chooseBool(`是否弃置装备区的牌？`, choice);
-			"step 1"
+			"step 1";
 			if (result.bool) {
 				trigger.source.discard(trigger.source.getCards("e"));
 				event.finish();
 			}
-			"step 2"
+			"step 2";
 			player.useCard({ name: "sha", isCard: true }, trigger.source, "noai");
 		},
 		ai: {
@@ -660,9 +660,9 @@ const skills = {
 		check: () => Math.random() < 0.8,
 		logTarget: "player",
 		content() {
-			"step 0"
+			"step 0";
 			trigger.player.draw("nodelay");
-			"step 1"
+			"step 1";
 			trigger.player.addMark("jlsgsy_taiping");
 			game.delayx();
 		},
@@ -692,7 +692,7 @@ const skills = {
 			return Math.random > 0.5;
 		},
 		content: function () {
-			"step 0"
+			"step 0";
 			let marks = game.filterPlayer().reduce((a, b) => a + b.countMark("jlsgsy_taiping"), 0);
 			player.draw(marks);
 			for (let p of game.filterPlayer()) {
@@ -702,14 +702,14 @@ const skills = {
 					p.unmarkSkill("jlsgsy_taiping");
 				}
 			}
-			"step 1"
+			"step 1";
 			let others = game.filterPlayer(p => p != player).reduce((a, b) => a + b.countCards("h"), 0);
 			if (others >= player.countCards("h")) {
 				event.finish();
 				return;
 			}
 			player.chooseBool("是否对所有其他角色造成1点伤害？", true);
-			"step 2"
+			"step 2";
 			if (result.bool) {
 				let targets = game.filterPlayer(p => p != player).sortBySeat();
 				player.line(targets);
@@ -748,7 +748,7 @@ const skills = {
 			player.storage.jlsg_yaohuo_retrieve = new Map();
 		},
 		content: function () {
-			"step 0"
+			"step 0";
 			let quota = player.countDiscardableCards(player, "he"),
 				skills = target.getSkills(null, false, false);
 			event.skills = target.getStockSkills(true, true).filter(s => {
@@ -768,14 +768,14 @@ const skills = {
 			}
 			event.list = list;
 			player.chooseControlList(list, true);
-			"step 1"
+			"step 1";
 			event.choseCard = event.list[result.index].includes("并获得");
 			if (event.choseCard) {
 				player.chooseToDiscard(target.countCards("h"), true, "he");
 			} else {
 				player.chooseToDiscard(event.skills.length, true, "he");
 			}
-			"step 2"
+			"step 2";
 			if (!result.bool) {
 				event.finish();
 				return;
@@ -885,7 +885,7 @@ const skills = {
 			return !player.getStorage("jlsgsy_sanzhi").includes(get.type(event.card, "trick"));
 		},
 		content: function () {
-			"step 0"
+			"step 0";
 			player.storage.jlsgsy_sanzhi.add(get.type(trigger.card, "trick"));
 			if (player.hasSkill("jlsgsy_sanzhi")) {
 				player.markSkill("jlsgsy_sanzhi");
@@ -896,7 +896,7 @@ const skills = {
 			} else {
 				event.finish();
 			}
-			"step 1"
+			"step 1";
 			if (!result.bool) {
 				event.finish();
 				return;
@@ -949,13 +949,13 @@ const skills = {
 		selectTarget: 2,
 		prompt2: "请选择造成伤害与受到伤害的角色",
 		content: function () {
-			"step 0"
+			"step 0";
 			// targets[0].line(targets[1], 'green');
 			targets[1].damage(targets[0]);
 			if (targets[1].ai.shown > player.ai.shown) {
 				player.addExpose(0.2);
 			}
-			"step 1"
+			"step 1";
 			if (player.isDamaged() && targets[0] != player) {
 				player.recover();
 			}
@@ -1335,7 +1335,7 @@ const skills = {
 			}
 		},
 		choosePlayerCard: function () {
-			"step 0"
+			"step 0";
 			if (!event.dialog) {
 				event.dialog = ui.create.dialog("hidden");
 			} else if (!event.isMine()) {
@@ -1454,7 +1454,7 @@ const skills = {
 					event.result = "ai";
 				}
 			}
-			"step 1"
+			"step 1";
 			if (event.result == "ai") {
 				game.check();
 				if ((ai.basic.chooseButton(event.ai) || forced) && (!event.filterOk || event.filterOk())) {
@@ -1837,7 +1837,7 @@ const skills = {
 		lose: false,
 		delay: false,
 		content() {
-			"step 0"
+			"step 0";
 			player.showCards(cards);
 			player.storage.jlsgsy_quanqing.shown.add(cards[0]);
 			player.storage.jlsgsy_quanqing.targets.add(target);
@@ -1860,12 +1860,12 @@ const skills = {
 			} else {
 				event.goto(2);
 			}
-			"step 1"
+			"step 1";
 			if (result.bool) {
 				delete player.storage.jlsgsy_quanqing.choice;
 				event.finish();
 			}
-			"step 2"
+			"step 2";
 			let list = get.inpileVCardList(v => {
 				if (!["basic", "trick"].includes(get.type(v[2], null, false))) {
 					return false;
@@ -1878,7 +1878,7 @@ const skills = {
 				return button.link[2] === _status.event.choice[0] && (button.link[3] || true) === (_status.event.choice[1] || true);
 			};
 			next.choice = player.storage.jlsgsy_quanqing.choice ?? [];
-			"step 3"
+			"step 3";
 			delete player.storage.jlsgsy_quanqing.choice;
 			if (!result.bool) {
 				event.finish();
@@ -1919,11 +1919,11 @@ const skills = {
 			next.set("subject", target);
 			next.set("prompt", `选择${get.translation(card)}的目标`);
 			next.set("prompt2", `由${get.translation(target)}使用`);
-			"step 4"
+			"step 4";
 			if (result.bool) {
 				target.useCard(event.card, result.targets, "noai");
 			}
-			"step 5"
+			"step 5";
 			if (player.isDamaged()) {
 				player.recover();
 			}
@@ -2021,7 +2021,7 @@ const skills = {
 		},
 		direct: true,
 		content() {
-			"step 0"
+			"step 0";
 			player
 				.chooseTarget(get.prompt2(event.name), [1, Infinity], (_, player, target) => target.getAllHistory("sourceDamage", e => e.player == _status.event.player).length)
 				.set("ai", (target, targets) => {
@@ -2032,7 +2032,7 @@ const skills = {
 					let cnt2 = target.countDiscardableCards(target, "he");
 					return Math.min(target.isHealthy() ? 2 : 1, cnt < cnt2 ? cnt : Infinity) - (get.attitude(_status.event.player, target) + Math.random()) / 10;
 				});
-			"step 1"
+			"step 1";
 			if (!result.bool) {
 				event.finish();
 				return;
@@ -2045,7 +2045,7 @@ const skills = {
 					player.addExpose(0.2);
 				}
 			}
-			"step 2"
+			"step 2";
 			var target = event.targets.shift();
 			event.target = target;
 			if (!target) {
@@ -2072,7 +2072,7 @@ const skills = {
 					}
 					return v;
 				});
-			"step 3"
+			"step 3";
 			if (!result.bool) {
 				target.loseMaxHp();
 			}
@@ -2089,7 +2089,7 @@ const skills = {
 		trigger: { player: "damageEnd" },
 		frequent: true,
 		content() {
-			"step 0"
+			"step 0";
 			player.draw(2);
 			if (trigger.card && trigger.card.isCard && trigger.cards.length) {
 				let cards = trigger.cards.slice().filterInD("o");
@@ -2098,7 +2098,7 @@ const skills = {
 			} else {
 				event.finish();
 			}
-			"step 1"
+			"step 1";
 			if (!result.bool) {
 				event.finish();
 				return;
@@ -2137,7 +2137,7 @@ const skills = {
 		logTarget: "player",
 		forced: true,
 		content() {
-			"step 0"
+			"step 0";
 			let triggeredCnt = player.storage.jlsgsy_duzun.get(trigger.player) || 0;
 			player.storage.jlsgsy_duzun.set(trigger.player, triggeredCnt + 1);
 
@@ -2173,7 +2173,7 @@ const skills = {
 					return _status.event.choice;
 				})
 				.set("choice", choice);
-			"step 1"
+			"step 1";
 			player.addSkill("jlsgsy_duzun_buff");
 			trigger.player.addSkill("jlsgsy_duzun_buff");
 			var index = event.allChoices.indexOf(event.choices[result.index]);
@@ -2287,7 +2287,7 @@ const skills = {
 			return cnt.filter(cnt => cnt > 0).length >= 2;
 		},
 		content() {
-			"step 0"
+			"step 0";
 			var cnt = [lib.skill.jlsgsy_longbian.countShaUsable(player), 2 + (player.storage.jlsgsy_duzun_buff || [null, 0])[1], player.maxHp];
 			event.cnt = cnt;
 			var names = ["使用【杀】的次数上限", "摸牌阶段摸牌基数", "体力上限"];
@@ -2326,13 +2326,13 @@ const skills = {
 					.set("choice", choice);
 				event.goto(2);
 			}
-			"step 1"
+			"step 1";
 			if (!result.bool) {
 				event.finish();
 				return;
 			}
 			event._result = { index: event.index };
-			"step 2"
+			"step 2";
 			if (result.control == "cancel2") {
 				event.finish();
 				return;
@@ -2717,7 +2717,9 @@ const skills = {
 				},
 			},
 			3: {
-				get trigger(){return lib.jlsg.debuffSkill.trigger},
+				get trigger() {
+					return lib.jlsg.debuffSkill.trigger;
+				},
 				filter(event, player) {
 					if (player.storage.jlsgsy_moshou_record != 3) {
 						return false;

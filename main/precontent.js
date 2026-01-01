@@ -9,6 +9,7 @@ export async function precontent(config, originalPack) {
 		window.__configCharactersBackup = lib.config.characters;
 		lib.config.characters = ["jlsg_sk", "jlsg_sr", "jlsg_soul", "jlsg_sy"];
 	}
+	//game.addNature("jlsg_true", "真实");
 	lib.namePrefix.set("极略SK神", {
 		getSpan(prefix, name) {
 			return `${get.prefixSpan("极略SK", name)}${get.prefixSpan("神", name)}`;
