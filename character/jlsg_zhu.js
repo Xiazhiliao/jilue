@@ -35,8 +35,8 @@ export default {
 						.set("ai", () => get.event().getRand())
 						.forResult();
 					event.num++;
-					if (result?.bool && resultlinks?.length) {
-						player.addSkill(links);
+					if (result?.bool && result.links?.length) {
+						player.addSkill(result.links);
 					}
 					//双将适配
 					if (get.config("double_character") != true || event.num > 1) {

@@ -19668,17 +19668,14 @@ const skills = {
 				const cards = discardResult.cards;
 				const typeCount = cards.reduce((list, card) => {
 					const type = get.type2(card);
-					list[type] ??= [];
-					list[type].push(card);
+					list[type] ??= 0;
+					list[type]++;
 					return list;
 				}, {});
-				let maxType = Object.entries(typeCount).reduce((type, [typex, cardsx]) => {
-					let num1 = typeCount[type]?.length || 0,
-						num2 = cardsx.length;
-					return num1 < num2 ? typex : type;
-				}, null);
-				if (maxType) {
-					await player.gain(typeCount[maxType].filterInD("d"), "gain2");
+				const maxNum = Math.max(...Object.values(typeCount));
+				const maxTypes = Object.keys(typeCount).filter(item => typeCount[item] == maxNum);
+				if (maxTypes.length) {
+					await player.gain(cards.filter(card => maxTypes.includes(get.type2(card))).filterInD("d"), "gain2");
 				}
 				if (Object.keys(typeCount).length == cards.length) {
 					const drawResult = await player
