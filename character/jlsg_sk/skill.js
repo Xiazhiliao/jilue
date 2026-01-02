@@ -12481,12 +12481,12 @@ const skills = {
 				if (!result?.bool || !result.targets?.length) {
 					return;
 				}
-				await player.logSkill("jlsg_tiandao", targets[0]);
+				await player.logSkill("jlsg_tiandao", result.targets[0]);
 				if (info[2] > 0) {
-					await targets[0].randomDiscard(info[2]);
+					await result.targets[0].randomDiscard(info[2]);
 				}
 				if (info[3] > 0) {
-					await targets[0].damage(player, info[3], "thunder");
+					await result.targets[0].damage(player, info[3], "thunder");
 				}
 				await game.delayx();
 			}
