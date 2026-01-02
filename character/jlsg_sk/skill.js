@@ -8953,9 +8953,9 @@ const skills = {
 				},
 				onremove: true,
 				filter(event, player) {
-					let cards = player.getStorage("jlsg_yingge_effect", []),
-						card = event.card.cards;
-					return card.length == 1 && cards.includes(card[0]);
+					let cards = player.getStorage("jlsg_yingge_effect"),
+						card = event.card?.cards;
+					return card?.length == 1 && cards.includes(card?.[0]);
 				},
 				async content(event, trigger, player) {
 					trigger.num--;
