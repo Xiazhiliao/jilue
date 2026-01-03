@@ -15135,8 +15135,9 @@ const skills = {
 			} else if (["damage", "loseHp", "loseMaxHp"].includes(event.name)) {
 				return true;
 			}
+			let cards = [];
 			if (event.name != "cardsDiscard") {
-				return event.getd(target, "cards2").length > 0;
+				cards = event.getd(target, "cards2");
 			} else {
 				if (event.cards.filterInD("d").length <= 0) {
 					return false;
@@ -15146,14 +15147,17 @@ const skills = {
 					return false;
 				}
 				const evtx = evt.relatedEvent || evt.getParent();
-				return target.hasHistory("lose", evtxx => {
+				target.getHistory("lose", evtxx => {
 					let cards2 = evtxx.getl(target).cards2.filterInD("d");
-					if (!cards2) {
+					if (!cards2.length) {
 						return false;
 					}
-					return evtx == (evtxx.relatedEvent || evtxx.getParent());
+					if(evtx == (evtxx.relatedEvent || evtxx.getParent())){
+						cards.addArray(cards2);
+					};
 				});
 			}
+			return cards.filter(card=>!card.willBeDestroyed("discardPile", get.owner(card), event)).length;
 		},
 		forced: true,
 		logTarget: (event, player, triggername, target) => target,
@@ -15173,7 +15177,7 @@ const skills = {
 					const evtx = evt.relatedEvent || evt.getParent();
 					event.indexedData.getHistory("lose", evtxx => {
 						let cards2 = evtxx.getl(event.indexedData).cards2.filterInD("d");
-						if (!cards2) {
+						if (!cards2.length) {
 							return false;
 						}
 						if (evtx == (evtxx.relatedEvent || evtxx.getParent())) {
@@ -15181,6 +15185,7 @@ const skills = {
 						}
 					});
 				}
+				cards=cards.filter(card=>!card.willBeDestroyed("discardPile", get.owner(card), trigger))
 				if (cards.length) {
 					await player.gain(cards, "gain2");
 				}
