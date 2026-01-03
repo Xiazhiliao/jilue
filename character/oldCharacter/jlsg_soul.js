@@ -2562,7 +2562,7 @@ export default {
 									return drawEff > discardEff ? 0 : 1;
 								})()
 							);
-						await player.logSkill("jlsg_danjing", event.targets, null, null, [index + 1]);
+						player.logSkill("jlsg_danjing", event.targets, null, null, [index + 1]);
 						if (index == 0) {
 							await player.loseHp();
 							await target.draw(3);

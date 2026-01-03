@@ -358,7 +358,7 @@ const skills = {
 		forced: true,
 		popup: false,
 		async content(event, trigger, player) {
-			await player.logSkill("jlsgsy_mingzheng");
+			player.logSkill("jlsgsy_mingzheng");
 			let num = player.phaseNumber;
 			if (event.triggername == "jlsgsy_baonuAfter") {
 				num++;
@@ -2388,7 +2388,7 @@ const skills = {
 			trigger.targets.add(targetx);
 			trigger.player.line(targetx);
 			game.log(targetx, "成为", trigger.card, "的额外目标");
-			await game.asyncDelayx();
+			await game.delayx();
 		},
 	},
 	jlsgsy_yinzi: {
@@ -3025,7 +3025,7 @@ const skills = {
 		viewAs: { name: "guohe", isCard: false },
 		log: false,
 		async precontent(event, trigger, player) {
-			await player.logSkill("jlsgsy_moce", event.result.targets);
+			player.logSkill("jlsgsy_moce", event.result.targets);
 			let evt = event.getParent(),
 				maps = game
 					.filterPlayer(current => current != player)
@@ -3467,7 +3467,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseBool(`###${get.prompt(event.skill)}###令所有其他角色${get.info("jlsgsy_zhonggu").getInfo(trigger, player).str}`)
+				.chooseBool(`###${get.prompt(event.skill)}###令所有其他角色${lib.jlsg.debuffSkill.getInfo.getInfo(trigger, player).str}`)
 				.set("ai", (event, player) => {
 					return true;
 				})

@@ -72,7 +72,7 @@ export default {
 			selectCard: -1,
 			log: false,
 			async precontent(event, trigger, player) {
-				await player.logSkill("jlsg_zhugong_yuren", event.result.targets);
+				player.logSkill("jlsg_zhugong_yuren", event.result.targets);
 				let evt = event.getParent();
 				evt.set("jlsg_zhugong_yuren", true);
 				while (true) {
@@ -352,7 +352,7 @@ export default {
 				}
 			},
 			async content(event, trigger, player) {
-				await trigger.source.logSkill(event.name, event.targets);
+				trigger.source.logSkill(event.name, event.targets);
 				await player.draw();
 			},
 			priority: 0,
@@ -503,7 +503,7 @@ export default {
 				}
 			},
 			async content(event, trigger, player) {
-				await trigger.player.logSkill("jlsg_zhugong_jianxiong", player);
+				trigger.player.logSkill("jlsg_zhugong_jianxiong", player);
 				await player.gain(trigger.cards.filterInD("od"), "gain2", "log");
 			},
 			priority: 0,
@@ -532,7 +532,7 @@ export default {
 				}
 			},
 			async content(event, trigger, player) {
-				await trigger.player.logSkill("jlsg_zhugong_songwei", player);
+				trigger.player.logSkill("jlsg_zhugong_songwei", player);
 				await player.draw();
 			},
 			priority: 0,

@@ -870,7 +870,7 @@ const skills = {
 				const target = chooseTarget.targets[0];
 				const discard = await player.chooseCardButton("弃置1枚「星」", player.getExpansions("jlsg_qixing"), true).forResult();
 				player.loseToDiscardpile(discard.links);
-				await player.logSkill("jlsg_kuangfeng", target, "fire");
+				player.logSkill("jlsg_kuangfeng", target, "fire");
 				if (!target.hasSkill("jlsg_kuangfeng2")) {
 					target.addSkill("jlsg_kuangfeng2");
 				}
@@ -900,7 +900,7 @@ const skills = {
 			let gainer = game.filterPlayer(cur => cur.hasSkill("jlsg_kuangfeng")).sortBySeat(player);
 			if (game.hasNature(trigger)) {
 				if (trigger.nature == "fire") {
-					await player.logSkill("jlsg_kuangfeng2", null, "fire");
+					player.logSkill("jlsg_kuangfeng2", null, "fire");
 					trigger.num += player.countMark("jlsg_kuangfeng2");
 				}
 				if (game.hasNature(trigger, "thunder")) {
@@ -920,7 +920,7 @@ const skills = {
 				}
 			} else {
 				if (gainer.length) {
-					await player.logSkill("jlsg_kuangfeng2");
+					player.logSkill("jlsg_kuangfeng2");
 					for (let current of gainer) {
 						await current.draw(player.countMark("jlsg_kuangfeng2"));
 					}
@@ -3242,7 +3242,7 @@ const skills = {
 				popname: true,
 				log: false,
 				async precontent(event, trigger, player) {
-					await player.logSkill("jlsg_tianqi");
+					player.logSkill("jlsg_tianqi");
 					const type = get.info("jlsg_tianqi_backup").links[0];
 					if (player.isPhaseUsing(true) && event.getParent().type == "phase") {
 						player.addTempSkill("jlsg_tianqi_used", "phaseUseAfter");
@@ -3618,7 +3618,7 @@ const skills = {
 					} else {
 						const type = get.type2(trigger.card, trigger.player);
 						let targets = game.filterPlayer(cur => cur.hasMark("jlsg_meixin")).sortBySeat(player);
-						await player.logSkill("jlsg_meixin", targets);
+						player.logSkill("jlsg_meixin", targets);
 						for (const target of targets) {
 							if (!target.isIn()) {
 								continue;
@@ -3830,7 +3830,7 @@ const skills = {
 						}
 						return player.canUse(card, player, false, trigger);
 					});
-				await player.logSkill(event.name);
+				player.logSkill(event.name);
 				const card = cards.randomRemove();
 				if (!card) {
 					break;
@@ -4116,7 +4116,7 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					if (event.triggername == "phaseUseBegin") {
-						await player.logSkill("jlsg_shayi");
+						player.logSkill("jlsg_shayi");
 						await player.draw();
 						let cards = player.getCards("h", { color: "black" });
 						if (cards.length) {
@@ -5305,7 +5305,7 @@ const skills = {
 					.set("target", target)
 					.forResult();
 				if (result.bool) {
-					await player.logSkill("jlsg_lvezhen", target);
+					player.logSkill("jlsg_lvezhen", target);
 					phase.num = phase.phaseList.length;
 					phase.step = 13;
 					game.log(target, "的回合结束了");
@@ -6813,7 +6813,7 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			event.skillstop = true;
-			await player.logSkill("jlsg_xingwu", trigger.player);
+			player.logSkill("jlsg_xingwu", trigger.player);
 			await player.discard(event.cards);
 			if (event.targets) {
 				trigger.player.line(event.targets[0]);
@@ -8416,7 +8416,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "useCardToPlayered") {
-				await player.logSkill("jlsg_gucheng");
+				player.logSkill("jlsg_gucheng");
 				trigger.getParent().excluded.add(player);
 			} else {
 				let card = { name: trigger.card.name, nature: get.nature(trigger.card) };
@@ -9015,7 +9015,7 @@ const skills = {
 					if (!result?.bool) {
 						return;
 					}
-					await player.logSkill("jlsg_shenyin");
+					player.logSkill("jlsg_shenyin");
 					await player.removeMark("jlsg_shenyin", num);
 					await game.delayx();
 					const info = player.storage.jlsg_shenyin_record;
@@ -9107,7 +9107,7 @@ const skills = {
 				await player.addToExpansion(player, cards, "giveAuto").set("gaintag", ["jlsg_chuyuan"]);
 				player.markSkill("jlsg_chuyuan");
 				player.update();
-				game.asyncDelayx();
+				await game.delayx();
 			}
 		},
 		group: ["jlsg_chuyuan_effect"],
@@ -15215,7 +15215,7 @@ const skills = {
 					return target;
 				},
 				async content(event, trigger, player) {
-					await player.logSkill("jlsg_taotie", event.targets);
+					player.logSkill("jlsg_taotie", event.targets);
 					let storage = player.getStorage("jlsg_taotie_buff", { sha: 0, draw: 0 });
 					if (event.triggername == "jlsg_yaolingAfter" && trigger.drawReduce) {
 						storage.draw += trigger.drawReduce[1];

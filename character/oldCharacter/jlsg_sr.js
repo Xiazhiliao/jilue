@@ -1526,7 +1526,7 @@ export default {
 					},
 					log: false,
 					async precontent(event, trigger, player) {
-						await player.logSkill("jlsg_youdi");
+						player.logSkill("jlsg_youdi");
 						await player.turnOver();
 					},
 					ai: {

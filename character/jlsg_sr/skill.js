@@ -448,7 +448,7 @@ const skills = {
 					})
 					.forResult();
 				if (result.bool && result.cards.length) {
-					await player.logSkill("jlsg_yansha");
+					player.logSkill("jlsg_yansha");
 					const next = player.addToExpansion(result.cards, player, "give");
 					next.gaintag.add("jlsg_yansha");
 					await next;
@@ -1611,7 +1611,7 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			if (trigger.name == "useCard") {
-				await player.logSkill(event.name);
+				player.logSkill(event.name);
 				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 				const improve = upgradeStorage?.other?.[event.name];
 				if (trigger.jlsg_jiwu || (improve && player.getHistory("useCard").indexOf(trigger) == 0)) {
@@ -2329,7 +2329,7 @@ const skills = {
 		async precontent(event, trigger, player) {
 			const card = event.result.cards[0];
 			event.result.cards = [];
-			await player.logSkill("jlsg_fangxin");
+			player.logSkill("jlsg_fangxin");
 			let name;
 			if (get.suit(card) == "diamond") {
 				name = "lebu";
@@ -2502,7 +2502,7 @@ const skills = {
 				if (!result.bool) {
 					break;
 				} else {
-					await player.logSkill(event.name, [target]);
+					player.logSkill(event.name, [target]);
 				}
 			}
 		},
@@ -3252,7 +3252,7 @@ const skills = {
 		},
 		log: false,
 		async precontent(event, trigger, player) {
-			await player.logSkill("jlsg_youdi");
+			player.logSkill("jlsg_youdi");
 			await player.turnOver();
 		},
 		ai: {
@@ -5705,7 +5705,7 @@ const skills = {
 					popupname: true,
 					log: false,
 					async precontent(event, trigger, player) {
-						await player.logSkill("jlsg_zhonghou");
+						player.logSkill("jlsg_zhonghou");
 					},
 				};
 			},

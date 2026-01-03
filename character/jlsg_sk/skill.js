@@ -475,7 +475,7 @@ const skills = {
 					log: false,
 					popname: true,
 					async precontent(event, _, player) {
-						await player.logSkill("jlsg_kanwu");
+						player.logSkill("jlsg_kanwu");
 						let card = event.result.cards[0];
 						event.card = card;
 						await player.discard(card);
@@ -11629,7 +11629,7 @@ const skills = {
 					if (cnt != 1 && cnt != 3) {
 						return;
 					}
-					await player.logSkill(event.name);
+					player.logSkill(event.name);
 					await player.draw();
 					let characterList = get.info("jlsg_sanjue").getCharacters.randomSort();
 					const { map, given } = storage;
@@ -12084,7 +12084,7 @@ const skills = {
 						if (info.has(card)) {
 							let num = info.get(card);
 							info.delete(card);
-							await player.logSkill("jlsg_fujian", target);
+							player.logSkill("jlsg_fujian", target);
 							if (target.isIn()) {
 								await target.loseHp();
 							}
@@ -12481,7 +12481,7 @@ const skills = {
 				if (!result?.bool || !result.targets?.length) {
 					return;
 				}
-				await player.logSkill("jlsg_tiandao", result.targets[0]);
+				player.logSkill("jlsg_tiandao", result.targets[0]);
 				if (info[2] > 0) {
 					await result.targets[0].randomDiscard(info[2]);
 				}
@@ -15488,7 +15488,7 @@ const skills = {
 					await game.delay();
 				}
 				const targets = result.targets;
-				await player.logSkill("jlsg_zhukou", targets);
+				player.logSkill("jlsg_zhukou", targets);
 				for (let i = 0; i < targets.length; i++) {
 					await targets[i].damage("nocard");
 					await game.delayx();
@@ -16548,7 +16548,7 @@ const skills = {
 					})
 					.forResult();
 				if (result.bool) {
-					await player.logSkill(event.name, targets);
+					player.logSkill(event.name, targets);
 					for (let target of targets) {
 						if (!target.isIn()) {
 							continue;
@@ -19265,7 +19265,7 @@ const skills = {
 				);
 				const result = await next.forResult();
 				if (result?.bool && result.targets?.length) {
-					await player.logSkill(event.name, result.targets);
+					player.logSkill(event.name, result.targets);
 					if (loseHp.includes(result.targets[0])) {
 						await result.targets[0].loseHp(1);
 					} else {
