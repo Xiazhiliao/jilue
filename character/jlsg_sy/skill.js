@@ -3467,7 +3467,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseBool(`###${get.prompt(event.skill)}###令所有其他角色${lib.jlsg.debuffSkill.getInfo.getInfo(trigger, player).str}`)
+				.chooseBool(`###${get.prompt(event.skill)}###令所有其他角色${lib.jlsg.debuffSkill.getInfo(trigger, player).str}`)
 				.set("ai", (event, player) => {
 					return true;
 				})
