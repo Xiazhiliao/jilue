@@ -2957,7 +2957,7 @@ const skills = {
 			aiOrder(player, card, num) {
 				if (get.name(card, player) == "sha") {
 					if (["card", "vcard"].includes(get.itemtype(card)) && !card.hasNature()) {
-						return num + 5;
+						return num + 2;
 					}
 				}
 			},
@@ -2985,15 +2985,14 @@ const skills = {
 				sourceSkill: "jlsgsy_jianmie",
 				sub: true,
 				audio: "jlsgsy_jianmie",
-				trigger: { global: "dyingBegin" },
+				trigger: { global: "dyingBefore" },
 				filter(event, player) {
-					if (event.player == player) {
+					if (event.player == player || event.player.countCards("h") >= player.countCards("h")) {
 						return false;
 					}
 					const phase = event.getParent("phase");
 					return phase?.player == player && phase.name == "phase";
 				},
-				charlotte: true,
 				forced: true,
 				firstDo: true,
 				logTarget: "player",

@@ -376,20 +376,27 @@ const skills = {
 	},
 	jlsg_spwq_wushuang: {
 		audio: "ext:极略/audio/skill:2",
+		locked: false,
 		mod: {
 			cardUsable(card, player, num) {
 				if (_status.event.skill == "jlsg_spwq_wushuang") {
 					return Infinity;
-				}
-				if (card && card.storage?.jlsg_spwq_wushuang) {
+				} else if (card?.storage?.jlsg_spwq_wushuang) {
 					return Infinity;
 				}
 			},
-			targetInRange: function () {
+			targetInRange(card) {
 				if (_status.event.skill == "jlsg_spwq_wushuang") {
+					return true;
+				} else if (card?.storage?.jlsg_spwq_wushuang) {
 					return true;
 				}
 			},
+		},
+		hiddenCard(name, player) {
+			if (name == "sha") {
+				return player.countCards("h");
+			}
 		},
 		onChooseToUse(event) {
 			if (game.online) {
@@ -419,27 +426,14 @@ const skills = {
 			if (!check) {
 				return false;
 			}
-			if (!player.countCards("h")) {
+			if (!player.countCards("h") || player.countCards("h") != player.countDiscardableCards(player, "h")) {
 				return false;
 			}
 			let vcard = get.autoViewAs({ name: "sha", isCard: true, storage: { jlsg_spwq_wushuang: true }, cards: [] }, []);
 			return event.filterCard(vcard, player, event);
 		},
-		hiddenCard(name, player) {
-			if (name == "sha") {
-				return player.countCards("h");
-			}
-		},
-		position: "h",
-		filterCard: true,
-		selectCard: -1,
-		discard: false,
-		lose: false,
-		log: false,
-		locked: false,
-		prompt: "无双：是否弃置所有手牌并摸等量张牌，视为使用【杀】？",
 		viewAsFilter: function (player) {
-			if (!player.countCards("h")) {
+			if (!player.countCards("h") || player.countCards("h") != player.countDiscardableCards(player, "h")) {
 				return false;
 			}
 			let num = player.getHistory("useCard", evt => {
@@ -456,7 +450,7 @@ const skills = {
 				});
 			return history.length < num;
 		},
-		viewAs(cards, player) {
+		viewAs() {
 			return {
 				name: "sha",
 				isCard: true,
@@ -464,15 +458,23 @@ const skills = {
 				cards: [],
 			};
 		},
-		onuse(event, player) {
-			let hs = player.getCards("h");
+		position: "h",
+		filterCard: lib.filter.cardDiscardable,
+		selectCard: -1,
+		prompt: "无双：是否弃置所有手牌并摸等量张牌，视为使用【杀】？",
+		lose: false,
+		log: false,
+		async precontent(event, _, player) {
 			player.logSkill("jlsg_spwq_wushuang");
-			player.discard(hs);
+			let hs = player.getDiscardableCards(player, "h");
+			await player.discard(hs);
+			event.result.card.cards = [];
+			event.result.cards = [];
 			if (hs.some(i => get.subtype(i) == "equip1")) {
-				event.card.storage.jlsg_spwq_wushuang_double = true;
+				event.result.card.storage.jlsg_spwq_wushuang_double = true;
 			}
 			if (player.isIn()) {
-				player.draw(hs.length);
+				await player.draw(hs.length);
 			}
 		},
 		group: ["jlsg_spwq_wushuang_useCardTo", "jlsg_spwq_wushuang_damage"],

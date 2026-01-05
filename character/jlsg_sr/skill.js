@@ -5017,7 +5017,7 @@ const skills = {
 			let num = upgrade ? 3 : 2;
 			await player.draw(num);
 			let result = await player
-				.chooseCard("交给" + get.translation(trigger.player) + get.cnNumber(num) + "张牌", [num, num])
+				.chooseCard("交给" + get.translation(trigger.player) + get.cnNumber(num) + "张牌", "he", [num, num], true)
 				.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event().source, player, event))
 				.set("ai", card => {
 					const player = get.player(),
@@ -5030,10 +5030,9 @@ const skills = {
 					}
 					return source.getUseValue(card, false, false) - get.value(card);
 				})
-				.set("forced", true)
 				.set("source", trigger.player)
 				.forResult();
-			if (!result?.bool) {
+			if (!result?.bool || !result.cards?.length) {
 				return;
 			}
 			if (trigger.player != player) {
@@ -5115,7 +5114,7 @@ const skills = {
 			num = result.cards.length;
 			let type = result.cards.map(card => get.type2(card)).unique();
 			let next = await player
-				.chooseCard("交给" + get.translation(target) + get.cnNumber(num) + "张牌", [num, num])
+				.chooseCard("交给" + get.translation(target) + get.cnNumber(num) + "张牌", "he", [num, num], true)
 				.set("filterCard", (card, player, event) => lib.filter.canBeGained(card, get.event().source, player, event))
 				.set("ai", card => {
 					const player = get.player(),
@@ -5131,10 +5130,9 @@ const skills = {
 					}
 					return get.value(card) < 2 || !source.getUseValue(card) == 0;
 				})
-				.set("forced", true)
 				.set("source", target)
 				.forResult();
-			if (!next.bool) {
+			if (!next?.bool || !next.cards?.length) {
 				return;
 			}
 			if (player != target) {
@@ -5151,7 +5149,7 @@ const skills = {
 				.chooseBool("是否对" + get.translation(target) + "造成" + get.cnNumber(num) + "点伤害？")
 				.set("ai", (event, player) => get.damageEffect(event.targets[0], player, player) > 0)
 				.forResult();
-			if (next2.bool) {
+			if (next2?.bool) {
 				await target.damage(num, player);
 			}
 		},
