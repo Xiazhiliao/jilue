@@ -22,7 +22,7 @@ const dynamicTranslates = {
 		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_weiwo;
 		let bool = player.storage?.jlsg_weiwo;
 		if (improve || player?.index) {
-			if (bool) {
+			if (!bool) {
 				return "锁定技，当你受到属性伤害时，若你有手牌，你防止此伤害；当你受到非属性伤害时，若你没有手牌，你防止此伤害。任意角色的回合结束时，若你于本回合内没有受到过伤害，你可以摸一张牌，然后对调此技能的“若你有手牌”和“若你没有手牌”。";
 			} else {
 				return "锁定技，当你受到属性伤害时，若你没有手牌，你防止此伤害；当你受到非属性伤害时，若你有手牌，你防止此伤害。任意角色的回合结束时，若你于本回合内没有受到过伤害，你可以摸一张牌，然后对调此技能的“若你有手牌”和“若你没有手牌”。";

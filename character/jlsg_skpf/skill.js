@@ -1208,16 +1208,17 @@ const skills = {
 				bool: result?.control && result.control != "cancel2",
 				cost_data: { control: result.control },
 			};
-			if (control == "角色") {
+			if (result?.control == "角色") {
 				const result = await player
 					.chooseTarget("遗计：请选择要观看手牌的角色", true)
 					.set("filterTarget", (_, player, target) => target.countCards("h") && target.isMaxHandcard())
 					.set("ai", target => -get.attitude(get.player(), target))
 					.forResult();
 				if (!result?.bool || !result.targets?.length) {
+					event.result.bool = false;
 					return;
 				}
-				event.result.targets = targets;
+				event.result.targets = result.targets;
 			}
 		},
 		async content(event, trigger, player) {

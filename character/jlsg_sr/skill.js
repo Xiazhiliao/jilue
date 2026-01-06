@@ -4635,7 +4635,6 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		init(player, skill) {
-			player.setStorage("jlsg_weiwo", true, true);
 			if (!_status.gameStarted) {
 				return;
 			}
@@ -4650,9 +4649,9 @@ const skills = {
 		mark: true,
 		intro: {
 			content: function (storage, player) {
-				let bool = player.storage.jlsg_weiwo ? player.countCards("h") : !player.countCards("h");
+				let bool = player.getStorage("jlsg_weiwo", false) ? player.countCards("h") : !player.countCards("h");
 				var str = "";
-				if (bool) {
+				if (!bool) {
 					str += "防止属性伤害";
 				} else {
 					str += "防止非属性伤害";
@@ -4663,11 +4662,11 @@ const skills = {
 		forced: true,
 		trigger: { player: ["damageBegin4"] },
 		filter(event, player) {
-			let bool = player.storage.jlsg_weiwo ? player.countCards("h") : !player.countCards("h");
-			if (event.hasNature() && bool) {
+			let bool = player.getStorage("jlsg_weiwo", false) ? player.countCards("h") : !player.countCards("h");
+			if (event.hasNature() && !bool) {
 				return true;
 			}
-			if (!event.hasNature() && !bool) {
+			if (!event.hasNature() && bool) {
 				return true;
 			}
 			return false;
@@ -4689,7 +4688,7 @@ const skills = {
 				prompt: "是否交换【帷幄】中的“若你有手牌”和“若你没有手牌”",
 				async content(event, trigger, player) {
 					await player.draw();
-					player.setStorage("jlsg_weiwo", !player.getStorage("jlsg_weiwo"), true);
+					player.setStorage("jlsg_weiwo", !player.getStorage("jlsg_weiwo", false), true);
 				},
 			},
 		},
@@ -4706,12 +4705,12 @@ const skills = {
 			},
 			effect: {
 				target(card, player, target, current) {
-					let bool = player.storage.jlsg_weiwo ? player.countCards("h") : !player.countCards("h");
-					if (get.tag(card, "natureDamage") && bool) {
+					let bool = player.getStorage("jlsg_weiwo", false) ? player.countCards("h") : !player.countCards("h");
+					if (get.tag(card, "natureDamage") && !bool) {
 						return 0;
-					} else if (card.name == "tiesuo" && bool) {
+					} else if (card.name == "tiesuo" && !bool) {
 						return [0, 0];
-					} else if (!get.tag(card, "natureDamage") && !bool && get.type2(card, player) != "equip") {
+					} else if (!get.tag(card, "natureDamage") && bool && get.type2(card, player) != "equip") {
 						return [0, 0];
 					}
 				},
