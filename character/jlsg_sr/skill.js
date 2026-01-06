@@ -4689,8 +4689,7 @@ const skills = {
 				prompt: "是否交换【帷幄】中的“若你有手牌”和“若你没有手牌”",
 				async content(event, trigger, player) {
 					await player.draw();
-					let storage = player.getStorage("jlsg_weiwo", true);
-					player.setStorage("jlsg_weiwo", !storage, true);
+					player.setStorage("jlsg_weiwo", !player.getStorage("jlsg_weiwo"), true);
 				},
 			},
 		},
