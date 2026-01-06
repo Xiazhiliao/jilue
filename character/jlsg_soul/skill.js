@@ -512,9 +512,7 @@ const skills = {
 				given_map = {};
 			let node = get.is.singleHandcard() ? player.node.handcards1 : player.node.handcards2;
 			while (hs.length) {
-				const {
-					result: { targets, cards },
-				} = await player.chooseCardTarget({
+				const { targets, cards } = await player.chooseCardTarget({
 					selectCard: [1, hs.length],
 					filterCard(card) {
 						return get.event().hs.includes(card);
@@ -602,7 +600,7 @@ const skills = {
 					},
 					hs: hs,
 					given: given,
-				});
+				}).forResult();
 				if (!targets?.length || !cards?.length) {
 					break;
 				}
@@ -9091,16 +9089,15 @@ const skills = {
 				return;
 			} else {
 				let str = lib.skill.jlsg_chuyuan.prompt2(trigger, player);
-				const {
-					result: { bool, cards },
-				} = await player
+				const { bool, cards } = await player
 					.chooseCard("he", `###储元：请选择一张${color[1]}色牌置于武将牌上称为“储”###${str}`)
 					.set("color", color)
 					.set("filterCard", (card, player, event) => get.color(card, player) == get.event().color[0])
 					.set("ai", card => {
 						const player = get.player();
 						return 8 - get.value(card, player);
-					});
+					})
+					.forResult();
 				if (!bool) {
 					return;
 				}
@@ -9273,9 +9270,7 @@ const skills = {
 				} else if (!valid1) {
 					index = 0;
 				} else {
-					({
-						result: { index },
-					} = await target.chooseControlList([`交给${get.translation(player)}${get.cnNumber(cnt)}张牌`, `交给${get.translation(player)}一个技能`], true, () => _status.event.choice).set("choice", cnt != 3 ? 0 : 1));
+					({ index } = await target.chooseControlList([`交给${get.translation(player)}${get.cnNumber(cnt)}张牌`, `交给${get.translation(player)}一个技能`], true, () => _status.event.choice).set("choice", cnt != 3 ? 0 : 1).forResult());
 				}
 				switch (index) {
 					case 0:

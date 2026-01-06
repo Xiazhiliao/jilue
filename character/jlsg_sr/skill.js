@@ -3993,9 +3993,7 @@ const skills = {
 					controlList.push(lib.translate[suit]);
 				}
 			}
-			const {
-				result: { control: suit },
-			} = await player
+			const { control: suit } = await player
 				.chooseControl(controlList, "cancel2")
 				.set("dialog", ["是否发动【蓄劲】？选择一种花色的牌交给一名角色。", cards])
 				.set("split", split)
@@ -4010,7 +4008,8 @@ const skills = {
 					} else {
 						return "cancel2";
 					}
-				});
+				})
+				.forResult();
 			if (!suit || suit == "cancel2") {
 				return;
 			}
@@ -5602,9 +5601,7 @@ const skills = {
 				return;
 			} else {
 				let prompt = `是否失去1点体力视为${get.translation(trigger.player)}使用一张${get.translation(trigger.card)}？`;
-				const {
-					result: { bool },
-				} = await player.chooseBool(prompt, get.attitude(player, trigger.player) >= 6);
+				const { bool } = await player.chooseBool(prompt, get.attitude(player, trigger.player) >= 6).forResult();
 				if (!bool) {
 					player.addTempSkill("jlsg_zhonghou_use");
 					player.markAuto("jlsg_zhonghou_use", [trigger.player]);

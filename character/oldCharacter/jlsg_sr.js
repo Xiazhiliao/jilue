@@ -21,19 +21,21 @@ export default {
 						const {
 							targets: [target1, target2],
 						} = event;
-						const { result: result1 } = await target1
+						const result1 = await target1
 							.chooseToUse(`######请对${get.translation(target2)}使用一张【杀】，否则${get.translation(player)}弃置你一张牌`)
 							.set("target2", target2)
 							.set("filterCard", (card, player) => get.name(card, player) == "sha")
-							.set("filterTarget", (card, player, target) => target == get.event().target2);
+							.set("filterTarget", (card, player, target) => target == get.event().target2)
+							.forResult();
 						if (!result1?.bool) {
 							await player.discardPlayerCard("he", target1);
 						}
-						const { result: result2 } = await target2
+						const result2 = await target2
 							.chooseToUse(`######请对${get.translation(player)}使用一张【杀】，否则其弃置你一张牌`)
 							.set("source", player)
 							.set("filterCard", (card, player) => get.name(card, player) == "sha")
-							.set("filterTarget", (card, player, target) => target == get.event().source);
+							.set("filterTarget", (card, player, target) => target == get.event().source)
+							.forResult();
 						if (!result2?.bool) {
 							await player.discardPlayerCard("he", target2);
 						}
@@ -140,7 +142,7 @@ export default {
 					async content(event, trigger, player) {
 						let str = `${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为
 						${get.translation(trigger.player.judging[0])}，打出一张手牌代替之或亮出牌顶的一张牌代替之`;
-						const { result } = await player
+						const result = await player
 							.chooseCard(str, "h")
 							.set("filterCard", (card, player, event) => {
 								const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
@@ -168,7 +170,8 @@ export default {
 									return -result - get.value(card) / 2;
 								}
 							})
-							.set("judging", trigger.player.judging[0]);
+							.set("judging", trigger.player.judging[0])
+							.forResult();
 						if (result.bool && result.cards?.length) {
 							event.cards = result.cards;
 						} else {
@@ -230,14 +233,15 @@ export default {
 					},
 					async content(event, trigger, player) {
 						const target = lib.skill.jlsg_langgu.logTarget(trigger, player);
-						const { result } = await player
+						const result = await player
 							.judge(function (card) {
 								if (get.color(card, get.player()) == "black") {
 									return 2;
 								}
 								return -2;
 							})
-							.set("judge2", result => result.bool);
+							.set("judge2", result => result.bool)
+							.forResult();
 						if (result.bool && target.countGainableCards(player, "he")) {
 							await player.gainPlayerCard(target, "he", true);
 						}
@@ -441,7 +445,7 @@ export default {
 						const cards = get.cards(2);
 						await game.cardsGotoOrdering(cards);
 						await player.showCards(cards);
-						const { result } = await player.chooseCardButton("雄略：选择一张牌置入手牌", cards, true);
+						const result = await player.chooseCardButton("雄略：选择一张牌置入手牌", cards, true).forResult();
 						if (result.bool) {
 							const card = result.links[0];
 							await player.gain(card, "gain2");
@@ -1075,7 +1079,7 @@ export default {
 							targets: [target],
 						} = event;
 						await player.gain(cards, target, "bySelf").set("ainimate", false);
-						const { result } = await player
+						const result = await player
 							.chooseControlList("招降", ["令此【杀】不能被响应", "将此【杀】的目标改为你"], true)
 							.set("ai", () => get.event().choice)
 							.set(
@@ -1088,7 +1092,8 @@ export default {
 									}
 									return 1;
 								})()
-							);
+							)
+							.forResult();
 						if (result?.index == 0) {
 							game.log(player, "令", trigger.card, "不能被响应");
 							trigger.getParent().directHit.addArray(game.players);
@@ -1217,7 +1222,7 @@ export default {
 							return;
 						}
 						const buttons = skills.map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
-						const { result } = await trigger.player.chooseButton(true, ["选择要发动的技能", [buttons, "textbutton"]]).set("ai", button => get.skillRank(button.link, "out"));
+						const result = await trigger.player.chooseButton(true, ["选择要发动的技能", [buttons, "textbutton"]]).set("ai", button => get.skillRank(button.link, "out")).forResult();
 						if (!result?.bool) {
 							return;
 						}
@@ -1357,7 +1362,7 @@ export default {
 								cardDiff = newCardDiff;
 							}
 						}
-						const { result: discard } = await target
+						const discard = await target
 							.chooseToDiscard((card, player) => {
 								return !get.event().types.includes(get.type2(card, player));
 							})
@@ -1369,7 +1374,8 @@ export default {
 								return get.event().diff - get.value(card);
 							})
 							.set("types", types)
-							.set("diff", 2.5 * get.damageEffect(target, player) - cardDiff);
+							.set("diff", 2.5 * get.damageEffect(target, player) - cardDiff)
+							.forResult();
 						if (discard.bool) {
 							await player.gain(cards, "gain2");
 						} else {
@@ -1390,15 +1396,14 @@ export default {
 								if (Object.keys(values).length) {
 									choice = Object.keys(values).find(type => values[type] == Math.max(...Object.values(types)));
 								}
-								const {
-									result: { control },
-								} = await target
+								const { control } = await target
 									.chooseControl(types)
 									.set("dialog", ["仇袭：选择一种类型的卡牌卡牌获得之", cards])
 									.set("ai", () => {
 										return get.event().choice;
 									})
-									.set("choice", choice);
+									.set("choice", choice)
+									.forResult();
 								const list = [
 									[target, []],
 									[player, []],
@@ -1839,25 +1844,21 @@ export default {
 							return;
 						}
 						while (cards.length > 0) {
-							const {
-								result: { bool, links },
-							} =
+							const { bool, links } =
 								cards.length == 1
-									? { result: { links: cards.slice(0), bool: true } }
+									? { links: cards.slice(0), bool: true }
 									: await player.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length]).set("ai", () => {
 											if (ui.selected.buttons.length == 0) {
 												return 1;
 											}
 											return 0;
-										});
+										}).forResult();
 							if (!bool) {
 								return;
 							}
 							cards.removeArray(links);
 							event.togive = links.slice(0);
-							const {
-								result: { targets },
-							} = await player
+							const { targets } = await player
 								.chooseTarget("选择一名角色获得" + get.translation(links), true)
 								.set("ai", target => {
 									const att = get.attitude(_status.event.player, target);
@@ -1869,7 +1870,8 @@ export default {
 										return att / 100;
 									}
 								})
-								.set("enemy", get.value(event.togive[0], player, "raw") < 0);
+								.set("enemy", get.value(event.togive[0], player, "raw") < 0)
+								.forResult();
 							if (targets.length) {
 								const id = targets[0].playerid,
 									map = event.given_map;
@@ -1903,14 +1905,15 @@ export default {
 							.setContent("gaincardMultiple");
 						await game.delay();
 						if (list.length == 1) {
-							const { result } = await player
+							const result = await player
 								.judge("jlsg_yiji", result => {
 									if (result.suit == "heart") {
 										return 2;
 									}
 									return -2;
 								})
-								.set("judge2", result => result.bool);
+								.set("judge2", result => result.bool)
+								.forResult();
 							if (result.bool) {
 								await player.recover(1);
 							}
@@ -2013,7 +2016,7 @@ export default {
 					},
 					async content(event, trigger, player) {
 						const target = event.targets[0];
-						const { result } = await player.chooseToCompare(target);
+						const result = await player.chooseToCompare(target).forResult();
 						if (result.bool) {
 							const guohe = get.autoViewAs({ name: "guohe" }, []);
 							if (player.canUse(guohe, target)) {

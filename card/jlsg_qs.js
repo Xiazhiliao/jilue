@@ -58,7 +58,7 @@ let jlsg_qs = {
 			enable: true,
 			skills: ["jlsgqs_taipingyaoshu_skill"],
 			onEquip: async function (event, trigger, player) {
-				const { result } = await player
+				const result = await player
 					.chooseToDiscard("h", function (card) {
 						if (get.color(card) != "red") {
 							return false;
@@ -78,7 +78,8 @@ let jlsg_qs = {
 						}
 						return 8 - ai.get.value(card);
 					})
-					.set("prompt2", "太平要术：弃置一张红色手牌，否则失去1点体力");
+					.set("prompt2", "太平要术：弃置一张红色手牌，否则失去1点体力")
+					.forResult();
 				if (!result?.bool) {
 					await player.loseHp();
 				}
@@ -159,7 +160,7 @@ let jlsg_qs = {
 				if (!target.countCards("h")) {
 					return;
 				}
-				const shownCards = await target
+				const { cards: shownCards } = await target
 					.chooseCard("请展示一张手牌", true, "h")
 					.set("ai", card => {
 						const evt = _status.event.getParent();
@@ -169,7 +170,7 @@ let jlsg_qs = {
 							return 14 - get.number(card);
 						}
 					})
-					.forResultCards();
+					.forResult();
 				if (!shownCards?.length) {
 					return;
 				}
@@ -181,7 +182,7 @@ let jlsg_qs = {
 				event.card2 = shownCards[0];
 				game.log(target, "展示了", event.card2);
 				game.addCardKnower(shownCards, "everyone");
-				const discardCards = await player
+				const { cards: discardCards } = await player
 					.chooseToDiscard()
 					.set("ai", card => {
 						const evt = _status.event.getParent();
@@ -190,7 +191,7 @@ let jlsg_qs = {
 						return value;
 					})
 					.set("prompt", false)
-					.forResultCards();
+					.forResult();
 				await game.delayx(2);
 				if (discardCards?.length) {
 					if (get.number(discardCards[0]) <= get.number(event.card2, target)) {
@@ -312,7 +313,7 @@ let jlsg_qs = {
 					await target.damage("fire");
 					return;
 				}
-				const control = await target
+				const { control } = await target
 					.chooseControl("获得你两张牌", "对你造成伤害")
 					.set("prompt", `请选择一项`)
 					.set("prompt2", `${get.translation(player)}对你使用【欲擒故纵】`)
@@ -335,7 +336,7 @@ let jlsg_qs = {
 						}
 						return "对你造成伤害";
 					})
-					.forResultControl();
+					.forResult();
 				if (control == "获得你两张牌") {
 					await player.gainPlayerCard(target, "h", 2, true);
 				} else if (control == "对你造成伤害") {
@@ -401,7 +402,7 @@ let jlsg_qs = {
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				const { result } = await target
+				const result = await target
 					.chooseToUse(player, "草船借箭：对" + get.translation(player) + "使用一张杀，或令其获得你的一张牌")
 					.set("filterCard", (card, player) => {
 						if (get.name(card, player) != "sha") {
@@ -410,7 +411,8 @@ let jlsg_qs = {
 						return lib.filter.filterCard.apply(this, arguments);
 					})
 					.set("respondTo", [player, event.card])
-					.set("targetRequired", true);
+					.set("targetRequired", true)
+					.forResult();
 				if (!result.bool && target.countGainableCards(player, "he") > 0) {
 					await player.gainPlayerCard(target, "he", true);
 				}
@@ -773,7 +775,7 @@ let jlsg_qs = {
 			},
 			forced: true,
 			async content(event, trigger, player) {
-				const { result } = await player
+				const result = await player
 					.chooseToDiscard("h", "木牛流马：请弃置一张基本牌，否则失去1点体力", function (card) {
 						if (get.type(card) != "basic") {
 							return false;
@@ -803,7 +805,8 @@ let jlsg_qs = {
 							}
 							return false;
 						})()
-					);
+					)
+					.forResult();
 				if (!result.bool) {
 					await player.loseHp(1);
 				}
