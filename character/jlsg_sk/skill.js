@@ -13672,7 +13672,7 @@ const skills = {
 						.set("target", target)
 						.set("ai", (event, player) => {
 							const target = get.event().target,
-								color = get.event("color", player);
+								{ color } = get.event();
 							if (get.attitude(player, target) > 1) {
 								return color == "red";
 							} else {
