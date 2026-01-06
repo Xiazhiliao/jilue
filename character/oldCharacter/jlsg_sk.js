@@ -141,7 +141,7 @@ export default {
 						return target.countDiscardableCards(player, "hej");
 					},
 					async content(event, trigger, player) {
-						const { result } = await player.discardPlayerCard(event.target, "hej", true).set("ai", button => {
+						const result = await player.discardPlayerCard(event.target, "hej", true).set("ai", button => {
 							const event = get.event(),
 								card = button.link,
 								player = get.player();
@@ -152,7 +152,7 @@ export default {
 								eff += target.getUseValue("nanman");
 							}
 							return eff;
-						});
+						}).forResult();
 						if (result?.bool && result?.links?.length) {
 							const card = result.links[0];
 							if (get.type(card) != "basic") {
@@ -480,7 +480,7 @@ export default {
 								control: player.storage.jlsg_xinghan_token[0],
 							};
 						} else {
-							({ result } = await player.chooseControl(player.storage.jlsg_xinghan_token.concat("cancel2")).set("prompt", get.prompt("jlsg_xinghan")).set("prompt2", "选择招募的势力"));
+							result = await player.chooseControl(player.storage.jlsg_xinghan_token.concat("cancel2")).set("prompt", get.prompt("jlsg_xinghan")).set("prompt2", "选择招募的势力").forResult();
 						}
 						if (result.control == "cancel2") {
 							return;
@@ -489,7 +489,7 @@ export default {
 						if (!choices.length) {
 							return;
 						}
-						let { result: result2 } = await player.chooseButton([`招募一名的${get.translation(result.control)}势力武将`, [choices, "character"]]);
+						let result2 = await player.chooseButton([`招募一名的${get.translation(result.control)}势力武将`, [choices, "character"]]).forResult();
 						event.result = { bool: result2.bool };
 						if (result2.bool) {
 							event.result.cost_data = [result.control, result2.links[0]];

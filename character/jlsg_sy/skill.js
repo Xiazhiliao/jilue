@@ -1570,9 +1570,7 @@ const skills = {
 				}
 				return target.hasUseTarget(c, false, false);
 			});
-			const {
-				result: { targets: toTargets },
-			} = await player
+			const { targets: toTargets } = await player
 				.chooseTarget([1, Infinity], `请选择${get.translation(target)}使用牌的目标"`, true)
 				.set("filterTarget", (_, player, target) => target != get.event().preTarget)
 				.set("ai", target => {
@@ -1587,7 +1585,8 @@ const skills = {
 					}, 0);
 				})
 				.set("preTarget", target)
-				.set("useCards", useCards);
+				.set("useCards", useCards)
+				.forResult();
 			if (!useCards.length || !toTargets?.length) {
 				await game.delay();
 				return;

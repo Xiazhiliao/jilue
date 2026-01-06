@@ -17403,7 +17403,7 @@ const skills = {
 			const swords = target.getVCards("e", card => get.subtype(card, false) == "equip1");
 			const phaseUse = event.getParent("phaseUse");
 			if (swords.length > 1) {
-				const vcards = await player.chooseButton(true, [`###铸刃###请选择${get.translation(target)}的一张武器牌进行附魔`, [swords, "vcard"]], () => true).forResultLinks();
+				const { links: vcards } = await player.chooseButton(true, [`###铸刃###请选择${get.translation(target)}的一张武器牌进行附魔`, [swords, "vcard"]], () => true).forResult();
 				event.result.cards = vcards[0].cards || [];
 				phaseUse.jlsg_zhuren_vcard = vcards[0];
 			} else {
@@ -17431,7 +17431,7 @@ const skills = {
 			while (true) {
 				choiceList = ["断玉", "附灵", "噬主"];
 				prompt = "铸刃：请选择强化分支";
-				const control = await player
+				const { control } = await player
 					.chooseControlList(choiceList, prompt, (event, player) => {
 						const {
 							targets: [target],
@@ -17445,7 +17445,7 @@ const skills = {
 							return 0;
 						}
 					})
-					.forResultControl();
+					.forResult();
 				if (control == "cancel2") {
 					break;
 				}
@@ -19780,7 +19780,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(3);
 			if (player.countCards("h")) {
-				const { result } = await player.chooseCardTarget({
+				const result = await player.chooseCardTarget({
 					prompt: `${get.translation(event.name)}：选择一张牌和一名角色，将牌置于其武将排上称为“缘”`,
 					prompt2: `其回合开始时失去1点体力。若其对你造成伤害，其失去所有“缘”`,
 					selectCard: [1, 1],
@@ -19794,7 +19794,7 @@ const skills = {
 					ai2(target) {
 						return get.effect(target, { name: "losehp" }, get.player(), get.player());
 					},
-				});
+				}).forResult();
 				if (result?.bool && result.cards?.length && result.targets?.length) {
 					const {
 						targets: [target],
@@ -19849,7 +19849,7 @@ const skills = {
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			const { result } = await player
+			const result = await player
 				.chooseTarget(`###${get.translation(event.name)}:选择一名其他角色，令其弃置所有红色牌###若弃置的牌数不小于剩余黑色牌数，则你对其造成X点真实伤害（X为其体力上限），然后若其未死亡，你失去3点体力`)
 				.set("filterTarget", (_, player, target) => {
 					return target != player;
@@ -19861,7 +19861,7 @@ const skills = {
 						return 0;
 					}
 					return att * target.countCards("he");
-				});
+				}).forResult();
 			if (result?.bool && result.targets?.length) {
 				const [target] = result.targets;
 				const red = target.getDiscardableCards(target, "he", { color: "red" });

@@ -535,9 +535,7 @@ export default {
 							const color1 = get.color(event.cards[0]),
 								color2 = get.color(cardx);
 							if (color1 == color2) {
-								const {
-									result: { control },
-								} = await player.chooseControl("跳过摸牌", "跳过出牌").set("ai", (event, player) => {
+								const { control } = await player.chooseControl("跳过摸牌", "跳过出牌").set("ai", (event, player) => {
 									const phase = event.getParent("phase");
 									const num = phase.num;
 									let phaseList = phase.phaseList;
@@ -548,7 +546,7 @@ export default {
 										return "跳过摸牌";
 									}
 									return "跳过出牌";
-								});
+								}).forResult();
 								if (control == "跳过摸牌") {
 									trigger.player.skip("phaseDraw");
 									game.log(trigger.player, "跳过了摸牌阶段");
@@ -949,9 +947,9 @@ export default {
 							await target.discard(event.cards);
 							await target.damage(1, player);
 						} else {
-							const { result } = await player.chooseButton(["攻心", "请选择获得一张牌", "hidden", event.cards], true).set("ai", button => {
+							const result = await player.chooseButton(["攻心", "请选择获得一张牌", "hidden", event.cards], true).set("ai", button => {
 								return get.value(button.link);
-							});
+							}).forResult();
 							if (result.bool) {
 								await player.gain(result.links, target, "give", "log");
 							}
@@ -2549,9 +2547,7 @@ export default {
 					},
 					async content(event, trigger, player) {
 						const target = event.targets[0];
-						const {
-							result: { index },
-						} = await player
+						const { index } = await player
 							.chooseControl("令其摸三张牌", "令其弃三张牌")
 							.set("ai", () => get.event().choice)
 							.set(
@@ -2561,7 +2557,8 @@ export default {
 										discardEff = get.effect(target, { name: "guohe_copy2" }, player, player);
 									return drawEff > discardEff ? 0 : 1;
 								})()
-							);
+							)
+							.forResult();
 						player.logSkill("jlsg_danjing", event.targets, null, null, [index + 1]);
 						if (index == 0) {
 							await player.loseHp();
