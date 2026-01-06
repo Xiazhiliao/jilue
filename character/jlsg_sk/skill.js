@@ -11993,7 +11993,7 @@ const skills = {
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (card.name != "sha" && get.type(card) != "trick") {
+					if ((card.name != "sha" && get.type(card) != "trick") || !target) {
 						return;
 					}
 					if (player.countCards("h") > target.countCards("h")) {
