@@ -512,95 +512,97 @@ const skills = {
 				given_map = {};
 			let node = get.is.singleHandcard() ? player.node.handcards1 : player.node.handcards2;
 			while (hs.length) {
-				const { targets, cards } = await player.chooseCardTarget({
-					selectCard: [1, hs.length],
-					filterCard(card) {
-						return get.event().hs.includes(card);
-					},
-					filterTarget: lib.filter.notMe,
-					prompt: "激诏：是否将手牌牌分配给其他角色？",
-					prompt2: "获得牌的角色获得一枚“激诏”标记",
-					ai1(card) {
-						const player = get.owner(card),
-							hs = get.event().hs,
-							given = get.event().given;
-						if (!ui.selected.cards.length && get.name(card) == "du") {
-							return 20;
-						}
-						if (ui.selected.cards.length) {
-							return 0;
-						}
-						if (given.length && get.value(hs) < get.value(given)) {
-							return 0;
-						}
-						const plaUseValue = player.getUseValue(card);
-						if (player.hasUseTarget(card) && get.type(card) != "equip") {
-							return game.hasPlayer(current => {
-								if (current == player || get.attitude(player, current) < 0) {
-									return false;
-								}
-								if (current.getUseValue(card) > plaUseValue) {
-									return 10 > get.value(card);
-								}
-								return false;
-							});
-						} else if (!player.hasUseTarget(card)) {
-							if (get.useful(card) < 5) {
-								return game.hasPlayer(current => {
-									return get.attitude(player, current) < 0 && get.value(card) < 5;
-								});
+				const { targets, cards } = await player
+					.chooseCardTarget({
+						selectCard: [1, hs.length],
+						filterCard(card) {
+							return get.event().hs.includes(card);
+						},
+						filterTarget: lib.filter.notMe,
+						prompt: "激诏：是否将手牌牌分配给其他角色？",
+						prompt2: "获得牌的角色获得一枚“激诏”标记",
+						ai1(card) {
+							const player = get.owner(card),
+								hs = get.event().hs,
+								given = get.event().given;
+							if (!ui.selected.cards.length && get.name(card) == "du") {
+								return 20;
 							}
-						}
-						return 0;
-					},
-					ai2(target) {
-						const card = ui.selected.cards[0];
-						const player = get.owner(card),
-							att = get.attitude(player, target);
-						if (!card) {
-							return 0;
-						}
-						if (get.name(card, player) == "du") {
-							if (target.hasSkillTag("nodu")) {
-								return att < 0;
-							} else if (target.hasSkillTag("usedu")) {
-								return att > 0;
-							}
-							return att < 0;
-						}
-						if (att > 0) {
-							let add;
-							if (given_map[target.playerid]?.length) {
-								add = given_map[target.playerid];
-							}
-							if (target.hasJudge("lebu")) {
-								return target.needsToDiscard(add) < 3;
-							} else if (target.isTurnedOver()) {
-								return get.value(card, target) >= get.value(card, player) || target.getUseValue(card) > 0;
-							}
-							if (target.getUseValue(card) > 0 && target.getUseValue(card) > player.getUseValue(card)) {
-								if (!target.isTurnedOver() && !target.hasJudge("lebu")) {
-									if (get.attitude(target, player) >= 3 && get.attitude(player, target) >= 3) {
-										return 11 > get.value(card);
-									}
-								}
-								return target.needsToDiscard(add) < 1;
-							}
-							return target.needsToDiscard() < 3 && 8 > get.value(card);
-						} else {
-							if (given_map[target.playerid]?.length) {
+							if (ui.selected.cards.length) {
 								return 0;
-							} else if (target.hasJudge("lebu")) {
-								return get.value(card, player) <= 5 && card.name != "wuxie";
-							} else if (target.hasSkillTag("nogain")) {
-								return get.value(card, player) <= 5;
 							}
-							return !get.tag(card, "damage") && !get.tag(card, "save") && !get.tag(card, "recover") && get.value(card, player) <= 5;
-						}
-					},
-					hs: hs,
-					given: given,
-				}).forResult();
+							if (given.length && get.value(hs) < get.value(given)) {
+								return 0;
+							}
+							const plaUseValue = player.getUseValue(card);
+							if (player.hasUseTarget(card) && get.type(card) != "equip") {
+								return game.hasPlayer(current => {
+									if (current == player || get.attitude(player, current) < 0) {
+										return false;
+									}
+									if (current.getUseValue(card) > plaUseValue) {
+										return 10 > get.value(card);
+									}
+									return false;
+								});
+							} else if (!player.hasUseTarget(card)) {
+								if (get.useful(card) < 5) {
+									return game.hasPlayer(current => {
+										return get.attitude(player, current) < 0 && get.value(card) < 5;
+									});
+								}
+							}
+							return 0;
+						},
+						ai2(target) {
+							const card = ui.selected.cards[0];
+							const player = get.owner(card),
+								att = get.attitude(player, target);
+							if (!card) {
+								return 0;
+							}
+							if (get.name(card, player) == "du") {
+								if (target.hasSkillTag("nodu")) {
+									return att < 0;
+								} else if (target.hasSkillTag("usedu")) {
+									return att > 0;
+								}
+								return att < 0;
+							}
+							if (att > 0) {
+								let add;
+								if (given_map[target.playerid]?.length) {
+									add = given_map[target.playerid];
+								}
+								if (target.hasJudge("lebu")) {
+									return target.needsToDiscard(add) < 3;
+								} else if (target.isTurnedOver()) {
+									return get.value(card, target) >= get.value(card, player) || target.getUseValue(card) > 0;
+								}
+								if (target.getUseValue(card) > 0 && target.getUseValue(card) > player.getUseValue(card)) {
+									if (!target.isTurnedOver() && !target.hasJudge("lebu")) {
+										if (get.attitude(target, player) >= 3 && get.attitude(player, target) >= 3) {
+											return 11 > get.value(card);
+										}
+									}
+									return target.needsToDiscard(add) < 1;
+								}
+								return target.needsToDiscard() < 3 && 8 > get.value(card);
+							} else {
+								if (given_map[target.playerid]?.length) {
+									return 0;
+								} else if (target.hasJudge("lebu")) {
+									return get.value(card, player) <= 5 && card.name != "wuxie";
+								} else if (target.hasSkillTag("nogain")) {
+									return get.value(card, player) <= 5;
+								}
+								return !get.tag(card, "damage") && !get.tag(card, "save") && !get.tag(card, "recover") && get.value(card, player) <= 5;
+							}
+						},
+						hs: hs,
+						given: given,
+					})
+					.forResult();
 				if (!targets?.length || !cards?.length) {
 					break;
 				}
@@ -3811,23 +3813,8 @@ const skills = {
 			while (player.isDying()) {
 				const cards = Array.from(ui.cardPile.childNodes)
 					.filter(c => player.canSaveCard(c, player))
-					.concat(
-						game
-							.filterPlayer()
-							.map(p => p.getCards("h", c => player.canSaveCard(c, player)))
-							.flat()
-					)
-					.filter(card => {
-						if (trigger?.filterCard) {
-							let filter = trigger.filterCard;
-							if (typeof filter == "function") {
-								return filter(card, player, trigger);
-							} else if (typeof filter == "boolean") {
-								return filter;
-							}
-						}
-						return player.canUse(card, player, false, trigger);
-					});
+					.concat(game.filterPlayer().flatMap(p => p.getCards("h", c => player.canSaveCard(c, player))))
+					.filter(card => ["tao", "jiu", "jlsgqs_mei"].includes(get.name(card)) && player.canUse(card, player, false, trigger));
 				player.logSkill(event.name);
 				const card = cards.randomRemove();
 				if (!card) {
@@ -9270,7 +9257,10 @@ const skills = {
 				} else if (!valid1) {
 					index = 0;
 				} else {
-					({ index } = await target.chooseControlList([`交给${get.translation(player)}${get.cnNumber(cnt)}张牌`, `交给${get.translation(player)}一个技能`], true, () => _status.event.choice).set("choice", cnt != 3 ? 0 : 1).forResult());
+					({ index } = await target
+						.chooseControlList([`交给${get.translation(player)}${get.cnNumber(cnt)}张牌`, `交给${get.translation(player)}一个技能`], true, () => _status.event.choice)
+						.set("choice", cnt != 3 ? 0 : 1)
+						.forResult());
 				}
 				switch (index) {
 					case 0:
@@ -15147,12 +15137,12 @@ const skills = {
 					if (!cards2.length) {
 						return false;
 					}
-					if(evtx == (evtxx.relatedEvent || evtxx.getParent())){
+					if (evtx == (evtxx.relatedEvent || evtxx.getParent())) {
 						cards.addArray(cards2);
-					};
+					}
 				});
 			}
-			return cards.filter(card=>!card.willBeDestroyed("discardPile", get.owner(card), event)).length;
+			return cards.filter(card => !card.willBeDestroyed("discardPile", get.owner(card), event)).length;
 		},
 		forced: true,
 		logTarget: (event, player, triggername, target) => target,
@@ -15180,7 +15170,7 @@ const skills = {
 						}
 					});
 				}
-				cards=cards.filter(card=>!card.willBeDestroyed("discardPile", get.owner(card), trigger))
+				cards = cards.filter(card => !card.willBeDestroyed("discardPile", get.owner(card), trigger));
 				if (cards.length) {
 					await player.gain(cards, "gain2");
 				}
