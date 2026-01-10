@@ -949,29 +949,28 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const card = get.autoViewAs({ name: "sha" }, []),
-				{ player: target } = trigger;
+			const { player: target } = trigger;
 			const result = await player.chooseToCompare(target).forResult();
 			if (result.winner == player) {
 				await player.draw(2);
-				if (player.canUse(card, target, false)) {
-					await player.useCard(card, target, false);
+				if (player.canUse("sha", target, false)) {
+					await player.useCard({ name: "sha", isCard: true }, target, false);
 				}
 			} else {
-				const result = player
+				const result = await player
 					.chooseBool(`威风：是否令${get.translation(target)}摸两张牌并视为对你使用一张【杀】？`)
 					.set("ai", (event, player) => {
 						const trigger = event.getTrigger();
 						const target = trigger.player;
 						const draw = get.effect(target, { name: "draw" }, player, player),
-							sha = get.effect(player, get.autoViewAs({ name: "sha" }, []), target, player);
+							sha = get.effect(player, { name: "sha", isCard: true }, target, player);
 						return draw + sha > 0;
 					})
 					.forResult();
 				if (result?.bool) {
 					await target.draw(2);
-					if (target.canUse(card, player, false)) {
-						await target.useCard(card, player, false);
+					if (target.canUse("sha", player, false)) {
+						await target.useCard({ name: "sha", isCard: true }, player, false);
 					}
 				}
 			}
