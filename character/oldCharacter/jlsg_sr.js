@@ -517,7 +517,7 @@ export default {
 							var chaiTarget = false;
 							for (var i = 0; i < game.players.length; i++) {
 								if (get.attitude(player, game.players[i]) > 0) {
-									if (player != game.players[i] && !game.players[i].get("e", { subtype: get.subtype(button.link) })[0] && get.attitude(player, game.players[i]) > 0) {
+									if (player != game.players[i] && !game.players[i].getCards("e", { subtype: get.subtype(button.link) })[0] && get.attitude(player, game.players[i]) > 0) {
 										equipTarget = true;
 									}
 								}
@@ -716,7 +716,7 @@ export default {
 									cards: links,
 									filterTarget: function (card, player, target) {
 										var cards = lib.skill.jlsg_xionglve2_backup.cards;
-										return player != target && !target.get("e", get.subtype(cards[0])[5]);
+										return player != target && !target.getCards("e", get.subtype(cards[0])[5]);
 									},
 									filterCard: function () {
 										return false;

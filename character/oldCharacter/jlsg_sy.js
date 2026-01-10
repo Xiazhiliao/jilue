@@ -49,12 +49,12 @@ export default {
 								if (game.players.length <= 2) {
 									return 0;
 								}
-								if (target.num("he") < 1) {
+								if (target.countCards("he") < 1) {
 									return 0;
 								}
 								var att = ai.get.attitude(player, target);
 								if (att < 0) {
-									return -target.num("he");
+									return -target.countCards("he");
 								}
 							},
 						},

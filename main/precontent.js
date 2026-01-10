@@ -704,8 +704,8 @@ export async function precontent(config, originalPack) {
 				return c1 > c2;
 			},
 			handcard: function (a, b) {
-				var c1 = a.num("h");
-				var c2 = b.num("h");
+				var c1 = a.countCards("h");
+				var c2 = b.countCards("h");
 				if (c1 == c2) {
 					return jlsg.sort.defense(a, b);
 				}
@@ -721,13 +721,13 @@ export async function precontent(config, originalPack) {
 				return jlsg.getDefenseSha(a) < jlsg.getDefenseSha(b);
 			},
 			threat: function (a, b) {
-				var d1 = a.num("h");
+				var d1 = a.countCards("h");
 				for (var i = 0; i < game.players.length; i++) {
 					if (a.canUse("sha", game.players[i]) && a != game.players[i]) {
 						d1 = d1 + 10 / jlsg.getDefense(game.players[i]);
 					}
 				}
-				var d2 = b.num("h");
+				var d2 = b.countCards("h");
 				for (var i = 0; i < game.players.length; i++) {
 					if (b.canUse("sha", game.players[i]) && b != game.players[i]) {
 						d2 = d2 + 10 / jlsg.getDefense(game.players[i]);
@@ -755,10 +755,10 @@ export async function precontent(config, originalPack) {
 			if (player.countCards("e", "bagua")) {
 				return true;
 			}
-			if (player.hasSkill("bazhen") && !player.get("e", "2")) {
+			if (player.hasSkill("bazhen") && !player.getCards("e", { subtype: "equip2" })) {
 				return true;
 			}
-			if (player.hasSkill("linglong") && !player.get("e", "2")) {
+			if (player.hasSkill("linglong") && !player.getCards("e", { subtype: "equip2" })) {
 				return true;
 			}
 			return false;
@@ -776,7 +776,7 @@ export async function precontent(config, originalPack) {
 			return false;
 		},
 		hasZhuqueEffect: function (player) {
-			var cards = player.get("h");
+			var cards = player.getCards("h");
 			for (var i = 0; i < cards.length; i++) {
 				if (cards[i].name == "sha" && cards[i].nature == "fire") {
 					return true;
@@ -801,7 +801,7 @@ export async function precontent(config, originalPack) {
 			}
 			if (player.hasSkill("qingxi")) {
 				var num = 1;
-				var info = get.info(player.get("e", "1"));
+				var info = get.info(player.getCards("e", { subtype: "equip1" }));
 				if (info && info.distance && info.distance.attackFrom) {
 					num -= info.distance.attackFrom;
 				}
@@ -1060,7 +1060,7 @@ export async function precontent(config, originalPack) {
 			return false;
 		},
 		getViewAsCard: function (card, player) {
-			var skills = player.get("s", true).concat(lib.skill.global);
+			var skills = player.getSkills(true).concat(lib.skill.global);
 			game.expandSkills(skills);
 			var list = [];
 			for (var i = 0; i < skills.length; i++) {
@@ -1076,7 +1076,7 @@ export async function precontent(config, originalPack) {
 			return null;
 		},
 		getSkillViewCard: function (card, name, player, place) {
-			var skills = player.get("s", true).concat(lib.skill.global);
+			var skills = player.getSkills(true).concat(lib.skill.global);
 			game.expandSkills(skills);
 			for (var i = 0; i < skills.length; i++) {
 				var ifo = get.info(skills[i]);
@@ -1099,13 +1099,13 @@ export async function precontent(config, originalPack) {
 		getCardPlace: function (card) {
 			var owner = get.owner(card);
 			if (owner) {
-				if (owner.get("h").includes(card)) {
+				if (owner.getCards("h").includes(card)) {
 					return "h";
 				}
-				if (owner.get("e").includes(card)) {
+				if (owner.getCards("e").includes(card)) {
 					return "e";
 				}
-				if (owner.get("j").includes(card)) {
+				if (owner.getCards("j").includes(card)) {
 					return "j";
 				}
 				return "s";
@@ -1153,7 +1153,7 @@ export async function precontent(config, originalPack) {
 				forbid = true;
 			}
 			from = from || _status.event.player;
-			var cards = player.get(flags);
+			var cards = player.getCards(flags);
 			var know = 0;
 			for (var i = 0; i < cards.length; i++) {
 				var card = cards[i];
@@ -1182,7 +1182,7 @@ export async function precontent(config, originalPack) {
 			}
 			if (attacker.hasSkill("reliegong")) {
 				var num = 0;
-				if (player.countCards("h") >= attacker.num("h")) {
+				if (player.countCards("h") >= attacker.countCards("h")) {
 					num++;
 				}
 				if (player.hp >= attacker.hp) {
@@ -1242,7 +1242,7 @@ export async function precontent(config, originalPack) {
 			}
 			var jlsgsr_zhangliao = jlsg.findPlayerBySkillName("jlsg_yansha");
 			if (jlsgsr_zhangliao && jlsgsr_zhangliao.storage.jlsg_yansha2 && jlsgsr_zhangliao.storage.jlsg_yansha2.length) {
-				if (jlsg.isFriend(player, jlsgsr_zhangliao) && get.attitude(jlsgsr_zhangliao, attacker) < 0 && attacker.num("he")) {
+				if (jlsg.isFriend(player, jlsgsr_zhangliao) && get.attitude(jlsgsr_zhangliao, attacker) < 0 && attacker.countCards("he")) {
 					defense += 0.5;
 				}
 			}
@@ -1365,14 +1365,14 @@ export async function precontent(config, originalPack) {
 
 			var defense = jlsg.getValue(player);
 
-			if (player.get("e", "2")) {
+			if (player.getCards("e", { subtype: "equip2" })) {
 				defense += 2;
 			}
-			if (player.get("e", "3")) {
+			if (player.getCards("e", { subtype: "equip3" })) {
 				defense++;
 			}
-			if (player.countCards("e", "muniu") && player.get("e", "5").cards) {
-				defense += player.get("e", "5").cards.length;
+			if (player.countCards("e", "muniu") && player.getCards("e", { subtype: "equip5" }).cards) {
+				defense += player.getCards("e", { subtype: "equip5" }).cards.length;
 			}
 
 			if (jlsg.hasBaguaEffect(player)) {
@@ -1524,7 +1524,7 @@ export async function precontent(config, originalPack) {
 
 			defense = defense + (game.players.length - (get.distance(player, _status.currentPhase, "absolute") % game.players.length)) / 4;
 
-			defense = defense + player.get("s").length * 0.25;
+			defense = defense + player.getSkills().length * 0.25;
 
 			return defense;
 		},
@@ -1711,9 +1711,9 @@ export async function precontent(config, originalPack) {
 			if (player == undefined || get.itemtype(player) != "player") {
 				player = _status.event.player;
 			}
-			var cards = player.get("h");
-			if (player.countCards("e", "muniu") && player.get("e", "5").cards && player.get("e", "5").cards.length) {
-				cards = cards.concat(player.get("e", "5").cards);
+			var cards = player.getCards("h");
+			if (player.countCards("e", "muniu") && player.getCards("e", { subtype: "equip5" }).cards && player.getCards("e", { subtype: "equip5" }).cards.length) {
+				cards = cards.concat(player.getCards("e", { subtype: "equip5" }).cards);
 			}
 			var num = 0,
 				shownum = 0,
@@ -1793,7 +1793,7 @@ export async function precontent(config, originalPack) {
 					}
 				}
 			}
-			var ecards = player.get("e");
+			var ecards = player.getCards("e");
 			for (var i = 0; i < ecards.length; i++) {
 				var card = ecards[i];
 				equipcard++;

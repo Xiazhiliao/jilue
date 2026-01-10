@@ -808,7 +808,7 @@ const skills = {
 			order: 9.5,
 			result: {
 				target: function (player, target) {
-					if (target.num("h") < 3) {
+					if (target.countCards("h") < 3) {
 						return 0;
 					}
 					return -jlsg.relu(get.attitude(player, target));

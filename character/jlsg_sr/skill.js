@@ -556,7 +556,7 @@ const skills = {
 			order: 9,
 			result: {
 				player: function (player) {
-					if (player.num("h") > player.hp) {
+					if (player.countCards("h") > player.hp) {
 						return 1;
 					}
 					if (jlsg.hasLoseHandcardEffective(player)) {
@@ -2875,7 +2875,7 @@ const skills = {
 					}
 					let value = 0,
 						i;
-					let cards = player.get("h");
+					let cards = player.getCards("h");
 					for (i = 0; i < cards.length; i++) {
 						value += get.value(cards[i]);
 					}

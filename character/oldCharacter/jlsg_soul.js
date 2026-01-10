@@ -627,7 +627,7 @@ export default {
 					content: function () {
 						"step 0"
 						var num = target.countCards("h");
-						target.discard(target.get("h"));
+						target.discard(target.getCards("h"));
 						target.draw(num);
 						target.showHandcards();
 						"step 1"
@@ -637,7 +637,7 @@ export default {
 						// var num = target.countCards('h', function (card) {
 						//   return get.type(card) != 'basic';
 						// });
-						// target.discard(target.get('h', function (card) {
+						// target.discard(target.getCards('h', function (card) {
 						//   return get.type(card) != 'basic';
 						// }));
 						if (cards.length) {
@@ -669,7 +669,7 @@ export default {
 							return player != target && trigger.player != target;
 						}).ai = function (target) {
 							// if (trigger.card.name == 'sha') {
-							//   if (target.countCards('e', '2') && target.get('e') != 'baiyin') return 0;
+							//   if (target.countCards('e', '2') && target.getCards('e') != 'baiyin') return 0;
 							//   return -get.attitude(player, target);
 							// }
 							// if (trigger.card.name == 'tao') {
@@ -799,7 +799,7 @@ export default {
 								if (player.countCards("h", "juedou") > 0) {
 									return 2;
 								}
-								var ph = player.get("h");
+								var ph = player.getCards("h");
 								var num = 0;
 								for (var i = 0; i < ph.length; i++) {
 									if (get.tag(ph[i], "damage")) {
@@ -840,9 +840,9 @@ export default {
 						"step 2"
 						if (event.targets2.length) {
 							var cur = event.targets2.shift();
-							if (cur && cur.num("he")) {
-								if (cur.num("e")) {
-									cur.discard(cur.get("e"));
+							if (cur && cur.countCards("he")) {
+								if (cur.countCards("e")) {
+									cur.discard(cur.getCards("e"));
 								}
 								cur.chooseToDiscard("h", true, 4);
 							}
@@ -1071,7 +1071,7 @@ export default {
 					filter: function (event, player) {
 						var num = player.countCards("h");
 						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].num("h") > num) {
+							if (game.players[i].countCards("h") > num) {
 								return false;
 							}
 						}
@@ -1229,7 +1229,7 @@ export default {
 						order: 6,
 						result: {
 							player: function (player) {
-								var cards = player.get("he");
+								var cards = player.getCards("he");
 								var suits = [];
 								for (var i = 0; i < cards.length; i++) {
 									if (!suits.includes(get.suit(cards[i]))) {
