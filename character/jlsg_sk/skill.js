@@ -19907,6 +19907,181 @@ const skills = {
 		},
 	},
 	*/
+	jlsg_qingyuan: {
+		audio: "ext:极略/audio/skill:2",
+		onremove(player, skill) {
+			if (
+				!game.hasPlayer(current => {
+					return current != player && current.hasSkill(skill, null, false, false);
+				}, true)
+			) {
+				for (let current of game.players) {
+					target.clearMark(skill);
+				}
+			}
+		},
+		intro: {
+			content: "mark",
+		},
+		trigger: {
+			global: "roundStart",
+		},
+		filter(event, player) {
+			return game.hasPlayer(current => current != player && !current.hasMark("jlsg_qingyuan"));
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(`###${get.prompt(event.skill)}###清除场上所有“轻缘”标记并令一名其他角色获得“轻缘”标记`)
+				.set("filterTarget", (_, player, target) => target != player && !target.hasMark("jlsg_qingyuan"))
+				.set("ai", target => -get.attitude(get.player(), target) * (target.countCards("h") + 0.1))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await game.doAsyncInOrder(game.players, target => {
+				if (target.hasMark("jlsg_qingyuan")) {
+					target.clearMark("jlsg_qingyuan");
+				}
+			});
+			const [target] = event.targets;
+			target.addMark(event.name);
+			player.setStorage("jlsg_qingyuan_gain", [target, 0], true);
+		},
+		group: ["jlsg_qingyuan_gain", "jlsg_qingyuan_phaseEnd"],
+		subSkill: {
+			gain: {
+				audio: "jlsg_qingyuan",
+				trigger: {
+					global: ["gainAfter", "loseAsyncAfter"],
+				},
+				getIndex(event, player) {
+					return game.filterPlayer2(current => (event.getg?.(current) ?? []).length);
+				},
+				filter(event, player, triggername, target) {
+					if (!target?.hasMark("jlsg_qingyuan")) {
+						return false;
+					}
+					if (["draw", "gainPlayerCard"].includes(event.getParent().name)) {
+						if (event.getParent(2).name == "jlsg_qingyuan_gain") {
+							return false;
+						}
+					}
+					return (event.getg?.(target) ?? []).length;
+				},
+				forced: true,
+				locked: false,
+				logTarget: (event, player, triggername, target) => target,
+				async content(event, trigger, player) {
+					const [target] = event.targets;
+					await player.draw();
+					let num = player.getStorage(event.name, [target, 0])[1];
+					if (target.isIn() && player.countCards("h") <= target.countCards("h") && target.countGainableCards(player, "he")) {
+						await player.gainPlayerCard(target, "he", true);
+						num++;
+						player.setStorage(event.name, [target, num], true);
+					}
+				},
+			},
+			phaseEnd: {
+				audio: "jlsg_qingyuan",
+				trigger: {
+					global: "phaseEnd",
+				},
+				filter(event, player) {
+					return event.player.hasMark("jlsg_qingyuan") && event.player.isIn();
+				},
+				async cost(event, trigger, player) {
+					let [target, num] = player.getStorage("jlsg_qingyuan_gain", [null, 0]);
+					if (trigger.player != target) {
+						num = 0;
+					}
+					num = Math.min(num, 3);
+					event.result = await player
+						.chooseBool(`###${get.prompt(event.skill, trigger.player)}###移去其“轻缘”标记${num ? `并令其失去${num}点体力` : ""}`)
+						.set("ai", (event, player) => {
+							const { target, num } = get.event();
+							if (num > 0) {
+								return get.effect(target, { name: "losehp" }, player, player) > 0;
+							}
+							return get.attitude(player, target) > 0;
+						})
+						.set("target", trigger.player)
+						.set("num", num)
+						.forResult();
+					if (event.result?.bool) {
+						event.result.targets = [trigger.player];
+					}
+				},
+				async content(event, trigger, player) {
+					let [target] = event.targets,
+						[, num] = player.getStorage("jlsg_qingyuan_gain", [null, 0]);
+					player.setStorage("jlsg_qingyuan_gain", [null, 0], true);
+					num = Math.min(num, 3);
+					target.clearMark("jlsg_qingyuan");
+					if (num > 0) {
+						await target.loseHp(num);
+					}
+				},
+			},
+		},
+	},
+	jlsg_chongshen: {
+		audio: "ext:极略/audio/skill:2",
+		enable: "chooseToUse",
+		filter(event, player) {
+			return event.filterCard(get.autoViewAs({ name: "tao" }, "unsure"), player, event) && player.countCards("hes", { color: "red" });
+		},
+		viewAs: {
+			name: "tao",
+		},
+		position: "hes",
+		filterCard(card, player) {
+			return get.color(card) == "red";
+		},
+		check(card) {
+			return 10 - get.value(card);
+		},
+		group: "jlsg_chongshen_give",
+		subSkill: {
+			give: {
+				audio: "jlsg_chongshen",
+				trigger: {
+					player: "useCardAfter",
+				},
+				filter(event, player) {
+					if (event.skill != "jlsg_chongshen") {
+						return false;
+					} else if (_status.currentPhase == player) {
+						return false;
+					} else if (!game.hasPlayer(current => current != player)) {
+						return false;
+					}
+					return event.cards.someInD("od");
+				},
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget(`###${get.prompt(event.skill)}###将${get.translation(trigger.cards.filterInD("od"))}交给一名其他角色`)
+						.set("filterTarget", (_, player, target) => target != player)
+						.set("ai", target => {
+							const { player, cards } = get.event();
+							return get.value(cards, target) * get.attitude(player, target);
+						})
+						.set("cards", trigger.cards.filterInD("od"))
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const [target] = event.targets,
+						cards = trigger.cards.filterInD("od");
+					await target.gain(cards, "gian2");
+				},
+			},
+		},
+		ai: {
+			order(item, player) {
+				player = player || get.player();
+				return get.order({ name: "tao" }, player) + 0.1;
+			},
+		},
+	},
 };
 
 export default skills;
