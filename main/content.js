@@ -158,25 +158,6 @@ const b = 1;
 
 	// 评级
 	if (lib.rank) {
-		var retrieveFromTierMaker = function () {
-			var result = $(".tier.sort").map(function () {
-				var res = $(this)
-					.children()
-					.map(function () {
-						return $(this)
-							.css("background-image")
-							.match(/jlsg\w+(?=jpg)/);
-					});
-				return res;
-			});
-			result = result.toArray().map(ss => ss.toArray());
-			var ranks = ["s", "ap", "a", "am", "bp", "b", "bm", "c", "d"];
-			var A = {};
-			for (var i = 0; i != result.length; ++i) {
-				A[ranks[i]] = result[i];
-			}
-			return JSON.stringify(A);
-		};
 		var rank = {
 			s: ["jlsgsoul_diaochan", "jlsgsoul_guojia", "jlsgsoul_simahui", "jlsgsoul_simayi", "jlsgsoul_zhaoyun", "jlsgsoul_sunquan", "jlsgsr_huangyueying", "jlsgsoul_huangyueying", "jlsgsoul_sp_zhugeliang", "jlsgsk_caiwenji", "jlsgsoul_ganning", "jlsgsoul_sp_lvbu", "jlsgsoul_xiahoudun", "jlsgsk_xiahoushi", "jlsgsk_sundeng", "jlsgsk_wuxian", "jlsgsoul_xuzhu", "jlsgsoul_sp_ganning", "jlsgsk_hetaihou", "jlsgsoul_sp_diaochan", "jlsgsk_shamoke", "jlsgsk_zhaoyan", "jlsgsoul_sp_huangyueying", "jlsgsk_caoying", "jlsgsoul_caoren", "jlsgsoul_sp_simayi", "jlsgsk_nanhualaoxian", "jlsgsoul_caopi", "jlsgsk_wanniangongzhu"],
 			ap: ["jlsgsr_lvbu", "jlsgsoul_caocao", "jlsgsoul_dianwei", "jlsgsoul_jiaxu", "jlsgsoul_guanyu", "jlsgsoul_liubei", "jlsgsoul_zhugeliang", "jlsgsoul_lvmeng", "jlsgsoul_luxun", "jlsgsoul_sunshangxiang", "jlsgsoul_zhenji", "jlsgsoul_huanggai", "jlsgsr_zhenji", "jlsgsr_sunshangxiang", "jlsgsr_lvmeng", "jlsgsr_luxun", "jlsgsr_daqiao", "jlsgsk_dongzhuo", "jlsgsk_guonvwang", "jlsgsoul_zhangliao", "jlsgsk_xizhicai", "jlsgsk_xushi", "jlsgsk_caorui", "jlsgsk_sunxiu", "jlsgsk_zhangrang", "jlsgsk_xinxianying", "jlsgsoul_sp_zhangliao", "jlsgsk_liuyan", "jlsgsk_lvfan", "jlsgsoul_xiaoqiao", "jlsgsk_sslh_zhenji", "jlsgsk_zhongyao", "jlsgsk_huanghao", "jlsgsk_huaman", "jlsgsk_wangyuanji", "jlsgsk_zhangchangpu"],
@@ -190,189 +171,171 @@ const b = 1;
 			rarity: {
 				legend: [
 					// 传说
+					"jlsgsk_baosanniang",
+					"jlsgsk_beimihu",
+					"jlsgsk_caochun",
+					"jlsgsk_caojinyu",
+					"jlsgsk_caoying",
+					"jlsgsk_chengyu",
+					"jlsgsk_dongbai",
+					"jlsgsk_duyu",
+					"jlsgsk_gexuan",
+					"jlsgsk_guansuo",
+					"jlsgsk_guohuanghou",
+					"jlsgsk_hetaihou",
+					"jlsgsk_huaman",
+					"jlsgsk_huangchengyan",
+					"jlsgsk_liuyan",
+					"jlsgsk_lvfan",
+					"jlsgsk_mayunlu",
+					"jlsgsk_nanhualaoxian",
+					"jlsgsk_panshu",
+					"jlsgsk_qinmi",
+					"jlsgsk_shamoke",
+					"jlsgsk_sundeng",
+					"jlsgsk_sunliang",
+					"jlsgsk_sunru",
+					"jlsgsk_sunxiu",
+					"jlsgsk_tianfeng",
+					"jlsgsk_wanglang",
+					"jlsgsk_wangyuanji",
+					"jlsgsk_wenyang",
+					"jlsgsk_wuxian",
+					"jlsgsk_xiahoushi",
+					"jlsgsk_xinxianying",
+					"jlsgsk_xizhicai",
+					"jlsgsk_yanghuiyu",
+					"jlsgsk_yangwan",
 					"jlsgsk_yuji",
-					"jlsgsk_jdjg_sunshangxiang",
-					"jlsgsk_syqj_guanyu",
-					"jlsgsk_sslh_zhenji",
-					"jlsgsk_spwq_lvbu",
-					"jlsgsk_wanniangongzhu",
+					"jlsgsk_zhangchangpu",
+					"jlsgsk_zhangliang",
+					"jlsgsk_zhanglu",
+					"jlsgsk_zhangning",
+					"jlsgsk_zhangrang",
+					"jlsgsk_zhaoxiang",
+					"jlsgsk_zhaoyan",
+					"jlsgsk_zhouyi",
+					"jlsgsk_zhugedan",
+					"jlsgsk_zhugeguo",
+					"jlsgsk_zhugezhan",
+					"jlsgsk_zoushi",
+					"jlsgsk_zuoci",
 				],
 				epic: [
 					// 史诗
-					"jlsgsk_zhangning",
-					"jlsgsk_dongyun",
-					"jlsgsk_tianfeng",
-					"jlsgsk_jiangqin",
-					"jlsgsk_zuoci",
-					"jlsgsk_heqi",
-					"jlsgsk_guanxing",
-					"jlsgsk_sunqian",
-					"jlsgsk_zhangbao",
+					"jlsgsk_caoxiu",
+					"jlsgsk_cenhun",
+					"jlsgsk_chenqun",
+					"jlsgsk_chenshi",
 					"jlsgsk_dongzhuo",
-					"jlsgsk_zhanglu",
-					"jlsgsk_quancong",
-					"jlsgsk_chengyu",
+					"jlsgsk_gongsunyuan",
+					"jlsgsk_guanlu",
+					"jlsgsk_guanxing",
+					"jlsgsk_guohuai",
+					"jlsgsk_heqi",
+					"jlsgsk_huanghao",
+					"jlsgsk_jiangqin",
+					"jlsgsk_jushou",
+					"jlsgsk_kongrong",
 					"jlsgsk_kuaiyue",
+					"jlsgsk_lingcao",
+					"jlsgsk_liuchen",
+					"jlsgsk_lukang",
 					"jlsgsk_luzhi",
-					"jlsgsk_zoushi",
-					"jlsgsk_wuyi",
-					"jlsgsk_zhangliang",
-					"jlsgsk_panshu",
-					"jlsgsk_caorui",
-					"jlsgsk_mifuren",
-					"jlsgsk_caiwenji",
-					"jlsgsk_guansuo",
-					"jlsgsk_baosanniang",
-					"jlsgsk_dongbai",
-					"jlsgsk_sunxiu",
-					"jlsgsk_zhangrang",
-					"jlsgsk_xiahoushi",
-					"jlsgsk_sundeng",
-					"jlsgsk_xinxianying",
-					"jlsgsk_wuxian",
-					"jlsgsk_wanglang",
-					"jlsgsk_zhugezhan",
-					"jlsgsk_guohuanghou",
-					"jlsgsk_zhaoxiang",
-					"jlsgsk_lvfan",
-					"jlsgsk_hetaihou",
-					"jlsgsk_zhaoyan",
-					"jlsgsk_beimihu",
-					"jlsgsk_caoying",
-					"jlsgsk_mayunlu",
-					"jlsgsk_nanhualaoxian",
-					"jlsgsk_jiangwei",
-					"jlsgsk_huaman",
-					"jlsgsk_pangtong",
-					"jlsgsk_wangyuanji",
-					"jlsgsk_zhangchangpu",
+					"jlsgsk_lvkai",
+					"jlsgsk_panzhang",
+					"jlsgsk_simashi",
+					"jlsgsk_simazhao",
+					"jlsgsk_sunhao",
+					"jlsgsk_sunqian",
+					"jlsgsk_tadun",
+					"jlsgsk_wutugu",
+					"jlsgsk_xushi",
+					"jlsgsk_yangxiu",
+					"jlsgsk_yanjun",
+					"jlsgsk_yanyan",
+					"jlsgsk_yujin",
+					"jlsgsk_zhangbao",
+					"jlsgsk_zhangbu",
+					"jlsgsk_zhangyi",
+					"jlsgsk_zhongyao",
+					"jlsgsk_zhoufei",
+					"jlsgsk_zhugejin",
+					"jlsgsk_zhuzhi",
 				],
 				rare: [
 					// 稀有
-					"jlsgsk_simashi",
-					"jlsgsk_xianglang",
-					"jlsgsk_luji",
-					"jlsgsk_bianfuren",
-					"jlsgsk_mateng",
-					"jlsgsk_feiyi",
-					"jlsgsk_dongxi",
-					"jlsgsk_yujin",
-					"jlsgsk_panfeng",
-					"jlsgsk_zhangbu",
-					"jlsgsk_maliang",
+					"jlsgsk_buzhi",
 					"jlsgsk_chendao",
-					"jlsgsk_zhuran",
-					"jlsgsk_lukang",
-					"jlsgsk_zhoutai",
-					"jlsgsk_kongrong",
-					"jlsgsk_caochong",
-					"jlsgsk_simazhao",
-					"jlsgsk_yangxiu",
-					"jlsgsk_sunhao",
-					"jlsgsk_zhugejin",
-					"jlsgsk_zhangxiu",
-					"jlsgsk_sunluyu",
-					"jlsgsk_yuji",
-					"jlsgsk_guonvwang",
-					"jlsgsk_zhangren",
+					"jlsgsk_dongxi",
+					"jlsgsk_dongyun",
+					"jlsgsk_jiping",
+					"jlsgsk_luji",
+					"jlsgsk_lvlingqi",
+					"jlsgsk_maliang",
+					"jlsgsk_mateng",
+					"jlsgsk_mifuren",
 					"jlsgsk_mizhu",
-					"jlsgsk_zangba",
-					"jlsgsk_hejin",
+					"jlsgsk_quancong",
+					"jlsgsk_sunluyu",
+					"jlsgsk_wangping",
 					"jlsgsk_wangyi",
-					"jlsgsk_guanyu",
-					"jlsgsk_yanliang",
-					"jlsgsk_machao",
-					"jlsgsk_xushi",
-					"jlsgsk_zhoufei",
-					"jlsgsk_liuchen",
-					"jlsgsk_caoxiu",
-					"jlsgsk_caojie",
-					"jlsgsk_zhuzhi",
-					"jlsgsk_jushou",
-					"jlsgsk_sunliang",
-					"jlsgsk_wenyang",
-					"jlsgsk_yanyan",
-					"jlsgsk_sunru",
-					"jlsgsk_liuyan",
-					"jlsgsk_gongsunyuan",
-					"jlsgsk_chenqun",
-					"jlsgsk_zhangyi",
-					"jlsgsk_caochun",
-					"jlsgsk_shamoke",
-					"jlsgsk_lingcao",
-					"jlsgsk_wutugu",
-					"jlsgsk_zhongyao",
-					"jlsgsk_huanghao",
-					"jlsgsk_lvdai",
+					"jlsgsk_xuyou",
+					"jlsgsk_zhangren",
+					"jlsgsk_zhangxiu",
+					"jlsgsk_zhoutai",
+					"jlsgsk_zhuran",
 				],
 				junk: [
 					// 平凡
-					"jlsgsk_xuyou",
-					"jlsgsk_wangping",
 					"jlsgsk_caoren",
-					"jlsgsk_huaxiong",
-					"jlsgsk_sunce",
 					"jlsgsk_dengzhi",
-					"jlsgsk_zumao",
-					"jlsgsk_gongsunzan",
-					"jlsgsk_buzhi",
-					"jlsgsk_jiping",
-					"jlsgsk_miheng",
-					"jlsgsk_liyan",
-					"jlsgsk_huangyueying",
-					"jlsgsk_zhoucang",
 					"jlsgsk_dingfeng",
-					"jlsgsk_lvlingqi",
-					"jlsgsk_guanlu",
-					"jlsgsr_machao",
-					"jlsgsk_panzhang",
+					"jlsgsk_feiyi",
+					"jlsgsk_gongsunzan",
+					"jlsgsk_hejin",
+					"jlsgsk_huaxiong",
+					"jlsgsk_liyan",
+					"jlsgsk_panfeng",
+					"jlsgsk_sunce",
+					"jlsgsk_yanliang",
+					"jlsgsk_zangba",
+					"jlsgsk_zhoucang",
 				],
 			},
 		};
 		// soul characters reside in the highest rarity rank
-		for (var name of Object.keys(lib.characterPack["jlsg_soul"])) {
+		for (let name of Object.keys(lib.characterPack["jlsg_soul"])) {
 			if (!Object.keys(rank.rarity).some(rarity => rank.rarity[rarity].includes(name))) {
 				rank.rarity.legend.push(name);
 			}
 		}
-		// sr characters drop a rank if srlose is enabled
-		for (var name of Object.keys(lib.characterPack["jlsg_sr"])) {
+		// skpf characters reside in the highest rarity rank
+		for (let name of Object.keys(lib.characterPack["jlsg_skpf"])) {
 			if (!Object.keys(rank.rarity).some(rarity => rank.rarity[rarity].includes(name))) {
-				rank.rarity.rare.push(name);
+				rank.rarity.legend.push(name);
 			}
-			if (config.srlose) {
-				var ranks = Object.keys(rank);
-				ranks.pop();
-				for (var i = 0; i != ranks.length; ++i) {
-					var theRank = ranks[i];
-					var nameIdx = rank[theRank].indexOf(name);
-					if (nameIdx != -1 && theRank != "d") {
-						rank[theRank].splice(nameIdx, 1);
-						if (name == "jlsgsr_lvbu") {
-							rank.b.push(name);
-						} else {
-							rank[ranks[i + 1]].push(name);
-						}
-						break;
-					}
-				}
-			} // config.srlose
-		} // jlsg_sr
-		var addRank = function (rank) {
+		}
+		// sy characters reside in the highest rarity rank
+		for (let name of Object.keys(lib.characterPack["jlsg_sy"])) {
+			if (!Object.keys(rank.rarity).some(rarity => rank.rarity[rarity].includes(name))) {
+				rank.rarity.legend.push(name);
+			}
+		}
+		let addRank = function (rank) {
 			if (!lib.rank) {
 				return;
 			}
-			for (var i in rank) {
+			for (let i in rank) {
 				if (i == "rarity") {
 					continue;
 				}
+				lib.rank[i] ??= [];
 				lib.rank[i].addArray(rank[i]);
 			}
 			if (rank.rarity && lib.rank.rarity) {
-				for (var i in rank.rarity) {
-					if (lib.rank.rarity[i] === undefined) {
-						lib.rank.rarity[i] = [];
-					}
+				for (let i in rank.rarity) {
+					lib.rank.rarity[i] ??= [];
 					lib.rank.rarity[i].addArray(rank.rarity[i]);
 				}
 			}
