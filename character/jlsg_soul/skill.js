@@ -2528,7 +2528,7 @@ const skills = {
 			syncMark(loser);
 			gainer.addMark("jlsg_nizhan");
 			syncMark(gainer);
-			if (loser.canUse("sha", false, false)) {
+			if (loser.canUse("sha", gainer, false, false)) {
 				await loser.useCard({ name: "sha", isCard: true }, gainer, "noai", false);
 			}
 		},
