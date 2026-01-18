@@ -17,16 +17,18 @@ Visit Repository</a><br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
 汇报bug点我</span><br>
-2025.05.26更新<br>
-&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="qunmm">SK葛玄</div><br>
-&ensp; 修复bug（观虚、羽化、星舞、同心、暴怒、离魂、储元、天辩）<br>
-&ensp; 优化技能（搏战、忠侯）<br>
-&ensp; 添加extension.css以适配后续武将使用“临时牌”样式<br>
-&ensp; 对srlose规则进行调整<br>
-&ensp; 对SR包和SK包内的武将姓名进行补充/更正<br>
-&ensp; 对SR武将进行翻修（张辽、甄姬、许诸、司马懿、郭嘉、吕布、华佗、貂蝉、孙尚香、大乔、黄盖、吕蒙）<br>
-&ensp; 从extension.js中拆分help，并补充相关信息（许愿、临时牌）<br>
-<span style="font-size: large;">历史：</span><br>
+2025.12.06更新<br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="orangemm">SK陈式</div><br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="woodmm">SK滕公主</div><br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="qunmm">SP太史慈</div><br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SP神甄姬</div><br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">SK神董卓</div><br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="thundermm">魔袁术</div><br>
+&ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="firemm">刘备·龙横蜀汉</div><br>
+&ensp; 将武将包进一步拆分<br>
+&ensp; 将“负面效果”相关内容拆分<br>
+&ensp; 重写“七杀包规则重构”<br>
+&ensp; 修复若干bug<br>
 `;
 
 export let type = "extension";
