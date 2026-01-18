@@ -2159,7 +2159,7 @@ const skills = {
 						if (target.getHp() > 1) {
 							return;
 						}
-						if (get.tag(card, "damage") || get.tag(card, "losehp")) {
+						if (get.tag(card, "damage") || get.tag(card, "loseHp")) {
 							return [1, 2];
 						}
 					} else if (get.tag(card, "recover")) {
