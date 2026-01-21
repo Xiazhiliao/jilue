@@ -303,7 +303,7 @@ export default {
 						_status.jlsg_xinghan_init = true;
 						Object.defineProperty(_status, "jlsg_xinghan_compact", {
 							enumerable: true,
-							configurable: true,
+							wuyu_kangxing: true,
 							get() {
 								let result = game.hasPlayer(p => p.getSkills(null, false, false).some(s => s != "jlsg_xinghan" && lib.skill[s].changeSeat));
 								delete this.jlsg_xinghan_compact;

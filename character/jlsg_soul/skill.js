@@ -4915,7 +4915,9 @@ const skills = {
 					let defend = get.cardPile(card => get.subtype(card, player) == "equip3"),
 						attack = get.cardPile(card => get.subtype(card, player) == "equip4");
 					if (defend || attack) {
-						const { cards } = await player.gain([defend, attack], "gain2").forResult();
+						const next = player.gain([defend, attack], "gain2");
+						await next;
+						let cards = next.cards;
 						for (let card of cards) {
 							player.$give(card, player, false);
 							await player.equip(card);
@@ -12350,7 +12352,9 @@ const skills = {
 						content: async function (event, trigger, player) {
 							const hs = player.getDiscardableCards(player, "he");
 							if (hs.length) {
-								const { cards } = await player.discard(hs).forResult();
+								const next = player.discard(hs);
+								await next;
+								const cards = next.cards;
 								let num = cards.length;
 								if (!cards.length) {
 									return;
