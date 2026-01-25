@@ -12757,8 +12757,7 @@ const skills = {
 						if (!event.getParent("jlsg_caiyu") && !event.addSkill.length) {
 							return false;
 						}
-						let ss = game.expandSkills(event.addSkill);
-						for (let s of ss) {
+						for (let s of event.addSkill) {
 							if (!lib.skill[s] || !lib.skill[s].trigger) {
 								continue;
 							}
@@ -12791,20 +12790,17 @@ const skills = {
 						}
 					} else {
 						let skills = trigger.addSkill.filter(i => {
-							let ss = game.expandSkills([i]);
-							for (let s of ss) {
-								if (!lib.skill[s] || !lib.skill[s].trigger) {
-									continue;
+							if (!lib.skill[i] || !lib.skill[i].trigger) {
+								return false;
+							}
+							let tri = lib.skill[i].trigger;
+							if (tri.player) {
+								if (typeof tri.player == "string") {
+									tri.player = [tri.player];
 								}
-								let tri = lib.skill[s].trigger;
-								if (tri.player) {
-									if (typeof tri.player == "string") {
-										tri.player = [tri.player];
-									}
-									if (Array.isArray(tri.player)) {
-										if (tri.player.includes("enterGame")) {
-											return true;
-										}
+								if (Array.isArray(tri.player)) {
+									if (tri.player.includes("enterGame")) {
+										return true;
 									}
 								}
 							}

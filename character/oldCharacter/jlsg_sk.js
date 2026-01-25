@@ -141,18 +141,21 @@ export default {
 						return target.countDiscardableCards(player, "hej");
 					},
 					async content(event, trigger, player) {
-						const result = await player.discardPlayerCard(event.target, "hej", true).set("ai", button => {
-							const event = get.event(),
-								card = button.link,
-								player = get.player();
-							const target = event.getParent().target,
-								position = get.position(card);
-							let eff = get.value(card) * -get.sgnAttitude(player, target);
-							if (position != "h") {
-								eff += target.getUseValue("nanman");
-							}
-							return eff;
-						}).forResult();
+						const result = await player
+							.discardPlayerCard(event.target, "hej", true)
+							.set("ai", button => {
+								const event = get.event(),
+									card = button.link,
+									player = get.player();
+								const target = event.getParent().target,
+									position = get.position(card);
+								let eff = get.value(card) * -get.sgnAttitude(player, target);
+								if (position != "h") {
+									eff += target.getUseValue("nanman");
+								}
+								return eff;
+							})
+							.forResult();
 						if (result?.bool && result?.links?.length) {
 							const card = result.links[0];
 							if (get.type(card) != "basic") {
@@ -251,7 +254,7 @@ export default {
 							.set("targets", trigger.targets)
 							.set("card", trigger.card)
 							.set("user", trigger.player);
-						"step 1";
+						("step 1");
 						if (result.bool) {
 							if (!event.isMine() && !event.isOnline()) {
 								game.delayx();
@@ -260,7 +263,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						"step 2";
+						("step 2");
 						player.logSkill(event.name, event.targets);
 						for (let p of event.targets) {
 							if (player.ai.shown < p.ai.shown) {
@@ -303,7 +306,7 @@ export default {
 						_status.jlsg_xinghan_init = true;
 						Object.defineProperty(_status, "jlsg_xinghan_compact", {
 							enumerable: true,
-							wuyu_kangxing: true,
+							configurable: true,
 							get() {
 								let result = game.hasPlayer(p => p.getSkills(null, false, false).some(s => s != "jlsg_xinghan" && lib.skill[s].changeSeat));
 								delete this.jlsg_xinghan_compact;
@@ -823,7 +826,7 @@ export default {
 							choice = choices.length - 1;
 						}
 						player.chooseControl(choices).set("prompt", get.prompt2(event.name)).set("choice", choice);
-						"step 1";
+						("step 1");
 						if (result.control == "cancel2") {
 							event.finish();
 							return;
@@ -842,13 +845,13 @@ export default {
 								player.loseMaxHp(-event.diff);
 							}
 						}
-						"step 2";
+						("step 2");
 						if (player.hp <= 0 && player.maxHp > 0) {
 							game.delayx();
 							event._dyinged = true;
 							player.dying(event);
 						}
-						"step 3";
+						("step 3");
 						player.draw(Math.abs(event.diff));
 						if (event.diff < 0) {
 							trigger.num *= 2;
@@ -971,7 +974,7 @@ export default {
 					content() {
 						"step 0";
 						player.chooseTarget(get.prompt2(event.name)).set("ai", p => get.attitude(player, p) - Math.random() * 2);
-						"step 1";
+						("step 1");
 						if (!result.bool) {
 							event.finish();
 							return;
