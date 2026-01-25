@@ -4034,8 +4034,9 @@ const skills = {
 			const {
 				targets: [target],
 			} = result;
-			const { cards: gainCards } = await target.gain(gain, "gain2");
-			let num = gainCards.length;
+			const next = target.gain(gain, "gain2");
+			await next;
+			let num = next.cards.length;
 			if (num > 0) {
 				player.addTempSkill("jlsg_xujin_effect");
 				player.setStorage("jlsg_xujin_effect", num, true);
