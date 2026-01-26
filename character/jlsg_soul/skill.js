@@ -2844,85 +2844,151 @@ const skills = {
 	jlsg_shendao: {
 		audio: "ext:极略/audio/skill:true",
 		trigger: { global: "judge" },
-		direct: true,
-		content: function () {
-			"step 0";
-			player.chooseTarget(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，是否发动【神道】？", function (card, player, target) {
-				if (target == player) {
-					return target.countCards("hej");
-				}
-				return target.countCards("ej");
-			}).ai = function (target) {
-				return player == target;
-			};
-			"step 1";
-			if (result.bool) {
-				event.target = result.targets[0];
-				if (result.targets[0] == player) {
-					player
-						.chooseCard("请选择改判牌", "hej")
-						.set("ai", function (card) {
-							var trigger = _status.event.getTrigger();
-							var player = _status.event.player;
-							var judging = _status.event.judging;
-							var result = trigger.judge(card) - trigger.judge(judging);
-							var attitude = get.attitude(player, trigger.player);
-							if (attitude == 0 || result == 0) {
-								return 0;
+		async cost(event, trigger, player) {
+			const processAI = (function () {
+				const judgingResult = trigger.judge(trigger.player.judging[0]),
+					att1 = get.attitude(player, trigger.player);
+				const list = game.filterPlayer().reduce((list, current) => {
+					const att2 = get.attitude(player, current);
+					let cards = current.getCards("ej");
+					if (current == player) {
+						cards = player.getCards("hejs", card => {
+							if (!["h", "s"].includes(get.position(card))) {
+								return true;
 							}
-							if (attitude > 0) {
-								return result - get.value(card) / 2;
-							} else {
-								return -result - get.value(card) / 2;
+							const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+							if (mod2 != "unchanged") {
+								return mod2;
 							}
-						})
-						.set("judging", trigger.player.judging[0]);
-				} else {
-					player
-						.choosePlayerCard("请选择改判牌", result.targets[0], "ej")
-						.set("ai", function (button) {
-							var trigger = _status.event.getTrigger();
-							var player = _status.event.player;
-							var judging = _status.event.judging;
-							var result = trigger.judge(button) - trigger.judge(judging);
-							var attitude = get.attitude(player, trigger.player);
-							if (attitude == 0 || result == 0) {
-								return 0;
+							const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+							if (mod != "unchanged") {
+								return mod;
 							}
-							if (attitude > 0) {
-								return result - get.value(button) / 2;
-							} else {
-								return -result - get.value(button) / 2;
-							}
-						})
-						.set("judging", trigger.player.judging[0]);
-				}
-			}
-			"step 2";
-			if (result.bool) {
-				event.cardx = result.cards[0] || result.links[0];
-				if (event.target != player) {
-					event.target.$throw(event.cardx);
-					event.target.lose(event.cardx, ui.ordering, "visible").relatedEvent = trigger;
-					game.broadcastAll(function (card) {
-						if (card.clone) {
-							card.clone.classList.add("thrownhighlight");
+							return true;
+						});
+					}
+					cards = cards.reduce((list2, card) => {
+						let info = [card, current],
+							position = get.position(card),
+							val = get.value(card, current) * Math.sign(att2),
+							result = trigger.judge(card) - judgingResult;
+						if (get.subtype(card) == "equip2") {
+							val /= 2;
+						} else {
+							val /= 6;
 						}
-					}, event.cardx);
-				} else {
-					player.respond(event.cardx, "highlight", "noOrdering");
-				}
-			} else {
-				event.finish();
+						if (att1 == 0 || result == 0) {
+							if (current.hasSkillTag("noe") && position == "e") {
+								if (att2 > 0) {
+									info.push(0.5);
+								} else {
+									info.push(-0.5);
+								}
+							} else if (position == "j") {
+								if (att2 > 0) {
+									info.add(1);
+								} else {
+									info.push(-1);
+								}
+							}
+						} else if (att1 > 0) {
+							info.push(result - val);
+						} else {
+							info.push(-result - val);
+						}
+						list2.push(info);
+						return list2;
+					}, []);
+					return list.concat(cards);
+				}, []);
+				const max = list.reduce((max, info) => {
+					const [card1, target1, num1 = 0] = max,
+						[card2, target2, num2 = 0] = info;
+					return num1 > num2 ? max : info;
+				}, []);
+				return max;
+			})();
+			let result = await player
+				.chooseCard(`###${get.prompt(event.skill)}###选择一打出张手牌，或选择一名角色场上的一张牌，替换之。`, [1, 1], "hs")
+				.set("filterCard", (card, player) => {
+					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+					if (mod2 != "unchanged") {
+						return mod2;
+					}
+					const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+					if (mod != "unchanged") {
+						return mod;
+					}
+					return true;
+				})
+				.set("ai", card => {
+					const [cardx, targetx] = get.event().processAI;
+					if (targetx != player || ["e", "j"].includes(get.position(cardx))) {
+						return 0;
+					}
+					return card == cardx;
+				})
+				.set("processAI", processAI)
+				.forResult();
+			if (!result?.bool || !result.cards?.length) {
+				result = await player
+					.chooseTarget(`###${get.prompt(event.skill)}###选择一名角色场上的一张牌，替换之。`, [1, 1])
+					.set("filterTarget", (_, player, target) => {
+						return target.countCards("ej");
+					})
+					.set("ai", target => {
+						const [cardx, targetx] = get.event().processAI;
+						return target == targetx;
+					})
+					.set("processAI", processAI)
+					.forResult();
 			}
-			"step 3";
-			player.logSkill(event.name, event.target);
-			player.gain(trigger.player.judging[0], "gain2");
-			trigger.player.judging[0] = event.cardx;
-			trigger.orderingCards.add(event.cardx);
-			game.log(trigger.player, "的判定牌改为", event.cardx);
-			"step 4";
-			game.delayx();
+			event.result = result;
+			if (event.result?.bool) {
+				event.result.cost_data = processAI;
+			}
+		},
+		async content(event, trigger, player) {
+			const [cardx] = event.cost_data;
+			if (event.targets?.length) {
+				const result = await player
+					.choosePlayerCard(event.targets[0], "请选择改判牌", "ej", true)
+					.set("ai", ({ link: card }) => {
+						const event = get.event();
+						const trigger = event.getTrigger(),
+							{ cardx, player, judging } = event;
+						if (cardx == card) {
+							return 114514;
+						}
+						let result = trigger.judge(card) - trigger.judge(judging);
+						let attitude = get.attitude(player, trigger.player);
+						if (attitude == 0 || result == 0) {
+							return 0;
+						}
+						if (attitude > 0) {
+							return result - get.value(card) / 2;
+						}
+						return -result - get.value(card) / 2;
+					})
+					.set("judging", trigger.player.judging[0])
+					.set("cardx", cardx)
+					.forResult();
+				if (!result?.bool || !result.links?.length) {
+					return;
+				}
+				event.cards = result.links;
+			}
+			const next = player.respond(event.cards, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
+			if (cards?.length) {
+				player.$gain2(trigger.player.judging[0]);
+				await player.gain(trigger.player.judging[0]);
+				trigger.player.judging[0] = cards[0];
+				trigger.orderingCards.addArray(cards);
+				game.log(trigger.player, "的判定牌改为", cards);
+				await game.delay(2);
+			}
 		},
 		ai: {
 			tag: {

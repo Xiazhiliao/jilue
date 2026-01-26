@@ -1227,27 +1227,30 @@ const skills = {
 			} else {
 				event.cards = get.cards(1);
 				game.log(player, "亮出了牌堆顶的", event.cards);
-				await game.cardsGotoOrdering(event.cards);
-				player.showCards(event.cards);
+				await player.showCards(event.cards);
 			}
-			await player.respond(event.cards, "highlight", "noOrdering");
-			if (trigger.player.judging[0].clone) {
-				trigger.player.judging[0].clone.classList.remove("thrownhighlight");
-				game.broadcast(function (card) {
-					if (card.clone) {
-						card.clone.classList.remove("thrownhighlight");
-					}
-				}, trigger.player.judging[0]);
-				game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+			const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+			await next;
+			const { cards } = next;
+			if (cards?.length) {
+				if (trigger.player.judging[0].clone) {
+					trigger.player.judging[0].clone.classList.remove("thrownhighlight");
+					game.broadcast(function (card) {
+						if (card.clone) {
+							card.clone.classList.remove("thrownhighlight");
+						}
+					}, trigger.player.judging[0]);
+					game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+				}
+				await game.cardsDiscard(trigger.player.judging[0]);
+				trigger.player.judging[0] = cards[0];
+				trigger.orderingCards.addArray(cards);
+				game.log(trigger.player, "的判定牌改为", cards);
+				await game.delay(2);
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				const improve = upgradeStorage?.other?.[event.name];
+				await player.draw(improve ? 2 : 1);
 			}
-			await game.cardsDiscard(trigger.player.judging[0]);
-			trigger.player.judging[0] = event.cards[0];
-			trigger.orderingCards.addArray(event.cards);
-			game.log(trigger.player, "的判定牌改为", event.cards[0]);
-			await game.delay(2);
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const improve = upgradeStorage?.other?.[event.name];
-			await player.draw(improve ? 2 : 1);
 		},
 		ai: {
 			tag: {

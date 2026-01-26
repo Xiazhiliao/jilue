@@ -177,24 +177,27 @@ export default {
 						} else {
 							event.cards = get.cards(1);
 							game.log(player, "亮出了牌堆顶的", event.cards);
-							await game.cardsGotoOrdering(event.cards);
-							player.showCards(event.cards);
+							await player.showCards(event.cards);
 						}
-						await player.respond(event.cards, "highlight", "noOrdering");
-						if (trigger.player.judging[0].clone) {
-							trigger.player.judging[0].clone.classList.remove("thrownhighlight");
-							game.broadcast(function (card) {
-								if (card.clone) {
-									card.clone.classList.remove("thrownhighlight");
-								}
-							}, trigger.player.judging[0]);
-							game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+						const next = player.respond(event.cards, event.name, "highlight", "noOrdering");
+						await next;
+						const { cards } = next;
+						if (cards?.length) {
+							if (trigger.player.judging[0].clone) {
+								trigger.player.judging[0].clone.classList.remove("thrownhighlight");
+								game.broadcast(function (card) {
+									if (card.clone) {
+										card.clone.classList.remove("thrownhighlight");
+									}
+								}, trigger.player.judging[0]);
+								game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+							}
+							await game.cardsDiscard(trigger.player.judging[0]);
+							trigger.player.judging[0] = cards[0];
+							trigger.orderingCards.addArray(cards);
+							game.log(trigger.player, "的判定牌改为", cards);
+							await game.delay(2);
 						}
-						await game.cardsDiscard(trigger.player.judging[0]);
-						trigger.player.judging[0] = event.cards[0];
-						trigger.orderingCards.addArray(event.cards);
-						game.log(trigger.player, "的判定牌改为", event.cards[0]);
-						await game.delay(2);
 					},
 					ai: {
 						tag: {
@@ -1222,7 +1225,10 @@ export default {
 							return;
 						}
 						const buttons = skills.map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
-						const result = await trigger.player.chooseButton(true, ["选择要发动的技能", [buttons, "textbutton"]]).set("ai", button => get.skillRank(button.link, "out")).forResult();
+						const result = await trigger.player
+							.chooseButton(true, ["选择要发动的技能", [buttons, "textbutton"]])
+							.set("ai", button => get.skillRank(button.link, "out"))
+							.forResult();
 						if (!result?.bool) {
 							return;
 						}
@@ -1847,12 +1853,15 @@ export default {
 							const { bool, links } =
 								cards.length == 1
 									? { links: cards.slice(0), bool: true }
-									: await player.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length]).set("ai", () => {
-											if (ui.selected.buttons.length == 0) {
-												return 1;
-											}
-											return 0;
-										}).forResult();
+									: await player
+											.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length])
+											.set("ai", () => {
+												if (ui.selected.buttons.length == 0) {
+													return 1;
+												}
+												return 0;
+											})
+											.forResult();
 							if (!bool) {
 								return;
 							}
