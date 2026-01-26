@@ -2859,11 +2859,12 @@ const skills = {
 			const choice = result.control;
 			target.popup(choice);
 			const draw = await target.draw(1).forResult();
-			if (!draw?.length) {
+			const drawCards = draw.cards;
+			if (!drawCards?.length) {
 				return;
 			}
-			await target.showCards(draw);
-			if (get.suit(draw[0]) + "2" != choice) {
+			await target.showCards(drawCards);
+			if (get.suit(drawCards[0]) + "2" != choice) {
 				await target.damage(1, player);
 			}
 		},

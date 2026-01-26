@@ -14035,12 +14035,13 @@ const skills = {
 				await player.loseHp(num);
 			}
 			const result = await player.draw(2).forResult();
-			if (!result?.some(card => ["black", "red"].includes(get.color(card)))) {
+			const cards = result.cards;
+			if (!cards?.some(card => ["black", "red"].includes(get.color(card)))) {
 				return;
-			} else if (result?.length != 2) {
+			} else if (cards?.length != 2) {
 				return;
 			}
-			let suits = result.map(card => get.color(card)).sort(),
+			let suits = cards.map(card => get.color(card)).sort(),
 				nature = null;
 			if (suits[0] == "black") {
 				if (suits[1] == "black") {

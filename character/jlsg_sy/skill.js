@@ -2894,14 +2894,15 @@ const skills = {
 				player.addTempSkill("jlsgsy_ejue_used", { player: "phaseUseAfter" });
 			}
 			const draw = await player.draw(2).forResult();
-			if (!draw?.length) {
+			const drawCards = draw.cards;
+			if (!drawCards?.length) {
 				return;
 			}
 			const discard = await player
 				.chooseToDiscard("扼绝：弃置一张牌")
 				.set("filterCard", card => get.event().cardx.includes(card))
 				.set("ai", card => (8 - get.value(card)) * (14 - get.number(card)))
-				.set("cardx", draw)
+				.set("cardx", drawCards)
 				.forResult();
 			if (!discard?.cards?.length) {
 				return;
