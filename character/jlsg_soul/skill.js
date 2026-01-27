@@ -2908,42 +2908,46 @@ const skills = {
 				}, []);
 				return max;
 			})();
-			let result = await player
-				.chooseCard(`###${get.prompt(event.skill)}###选择一打出张手牌，或选择一名角色场上的一张牌，替换之。`, [1, 1], "hs")
-				.set("filterCard", (card, player) => {
-					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
-					if (mod2 != "unchanged") {
-						return mod2;
-					}
-					const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
-					if (mod != "unchanged") {
-						return mod;
-					}
-					return true;
-				})
-				.set("ai", card => {
-					const [cardx, targetx] = get.event().processAI;
-					if (targetx != player || ["e", "j"].includes(get.position(cardx))) {
-						return 0;
-					}
-					return card == cardx;
-				})
-				.set("processAI", processAI)
-				.forResult();
-			if (!result?.bool || !result.cards?.length) {
-				result = await player
-					.chooseTarget(`###${get.prompt(event.skill)}###选择一名角色场上的一张牌，替换之。`, [1, 1])
-					.set("filterTarget", (_, player, target) => {
-						return target.countCards("ej");
-					})
-					.set("ai", target => {
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "选择一打出张手牌，或选择一名角色场上的一张牌，替换之。",
+					selectCard: [0, 1],
+					position: "hs",
+					filterCard(card, player) {
+						const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+						if (mod2 != "unchanged") {
+							return mod2;
+						}
+						const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+						if (mod != "unchanged") {
+							return mod;
+						}
+						return true;
+					},
+					ai1(card) {
+						const [cardx, targetx] = get.event().processAI;
+						if (targetx != player) {
+							return 0;
+						}
+						return card == cardx;
+					},
+					selectTarget: [0, 1],
+					filterTarget: (_, player, target) => target.countCards("ej"),
+					ai2(target) {
 						const [cardx, targetx] = get.event().processAI;
 						return target == targetx;
-					})
-					.set("processAI", processAI)
-					.forResult();
-			}
-			event.result = result;
+					},
+					complexSelect: true,
+					filterOk() {
+						if (!ui.selected.cards?.length && !ui.selected.targets?.length) {
+							return false;
+						}
+						return !(ui.selected.cards?.length * ui.selected.targets?.length);
+					},
+					processAI,
+				})
+				.forResult();
 			if (event.result?.bool) {
 				event.result.cost_data = processAI;
 			}
