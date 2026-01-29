@@ -1,3 +1,4 @@
+import { filter } from "jszip/lib/object.js";
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
@@ -15483,6 +15484,228 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					trigger.num -= player.getStorage("jlsg_yaoling_debuff", { draw: 0 }).draw;
+				},
+			},
+		},
+	},
+	jlsg_qugu: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			global: "useCard",
+		},
+		mod: {
+			ignoredHandcard(card, player) {
+				if (card.hasGaintag("jlsg_qugu")) {
+					return true;
+				}
+			},
+			cardDiscardable(card, player, name) {
+				if (name == "phaseDiscard" && card.hasGaintag("jlsg_qugu")) {
+					return false;
+				}
+			},
+			cardUsable(card, player, num) {
+				if (card?.cards?.some(cardx => cardx.hasGaintag("jlsg_qugu"))) {
+					return Infinity;
+				}
+			},
+		},
+		usable(skill, player) {
+			return player.maxHp;
+		},
+		init(player, skill) {
+			game.players.forEach(curr => {
+				if (!curr._hookTrigger) {
+					curr._hookTrigger = [];
+				}
+				curr._hookTrigger.add("jlsg_qugu_realDamage");
+			});
+		},
+		filter(event, player) {
+			let type = get.type(event.card, null, false),
+				suit = get.suit(event.card, false),
+				lastCard = game.getAllGlobalHistory("useCard", evt => evt != event).at(-1)?.card;
+			let suit2 = get.suit(lastCard, false);
+			if (!["basic", "trick"].includes(type) || !suit2 || suit == suit2) {
+				return false;
+			}
+
+			return !event.player.isDying() && event.player.hasUseTarget(event.card, true, true);
+		},
+		async cost(event, trigger, player) {
+			let result,
+				type = get.type(trigger.card, null, false),
+				card = game.getAllGlobalHistory("useCard", evt => evt != trigger).at(-1)?.card;
+			let suit = get.suit(card, false);
+			let cards = lib.cardPile.standard.concat(lib.cardPile.extra).filter(info => get.type(info[2], null, false) == type && info[0] == suit);
+			if (cards.length) {
+				result = await player.chooseButton([`选择一张牌代替${get.translation(trigger.card)}`, [cards, "vcard"]]).forResult();
+			} else {
+				player.chat("杯具");
+			}
+			event.result = {
+				bool: result.bool,
+				confirm: result.confirm,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			let info = event.cost_data[0];
+			let cardInfo = {
+				name: info[2],
+				suit: info[0],
+				number: info[1],
+				nature: info[3],
+				realDamage: true,
+				qugu_unequip: true,
+			};
+			let card = get.autoViewAs(cardInfo);
+			game.log(player, "将", trigger.card, "改为", card);
+			trigger.set("card", card);
+			game.log(player, "令", card, "不可响应");
+			trigger.directHit.addArray(game.players);
+			let next = player.draw();
+			next.gaintag.add("jlsg_qugu");
+			await next;
+		},
+		group: ["jlsg_qugu_draw"],
+		subSkill: {
+			draw: {
+				audio: "jlsg_qugu",
+				trigger: {
+					global: ["damageAfter"],
+				},
+				forced: true,
+				filter(event, player) {
+					return event.card?.qugu_unequip;
+				},
+				async content(event, trigger, player) {
+					let next = player.draw();
+					next.gaintag.add("jlag_qugu");
+					await next;
+				},
+			},
+			realDamage: {
+				hookTrigger: {
+					bolck(event, player, triggername, skill) {
+						if (event.player != player) {
+							return false;
+						}
+						let info = get.info(skill);
+						let sourceSkill = info.sourceSkill ? info.sourceSkill : skill,
+							equips = player.getSkills("e"),
+							global = lib.skill.global;
+						if (global.includes(sourceSkill) || equips.includes(sourceSkill)) {
+							return false;
+						}
+						if (["dying", "die"].includes(event.name)) {
+							return event.reason?.card?.realDamage;
+						} else if (event.name == "damage") {
+							return event.card?.realDamage;
+						}
+					},
+				},
+			},
+		},
+		ai: {
+			uneuqip: true,
+			unequip_ai: true,
+			skillTagFilter(player, tag, arg) {
+				if (tag == "unequip_ai") {
+					return get.event().getParent().name == jlsg_qugu;
+				} else {
+					return arg?.card?.qugu_unequip;
+				}
+			},
+		},
+	},
+	jlsg_suhui: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			global: ["phaseBegin"],
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget()
+				.set("ai", target => {
+					let player = get.player();
+					return get.attitude(player, target);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			trigger.set("jlsg_suhui", true);
+			event.targets[0].addSkill("jlsg_suhui_huisu");
+		},
+		subSkill: {
+			huisu: {
+				audio: "jlsg_suhui",
+				trigger: {
+					global: ["phaseEnd"],
+				},
+				forced: true,
+				forceDie: true,
+				init(player, skill) {
+					let hand = player.getCards("h"),
+						equip = player.getCards("e"),
+						judge = player.getCards("j"),
+						hp = player.hp,
+						maxHp = player.maxHp,
+						skills = player.skills;
+					player.setStorage("jlsg_suhui", {
+						hand: hand,
+						equip: equip,
+						judge: judge,
+						hp: hp,
+						maxHp: maxHp,
+						skills: skills,
+					});
+				},
+				filter(event, player) {
+					return event.jlsg_suhui;
+				},
+				async content(event, trigger, player) {
+					if (!player.isAlive()) {
+						player.revive();
+					} else {
+						let cards = player.getCards("hej");
+						let next = player.lose(cards);
+						next.set("_triggered", null);
+						await next;
+					}
+					for (let key in player.storage.jlsg_suhui) {
+						let info = player.storage.jlsg_suhui[key];
+						if (key == skills) {
+							player.skills = info;
+						} else if (key == "judge") {
+							if (player.isDisabledJudge()) {
+								continue;
+							}
+							for (let card of info) {
+								let cards = card[card.cardSymbol].cards;
+								let cardx = get.autoViewAs(card, cards);
+								player.addJudge(cardx)._triggered = null;
+							}
+						} else if (key == "equip") {
+							for (let card of info) {
+								if (!player.canEquip(card)) {
+									continue;
+								}
+								let cards = card[card.cardSymbol].cards;
+								let cardx = get.autoViewAs(card, cards);
+								player.equip(cardx)._triggered = null;
+							}
+						} else if (key == "hand") {
+							let cards = info.filter(card => get.position(card));
+							console.log(cards);
+							player.directgain(cards);
+						} else {
+							player[key] = info;
+						}
+					}
+					player.setStorage("jlsg_suhui", {});
+					player.removeSkill("jlsg_suhui");
+					player.update();
 				},
 			},
 		},
