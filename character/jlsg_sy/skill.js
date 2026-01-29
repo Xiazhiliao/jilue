@@ -3520,6 +3520,102 @@ const skills = {
 			}
 		},
 	},
+	jlsgsy_baonuhetaihou: {
+		animationStr: "汉家江山，本就是炼狱！",
+		inherit: "jlsgsy_baonu",
+		mode: ["identity", "guozhan", "boss", "stone"],
+	},
+	jlsgsy_shixin: {
+		trigger: {
+			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		forced: true,
+		filter(event, player) {
+			return game.hasPlayer(curr => {
+				if (curr == player) {
+					return false;
+				}
+				return event.getl(curr).hs.some(card => get.suit(card, false) == "spade");
+			});
+		},
+		async content(event, trigger, player) {
+			let targets = game.filterPlayer(curr => {
+				if (curr == player) {
+					return false;
+				}
+				return trigger.getl(curr).hs.some(card => get.suit(card, false) == "spade");
+			});
+			await game.doAsyncInOrder(targets, async target => await target.loseHp());
+		},
+	},
+	jlsgsy_xueyan: {
+		trigger: {
+			global: ["useCard"],
+		},
+		global: "jlsgsy_xueyan_ai",
+		filter(event, player) {
+			return event.player != player && event.isPhaseUsing(event.player);
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			let next = trigger.player.draw();
+			next.gaintag.add("jlsgsy_xueyan");
+			let { cards } = await next.forResult();
+			trigger.player.markAuto("jlsgsy_xueyan", cards);
+			if (trigger.cards.some(card => trigger.player.storage.jlsgsy_xueyan.includes(card))) {
+				await trigger.player.loseHp();
+			}
+			if (get.color(trigger.card, false) == "red") {
+				await player.draw();
+			}
+		},
+		group: ["jlsgsy_xueyan_clear"],
+		subSkill: {
+			clear: {
+				trigger: {
+					global: ["phaseAfter"],
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					game.players.forEach(curr => {
+						curr.setStorage("jlsgsy_xueyan", []);
+						curr.removeGaintag("jlsgsy_xueyan");
+					});
+				},
+			},
+			ai: {
+				ai: {
+					effect: {
+						player(card, player, target) {
+							if (player.storage.jlsgsy_xueyan?.includes(card)) {
+								return [1, -2];
+							}
+						},
+					},
+				},
+			},
+		},
+	},
+	jlsgsy_juesi: {
+		trigger: {
+			global: ["phaseDiscardBegin"],
+		},
+		filter(event, player) {
+			return event.player != player && event.player.countCards("h");
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			let cards = trigger.player.getCards("h");
+			await player.gain(cards, "give");
+			if (cards.some(card => get.suit(card, false) == "heart")) {
+				await player.recover();
+			}
+			let num = Math.min(trigger.player.hp, cards.length);
+			let giveCards = cards.randomGets(num);
+			await player.give(giveCards, trigger.player);
+		},
+	},
 };
 
 export default skills;

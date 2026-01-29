@@ -1,4 +1,3 @@
-import { filter } from "jszip/lib/object.js";
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
@@ -15581,17 +15580,17 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					let next = player.draw();
-					next.gaintag.add("jlag_qugu");
+					next.gaintag.add("jlsg_qugu");
 					await next;
 				},
 			},
 			realDamage: {
 				hookTrigger: {
 					bolck(event, player, triggername, skill) {
-						if (event.player != player) {
+						let info = get.info(skill);
+						if (event.player != player || info.charlotte) {
 							return false;
 						}
-						let info = get.info(skill);
 						let sourceSkill = info.sourceSkill ? info.sourceSkill : skill,
 							equips = player.getSkills("e"),
 							global = lib.skill.global;
@@ -15626,7 +15625,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget()
+				.chooseTarget(get.prompt2("jlsg_suhui"))
 				.set("ai", target => {
 					let player = get.player();
 					return get.attitude(player, target);
@@ -15645,6 +15644,7 @@ const skills = {
 				},
 				forced: true,
 				charlotte: true,
+				popup: false,
 				forceDie: true,
 				init(player, skill) {
 					let hand = player.getCards("h"),
@@ -15665,12 +15665,20 @@ const skills = {
 				filter(event, player) {
 					return event.jlsg_suhui;
 				},
+				marktext: "溯",
+				mark: true,
+				onremove: true,
+				intro: {
+					content: "回合结束时将区域的牌,体力,体力上限,技能调整至回合开始时",
+				},
 				async content(event, trigger, player) {
 					if (!player.isAlive()) {
 						player.revive();
 					} else {
 						let cards = player.getCards("hej");
-						player.lose(cards)._triggered = null;
+						let next = game.cardsGotoPile(cards, () => ui.cardPile.firstChild);
+						next.set("_triggered", null);
+						await next;
 					}
 					for (let key in player.storage.jlsg_suhui) {
 						let info = player.storage.jlsg_suhui[key];
@@ -15696,6 +15704,7 @@ const skills = {
 							}
 						} else if (key == "hand") {
 							let cards = info.map(card => {
+								console.log(get.position(card));
 								if (get.position(card)) {
 									return card;
 								} else {
@@ -15708,7 +15717,7 @@ const skills = {
 						}
 					}
 					player.setStorage("jlsg_suhui", {});
-					player.removeSkill("jlsg_suhui");
+					player.removeSkill("jlsg_suhui_huisu");
 					player.update();
 				},
 			},

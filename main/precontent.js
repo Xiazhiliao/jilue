@@ -2006,21 +2006,10 @@ export async function precontent(config, originalPack) {
 					str = "";
 				if (key == "discard") {
 					if (event) {
-						bool =
-							(event.type == "discard" || event.getParent().name == "discard") &&
-							event.cards.some(card => {
-								if (get.owner(card) != event.player) {
-									return false;
-								}
-								return ["h", "e"].includes(get.position(card));
-							});
+						let cards = event.getl(player).hs.concat(event.getl(player).es);
+						bool = cards.length > 0;
 						if (!num) {
-							num = event.cards.filter(card => {
-								if (get.owner(card) != event.player) {
-									return false;
-								}
-								return ["h", "e"].includes(get.position(card));
-							}).length;
+							num = cards.length;
 						}
 					}
 					str = `弃置${num}张牌`;

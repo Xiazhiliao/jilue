@@ -188,6 +188,16 @@ const translates = {
 	jlsgsy_jiantian_info: "变身技，当你使用【杀】或伤害类非延时锦囊牌指定目标后，你可以令此牌的伤害+1且不能被响应，若如此做，你下次受到的伤害+1.",
 	jlsgsy_zhonggu: "冢骨",
 	jlsgsy_zhonggu_info: "变身技，每回合限一次，当你受到负面效果后，你可以对所有其他角色施加此负面效果。",
+	jlsgsy_hetaihou: "乱世之母",
+	jlsgsy_baonuhetaihou: "暴怒",
+	jlsgsy_baonuhetaihou_info: "锁定技，当你的体力值降至4或更低时，你进入暴怒状态并立即开始你的回合。",
+	jlsgsy_shixin: "噬心",
+	jlsgsy_shixin_info: "锁定技，当其他角色于濒死状态外失去黑桃手牌后，你令其失去1点体力。",
+	jlsgsy_hetaihoubaonu: "乱世之母",
+	jlsgsy_xueyan: "血宴",
+	jlsgsy_xueyan_info: "变身技，锁定技，当其他角色于其出牌阶段使用牌后，你令其摸一张牌。若其使用的牌为红色，你摸一张牌；若其使用的牌为本回合以此法获得的牌，你令其失去1点体力。",
+	jlsgsy_juesi: "绝嗣",
+	jlsgsy_juesi_info: "变身技，锁定技，其他角色的弃牌阶段开始时，你获得其所有手牌，若其中有红桃牌，你回复1点体力，然后随机交给其X张牌（X为其体力且至多为你以此法获得的牌数）。",
 };
 
 export default translates;
