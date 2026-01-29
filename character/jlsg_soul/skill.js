@@ -15571,7 +15571,7 @@ const skills = {
 				realDamage: true,
 				qugu_unequip: true,
 			};
-			let card = get.autoViewAs(cardInfo);
+			let card = get.autoViewAs(cardInfo, trigger.cards);
 			game.log(player, "将", trigger.card, "改为", card);
 			trigger.set("card", card);
 			game.log(player, "令", card, "不可响应");
@@ -15710,7 +15710,7 @@ const skills = {
 								}));
 							target.removeSkill(skills);
 							let next = player.loseToDiscardpile(cards, ui.cardPile, "insert_card");
-							next.set("log", "false");
+							next.set("log", false);
 							next.set("_triggered", next);
 							await next;
 						}
@@ -15728,7 +15728,7 @@ const skills = {
 								for (let card of info) {
 									let cards = card[card.cardSymbol].cards;
 									let cardx = get.autoViewAs(card, cards);
-									target.addJudge(cardx)._triggered = null;
+									player.addVirtualJudge(cardx, cards);
 								}
 							} else if (key == "equip") {
 								for (let card of info) {
@@ -15737,7 +15737,7 @@ const skills = {
 									}
 									let cards = card[card.cardSymbol].cards;
 									let cardx = get.autoViewAs(card, cards);
-									target.equip(cardx)._triggered = null;
+									target.directequip([cardx]);
 								}
 							} else if (key == "hand") {
 								let cards = info.map(card => {
