@@ -15644,6 +15644,7 @@ const skills = {
 					global: ["phaseEnd"],
 				},
 				forced: true,
+				charlotte: true,
 				forceDie: true,
 				init(player, skill) {
 					let hand = player.getCards("h"),
@@ -15669,9 +15670,7 @@ const skills = {
 						player.revive();
 					} else {
 						let cards = player.getCards("hej");
-						let next = player.lose(cards);
-						next.set("_triggered", null);
-						await next;
+						player.lose(cards)._triggered = null;
 					}
 					for (let key in player.storage.jlsg_suhui) {
 						let info = player.storage.jlsg_suhui[key];
@@ -15696,8 +15695,13 @@ const skills = {
 								player.equip(cardx)._triggered = null;
 							}
 						} else if (key == "hand") {
-							let cards = info.filter(card => get.position(card));
-							console.log(cards);
+							let cards = info.map(card => {
+								if (get.position(card)) {
+									return card;
+								} else {
+									return lib.skill.jlsg_lingze.createTempCard(card.name, card.suit, card.nature, card.number);
+								}
+							});
 							player.directgain(cards);
 						} else {
 							player[key] = info;
