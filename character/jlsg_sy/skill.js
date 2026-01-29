@@ -3526,6 +3526,7 @@ const skills = {
 		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_shixin: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
@@ -3549,6 +3550,7 @@ const skills = {
 		},
 	},
 	jlsgsy_xueyan: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			global: ["useCard"],
 		},
@@ -3598,6 +3600,7 @@ const skills = {
 		},
 	},
 	jlsgsy_juesi: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			global: ["phaseDiscardBegin"],
 		},
