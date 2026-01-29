@@ -15614,10 +15614,10 @@ const skills = {
 						if (event.player != player) {
 							return false;
 						}
-						let skills = player.getSkills(null, false, false, true).filter(skill => {
+						let skills = game.expandSkills(player.getSkills(null, false, false, true).filter(skill => {
 							let info = get.info(skill);
 							return info && !info.charlotte;
-						});
+						}));
 						if (!skills.includes(skill)) {
 							return false;
 						}
@@ -15655,10 +15655,10 @@ const skills = {
 				judge = target.getCards("j"),
 				hp = target.hp,
 				maxHp = target.maxHp,
-				skill = target.getSkills(null, false, false, true).filter(skill => {
+				skill = game.expandSkills(target.getSkills(null, false, false, true).filter(skill => {
 					let info = get.info(skill);
 					return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
-				});
+				}));
 			player.setStorage("jlsg_suhui", {
 				target: target,
 				hand: hand,
@@ -15704,10 +15704,10 @@ const skills = {
 						} else {
 							let target = player.storage.jlsg_suhui.target;
 							let cards = target.getCards("hej"),
-								skills = target.getSkills(null, false, false, true).filter(skill => {
+								skills = game.expandSkills(target.getSkills(null, false, false, true).filter(skill => {
 									let info = get.info(skill);
 									return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
-								});
+								}));
 							target.removeSkill(skills);
 							let next = player.loseToDiscardpile(cards, ui.cardPile, "insert_card");
 							next.set("log", "false");
