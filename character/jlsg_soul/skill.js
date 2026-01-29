@@ -15625,6 +15625,8 @@ const skills = {
 							return event.reason?.card?.realDamage;
 						} else if (event.name == "damage") {
 							return event.card?.realDamage;
+						} else if (event.name == "chooseToUse" && event.type == "dying") {
+							return event.getParent("dying").reason?.card?.realDamage;
 						}
 					},
 				},
