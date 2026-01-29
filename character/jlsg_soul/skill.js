@@ -15704,7 +15704,6 @@ const skills = {
 							}
 						} else if (key == "hand") {
 							let cards = info.map(card => {
-								console.log(get.position(card));
 								if (get.position(card)) {
 									return card;
 								} else {
