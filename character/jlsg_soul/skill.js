@@ -15705,8 +15705,9 @@ const skills = {
 									return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
 								});
 							target.removeSkill(skills);
-							let next = game.cardsGotoPile(cards, () => ui.cardPile.firstChild);
-							next.set("_triggered", null);
+							let next = player.loseToDiscardpile(cards, ui.cardPile, "insert_card");
+							next.set("log", "false");
+							next.set("_triggered", next);
 							await next;
 						}
 						for (let key in player.storage.jlsg_suhui) {
