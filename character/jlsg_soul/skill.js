@@ -15528,7 +15528,6 @@ const skills = {
 			if (!["basic", "trick"].includes(type) || !suit2 || suit == suit2) {
 				return false;
 			}
-
 			return !event.player.isDying() && event.player.hasUseTarget(event.card, true, true);
 		},
 		async cost(event, trigger, player) {
@@ -15536,7 +15535,12 @@ const skills = {
 				type = get.type(trigger.card, null, false),
 				card = game.getAllGlobalHistory("useCard", evt => evt != trigger).at(-1)?.card;
 			let suit = get.suit(card, false);
-			let cards = lib.cardPile.standard.concat(lib.cardPile.extra).filter(info => info[2] != "wuxie" && get.type(info[2], null, false) == type && info[0] == suit);
+			let cards = lib.cardPile.standard.concat(lib.cardPile.extra).filter(info => {
+				if (!trigger.targets.some(target => lib.filter.targetEnabled3({ name: info[2] }, trigger.player, target))) {
+					return false;
+				}
+				return get.type(info[2], null, false) == type && info[0] == suit;
+			});
 			if (cards.length) {
 				result = await player.chooseButton([`选择一张牌代替${get.translation(trigger.card)}`, [cards, "vcard"]]).forResult();
 			} else {
@@ -15552,9 +15556,9 @@ const skills = {
 			let info = event.cost_data[0];
 			let cardInfo = {
 				name: info[2],
-				suit: info[0],
-				number: info[1],
-				nature: info[3],
+				suit: trigger.card.suit,
+				number: trigger.card.number,
+				nature: trigger.card.nature,
 				realDamage: true,
 				qugu_unequip: true,
 			};
@@ -15587,14 +15591,14 @@ const skills = {
 			realDamage: {
 				hookTrigger: {
 					bolck(event, player, triggername, skill) {
-						let info = get.info(skill);
-						if (event.player != player || info.charlotte) {
+						if (event.player != player) {
 							return false;
 						}
-						let sourceSkill = info.sourceSkill ? info.sourceSkill : skill,
-							equips = player.getSkills("e"),
-							global = lib.skill.global;
-						if (global.includes(sourceSkill) || equips.includes(sourceSkill)) {
+						let skills = target.getSkills(null, false, false, true).filter(skill => {
+							let info = get.info(skill);
+							return info && !info.charlotte;
+						});
+						if (!skills.includes(skill)) {
 							return false;
 						}
 						if (["dying", "die"].includes(event.name)) {
