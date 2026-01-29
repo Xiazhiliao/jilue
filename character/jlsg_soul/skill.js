@@ -15492,6 +15492,7 @@ const skills = {
 		trigger: {
 			global: "useCard",
 		},
+		global: ["jlsg_qugu_unequip"],
 		mod: {
 			ignoredHandcard(card, player) {
 				if (card.hasGaintag("jlsg_qugu")) {
@@ -15528,7 +15529,7 @@ const skills = {
 			if (!["basic", "trick"].includes(type) || suit == suit2) {
 				return false;
 			}
-			return !event.player.isDying() && event.player.hasUseTarget(event.card, true, true);
+			return !event.player.isDying();
 		},
 		async cost(event, trigger, player) {
 			let first,
@@ -15596,13 +15597,24 @@ const skills = {
 					await next;
 				},
 			},
+			unequip: {
+				ai: {
+					unequip: true,
+					unequip_ai: true,
+					skillTagFilter(player, tag, arg) {
+						if (!arg?.card?.qugu_unequip) {
+							return false;
+						}
+					},
+				},
+			},
 			realDamage: {
 				hookTrigger: {
-					bolck(event, player, triggername, skill) {
+					block(event, player, triggername, skill) {
 						if (event.player != player) {
 							return false;
 						}
-						let skills = target.getSkills(null, false, false, true).filter(skill => {
+						let skills = player.getSkills(null, false, false, true).filter(skill => {
 							let info = get.info(skill);
 							return info && !info.charlotte;
 						});
@@ -15616,17 +15628,6 @@ const skills = {
 						}
 					},
 				},
-			},
-		},
-		ai: {
-			uneuqip: true,
-			unequip_ai: true,
-			skillTagFilter(player, tag, arg) {
-				if (tag == "unequip_ai") {
-					return get.event().getParent().name == jlsg_qugu;
-				} else {
-					return arg?.card?.qugu_unequip;
-				}
 			},
 		},
 	},
@@ -15685,6 +15686,7 @@ const skills = {
 						dialog.addText(`记录角色:${get.translation(info.target)}` + "<br/>");
 						dialog.addText(`装备区:${get.translation(info.equip).replace(/、/g, ",")}` + "<br/>");
 						dialog.addText(`判定区:${get.translation(info.Judge).replace(/、/g, ",")}` + "<br/>");
+						dialog.addText(`手牌区:${get.translation(info.hand).replace(/、/g, ",")}` + "<br/>");
 						dialog.addText(`体力:${info.hp}` + "<br/>");
 						dialog.addText(`体力上限:${info.maxHp}` + "<br/>");
 						dialog.addText(`技能:${get.translation(info.skill).replace(/、/g, ",")}` + "<br/>");
