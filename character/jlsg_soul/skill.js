@@ -15536,17 +15536,25 @@ const skills = {
 				type = get.type(trigger.card, null, false),
 				card = game.getAllGlobalHistory("useCard", evt => evt != trigger).at(-1)?.card;
 			let suit = get.suit(card, false);
-			let cards = lib.cardPile.standard.concat(lib.cardPile.extra).filter(info => {
-				if (!trigger.targets.some(target => lib.filter.targetEnabled3({ name: info[2] }, trigger.player, target))) {
-					return false;
-				}
-				if (!card) {
-					first = true;
-				} else {
-					first = info[0] == suit;
-				}
-				return get.type(info[2], null, false) == type && first;
-			});
+			let cards = lib.cardPile.standard
+				.concat(lib.cardPile.extra)
+				.filter(info => {
+					if (!trigger.targets.some(target => lib.filter.targetEnabled3({ name: info[2] }, trigger.player, target))) {
+						return false;
+					}
+					if (!card) {
+						first = true;
+					} else {
+						first = info[0] == suit;
+					}
+					return get.type(info[2], null, false) == type && first;
+				})
+				.reduce((list, info) => {
+					if (!list.some(infox => infox[2] == info[2] && infox[3] == info[3])) {
+						list.push(["", "", info[2], info[3]]);
+					}
+					return list;
+				}, []);
 			if (cards.length) {
 				let result = await player.chooseButton([`选择一张牌代替${get.translation(trigger.card)}`, [cards, "vcard"]]).forResult();
 				event.result = {
@@ -15569,7 +15577,7 @@ const skills = {
 				number: trigger.card.number,
 				nature: trigger.card.nature,
 				realDamage: true,
-				qugu_unequip: true,
+				qugu_unequip: player,
 			};
 			let card = get.autoViewAs(cardInfo, trigger.cards);
 			game.log(player, "将", trigger.card, "改为", card);
@@ -15589,7 +15597,7 @@ const skills = {
 				},
 				forced: true,
 				filter(event, player) {
-					return event.card?.qugu_unequip;
+					return event.card?.qugu_unequip == player;
 				},
 				async content(event, trigger, player) {
 					let next = player.draw();
@@ -15611,13 +15619,15 @@ const skills = {
 			realDamage: {
 				hookTrigger: {
 					block(event, player, triggername, skill) {
-						if (event.player != player) {
+						if (event.player != player || skill == "jlsg_qugu_draw") {
 							return false;
 						}
-						let skills = game.expandSkills(player.getSkills(null, false, false, true).filter(skill => {
-							let info = get.info(skill);
-							return info && !info.charlotte;
-						}));
+						let skills = game.expandSkills(
+							player.getSkills(null, false, false, true).filter(skill => {
+								let info = get.info(skill);
+								return info && !info.charlotte;
+							})
+						);
 						if (!skills.includes(skill)) {
 							return false;
 						}
@@ -15655,10 +15665,12 @@ const skills = {
 				judge = target.getCards("j"),
 				hp = target.hp,
 				maxHp = target.maxHp,
-				skill = game.expandSkills(target.getSkills(null, false, false, true).filter(skill => {
-					let info = get.info(skill);
-					return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
-				}));
+				skill = game.expandSkills(
+					target.getSkills(null, false, false, true).filter(skill => {
+						let info = get.info(skill);
+						return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
+					})
+				);
 			player.setStorage("jlsg_suhui", {
 				target: target,
 				hand: hand,
@@ -15704,14 +15716,17 @@ const skills = {
 						} else {
 							let target = player.storage.jlsg_suhui.target;
 							let cards = target.getCards("hej"),
-								skills = game.expandSkills(target.getSkills(null, false, false, true).filter(skill => {
-									let info = get.info(skill);
-									return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
-								}));
+								skills = game.expandSkills(
+									target.getSkills(null, false, false, true).filter(skill => {
+										let info = get.info(skill);
+										return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
+									})
+								);
 							target.removeSkill(skills);
 							let next = player.loseToDiscardpile(cards, ui.cardPile, "insert_card");
 							next.set("log", false);
 							next.set("_triggered", next);
+							next.set("insert_index", () => ui.cardPile.firstChild);
 							await next;
 						}
 						for (let key in player.storage.jlsg_suhui) {
