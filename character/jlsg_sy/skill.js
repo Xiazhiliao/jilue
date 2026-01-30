@@ -3562,11 +3562,11 @@ const skills = {
 		async content(event, trigger, player) {
 			let next = trigger.player.draw();
 			next.gaintag.add("jlsgsy_xueyan");
-			let { cards } = await next.forResult();
+			let cards = await next.forResult();
 			if (cards) {
 				trigger.player.markAuto("jlsgsy_xueyan", cards);
 			}
-			if (trigger.cards.some(card => trigger.player.storage.jlsgsy_xueyan.includes(card))) {
+			if (trigger.cards.some(card => trigger.player.storage.jlsgsy_xueyan?.includes(card))) {
 				await trigger.player.loseHp();
 			}
 			if (get.color(trigger.card, false) == "red") {
