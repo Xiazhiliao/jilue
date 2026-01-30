@@ -3565,9 +3565,9 @@ const skills = {
 			let { cards } = await next.forResult();
 			if (cards) {
 				trigger.player.markAuto("jlsgsy_xueyan", cards);
-				if (trigger.cards.some(card => trigger.player.storage.jlsgsy_xueyan.includes(card))) {
-					await trigger.player.loseHp();
-				}
+			}
+			if (trigger.cards.some(card => trigger.player.storage.jlsgsy_xueyan.includes(card))) {
+				await trigger.player.loseHp();
 			}
 			if (get.color(trigger.card, false) == "red") {
 				await player.draw();
