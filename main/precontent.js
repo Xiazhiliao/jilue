@@ -2017,7 +2017,9 @@ export async function precontent(config, originalPack) {
 								cards = evt.cards.filter(card => get.owner(card) == player && ["h", "e"].includes(get.position(card)));
 							}
 							bool = cards.length;
-							num = cards.length;
+							if (!num) {
+								num = cards.length;
+							}
 						}
 					}
 					str = `弃置${num}张牌`;
