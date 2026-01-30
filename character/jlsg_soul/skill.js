@@ -15495,17 +15495,17 @@ const skills = {
 		global: ["jlsg_qugu_unequip"],
 		mod: {
 			ignoredHandcard(card, player) {
-				if (card.hasGaintag("jlsg_qugu")) {
+				if (card.hasGaintag("eternal_jlsg_qugu")) {
 					return true;
 				}
 			},
 			cardDiscardable(card, player, name) {
-				if (name == "phaseDiscard" && card.hasGaintag("jlsg_qugu")) {
+				if (name == "phaseDiscard" && card.hasGaintag("eternal_jlsg_qugu")) {
 					return false;
 				}
 			},
 			cardUsable(card, player, num) {
-				if (card?.cards?.some(cardx => cardx.hasGaintag("jlsg_qugu"))) {
+				if (card?.cards?.some(cardx => cardx.hasGaintag("eternal_jlsg_qugu"))) {
 					return Infinity;
 				}
 			},
@@ -15585,7 +15585,7 @@ const skills = {
 			game.log(player, "令", card, "不可响应");
 			trigger.directHit.addArray(game.players);
 			let next = player.draw();
-			next.gaintag.add("jlsg_qugu");
+			next.gaintag.add("eternal_jlsg_qugu");
 			await next;
 		},
 		group: ["jlsg_qugu_draw"],
@@ -15601,7 +15601,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					let next = player.draw();
-					next.gaintag.add("jlsg_qugu");
+					next.gaintag.add("eternal_jlsg_qugu");
 					await next;
 				},
 			},
@@ -15741,6 +15741,13 @@ const skills = {
 									continue;
 								}
 								for (let card of info) {
+									let owner = get.owner(card);
+									if (owner) {
+										let next = owner.lose(card);
+										next.set("_triggered", null);
+										await next;
+										owner.$throw(card);
+									}
 									let cards = card[card.cardSymbol].cards;
 									let cardx = get.autoViewAs(card, cards);
 									player.addVirtualJudge(cardx, cards);
@@ -15750,18 +15757,33 @@ const skills = {
 									if (!target.canEquip(card)) {
 										continue;
 									}
+									let owner = get.owner(card);
+									if (owner) {
+										let next = owner.lose(card);
+										next.set("_triggered", null);
+										await next;
+										owner.$throw(card);
+									}
 									let cards = card[card.cardSymbol].cards;
 									let cardx = get.autoViewAs(card, cards);
 									target.directequip([cardx]);
 								}
 							} else if (key == "hand") {
-								let cards = info.map(card => {
+								let cards = [];
+								for (let card of info) {
 									if (get.position(card)) {
-										return card;
+										let owner = get.owner(card);
+										if (owner) {
+											let next = owner.lose(card);
+											next.set("_triggered", null);
+											await next;
+											owner.$throw(card);
+										}
+										cards.push(card);
 									} else {
-										return lib.skill.jlsg_lingze.createTempCard(card.name, card.suit, card.nature, card.number);
+										cards.push(lib.skill.jlsg_lingze.createTempCard(card.name, card.suit, card.nature, card.number));
 									}
-								});
+								}
 								target.directgain(cards);
 							} else {
 								target[key] = info;
