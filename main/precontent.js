@@ -2006,9 +2006,17 @@ export async function precontent(config, originalPack) {
 					str = "";
 				if (key == "discard") {
 					if (event) {
-						let cards = event.getl(player).hs.concat(event.getl(player).es);
-						bool = cards.length > 0;
-						if (!num) {
+						if (event.type != "discard" && event.getParent().name != "discard") {
+							bool = false;
+						} else {
+							let evt = event.getl(player),
+								cards = [];
+							if (evt.hs || evt.es) {
+								cards = evt.hs.concat(evt.es);
+							} else {
+								cards = evt.cards.filter(card => get.owner(card) == player && ["h", "e"].includes(get.position(card)));
+							}
+							bool = cards.length;
 							num = cards.length;
 						}
 					}
