@@ -15547,7 +15547,7 @@ const skills = {
 			if (info.selectTarget) {
 				return true;
 			}
-			return true;
+			return false;
 		},
 		async cost(event, trigger, player) {
 			let first,
@@ -15557,7 +15557,7 @@ const skills = {
 			let cards = lib.cardPile.standard
 				.concat(lib.cardPile.extra)
 				.filter(info => {
-					if (!trigger.targets.some(target => lib.filter.targetEnabled3({ name: info[2] }, trigger.player, target) || (target == player && get.info("jlsg_qugu").checkPlayer(card, player, target)))) {
+					if (!trigger.targets.some(target => lib.filter.targetEnabled3({ name: info[2] }, trigger.player, target) || (target == trigger.player && get.info("jlsg_qugu").checkPlayer({ name: info[2] }, trigger.player, target)))) {
 						return false;
 					}
 					if (!card) {
@@ -15764,7 +15764,7 @@ const skills = {
 							player.revive();
 						} else {
 							let target = player.storage.jlsg_suhui.target;
-							let cards = target.getCards("hej");
+							let cards = target.getCards("hej");								
 							let next = player.loseToDiscardpile(cards, ui.cardPile, "insert_card");
 							next.set("log", false);
 							next.set("_triggered", next);
@@ -15785,10 +15785,10 @@ const skills = {
 								);
 								let gainSkill = game.expandSkills(info);
 								let usedSkill = player.storage.jlsg_suhui.usedSkill;
-								let refreshSkill = skills.filter(skill => !usedSkill.includes(skill));
+								let refreshSkill = gainSkill.filter(skill => !usedSkill.includes(skill));								
 								target.refreshSkill(refreshSkill);
-								target.removeSkill(loseSkill);
-								target.addSkill(gainSkill);
+								target.removeSkill(loseSkill);								
+								target.addSkill(gainSkill);								
 							} else if (key == "judge") {
 								if (target.isDisabledJudge()) {
 									continue;
