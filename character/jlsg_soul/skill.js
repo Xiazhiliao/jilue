@@ -15764,14 +15764,7 @@ const skills = {
 							player.revive();
 						} else {
 							let target = player.storage.jlsg_suhui.target;
-							let cards = target.getCards("hej"),
-								skills = game.expandSkills(
-									target.getSkills(null, false, false, true).filter(skill => {
-										let info = get.info(skill);
-										return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
-									})
-								);
-							target.removeSkill(skills);
+							let cards = target.getCards("hej");
 							let next = player.loseToDiscardpile(cards, ui.cardPile, "insert_card");
 							next.set("log", false);
 							next.set("_triggered", next);
@@ -15784,11 +15777,18 @@ const skills = {
 							}
 							let info = player.storage.jlsg_suhui[key];
 							if (key == "skill") {
-								let skills = game.expandSkills(info);
-								target.addSkill(skills);
+								let loseSkill = game.expandSkills(
+									target.getSkills(null, false, false, true).filter(skill => {
+										let info = get.info(skill);
+										return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
+									})
+								);
+								let gainSkill = game.expandSkills(info);
 								let usedSkill = player.storage.jlsg_suhui.usedSkill;
 								let refreshSkill = skills.filter(skill => !usedSkill.includes(skill));
 								target.refreshSkill(refreshSkill);
+								target.removeSkill(loseSkill);
+								target.addSkill(gainSkill);
 							} else if (key == "judge") {
 								if (target.isDisabledJudge()) {
 									continue;
