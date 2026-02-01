@@ -15531,6 +15531,24 @@ const skills = {
 			}
 			return !event.player.isDying();
 		},
+		checkPlayer(card, player, target) {
+			let info = get.info(card);
+			if (!info) {
+				return;
+			}
+			if (info.modTarget) {
+				if (typeof info.modTarget == "boolean") {
+					return info.modTarget;
+				} else if (typeof info.modTarget == "function") {
+					let bool = Boolean(info.modTarget(card, player, target));
+					return bool;
+				}
+			}
+			if (info.selectTarget) {
+				return true;
+			}
+			return true;
+		},
 		async cost(event, trigger, player) {
 			let first,
 				type = get.type(trigger.card, null, false),
@@ -15539,7 +15557,7 @@ const skills = {
 			let cards = lib.cardPile.standard
 				.concat(lib.cardPile.extra)
 				.filter(info => {
-					if (!trigger.targets.some(target => lib.filter.targetEnabled3({ name: info[2] }, trigger.player, target))) {
+					if (!trigger.targets.some(target => lib.filter.targetEnabled3({ name: info[2] }, trigger.player, target) || (target == player && get.info("jlsg_qugu").checkPlayer(card, player, target)))) {
 						return false;
 					}
 					if (!card) {
@@ -15633,7 +15651,7 @@ const skills = {
 						}
 						if (["dying", "die"].includes(event.name)) {
 							return event.reason?.card?.realDamage;
-						} else if (event.name == "damage") {
+						} else if (event.name == "damage" && triggername != "damageBefore") {
 							return event.card?.realDamage;
 						} else if (event.name == "chooseToUse" && event.type == "dying") {
 							return event.getParent("dying").reason?.card?.realDamage;
@@ -15665,12 +15683,42 @@ const skills = {
 				judge = target.getCards("j"),
 				hp = target.hp,
 				maxHp = target.maxHp,
-				skill = game.expandSkills(
-					target.getSkills(null, false, false, true).filter(skill => {
-						let info = get.info(skill);
-						return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
-					})
-				);
+				suiffixs = ["used", "round", "block", "blocker", "sunben"],
+				usedSkill = [],
+				skillList = [];
+			//我啊米诺斯
+			target.getSkills(null, false, false, true).forEach(skill => {
+				let info = get.info(skill);
+				if (info && !info.charlotte && get.skillInfoTranslation(skill, target).length) {
+					skillList.push(skill);
+				}
+				let skills = game.expandSkills([skill]);
+				for (let sk of skills) {
+					let skInfo = get.info(sk);
+					if (skInfo.usable !== void 0) {
+						if (typeof target.getStat("triggerSkill")[sk] == "number" && target.getStat("triggerSkill")[sk] == "number" > 0) {
+							usedSkill.push(skill);
+						}
+						if (typeof target.getStat("skill")[sk] == "number" && target.getStat("skill")[sk] == "number" > 0) {
+							usedSkill.push(skill);
+						}
+					}
+					if (skInfo.round && target.storage[sk + "_roundcount"]) {
+						usedSkill.push(skill);
+					}
+					if (target.storage["tempban_" + sk]) {
+						usedSkill.push(skill);
+					}
+					if (target.awakenedSkills.includes(sk)) {
+						usedSkill.push(skill);
+					}
+					for (let suffix of suiffixs) {
+						if (target.hasSkill(sk + "_" + suffix)) {
+							usedSkill.push(skill);
+						}
+					}
+				}
+			});
 			player.setStorage("jlsg_suhui", {
 				target: target,
 				hand: hand,
@@ -15678,7 +15726,8 @@ const skills = {
 				judge: judge,
 				hp: hp,
 				maxHp: maxHp,
-				skill: skill,
+				skill: skillList,
+				usedSkill: usedSkill,
 			});
 			player.addSkill("jlsg_suhui_huisu");
 		},
@@ -15730,12 +15779,16 @@ const skills = {
 							await next;
 						}
 						for (let key in player.storage.jlsg_suhui) {
-							if (key == "target") {
+							if (key == "target" || key == "usedSkill") {
 								continue;
 							}
 							let info = player.storage.jlsg_suhui[key];
 							if (key == "skill") {
-								target.addSkill(info);
+								let skills = game.expandSkills(info);
+								target.addSkill(skills);
+								let usedSkill = player.storage.jlsg_suhui.usedSkill;
+								let refreshSkill = skills.filter(skill => !usedSkill.includes(skill));
+								target.refreshSkill(refreshSkill);
 							} else if (key == "judge") {
 								if (target.isDisabledJudge()) {
 									continue;
