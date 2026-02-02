@@ -15683,9 +15683,20 @@ const skills = {
 				judge = target.getCards("j"),
 				hp = target.hp,
 				maxHp = target.maxHp,
+				tags = [],
 				suiffixs = ["used", "round", "block", "blocker", "sunben"],
 				usedSkill = [],
-				skillList = [];
+				skillList = {};
+			hand.forEach(card => {
+				if (card.gaintag) {
+					for (let tag of card.gaintag) {
+						if (!tags[tag]) {
+							tags[tag] = [];
+						}
+						tags[tag].push(card);
+					}
+				}
+			});
 			//我啊米诺斯
 			target.getSkills(null, false, false, true).forEach(skill => {
 				let info = get.info(skill);
@@ -15720,6 +15731,7 @@ const skills = {
 				maxHp: maxHp,
 				skill: skillList,
 				usedSkill: usedSkill,
+				tags: tags,
 			});
 			player.addSkill("jlsg_suhui_huisu");
 		},
@@ -15764,7 +15776,7 @@ const skills = {
 							await next;
 						}
 						for (let key in player.storage.jlsg_suhui) {
-							if (key == "target" || key == "usedSkill") {
+							if (["target", "usedSkill", "tags"].includes(key)) {
 								continue;
 							}
 							let info = player.storage.jlsg_suhui[key];
@@ -15833,6 +15845,10 @@ const skills = {
 							} else {
 								target[key] = info;
 							}
+						}
+						for (let tag in player.storage.jlsg_suhui.tags) {
+							let cards = player.storage.jlsg_suhui.tags[tag];
+							target.addGaintag(cards, tag);
 						}
 						player.setStorage("jlsg_suhui", {});
 						target.update();
