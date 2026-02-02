@@ -2471,7 +2471,7 @@ const skills = {
 									}
 									return evt._neutralize_event.card == trigger.card;
 								})
-								.step(() => {
+								.then(() => {
 									let cards = trigger.cards.filterInD("od");
 									if (cards.length) {
 										player.gain(cards, "gain2");
@@ -15495,17 +15495,17 @@ const skills = {
 		global: ["jlsg_qugu_unequip"],
 		mod: {
 			ignoredHandcard(card, player) {
-				if (card.hasGaintag("jlsg_qugu")) {
+				if (card.hasGaintag("eternal_jlsg_qugu")) {
 					return true;
 				}
 			},
 			cardDiscardable(card, player, name) {
-				if (name == "phaseDiscard" && card.hasGaintag("jlsg_qugu")) {
+				if (name == "phaseDiscard" && card.hasGaintag("eternal_jlsg_qugu")) {
 					return false;
 				}
 			},
 			cardUsable(card, player, num) {
-				if (card?.cards?.some(cardx => cardx.hasGaintag("jlsg_qugu"))) {
+				if (card?.cards?.some(cardx => cardx.hasGaintag("eternal_jlsg_qugu"))) {
 					return Infinity;
 				}
 			},
@@ -15603,7 +15603,7 @@ const skills = {
 			game.log(player, "令", card, "不可响应");
 			trigger.directHit.addArray(game.players);
 			let next = player.draw();
-			next.gaintag.add("jlsg_qugu");
+			next.gaintag.add("eternal_jlsg_qugu");
 			await next;
 		},
 		group: ["jlsg_qugu_draw"],
@@ -15619,7 +15619,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					let next = player.draw();
-					next.gaintag.add("jlsg_qugu");
+					next.gaintag.add("eternal_jlsg_qugu");
 					await next;
 				},
 			},
@@ -15706,6 +15706,14 @@ const skills = {
 				let skills = game.expandSkills([skill]);
 				for (let sk of skills) {
 					let skInfo = get.info(sk);
+					if (skInfo.usable !== void 0) {
+						if (typeof target.getStat("triggerSkill")[sk] == "number" && target.getStat("triggerSkill")[sk] == "number" > 0) {
+							usedSkill.push(skill);
+						}
+						if (typeof target.getStat("skill")[sk] == "number" && target.getStat("skill")[sk] == "number" > 0) {
+							usedSkill.push(skill);
+						}
+					}
 					if (skInfo.round && target.storage[sk + "_roundcount"]) {
 						usedSkill.push(skill);
 					}
@@ -15764,8 +15772,8 @@ const skills = {
 					let result = await player.chooseBool(get.prompt2("jlsg_suhui")).forResult();
 					if (result.bool) {
 						let target = player.storage.jlsg_suhui.target;
-						if (!target.isAlive()) {
-							target.revive();
+						if (!player.isAlive()) {
+							player.revive();
 						} else {
 							let target = player.storage.jlsg_suhui.target;
 							let cards = target.getCards("hej");

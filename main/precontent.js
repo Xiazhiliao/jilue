@@ -421,9 +421,9 @@ export async function precontent(config, originalPack) {
 				return Promise.reject(error);
 			};
 			responsePromise
-				.step(successHandler, errorHandler)
-				.step(response => response.json())
-				.step(data => {
+				.then(successHandler, errorHandler)
+				.then(response => response.json())
+				.then(data => {
 					var latestVersion = data.tag_name;
 					if (latestVersion.startsWith("v")) {
 						latestVersion = latestVersion.slice(1);
@@ -535,7 +535,7 @@ export async function precontent(config, originalPack) {
 			while (myMap.size) {
 				let [completed] = await Promise.any(
 					Array.from(myMap.keys()).map(p =>
-						p.step(
+						p.then(
 							res => [p],
 							res => [p]
 						)

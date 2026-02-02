@@ -711,7 +711,7 @@ const skills = {
 				player
 					.when({ global: "dying" })
 					.filter(evt => event.targets.includes(evt.player))
-					.step(() => player.setStorage("jlsg_smdq_lijian_dying", undefined));
+					.then(() => player.setStorage("jlsg_smdq_lijian_dying", undefined));
 				while (turn.isIn() && other.isIn()) {
 					const next = turn.useCard(other, card, "nowuxie");
 					await next;

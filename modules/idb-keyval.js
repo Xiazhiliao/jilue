@@ -12,7 +12,7 @@ function createStore(dbName, storeName) {
     const request = indexedDB.open(dbName);
     request.onupgradeneeded = () => request.result.createObjectStore(storeName);
     const dbp = promisifyRequest(request);
-    return (txMode, callback) => dbp.step((db) => callback(db.transaction(storeName, txMode).objectStore(storeName)));
+    return (txMode, callback) => dbp.then((db) => callback(db.transaction(storeName, txMode).objectStore(storeName)));
 }
 let defaultGetStoreFunc;
 function defaultGetStore() {
@@ -132,7 +132,7 @@ function eachCursor(customStore, callback) {
  */
 function keys(customStore = defaultGetStore()) {
     const items = [];
-    return eachCursor(customStore, (cursor) => items.push(cursor.key)).step(() => items);
+    return eachCursor(customStore, (cursor) => items.push(cursor.key)).then(() => items);
 }
 /**
  * Get all values in the store.
@@ -141,7 +141,7 @@ function keys(customStore = defaultGetStore()) {
  */
 function values(customStore = defaultGetStore()) {
     const items = [];
-    return eachCursor(customStore, (cursor) => items.push(cursor.value)).step(() => items);
+    return eachCursor(customStore, (cursor) => items.push(cursor.value)).then(() => items);
 }
 /**
  * Get all entries in the store. Each entry is an array of `[key, value]`.
@@ -150,7 +150,7 @@ function values(customStore = defaultGetStore()) {
  */
 function entries(customStore = defaultGetStore()) {
     const items = [];
-    return eachCursor(customStore, (cursor) => items.push([cursor.key, cursor.value])).step(() => items);
+    return eachCursor(customStore, (cursor) => items.push([cursor.key, cursor.value])).then(() => items);
 }
 
 export {

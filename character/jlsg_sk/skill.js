@@ -12258,7 +12258,7 @@ const skills = {
 					ignoreMod: true,
 					precontent: function () {
 						if (!player.storage.jlsg_huomo) {
-							player.when({ global: ["phaseAfter", "phaseBefore"] }).step(() => {
+							player.when({ global: ["phaseAfter", "phaseBefore"] }).then(() => {
 								player.unmarkSkill("jlsg_huomo");
 							});
 						}
@@ -14662,7 +14662,7 @@ const skills = {
 				.when({ player: "phaseDiscardEnd" })
 				.filter(evt => evt == trigger)
 				.vars({ cnt: cards.length })
-				.step(() => {
+				.then(() => {
 					player.draw(cnt);
 				});
 		},
@@ -14777,7 +14777,7 @@ const skills = {
 				storage = player.getStorage("jlsg_yanjiao", Array.from({ length: 5 }));
 			storage[num - 1] = true;
 			player.setStorage("jlsg_yanjiao", storage, true);
-			player.when({ player: "phaseUseAfter", global: "phaseAfter" }).step(() => {
+			player.when({ player: "phaseUseAfter", global: "phaseAfter" }).then(() => {
 				player.setStorage("jlsg_yanjiao", Array.from({ length: 5 }), true);
 			});
 			await player.give(event.cards, target);
@@ -14880,7 +14880,7 @@ const skills = {
 			if (!player.hasMark("jlsg_xingshen")) {
 				await player.recover();
 				player.addMark("jlsg_xingshen");
-				player.when({ player: ["phaseEnd", "phaseAfter"] }).step(() => {
+				player.when({ player: ["phaseEnd", "phaseAfter"] }).then(() => {
 					player.removeMark("jlsg_xingshen");
 				});
 			}
@@ -15283,7 +15283,7 @@ const skills = {
 				player
 					.when({ global: "useCardAfter" })
 					.filter(evt => evt == trigger)
-					.step(() => {
+					.then(() => {
 						if (
 							!player.hasHistory("gain", evt => {
 								if (!evt.getParent() || evt.getParent().name != "draw") {
@@ -15300,7 +15300,7 @@ const skills = {
 								.set("drawNum", drawNum);
 						}
 					})
-					.step(() => {
+					.then(() => {
 						if (result.bool) {
 							player.logSkill("jlsg_xuhe");
 							player.draw(drawNum).set("skill", "jlsg_xuhe");
@@ -19362,7 +19362,7 @@ const skills = {
 					let index = trigger.parent.next.indexOf(trigger) + tarIndex;
 					trigger.parent.next.splice(index, 0, next);
 					if (tarIndex == targets.length && refinish) {
-						next.step(() => {
+						next.then(() => {
 							trigger.parent.finish();
 						});
 					}
