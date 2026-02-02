@@ -5105,7 +5105,7 @@ const skills = {
 			const upgrade = upgradeStorage?.other?.[event.name];
 			const target = event.targets[0];
 			if (!player.getStorage("jlsg_chouxi")?.length) {
-				player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
+				player.when({ player: "phaseUseEnd" }).step(() => player.setStorage("jlsg_chouxi", []));
 			}
 			player.markAuto("jlsg_chouxi", [target]);
 			let num = upgrade ? 3 : 2;
