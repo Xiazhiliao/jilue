@@ -15706,14 +15706,6 @@ const skills = {
 				let skills = game.expandSkills([skill]);
 				for (let sk of skills) {
 					let skInfo = get.info(sk);
-					if (skInfo.usable !== void 0) {
-						if (typeof target.getStat("triggerSkill")[sk] == "number" && target.getStat("triggerSkill")[sk] == "number" > 0) {
-							usedSkill.push(skill);
-						}
-						if (typeof target.getStat("skill")[sk] == "number" && target.getStat("skill")[sk] == "number" > 0) {
-							usedSkill.push(skill);
-						}
-					}
 					if (skInfo.round && target.storage[sk + "_roundcount"]) {
 						usedSkill.push(skill);
 					}
@@ -15772,8 +15764,8 @@ const skills = {
 					let result = await player.chooseBool(get.prompt2("jlsg_suhui")).forResult();
 					if (result.bool) {
 						let target = player.storage.jlsg_suhui.target;
-						if (!player.isAlive()) {
-							player.revive();
+						if (!target.isAlive()) {
+							target.revive();
 						} else {
 							let target = player.storage.jlsg_suhui.target;
 							let cards = target.getCards("hej");
