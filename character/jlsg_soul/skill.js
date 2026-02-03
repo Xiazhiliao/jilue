@@ -15683,10 +15683,10 @@ const skills = {
 				judge = target.getCards("j"),
 				hp = target.hp,
 				maxHp = target.maxHp,
-				tags = [],
+				tags = {},
 				suiffixs = ["used", "round", "block", "blocker", "sunben"],
 				usedSkill = [],
-				skillList = {};
+				skillList = [];
 			hand.forEach(card => {
 				if (card.gaintag) {
 					for (let tag of card.gaintag) {
