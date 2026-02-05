@@ -2098,16 +2098,6 @@ export async function precontent(config, originalPack) {
 	//资料卡换肤
 	//因本体资料卡换肤只停留于表层，故这部分无法实现
 	//需本体PR-202507276及以上版本
-	lib.arenaReady.push(function () {
-		if (lib.hooks.refreshSkin && !lib.hooks.refreshSkin.some(i => i.name == "changeSkin")) {
-			const changeSkin = function (name, skin) {
-				if ((get.nameList(game.me) || []).includes(name)) {
-					game.me.changeSkin({ characterName: name }, skin);
-				}
-			};
-			lib.hooks.refreshSkin.push(changeSkin);
-		}
-	});
 	let skinCheck = true,
 		characterSkinList;
 	let [files] = await game.promises.getFileList(`extension/极略`);
@@ -2129,6 +2119,8 @@ export async function precontent(config, originalPack) {
 				if (!characterSkinList.includes(character)) {
 					continue;
 				}
+				pack.character[character].skinPath = `ext:极略/skin/image/${character}/`;
+				/*
 				pack.characterSubstitute ??= {};
 				pack.characterSubstitute[character] ??= [];
 				const [folders, files] = await game.promises.getFileList(`extension/极略/skin/image/${character}`);
@@ -2138,6 +2130,7 @@ export async function precontent(config, originalPack) {
 						pack.characterSubstitute[character].push([skinName, [`img:${lib.assetURL}extension/极略/skin/image/${character}/${file}`]]);
 					}
 				}
+				*/
 			}
 		}
 		//导入武将包
