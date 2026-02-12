@@ -186,7 +186,7 @@ const translates = {
 	jlsg_jieying: "劫营",
 	jlsg_jieying_info: "回合开始时，你可以令一名未拥有「劫营」标记的其他角色获得3枚「劫营」。拥有「劫营」标记的角色摸至少两张牌/回复体力/加体力上限/执行额外回合/获得技能前，你弃置其1枚「劫营」标记并改为由你执行此效果。",
 	jlsg_jinlong: "锦龙",
-	jlsg_jinlong_info: "锁定技，当装备牌被你获得或不因判定而进入弃牌堆后，将之置于你的武将牌上，然后你摸一张牌。你视为拥有这些装备牌的技能。",
+	jlsg_jinlong_info: "锁定技，游戏开始时，你将X牌堆中X张装备牌置于武将牌上，当装备牌被你获得或不因判定而进入弃牌堆后，将之置于你的武将牌上，然后你摸一张牌。你视为拥有这些装备牌的技能。",
 	jlsg_jinlong_append: '<span style="font-family:yuanli">无法获得武器的攻击范围。坐骑的距离结算效果相加后结算。</span>',
 	jlsgsoul_xiahoudun: "SK神夏侯惇",
 	jlsg_danjing: "啖睛",
