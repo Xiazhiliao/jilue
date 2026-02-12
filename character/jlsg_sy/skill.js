@@ -132,7 +132,7 @@ const skills = {
 	jlsgsy_wushuang: {
 		audio: "ext:极略/audio/skill:1",
 		locked: true,
-		group: ["jlsgsy_wushuang1", "jlsgsy_wushuang2", "jlsgsy_wushuang3"],
+		group: ["jlsgsy_wushuang1", "jlsgsy_wushuang2", "jlsgsy_wushuang3", "jlsgsy_wushuang4"],
 	},
 	jlsgsy_wushuang1: {
 		audio: "jlsgsy_wushuang",
@@ -217,14 +217,36 @@ const skills = {
 			},
 		},
 	},
+	jlsgsy_wushuang4: {
+		audio: "jlsgsy_wushuang",
+		trigger: { global: "damageBegin3" },
+		filter: function (event, player) {
+			if (event.card?.name != "juedou") {
+				return false;
+			}
+			return event.getParent(
+				evtx =>
+					evtx.name == "useCard" &&
+					evtx.card == event.card &&
+					evtx.player != player &&
+					evtx.targets.includes(player)
+			).name;
+		},
+		forced: true,
+		direct: true,
+		async content(event, trigger, player) {
+			trigger.num = 3;
+		},
+	},
 	jlsgsy_xiuluo: {
 		audio: "ext:极略/audio/skill:1",
-		trigger: { target: "useCardToTargeted" },
+		trigger: { player: "useCardToPlayered", target: "useCardToTargeted" },
 		filter: function (event, player) {
 			return (
-				event.targets &&
-				event.targets.length === 1 &&
-				(event.card.name == "sha" || get.type(event.card) == "trick")
+				event.player == player ||
+				(event.targets &&
+					event.targets.length === 1 &&
+					(event.card.name == "sha" || get.type(event.card) == "trick"))
 			);
 		},
 		check: function (event, player) {
@@ -255,16 +277,15 @@ const skills = {
 	jlsgsy_shenwei_g: {
 		mod: {
 			maxHandcard: function (player, num) {
-				return (
-					num -
-					game.countPlayer(function (current) {
-						return (
-							current != player &&
-							current.hasSkill("jlsgsy_shenwei") &&
-							current.inRange(player)
-						);
-					})
-				);
+				let numx = 0;
+				game.players.forEach(curr => {
+					if (curr != player && curr.hasSkill("jlsgsy_shenwei") && curr.inRange(player)) {
+						numx += curr.getAllHistory("sourceDamage", his =>
+							his.sourceDamage.some(evt => evt.player != curr)
+						).length;
+					}
+				});
+				return num - numx;
 			},
 		},
 	},

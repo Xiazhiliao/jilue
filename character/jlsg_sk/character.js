@@ -70,7 +70,13 @@ const characters = {
 	jlsgsk_zhugeguo: ["female", "shu", 3, ["jlsg_yuhua", "jlsg_dengxian"], ["name:诸葛|null"]],
 	jlsgsk_xizhicai: ["male", "wei", 3, ["jlsg_tiance", "jlsg_jiexin"], []],
 	jlsgsk_guansuo: ["male", "shu", 4, ["jlsg_zhengnan", "jlsg_tongxin"], []],
-	jlsgsk_baosanniang: ["female", "shu", 3, ["jlsg_jianwu", "jlsg_zhennan", "jlsg_tongxin"], ["name:鲍|null"]],
+	jlsgsk_baosanniang: [
+		"female",
+		"shu",
+		3,
+		["jlsg_jianwu", "jlsg_zhennan", "jlsg_tongxin"],
+		["name:鲍|null"],
+	],
 	jlsgsk_dongbai: ["female", "qun", 3, ["jlsg_shemi", "jlsg_jiaohui"], ["name:董|null"]],
 	jlsgsk_xushi: ["female", "wu", 3, ["jlsg_wengua", "jlsg_fuzhu"], ["name:徐|null"]],
 	jlsgsk_zhoufei: ["female", "wu", 3, ["jlsg_yinyuan", "jlsg_konghou"], ["name:周|null"]],
@@ -111,7 +117,13 @@ const characters = {
 	jlsgsk_beimihu: ["female", "qun", 3, ["jlsg_canshi", "jlsg_xianji"], ["name:卑弥|呼"]],
 	jlsgsk_wutugu: ["male", "qun", 6, ["jlsg_hanyong"], ["name:null|null"]],
 	jlsgsk_caoying: ["female", "wei", 4, ["jlsg_lingruo", "jlsg_fujian"], ["name:曹|null"]],
-	jlsgsk_mayunlu: ["female", "shu", 4, ["mashu", "jlsg_fengyin", "jlsg_rongzhuang"], ["name:马|null"]],
+	jlsgsk_mayunlu: [
+		"female",
+		"shu",
+		4,
+		["mashu", "jlsg_fengyin", "jlsg_rongzhuang"],
+		["name:马|null"],
+	],
 	jlsgsk_zhongyao: ["male", "wei", 3, ["jlsg_huomo", "jlsg_dingguan"], []],
 	jlsgsk_nanhualaoxian: ["male", "qun", 3, ["jlsg_xianshou", "jlsg_chengfeng"], ["name:庄|周"]],
 	jlsgsk_jiangwei: ["male", "wei", 5, ["jlsg_kunfen", "jlsg_caiyu"], []],
@@ -128,7 +140,13 @@ const characters = {
 	jlsgsk_guohuai: ["male", "wei", 4, ["jlsg_jingce"], []],
 	jlsgsk_huangchengyan: ["male", "qun", 3, ["jlsg_guanxu", "jlsg_yashi"], ["name:黄|承彦"]],
 	jlsgsk_lvkai: ["male", "shu", 3, ["jlsg_tunan", "jlsg_bijing"], []],
-	jlsgsk_zhugedan: ["male", "wei", 5, ["jlsg_gongao", "jlsg_juyi", "jlsg_weizhong"], ["name:诸葛|诞"]],
+	jlsgsk_zhugedan: [
+		"male",
+		"wei",
+		5,
+		["jlsg_gongao", "jlsg_juyi", "jlsg_weizhong"],
+		["name:诸葛|诞"],
+	],
 	jlsgsk_yangwan: ["female", "shu", 3, ["jlsg_youyan", "jlsg_zhuihuan"], ["name:杨|null"]],
 	jlsgsk_cenhun: ["male", "wu", 3, ["jlsg_jishe", "jlsg_lianhuo"], []],
 	jlsgsk_gexuan: ["male", "wu", 3, ["jlsg_lianhua", "jlsg_zhafu"], []],
@@ -144,6 +162,7 @@ const characters = {
 	jlsgsk_duyu: ["male", "wei", 4, ["jlsg_sanchen", "jlsg_pozhu"], []],
 	//jlsgsk_lingju: ["female", "qun", 3, ["jlsg_jieyuan", "jlsg_fenxin"], []],
 	jlsgsk_hujinding: ["female", "shu", 3, ["jlsg_qingyuan", "jlsg_chongshen"], ["name:胡|null"]],
+	jlsgsk_shixie: ["male", "qun", 3, ["jlsg_biluan", "jlsg_lixia"], ["name:士|null"]],
 };
 
 export default characters;

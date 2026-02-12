@@ -1,3 +1,4 @@
+import { filter } from "jszip/lib/object.js";
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
@@ -22062,6 +22063,105 @@ const skills = {
 				player = player || get.player();
 				return get.order({ name: "tao" }, player) + 0.1;
 			},
+		},
+	},
+	jlsg_biluan: {
+		trigger: {
+			player: "phaseEnd",
+		},
+		filter(event, player) {
+			return player.countCards("he") > 0;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player.chooseCard("he", get.prompt2(event.skill)).forResult();
+		},
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			player.addTempSkill("jlsg_biluan_effect", { player: "phaseBegin" });
+		},
+		subSkill: {
+			effect: {
+				mod: {
+					globalTo(from, to, distance) {
+						return distance + game.players.length;
+					},
+				},
+				trigger: {
+					player: ["damgeAfter"],
+				},
+				forced: true,
+				onremove: true,
+				filter(event, player) {
+					return !player.getStorage("jlsg_biluan_effect");
+				},
+				async content(event, trigger, player) {
+					player.setStorage("jlsg_biluan_effect", true);
+					await player.draw(game.players.length);
+				},
+			},
+		},
+	},
+	jlsg_lixia: {
+		trigger: {
+			global: "phaseEnd",
+		},
+		filter(event, player) {
+			let ownSkills = event.player.getSkills(null, false, true).filter(sk => {
+				if (sk == "jlsg_lixia") {
+					return false;
+				}
+				let info = get.info(sk);
+				return info && !info.charlotte && get.skillInfoTranslation(sk).length;
+			});
+			if (!ownSkills.length) {
+				return false;
+			}
+			let skills = event.player.getSkills(null, false, true).filter(sk => {
+				let info = get.info(sk);
+				return info && !info.charlotte && get.skillInfoTranslation(sk).length;
+			});
+			let gain = player.getStorage("jlsg_lixia_gain");
+			return (
+				event.player != player &&
+				event.player.isIn() &&
+				event.player != player &&
+				event.player.inRange(player) &&
+				skills.some(sk => !gain.includes(sk))
+			);
+		},
+		async cost(event, trigger, player) {
+			let skills = event.player.getSkills(null, false, true).filter(sk => {
+				if (sk == "jlsg_lixia") {
+					return false;
+				}
+				let info = get.info(sk);
+				return info && !info.charlotte && get.skillInfoTranslation(sk).length;
+			});
+			let result = await player
+				.chooseButton([get.prompt2(event.skill), [skills, "skill"]])
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				confirm: result.confirm,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			let lose = event.cost_data[0];
+			player.removeSkill(lose);
+			trigger.player.addSkill(lose);
+			let skills = trigger.player.getSkills(null, false, true).filter(sk => {
+				if (sk == lose) {
+					return false;
+				}
+				let info = get.info(sk);
+				return info && !info.charlotte && get.skillInfoTranslation(sk).length;
+			});
+			let result = await trigger.player
+				.chooseBool([`交给${get.translation(player)}一个技能}`, [skills, "skill"]])
+				.forResult();
+			player.addSkill(result.links[0]);
+			player.markAuto("jlsg_lixia_gain", result.links[0]);
 		},
 	},
 };

@@ -7285,12 +7285,9 @@ const skills = {
 			name2: "劫营",
 			content: "mark",
 		},
-		trigger: { player: "phaseDrawBegin1" },
+		trigger: { player: "phaseBegin" },
 		filter(event, player) {
-			return (
-				!event.numFixed &&
-				game.filterPlayer(p => p != player && !p.countMark("jlsg_jieying")).length
-			);
+			return game.filterPlayer(p => p != player && !p.countMark("jlsg_jieying")).length;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -7303,7 +7300,6 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			trigger.changeToZero();
 			event.targets[0].addMark(event.name, 3);
 			player.addExpose(3);
 		},
@@ -7330,6 +7326,9 @@ const skills = {
 					if (event.player == player) {
 						return false;
 					}
+					if (event.name == "draw") {
+						return event.cards.length > 1;
+					}
 					if (event.name == "phase") {
 						return event.skill;
 					}
@@ -7342,7 +7341,6 @@ const skills = {
 							)
 						);
 					}
-					return true;
 				},
 				forced: true,
 				logTarget: "player",
@@ -7408,13 +7406,22 @@ const skills = {
 		},
 		trigger: {
 			player: "gainAfter",
-			global: ["loseAfter", "cardsDiscardAfter", "loseAsyncAfter", "equipAfter"],
+			global: [
+				"loseAfter",
+				"cardsDiscardAfter",
+				"loseAsyncAfter",
+				"equipAfter",
+				"phaseBefore",
+			],
 		},
-		filter(event, player) {
+		filter(event, player, name) {
 			if (event.getg && event.getg?.(player)) {
 				if (event.getg(player).some(c => get.type(c) == "equip")) {
 					return true;
 				}
+			}
+			if (name == "phaseBefore") {
+				return event.name != "phase" || game.phaseNumber == 0;
 			}
 			if (event.name == "cardsDiscard") {
 				let evt = event.getParent();
@@ -7435,50 +7442,65 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const cards = [],
-				gain = [];
-			if (trigger.getg && trigger.getg(player)) {
-				gain.addArray(trigger.getg(player).filter(c => get.type(c) == "equip"));
-				if (gain.length) {
-					const next = player.addToExpansion(gain, "give");
+			const cards = [];
+			if (event.triggername == "phaseBefore") {
+				for (let i = 0; i < game.players.length; i++) {
+					let card = get.cardPile2(
+						cardx => get.type(cardx, false) == "equip" && !cards.includes(cardx)
+					);
+					cards.push(card);
+				}
+				if (cards.length) {
+					game.log(player, "将", cards, "置于了武将牌上");
+					const next = player.addToExpansion(cards, "gain2", "log");
 					next.gaintag.add(event.name);
 					await next;
 				}
-			}
-			if (trigger.name == "cardsDiscard") {
-				let evt = trigger.getParent();
-				if (evt.name == "orderingDiscard") {
-					evt = evt.relatedEvent || evt.getParent();
+			} else {
+				let gain = [];
+				if (trigger.getg && trigger.getg(player)) {
+					gain.addArray(trigger.getg(player).filter(c => get.type(c) == "equip"));
+					if (gain.length) {
+						const next = player.addToExpansion(gain, "give");
+						next.gaintag.add(event.name);
+						await next;
+					}
 				}
-				if (evt && evt.name != "judge") {
+				if (trigger.name == "cardsDiscard") {
+					let evt = trigger.getParent();
+					if (evt.name == "orderingDiscard") {
+						evt = evt.relatedEvent || evt.getParent();
+					}
+					if (evt && evt.name != "judge") {
+						cards.addArray(
+							trigger.cards.filter(
+								card => get.position(card, true) == "d" && get.type(card) == "equip"
+							)
+						);
+					}
+				} else {
 					cards.addArray(
-						trigger.cards.filter(
-							card => get.position(card, true) == "d" && get.type(card) == "equip"
-						)
+						trigger
+							.getd()
+							.filter(
+								card => get.position(card, true) == "d" && get.type(card) == "equip"
+							)
 					);
 				}
-			} else {
-				cards.addArray(
-					trigger
-						.getd()
-						.filter(
-							card => get.position(card, true) == "d" && get.type(card) == "equip"
-						)
+				if (cards.length) {
+					game.log(player, "将", cards, "置于了武将牌上");
+					const next = player.addToExpansion(cards, "gain2", "log");
+					next.gaintag.add(event.name);
+					await next;
+				}
+				const cards2 = cards.addArray(gain).unique();
+				player.addAdditionalSkill(
+					event.name,
+					get.skillsFromEquips(cards2).filter(i => lib.translate[i]),
+					true
 				);
+				player.draw(cards2.length);
 			}
-			if (cards.length) {
-				game.log(player, "将", cards, "置于了武将牌上");
-				const next = player.addToExpansion(cards, "gain2", "log");
-				next.gaintag.add(event.name);
-				await next;
-			}
-			const cards2 = cards.addArray(gain).unique();
-			player.addAdditionalSkill(
-				event.name,
-				get.skillsFromEquips(cards2).filter(i => lib.translate[i]),
-				true
-			);
-			player.draw(cards2.length);
 		},
 	},
 	jlsg_liegong: {
@@ -17842,27 +17864,12 @@ const skills = {
 			trigger.set("card", card);
 			game.log(player, "令", card, "不可响应");
 			trigger.directHit.addArray(game.players);
-			let next = player.draw();
+			let next = player.draw(2);
 			next.gaintag.add("eternal_jlsg_qugu");
 			await next;
 		},
 		group: ["jlsg_qugu_draw", "jlsg_qugu_realDamage"],
 		subSkill: {
-			draw: {
-				audio: "jlsg_qugu",
-				trigger: {
-					global: ["damageAfter"],
-				},
-				forced: true,
-				filter(event, player) {
-					return event.card?.qugu_unequip == player;
-				},
-				async content(event, trigger, player) {
-					let next = player.draw();
-					next.gaintag.add("eternal_jlsg_qugu");
-					await next;
-				},
-			},
 			unequip: {
 				ai: {
 					unequip: true,
