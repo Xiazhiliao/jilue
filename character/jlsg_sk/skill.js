@@ -1,4 +1,3 @@
-import { filter } from "jszip/lib/object.js";
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
@@ -22066,6 +22065,7 @@ const skills = {
 		},
 	},
 	jlsg_biluan: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			player: "phaseEnd",
 		},
@@ -22102,11 +22102,12 @@ const skills = {
 		},
 	},
 	jlsg_lixia: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			global: "phaseEnd",
 		},
 		filter(event, player) {
-			let ownSkills = event.player.getSkills(null, false, true).filter(sk => {
+			let ownSkills = player.getSkills(null, false, true).filter(sk => {
 				if (sk == "jlsg_lixia") {
 					return false;
 				}
@@ -22124,8 +22125,7 @@ const skills = {
 			return (
 				event.player != player &&
 				event.player.isIn() &&
-				event.player != player &&
-				event.player.inRange(player) &&
+				!event.player.inRange(player) &&
 				skills.some(sk => !gain.includes(sk))
 			);
 		},
@@ -22158,7 +22158,8 @@ const skills = {
 				return info && !info.charlotte && get.skillInfoTranslation(sk).length;
 			});
 			let result = await trigger.player
-				.chooseBool([`交给${get.translation(player)}一个技能}`, [skills, "skill"]])
+				.chooseButton([`交给${get.translation(player)}一个技能}`, [skills, "skill"]])
+				.set("forced", true)
 				.forResult();
 			player.addSkill(result.links[0]);
 			player.markAuto("jlsg_lixia_gain", result.links[0]);

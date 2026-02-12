@@ -940,7 +940,7 @@ const translates = {
 	jlsg_chongshen: "重身",
 	jlsg_chongshen_info:
 		"你可以将红色牌当【桃】使用，当你于回合外以此法使用牌后，你可以将此牌交给一名其他角色。",
-	jlsgsk_shixie: "sk士燮",
+	jlsgsk_shixie: "SK士燮",
 	jlsg_biluan: "避乱",
 	jlsg_biluan_info:
 		"回合结束阶段，你可以弃置一张牌，若如此做，直到你的下个回合开始时，其他角色与你的距离+X，当你首次受到伤害后，你摸X张牌（X为存活角色数）。",

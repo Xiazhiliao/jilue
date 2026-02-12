@@ -282,7 +282,7 @@ const skills = {
 					if (curr != player && curr.hasSkill("jlsgsy_shenwei") && curr.inRange(player)) {
 						numx += curr.getAllHistory("sourceDamage", his =>
 							his.sourceDamage.some(evt => evt.player != curr)
-						).length;
+						).length + 1;
 					}
 				});
 				return num - numx;

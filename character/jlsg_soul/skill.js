@@ -7327,7 +7327,7 @@ const skills = {
 						return false;
 					}
 					if (event.name == "draw") {
-						return event.cards.length > 1;
+						return event.num > 1;
 					}
 					if (event.name == "phase") {
 						return event.skill;
