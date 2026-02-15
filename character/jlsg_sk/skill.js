@@ -19393,6 +19393,7 @@ const skills = {
 				for (const i in targets) {
 					const target = targets[i];
 					const next = target.damage();
+					event.next.remove(next);
 					for (let i in args) {
 						next[i] = args[i];
 					}
