@@ -20128,7 +20128,7 @@ const skills = {
 			player: "phaseEnd",
 		},
 		filter(event, player) {
-			return player.countCards("he") > 0;
+			return player.countDiscardableCards(player, "he") > 0;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player.chooseToDiscard("he", get.prompt2(event.skill)).set("chooseonly", true).forResult();
@@ -20145,7 +20145,7 @@ const skills = {
 					},
 				},
 				trigger: {
-					player: ["damgeAfter"],
+					player: ["damageAfter"],
 				},
 				forced: true,
 				onremove: true,
@@ -20198,7 +20198,7 @@ const skills = {
 			player.removeSkill(lose);
 			trigger.player.addSkill(lose);
 			let skills = trigger.player.getSkills(null, false, true).filter(sk => {
-				if (sk == lose||lib.filter.skillDisabled(sk)) {
+				if (sk == lose || lib.filter.skillDisabled(sk)) {
 					return false;
 				}
 				return !get.info(sk)?.charlotte;

@@ -6575,6 +6575,7 @@ const skills = {
 					if (event.name == "changeSkills") {
 						return event.addSkill.length && !(player.countMark("jlsg_jieying") && game.hasPlayer(p => p != player && p.hasSkill("jlsg_jieying")));
 					}
+					return true;
 				},
 				forced: true,
 				logTarget: "player",
