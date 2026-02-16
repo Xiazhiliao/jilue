@@ -242,12 +242,9 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		trigger: { player: "useCardToPlayered", target: "useCardToTargeted" },
 		filter: function (event, player) {
-			return (
-				event.player == player ||
-				(event.targets &&
-					event.targets.length === 1 &&
-					(event.card.name == "sha" || get.type(event.card) == "trick"))
-			);
+			if (get.name(event.card) !== "sha" && get.type(event.card) !== "trick") return false;
+			if (event.player == player) return true;
+			return event.targets && event.targets.length === 1;
 		},
 		check: function (event, player) {
 			return (

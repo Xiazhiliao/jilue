@@ -6675,11 +6675,6 @@ const skills = {
 					const next = player.addToExpansion(cards, "gain2", "log");
 					next.gaintag.add(event.name);
 					await next;
-					player.addAdditionalSkill(
-						event.name,
-						get.skillsFromEquips(cards).filter(i => lib.translate[i]),
-						true
-					);
 				}
 			} else {
 				if (trigger.getg && trigger.getg(player)) {
@@ -6707,10 +6702,20 @@ const skills = {
 				cards = cards.addArray(gain).unique();
 				player.draw(cards.length);
 			}
+			cards = player.getExpansions(event.name);
+			let skills = get.skillsFromEquips(cards).filter(i => lib.skill[i]);
+			for (const item of skills) {
+				const name = `${event.name}_${item}`;
+				lib.skill[name] = get.copy(lib.skill[item]);
+				lib.skill[name].locked = true;
+				lib.translate[name] = lib.translate[item];
+				lib.translate[name + "_info"] = lib.translate[item + "_info"];
+				game.finishSkill(name);
+			}
+			skills = skills.map(item => `${event.name}_${item}`)
 			player.addAdditionalSkill(
 				event.name,
-				get.skillsFromEquips(cards).filter(i => lib.translate[i]),
-				true
+				skills
 			);
 		},
 	},
