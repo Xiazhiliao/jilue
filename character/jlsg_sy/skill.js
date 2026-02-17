@@ -1191,12 +1191,12 @@ const skills = {
 							return true;
 						})
 						.set("target", trigger.source);
+					return;
 				}
-			} else {
-				game.log(player, "防止了伤害");
-				trigger.cancel();
-				await trigger.source.loseHp(1);
 			}
+			game.log(player, "防止了伤害");
+			trigger.cancel();
+			await trigger.source.loseHp(1);
 		},
 		ai: {
 			maixie_defend: true,
@@ -3266,7 +3266,7 @@ const skills = {
 			if (event.targets.some(target => target.countCards("h") >= player.countCards("h"))) {
 				return false;
 			}
-			return event.card.name == "sha" && !event.card.hasNature();
+			return event.card.name == "sha";
 		},
 		forced: true,
 		async content(event, trigger, player) {

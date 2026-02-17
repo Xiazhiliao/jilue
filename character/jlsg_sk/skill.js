@@ -6624,7 +6624,6 @@ const skills = {
 			}
 			"step 2";
 			event.card = result.links[0];
-
 			event.target.lose(result.cards, ui.cardPile, "insert");
 			game.log(player, "将", get.position(event.card) == "h" ? "一张牌" : event.card, "置于牌堆顶");
 			event.target.$throw(1, 1000);
@@ -6633,10 +6632,10 @@ const skills = {
 	jlsg_zhenlie: {
 		audio: "ext:极略/audio/skill:1",
 		trigger: { target: "useCardToTargeted" },
-		filter: function (event, player) {
-			return event.player != player && event.card && (event.card.name == "sha" || get.type(event.card) == "trick");
+		filter(event, player) {
+			return event.player != player && (event.card.name == "sha" || get.type(event.card) == "trick");
 		},
-		check: function (event, player) {
+		check(event, player) {
 			if (event.getParent().excluded.includes(player)) {
 				return false;
 			}
@@ -6661,41 +6660,32 @@ const skills = {
 			return false;
 		},
 		priority: 10,
-		content: function () {
-			"step 0";
-			player.loseHp();
-			"step 1";
+		async content(event, trigger, player) {
+			await player.loseHp();
 			trigger.getParent().excluded.add(player);
-			"step 2";
-			if (player.countCards("he")) {
-				player.chooseToDiscard("你可以弃置一张牌，令" + get.translation(trigger.player) + "展示所有手牌并弃置与之花色相同的牌", "he").set("ai", function (card) {
-					if (jlsg.isFriend(player, trigger.player)) {
+			if (!player.countCards("he")) return;
+			let result = await player.chooseToDiscard("你可以弃置一张牌，令" + get.translation(trigger.player) + "展示所有手牌并弃置与之花色相同的牌", "he")
+				.set("ai", function (card) {
+					const { player, target } = get.event();
+					if (jlsg.isFriend(player, target)) {
 						return false;
 					}
 					if (jlsg.isWeak(player)) {
 						return false;
 					}
-					if (jlsg.isWeak(trigger.player)) {
+					if (jlsg.isWeak(target)) {
 						return 10 - get.value(card);
 					}
 					return 6 - get.value(card);
-				});
-			} else {
-				trigger.player.loseHp();
-				event.finish();
-			}
-			"step 3";
-			if (!result.bool) {
-				trigger.player.loseHp();
-				event.finish();
-				return;
-			}
-			var cards = trigger.player.getCards("h", { suit: get.suit(result.cards[0]) });
-			trigger.player.showHandcards();
+				})
+				.set("target", trigger.player)
+				.forResult();
+			const cards = trigger.player.getCards("h", { suit: get.suit(result.cards[0]) });
+			await trigger.player.showHandcards();
 			if (!cards.length) {
-				trigger.player.loseHp();
+				await trigger.player.loseHp();
 			} else {
-				trigger.player.discard(cards);
+				await trigger.player.discard(cards);
 			}
 		},
 		ai: {
@@ -6705,53 +6695,26 @@ const skills = {
 	jlsg_miji: {
 		audio: "ext:极略/audio/skill:1",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
-		filter: function (event, player, name) {
+		filter(event, player, name) {
 			if (name == "phaseZhunbeiBegin") {
 				return player.isDamaged();
 			}
 			if (name == "phaseJieshuBegin") {
-				return !game.hasPlayer(function (target) {
-					return target.hp < player.hp;
-				});
+				return player.isMinHp();
 			}
 		},
 		frequent: true,
-		content: function () {
-			"step 0";
-			player.chooseControl("basic", "equip", "trick").set("ai", function () {
-				var basic = player.countCards("he", "basic");
-				var equip = player.countCards("he", "equip");
-				var trick = player.countCards("he", "trick");
-				var theLess = Math.min(basic, equip, trick);
-				switch (theLess) {
-					case basic:
-						return "basic";
-					case equip:
-						return "equip";
-					case trick:
-						return "trick";
-					default: {
-						if (Math.random() < 0.5) {
-							return "basic";
-						}
-						if (Math.random() < 0.5) {
-							return "equip";
-						}
-						if (Math.random() < 2 / 3) {
-							return "trick";
-						}
-						return "basic";
-					}
-				}
-			});
-			"step 1";
-			var card = jlsg.findCardInCardPile(function (card) {
-				return get.type(card) == result.control;
-			});
+		async content(event, trigger, player) {
+			let result = await player.chooseControl("basic", "equip", "trick")
+				.set("ai", function () {
+					const { player } = get.event();
+					if (player.countCards("he", "trick") == 0) return "trick";
+					return "basic";
+				}).forResult();
+			const card = get.cardPile2(card => get.type(card) == result.control, "random");
 			if (card) {
-				event.card1 = card;
-				player.showCards("秘计", event.card1);
-				player
+				await player.showCards("秘计", card);
+				result = await player
 					.chooseTarget("将" + get.translation(card) + "交给一名角色")
 					.set(
 						"ai",
@@ -6764,18 +6727,16 @@ const skills = {
 						},
 						true
 					)
-					.set("du", card.name == "du");
-			} else {
-				game.log("没有找到该类型卡牌，请重新选择");
-				event.cantSelect = result.control;
-				event.goto(0);
-			}
-			"step 2";
-			if (result.bool) {
-				if (result.targets[0].ai.shown > player.ai.shown) {
-					player.addExpose(0.2);
+					.set("du", card.name == "du")
+					.forResult();
+				if (result.bool) {
+					if (result.targets[0].ai.shown > player.ai.shown) {
+						player.addExpose(0.2);
+					}
+					await result.targets[0].gain(card, "gain");
 				}
-				result.targets[0].gain(event.card1, "gain");
+			} else {
+				player.chat("部身鸽门，牌堆没有" + get.translation(result.control) + "牌了？");
 			}
 		},
 	},
@@ -12419,10 +12380,12 @@ const skills = {
 				const result = await player.judge("jlsg_xianshou").forResult();
 				const suit = result.suit;
 				const num = [0, 1, 2, 3].randomGet();
+				const storage = target.storage.jlsg_tiandao;
 				if (suit != "spade") {
-					target.storage.jlsg_tiandao[num]++;
+					storage[num]++;
 				} else {
-					target.storage.jlsg_tiandao[num]--;
+					storage[num]--;
+					storage[num] = Math.max(0, storage[num]);
 				}
 			}
 			target.markSkill("jlsg_tiandao");
