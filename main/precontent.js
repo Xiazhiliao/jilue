@@ -39,6 +39,22 @@ export async function precontent(config, originalPack) {
 			return `${get.prefixSpan("★SP", name)}${get.prefixSpan("极略SK", name)}`;
 		},
 	});
+	//真实伤害补丁
+	let originalFilterEnable = lib.filter.filterEnable;
+	lib.filter.filterEnable = function (event, player, skill) {
+		let triggername = event.name;
+		if (
+			player._hookTrigger &&
+			player._hookTrigger.some(i => {
+				const info = lib.skill[i].hookTrigger;
+				return info && info.block && info.block(event, player, triggername, skill);
+			})
+		) {
+			return false;
+		}
+		return originalFilterEnable.apply(this, arguments);
+	};
+
 	//魔势力及前缀创建
 	if (lib.config?.extension_极略_syRefactor) {
 		game.addGroup("jlsgsy", "魔", "极略三英", { color: "#8B4A51" });

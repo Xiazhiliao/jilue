@@ -221,7 +221,7 @@ const skills = {
 		audio: "jlsgsy_wushuang",
 		trigger: { global: "damageBegin3" },
 		filter: function (event, player) {
-			if (event.card?.name != "juedou") {
+			if (event.card?.name != "juedou" || event.player == player) {
 				return false;
 			}
 			return event.getParent(
@@ -278,7 +278,7 @@ const skills = {
 				game.players.forEach(curr => {
 					if (curr != player && curr.hasSkill("jlsgsy_shenwei") && curr.inRange(player)) {
 						numx += curr.getAllHistory("sourceDamage", his =>
-							his.sourceDamage.some(evt => evt.player != curr)
+							his.some(evt => evt.player != curr)
 						).length + 1;
 					}
 				});

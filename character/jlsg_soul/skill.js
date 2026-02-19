@@ -4251,7 +4251,7 @@ const skills = {
 					if (!lib.skill[skill]) {
 						return false;
 					}
-					return !lib.skill[skill].charlotte && !lib.skill[skill].persevereSkill && !get.is.locked(skill, player);
+					return !lib.skill[skill].equipSkill && !lib.skill[skill].charlotte && !lib.skill[skill].persevereSkill && !get.is.locked(skill, player);
 				},
 				mark: true,
 				intro: {
@@ -5340,7 +5340,8 @@ const skills = {
 				.gainPlayerCard(trigger.player, "he")
 				.set("prompt", "掠阵：是否获得" + get.translation(trigger.player) + "的一张牌并翻面？")
 				.set("prompt2", "然后若你背面朝上，你可以结束当前回合")
-				.set("chooseonly", true);
+				.set("chooseonly", true)
+				.forResult();
 			event.result = {
 				bool: next.result?.bool,
 				targets: [trigger.player],
@@ -6704,15 +6705,6 @@ const skills = {
 			}
 			cards = player.getExpansions(event.name);
 			let skills = get.skillsFromEquips(cards).filter(i => lib.skill[i]);
-			for (const item of skills) {
-				const name = `${event.name}_${item}`;
-				lib.skill[name] = get.copy(lib.skill[item]);
-				lib.skill[name].locked = true;
-				lib.translate[name] = lib.translate[item];
-				lib.translate[name + "_info"] = lib.translate[item + "_info"];
-				game.finishSkill(name);
-			}
-			skills = skills.map(item => `${event.name}_${item}`)
 			player.addAdditionalSkill(
 				event.name,
 				skills
@@ -15697,7 +15689,7 @@ const skills = {
 						if (!skills.includes(skill)) {
 							return false;
 						}
-						if (["dying", "die"].includes(event.name)) {
+						if (["dying", "die", "dieBegin", "dyingBegin"].includes(triggername)) {
 							return event.reason?.card?.realDamage;
 						} else if (event.name == "damage" && triggername != "damageBefore") {
 							return event.card?.realDamage;
@@ -15813,16 +15805,15 @@ const skills = {
 					if (result.bool) {
 						let target = player.storage.jlsg_suhui.target;
 						if (!target.isAlive()) {
-							target.revive();
-						} else {
-							let target = player.storage.jlsg_suhui.target;
-							let cards = target.getCards("hej");
-							let next = player.loseToDiscardpile(cards, ui.cardPile, "insert_card");
-							next.set("log", false);
-							next.set("_triggered", next);
-							next.set("insert_index", () => ui.cardPile.firstChild);
-							await next;
+							return;
 						}
+						let cards = target.getCards("hej");
+						let next = target.loseToDiscardpile(cards, ui.cardPile, "insert_card");
+						next.set("log", false);
+						next.set("_triggered", next);
+						next.set("insert_index", () => ui.cardPile.firstChild);
+						next.set("getlx", true);
+						await next;
 						for (let key in player.storage.jlsg_suhui) {
 							if (["target", "usedSkill", "tags"].includes(key)) {
 								continue;
@@ -15855,7 +15846,7 @@ const skills = {
 									}
 									let cards = card[card.cardSymbol].cards;
 									let cardx = get.autoViewAs(card, cards);
-									player.addVirtualJudge(cardx, cards);
+									target.addVirtualJudge(cardx, cards);
 								}
 							} else if (key == "equip") {
 								for (let card of info) {
