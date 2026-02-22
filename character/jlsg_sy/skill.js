@@ -277,8 +277,8 @@ const skills = {
 				let numx = 0;
 				game.players.forEach(curr => {
 					if (curr != player && curr.hasSkill("jlsgsy_shenwei") && curr.inRange(player)) {
-						numx += curr.getAllHistory("sourceDamage", his =>
-							his.some(evt => evt.player != curr)
+						numx += curr.getAllHistory("sourceDamage", evt =>
+							evt.player != curr
 						).length + 1;
 					}
 				});

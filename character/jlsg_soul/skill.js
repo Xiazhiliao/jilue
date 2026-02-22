@@ -15544,6 +15544,7 @@ const skills = {
 			global: "useCard",
 		},
 		global: ["jlsg_qugu_unequip"],
+		locked: false,
 		mod: {
 			ignoredHandcard(card, player) {
 				if (card.hasGaintag("eternal_jlsg_qugu")) {

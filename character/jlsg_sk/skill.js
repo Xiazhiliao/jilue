@@ -6631,7 +6631,7 @@ const skills = {
 	},
 	jlsg_zhenlie: {
 		audio: "ext:极略/audio/skill:1",
-		trigger: { target: "useCardToTargeted" },
+		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
 			return event.player != player && (event.card.name == "sha" || get.type(event.card) == "trick");
 		},
