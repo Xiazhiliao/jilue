@@ -19477,7 +19477,7 @@ const skills = {
 				storage = player.getStorage(event.name, { increase: true, record: [] });
 			if (storage.record.length == 0) {
 				game.broadcastAll(
-					function (ind) {
+					function (player, ind) {
 						let bgColor = lib.skill.jlsg_guanchao.markColor[ind][0],
 							text = '<span style="color: ' + lib.skill.jlsg_guanchao.markColor[ind][1] + '">潮</span>';
 						if (player.marks.jlsg_guanchao) {
@@ -19485,6 +19485,7 @@ const skills = {
 							player.marks.jlsg_guanchao.firstChild.innerHTML = text;
 						}
 					},
+					player,
 					storage.increase ? 0 : 1
 				);
 			}
