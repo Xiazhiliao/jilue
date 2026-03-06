@@ -3884,7 +3884,7 @@ const skills = {
 				const cards = Array.from(ui.cardPile.childNodes)
 					.filter(c => player.canSaveCard(c, player))
 					.concat(game.filterPlayer().flatMap(p => p.getCards("h", c => player.canSaveCard(c, player))))
-					.filter(card => ["tao", "jiu", "jlsgqs_mei"].includes(get.name(card)) && player.canUse(card, player, false, trigger));
+					.filter(card => ["tao", "jiu", "jlsgqs_mei"].includes(get.name(card)) && player.canUse(card, player, false, false));
 				player.logSkill(event.name);
 				const card = cards.randomRemove();
 				if (!card) {
