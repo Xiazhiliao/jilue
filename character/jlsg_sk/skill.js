@@ -20483,7 +20483,9 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			let suit = get.suit(trigger.card, false);
-			if (player.hasHistory("useCard", evt => get.suit(evt.card, false) != suit)) {
+			let his = player.getHistory("useCard").slice(0, -1);
+			let bool = !his.length || his.some(evt => get.suit(evt.card, false) != suit);
+			if (bool) {
 				let result = await player
 					.chooseTarget({
 						prompt: "选择一名其他角色对其造成一点伤害",
@@ -20500,14 +20502,15 @@ const skills = {
 					});
 				}
 			}
-			let last = player.getHistory("useCard").at(-2)?.card.suit;
-			console.log(last);
-			if (last == suit) {
-				await player.chooseToDiscard({
-					position: "he",
-				});
-			} else if (last) {
-				await player.draw();
+			if (his.length) {
+				let last = his.at(-1)?.card.suit;
+				if (last == suit) {
+					await player.chooseToDiscard({
+						position: "he",
+					});
+				} else {
+					await player.draw();
+				}
 			}
 		},
 	},
