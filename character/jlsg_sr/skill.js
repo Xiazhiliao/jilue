@@ -1,4 +1,3 @@
-import { effect } from "vue";
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
