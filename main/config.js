@@ -64,6 +64,29 @@ let block = {
 	},
 	oldCharacterReplace = {
 		sr: {
+			jlsgsr_ganning: {
+				name: "SR甘宁",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				jlsg_upgrade: true,
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_ganning", item);
+					if (item == "false" || Number(item) > 1) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_ganning");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_ganning")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_ganning");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
 			jlsgsr_zhugeliang: {
 				jlsg_upgrade: true,
 				name: "SR诸葛亮",
@@ -145,14 +168,6 @@ let block = {
 			},
 			jlsgsr_huanggai: {
 				name: "SR黄盖",
-				init: "false",
-				item: {
-					false: "最新",
-					1: "一代",
-				},
-			},
-			jlsgsr_ganning: {
-				name: "SR甘宁",
 				init: "false",
 				item: {
 					false: "最新",

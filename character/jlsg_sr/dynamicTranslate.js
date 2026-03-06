@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
+	jlsg_jiexi(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_guanxing;
+		if (improve || player?.index) {
+			return "出牌阶段每名其他角色限一次，你可以获得一名其他角色的一张牌，然后若其有手牌，你可以与其拼点：当你赢后，你获得其一张牌并令此技能本阶段对其视为未发动过。当你以此法获得牌后，若此牌是【杀】或【决斗】，你可以将此牌对其使用。";
+		}
+		return lib.translate["jlsg_jiexi_info"];
+	},
+	jlsg_youxia(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_guanxing;
+		if (improve || player?.index) {
+			return "任意角色的回合开始阶段，你可以翻面并视为使用【杀】，若此【杀】造成了伤害，你摸一张牌并于本阶段结束后执行一个额外出牌阶段。若你背面朝上，【杀】和【决斗】对你无效。";
+		}
+		return lib.translate["jlsg_youxia_info"];
+	},
 	jlsg_guanxing(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_guanxing;
