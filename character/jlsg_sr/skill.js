@@ -3085,9 +3085,8 @@ const skills = {
 						prompt: `是否与${get.translation(target)}拼点`,
 					})
 					.forResult();
-				let result2;
 				if (result1.bool) {
-					result2 = await player
+					let result2 = await player
 						.chooseToCompare(target, card => {
 							let player = get.owner(card),
 								source = get.event().player;
@@ -3099,8 +3098,20 @@ const skills = {
 							return num;
 						})
 						.forResult();
+					if (result2.bool !== true) {
+						player.markAuto("jlsg_jiexi_used", target);
+					} else {
+						let result = await player
+							.choosePlayerCard({
+								position: "hes",
+								target: target,
+								forced: true,
+							})
+							.forResult();
+						await player.gain(result.cards);
+					}
 				}
-				if (!result1.bool || result2.bool !== true) {
+				if (!result1.bool) {
 					player.markAuto("jlsg_jiexi_used", target);
 				}
 			}
