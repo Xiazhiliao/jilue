@@ -3155,7 +3155,7 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		srlose: true,
 		trigger: {
-			global: ["phaseBegin"],
+			global: ["phaseZhunbeiBegin"],
 		},
 		init(player, skill) {
 			player.addSkill("jlsg_jiexi_used");
@@ -3203,6 +3203,7 @@ const skills = {
 				trigger: {
 					global: ["phaseEnd"],
 				},
+				forced: true,
 				onremove: true,
 				filter(event, player) {
 					return player.getStorage("jlsg_youxia_phase") == "yes";
