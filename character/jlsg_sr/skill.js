@@ -3076,6 +3076,7 @@ const skills = {
 			if (["sha", "juedou"].includes(result.cards[0].name)) {
 				await player.chooseUseTarget({
 					card: result.cards[0],
+					addCount: false,
 				});
 			}
 			if (target.countCards("h")) {
@@ -3084,8 +3085,9 @@ const skills = {
 						prompt: `是否与${get.translation(target)}拼点`,
 					})
 					.forResult();
+				let result2;
 				if (result1.bool) {
-					let result2 = await player
+					result2 = await player
 						.chooseToCompare(target, card => {
 							let player = get.owner(card),
 								source = get.event().player;
@@ -3097,9 +3099,9 @@ const skills = {
 							return num;
 						})
 						.forResult();
-					if (result2.bool !== true) {
-						player.markAuto("jlsg_jiexi_used", target);
-					}
+				}
+				if (!result1.bool || result2.bool !== true) {
+					player.markAuto("jlsg_jiexi_used", target);
 				}
 			}
 		},
@@ -3178,6 +3180,7 @@ const skills = {
 			let card = get.autoViewAs({ name: "sha", jlsg_youxia: true }, []);
 			await player.chooseUseTarget({
 				card: card,
+				addCount: false,
 			});
 		},
 		group: ["jlsg_youxia_sha", "jlsg_youxia_phase", "jlsg_youxia_effect"],
@@ -3201,16 +3204,17 @@ const skills = {
 			},
 			phase: {
 				trigger: {
-					global: ["phaseEnd"],
+					global: ["phaseAnyAfter"],
 				},
 				forced: true,
 				onremove: true,
 				filter(event, player) {
 					return player.getStorage("jlsg_youxia_phase") == "yes";
 				},
-				async content(event, tigger, player) {
+				async content(event, trigger, player) {
 					player.setStorage("jlsg_youxia_phase", "no");
-					player.insertPhase("jlsg_youxia").set("phaseList", ["phaseUse"]).set("_noTurnOver", true);
+					let next = player.phaseUse();
+					trigger.after.push(next);
 				},
 			},
 			effect: {
