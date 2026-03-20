@@ -47,6 +47,12 @@ const translates = {
 	jlsgsk_lhsh_liubei_ab: "刘备",
 	jlsg_lhsh_dade: "大德",
 	jlsg_lhsh_dade_info: "出牌阶段，你可以令一名角色从你拥有的蜀势力武将中发现一个技能，然后你回复1点体力。本阶段发动两次后，本阶段内此技能的效果改为你可以令一名角色展示并获得牌堆顶牌，然后你可以视为使用此牌（无距离和次数限制），若本阶段以此法展示过相同牌名的牌，本阶段内此技能的效果改为你可以将一张手牌交给其他角色，然后你可以视为使用此牌（无距离和次数限制）。",
+	jlsgsk_fqym_xiaoqiao: "SPF小乔",
+	jlsgsk_fqym_xiaoqiao_ab: "小乔",
+	jlsg_fqym_tianxiang: "天香",
+	jlsg_fqym_tianxiang_info: "每回合每种牌名限一次，出牌阶段，或当你受到伤害时，你可以将一张红桃牌当不计入次数限制的花色包含红桃的基本牌或锦囊牌使用，若你因受到伤害发动此技能，你可以将此伤害转移给一名其他角色。",
+	jlsg_fqym_hongyan: "红颜",
+	jlsg_fqym_hongyan_info: "锁定技，你的黑桃牌视为红桃牌，你的红桃牌不计入手牌上限。当你失去红桃牌后，你循环执行一项：1．摸两张牌；2．令一名其他角色失去1点体力。",
 };
 
 export default translates;

@@ -15809,7 +15809,7 @@ const skills = {
 							return;
 						}
 						let cards = target.getCards("hej");
-						let next = target.loseToDiscardpile(cards, ui.cardPile, "insert_card");
+						let next = target.lose(cards, ui.cardPile, "insert");
 						next.set("log", false);
 						next.set("_triggered", next);
 						next.set("insert_index", () => ui.cardPile.firstChild);

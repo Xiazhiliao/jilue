@@ -20484,7 +20484,7 @@ const skills = {
 		async content(event, trigger, player) {
 			let suit = get.suit(trigger.card, false);
 			let his = player.getHistory("useCard").slice(0, -1);
-			let bool = !his.length || his.some(evt => get.suit(evt.card, false) != suit);
+			let bool = !his.length || !his.some(evt => get.suit(evt.card, false) == suit);
 			if (bool) {
 				let result = await player
 					.chooseTarget({

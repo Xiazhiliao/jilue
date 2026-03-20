@@ -2,6 +2,161 @@ import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	jlsg_fqym_tianxiang: {
+		enable: "phaseUse",
+		trigger: {
+			player: ["damageBegin"],
+		},
+		filter(event, player) {
+			let used = player.getHistory("useCard", evt => evt.card.storage.fqym).map(evt => evt.card.name);
+			let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2])),
+				hand = player.getCards("he").filter(card => get.suit(card, player) == "heart");
+			return cards.length && hand.length;
+		},
+		getCards(player) {
+			let cards = lib.cardPile.standard
+				.concat(lib.cardPile.extra)
+				.filter(info => {
+					return (
+						info[0] == "heart" &&
+						["basic", "trick"].includes(get.type(info[2], null, false)) &&
+						player.hasUseTarget({ name: info[2] }, true, false)
+					);
+				})
+				.reduce((list, info) => {
+					if (!list.some(infox => infox[2] == info[2] && infox[3] == info[3])) {
+						list.push(["", "", info[2], info[3]]);
+					}
+					return list;
+				}, []);
+			if (!_status.txcards) {
+				_status.txcards = cards;
+			}
+			return cards;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				let used = player.getHistory("useCard", evt => evt.card.storage.fqym).map(evt => evt.card.name);
+				let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2])),
+					hand = player.getCards("he").filter(card => get.suit(card, player) == "heart");
+				return ui.create.dialog("选择一张红桃牌当作一张花色包含红桃的基本牌或普通锦囊牌使用", [hand, "card"], "<hr />", [cards, "vcard"]);
+			},
+			filter(button) {
+				let evt = get.event();
+				if (evt != _status.txEvt) {
+					let list = Array.from(get.event().dialog.querySelectorAll(".buttons"));
+					_status.txEvt = get.event();
+					_status.txButtos = Array.from(list[1].children);
+				}
+				let bool = ui.selected.buttons.length;
+				if (_status.txButtos.includes(button)) {
+					return bool;
+				}
+				return !bool;
+			},
+			select: 2,
+			backup(links, player) {
+				return {
+					selectCard: 0,
+					viewAs: {
+						name: links[1][2],
+						nature: links[1][3],
+						storage: {
+							cards: [links[0]],
+							fqym: true,
+						},
+					},
+					prompt(links, player) {
+						return `选择${get.translation(links[1][2])}`;
+					},
+					precontent(event, trigger, player) {
+						event.result.cards = event.result.card.storage.cards;
+					},
+				};
+			},
+		},
+		async cost(event, trigger, player) {
+			let used = player.getHistory("useCard", evt => evt.card.storage.fqym).map(evt => evt.card.name);
+			let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2])),
+				hand = player.getCards("he").filter(card => get.suit(card, player) == "heart");
+			if (!cards.length || !cards.length) {
+				event.result = {
+					bool: false,
+				};
+			}
+			let result = await player
+				.chooseButton({
+					selectButton: 2,
+					createDialog: ["选择一张红桃牌当作一张花色包含红桃的基本牌或普通锦囊牌使用", [hand, "card"], "<hr />", [cards, "vcard"]],
+				})
+				.set("complexSelect", true)
+				.set("filterButton", button => {
+					let evt = get.event();
+					if (evt != _status.txEvt) {
+						let list = Array.from(get.event().dialog.querySelectorAll(".buttons"));
+						_status.txEvt = get.event().id;
+						_status.txButtos = Array.from(list[1].children);
+					}
+					let bool = ui.selected.buttons.length;
+					if (_status.txButtos.includes(button)) {
+						return bool;
+					}
+					return !bool;
+				})
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: {
+					card: result.links?.[0],
+					vcard: result.links?.[1],
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			let { vcard, card } = event.cost_data;
+			let use = get.autoViewAs({ name: vcard[2], nature: vcard[3], fqym: true }, [card]);
+			await player.chooseUseTarget(use, [card], false);
+			let { targets } = await player.chooseTarget("将此伤害转移给一名其他角色").set("filterTarget", lib.filter.notMe).forResult();
+			if (targets?.[0]) {
+				trigger.player = targets[0];
+			}
+		},
+	},
+	jlsg_fqym_hongyan: {
+		mod: {
+			suit(card, player) {
+				if (get.suit(card, false) == "spade") {
+					return "heart";
+				}
+			},
+			ignoredHandcard(card, player) {
+				if (get.suit(card, player) == "heart") {
+					return true;
+				}
+			},
+		},
+		trigger: {
+			player: ["loseAfter"],
+			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		forced: true,
+		filter(event, player) {
+			let cards = event.getl(player)?.cards2;
+			return cards.some(card => get.suit(card, player) == "heart");
+		},
+		async content(event, trigger, player) {
+			let bool = player.storage[event.name] ? 0 : 1;
+			player.setStorage(event.name, bool);
+			if (bool) {
+				await player.draw(2);
+			} else {
+				let { targets } = await player.chooseTarget("令一名其他角色失去1点体力").set("filterTarget", lib.filter.notMe).forResult();
+				if (targets.length) {
+					await targets[0].loseHp();
+				}
+			}
+		},
+	},
 	jlsg_jdjg_jieyin: {
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
@@ -330,7 +485,12 @@ const skills = {
 		locked: false,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return event.player != player && event.card && (event.card.name == "sha" || get.type(event.card) == "trick") && player.getCards("h").some(card => get.color(card) == "black");
+			return (
+				event.player != player &&
+				event.card &&
+				(event.card.name == "sha" || get.type(event.card) == "trick") &&
+				player.getCards("h").some(card => get.color(card) == "black")
+			);
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -1347,7 +1507,13 @@ const skills = {
 			if (player.hp == player.maxHp || player.countCards("h") <= 1) {
 				const players = game.filterPlayer();
 				for (let i = 0; i < players.length; i++) {
-					if (players[i].hasSkill("haoshi") && !players[i].isTurnedOver() && !players[i].hasJudge("lebu") && get.attitude(player, players[i]) >= 3 && get.attitude(players[i], player) >= 3) {
+					if (
+						players[i].hasSkill("haoshi") &&
+						!players[i].isTurnedOver() &&
+						!players[i].hasJudge("lebu") &&
+						get.attitude(player, players[i]) >= 3 &&
+						get.attitude(players[i], player) >= 3
+					) {
 						return 11 - get.value(card) + useValue;
 					}
 				}
