@@ -149,9 +149,9 @@ const skills = {
 		//属性突破列表
 		upgradeContent: {
 			jlsgsr_ganning: {
-				"手牌上限+3": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "maxHandcard|3";
+				"起始手牌数+3": async function (event, trigger, player) {
+					player.directgain(get.cards(3));
+					event.info[0] = true;
 				},
 				"出【杀】次数+2": async function (event, trigger, player) {
 					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
@@ -3077,6 +3077,7 @@ const skills = {
 				await player.chooseUseTarget({
 					card: result.cards[0],
 					addCount: false,
+					nodistance: true,
 				});
 			}
 			if (target.countCards("h")) {
@@ -3192,6 +3193,7 @@ const skills = {
 			await player.chooseUseTarget({
 				card: card,
 				addCount: false,
+				nodistance: true,
 			});
 		},
 		group: ["jlsg_youxia_sha", "jlsg_youxia_phase", "jlsg_youxia_effect"],
