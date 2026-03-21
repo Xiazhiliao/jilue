@@ -3,6 +3,7 @@ import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	jlsg_fqym_tianxiang: {
+		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
 		trigger: {
 			player: ["damageBegin"],
@@ -130,6 +131,7 @@ const skills = {
 		},
 	},
 	jlsg_fqym_hongyan: {
+		audio: "ext:极略/audio/skill:2",
 		mod: {
 			suit(card, player) {
 				if (get.suit(card, false) == "spade") {
