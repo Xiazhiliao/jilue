@@ -2,7 +2,7 @@ const translates = {
 	jlsgsk_jdjg_sunshangxiang: "SPF孙尚香",
 	jlsgsk_jdjg_sunshangxiang_ab: "孙尚香",
 	jlsg_jdjg_jieyin: "结姻",
-	jlsg_jdjg_jieyin_info: "出牌阶段限一次，你可以弃置一张牌并选择一名其他角色，你与该角色中未受伤的角色摸两张牌，已受伤的角色回复1点体力，若没有角色以此法摸牌，此技能视为未发动过。",
+	jlsg_jdjg_jieyin_info: "游戏开始时，或出牌阶段限一次，你可以摸X张牌（X为装备区里的牌数），回复1点体力并将随机临时装备牌置入装备区直到装备区里没有空位，然后你可以令一名其他角色也如此做。",
 	jlsg_jdjg_xiaoji: "枭姬",
 	jlsg_jdjg_xiaoji_info: "当你失去装备区里的一张牌后，你可以摸一张牌，然后可以根据失去牌的类型执行以下效果：武器牌，对一名其他角色造成1点伤害；防具牌或宝物牌，摸两张牌；坐骑牌，弃置任意名其他角色至多共计两张牌。",
 	jlsgsk_syqj_guanyu: "SPF关羽",

@@ -121,7 +121,7 @@ const skills = {
 				.set("filterTarget", lib.filter.notMe)
 				.set("ai", target => {
 					let player = get.player();
-					return get.attitude(player, target);
+					return -get.attitude(player, target);
 				})
 				.forResult();
 			if (targets) {
@@ -162,7 +162,7 @@ const skills = {
 					.set("filterTarget", lib.filter.notMe)
 					.set("ai", target => {
 						let player = get.player();
-						return get.attitude(player, target);
+						return -get.attitude(player, target);
 					})
 					.forResult();
 				if (targets) {
@@ -216,7 +216,7 @@ const skills = {
 				if (cards.length) {
 					for (let card of cards) {
 						if (current.canEquip(card)) {
-							await current.chooseUseTarget(card, true, "nopopup", false);
+							await current.chooseUseTarget(card, true, "nopopup");
 						}
 					}
 				}
@@ -230,7 +230,7 @@ const skills = {
 								return get.attitude(player, target);
 							})
 							.forResult()
-					).targets[0];
+					)?.targets?.[0];
 				} else {
 					current = null;
 				}
@@ -248,6 +248,16 @@ const skills = {
 		},
 		filter(event, player, triggername, card) {
 			return card;
+		},
+		mark: true,
+		marktext: "枭",
+		intro: {
+			mark(dialog, storage, player) {
+				let info = player.storage.jdjg;
+				dialog.addText(`出杀次数+${info.e1}\n`);
+				dialog.addText(`手牌上限+${info.e2}\n`);
+				dialog.addText(`至其他角色距离-${info.e3}`);
+			},
 		},
 		init(player, skill) {
 			player.setStorage("jdjg", {
@@ -284,7 +294,7 @@ const skills = {
 		},
 		mod: {
 			cardUsable(card, player, num) {
-				if (get.name(card, false)) {
+				if (get.name(card, false) == "sha") {
 					return num + player.storage.jdjg.e1;
 				}
 			},
