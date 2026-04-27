@@ -6705,10 +6705,7 @@ const skills = {
 			}
 			cards = player.getExpansions(event.name);
 			let skills = get.skillsFromEquips(cards).filter(i => lib.skill[i]);
-			player.addAdditionalSkill(
-				event.name,
-				skills
-			);
+			player.addAdditionalSkill(event.name, skills);
 		},
 	},
 	jlsg_liegong: {
@@ -15896,6 +15893,199 @@ const skills = {
 					player.removeSkill("jlsg_suhui_huisu");
 					player.setStorage("jlsg_suhui", {});
 				},
+			},
+		},
+	},
+	jlsg_yanfeng: {
+		audio: "ext:极略/audio/skill:2",
+		enable: "chooseToUse",
+		filter(event, player) {
+			return event.filterCard(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event);
+		},
+		position: "hes",
+		filterCard: true,
+		check(card) {
+			let val = get.value(card);
+			if (get.color(card) == "red") {
+				val--;
+			}
+			if (get.name(card) == "sha") {
+				val--;
+			}
+			return 6 - val;
+		},
+		viewAs: {
+			name: "sha",
+			nature: "fire",
+		},
+		group: ["jlsg_yanfeng_toTarget", "jlsg_yanfeng_nodamage", "jlsg_yanfeng_draw"],
+		subSkill: {
+			toTarget: {
+				audio: "jlsg_yanfeng",
+				trigger: {
+					player: "useCardToTargeted",
+				},
+				filter(event, player) {
+					if (!event.isFirstTarget || event.card.name != "sha" || !event.card.hasNature("fire")) {
+						return false;
+					}
+					return get.color(event.card) == "red" || event.cards.every(card => card.name == "sha");
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					if (get.color(trigger.card) == "red") {
+						trigger.getParent().baseDamage++;
+						if (trigger.getParent().addCount !== false) {
+							trigger.getParent().addCount = true;
+							const stat = player.getStat().card;
+							if (typeof stat["sha"] === "number") {
+								stat["sha"]--;
+							}
+						}
+					}
+					if (trigger.cards.every(card => card.name == "sha")) {
+						trigger.card.storage ??= {};
+						trigger.card.storage.jlsg_yanfeng = true;
+						trigger.getParent().directHit = game.filterPlayer2();
+					}
+				},
+				ai: {
+					unequip: true,
+					unequip_ai: true,
+					skillTagFilter(player, tag, arg) {
+						return arg?.card?.storage?.jlsg_yanfeng;
+					},
+				},
+			},
+			nodamage: {
+				audio: "jlsg_yanfeng",
+				trigger: {
+					player: "useCardAfter",
+				},
+				filter(event, player) {
+					return (
+						event.card.name == "sha" &&
+						event.card.hasNature("fire") &&
+						!game.hasPlayer2(current => {
+							return current.hasHistory("damage", evt => evt.card == event.card);
+						})
+					);
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.damage(player, "fire");
+				},
+			},
+			draw: {
+				audio: "jlsg_yanfeng",
+				trigger: {
+					player: "damageEnd",
+				},
+				getIndex(event, player) {
+					return event.num;
+				},
+				filter(event, player) {
+					return game.hasNature(event, "fire");
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.draw(2);
+				},
+				ai: {
+					effect: {
+						target(card) {
+							if (get.tag(card, "fireDamage")) {
+								return [1, 2];
+							}
+						},
+					},
+				},
+			},
+		},
+		ai: {
+			respondSha: true,
+			fireAttack: true,
+			skillTagFilter(player, tag) {
+				if (!player.countCards("hes") || tag != "use") {
+					return false;
+				}
+			},
+			order(item, player) {
+				if (item != "jlsg_yanfeng") {
+					return 0;
+				}
+				return get.order({ name: "sha", nature: "fire" }, player) + 0.1;
+			},
+			result: {
+				player: 0.1,
+			},
+		},
+	},
+	jlsg_shenji: {
+		audio: "ext:极略/audio/skill:2",
+		mark: true,
+		intro: {
+			content(storage, player) {
+				if (storage === true) {
+					return "可发动";
+				}
+				return "不可发动";
+			},
+		},
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return player.getStorage("jlsg_shenji", false) && player.maxHp > 1;
+		},
+		selectTarget() {
+			return [1, get.player().maxHp - 1];
+		},
+		filterTarget(_, player, target) {
+			return true;
+		},
+		async contentBefore(event, trigger, player) {
+			await player.loseMaxHp(event.targets.length);
+		},
+		async content(event, trigger, player) {
+			await event.target.damage(event.target.maxHp, "fire");
+		},
+		async contentAfter(event, trigger, player) {
+			player.setStorage("jlsg_shenji", false, true);
+		},
+		group: "jlsg_shenji_damage",
+		subSkill: {
+			damage: {
+				charlotte: true,
+				audio: false,
+				trigger: {
+					player: "damageEnd",
+				},
+				filter(event, player) {
+					return game.hasNature(event, "fire");
+				},
+				firstDo: true,
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					player.setStorage("jlsg_shenji", true, true);
+				},
+			},
+		},
+		ai: {
+			order: 1,
+			halfneg: true,
+			fireAttack: true,
+			result: {
+				player(player) {
+					if (!game.hasPlayer(current => get.damageEffect(current, player, player, "fire") > 1)) {
+						return 0;
+					}
+					return 0.5;
+				},
+				target: -1,
 			},
 		},
 	},
