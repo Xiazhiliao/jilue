@@ -20,7 +20,7 @@ const skills = {
 				.filter(info => {
 					return (
 						info[0] == "heart" &&
-						["basic", "trick"].includes(get.type(info[2], null, false)) &&
+						["basic", "trick"].includes(get.type2(info[2], false)) &&
 						player.hasUseTarget({ name: info[2] }, true, false)
 					);
 				})
