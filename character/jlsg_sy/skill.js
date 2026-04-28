@@ -362,8 +362,8 @@ const skills = {
 				.flat();
 			if (cards.length) {
 				let card = cards.randomGet();
-				player.gain("log", false, card);
-				player.$gain2(card);
+				player.gain(card, false, "gain2");
+				// player.$gain2(card);
 				game.delayx(0.5);
 			}
 		},
@@ -424,7 +424,7 @@ const skills = {
 		content: function () {
 			"step 0";
 			var num = 1 + Math.floor(Math.random() * 3);
-			trigger.target.randomDiscard(num);
+			trigger.target.randomDiscard(num, player);
 		},
 	},
 	jlsgsy_zuijiu: {

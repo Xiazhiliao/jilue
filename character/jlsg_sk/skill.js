@@ -6772,12 +6772,14 @@ const skills = {
 				})
 				.set("target", trigger.player)
 				.forResult();
-			const cards = trigger.player.getCards("h", { suit: get.suit(result.cards[0]) });
-			await trigger.player.showHandcards();
-			if (!cards.length) {
-				await trigger.player.loseHp();
-			} else {
-				await trigger.player.discard(cards);
+			if (result.bool) {
+				const cards = trigger.player.getCards("h", { suit: get.suit(result.cards[0]) });
+				await trigger.player.showHandcards();
+				if (!cards.length) {
+					await trigger.player.loseHp();
+				} else {
+					await trigger.player.discard(cards);
+				}
 			}
 		},
 		ai: {

@@ -1,5 +1,202 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export default {
+	jlsgsr_xiahoudun: {
+		1: {
+			skill: {
+				jlsg_zhonghou: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					firstDo: true,
+					trigger: {
+						global: ["useCardBefore", "respondBefore"],
+					},
+					filter(event, player) {
+						if (player.hasStorage("jlsg_zhonghou_use", event.player)) {
+							return false;
+						}
+						return event.skill?.startsWith("jlsg_zhonghou");
+					},
+					direct: true,
+					async content(event, trigger, player) {
+						if (trigger.player == player) {
+							if (player.isPhaseUsing()) {
+								player.addTempSkill("jlsg_zhonghou_use");
+								player.markAuto("jlsg_zhonghou_use", [player]);
+							}
+							await player.loseHp(1);
+							return;
+						} else {
+							let prompt = `是否失去1点体力视为${get.translation(trigger.player)}使用一张${get.translation(trigger.card)}？`;
+							const { bool } = await player.chooseBool(prompt, get.attitude(player, trigger.player) >= 6).forResult();
+							if (!bool) {
+								player.addTempSkill("jlsg_zhonghou_use");
+								player.markAuto("jlsg_zhonghou_use", [trigger.player]);
+								game.log(player, Math.random() < 0.5 ? "丑拒了" : "蠢拒了", trigger.player);
+								player.chat("拒绝");
+								trigger.cancel();
+								trigger.getParent().goto(0);
+								await game.delayx();
+							} else {
+								await player.loseHp(1);
+							}
+						}
+					},
+					global: ["jlsg_zhonghou_global"],
+					subSkill: {
+						use: {
+							onremove: true,
+						},
+						backup: {},
+					},
+				},
+				jlsg_zhonghou_global: {
+					sourceSkill: "jlsg_zhonghou",
+					enable: ["chooseToUse", "chooseToRespond"],
+					audio: "jlsg_zhonghou",
+					hiddenCard(player, name) {
+						return get.type(name) == "basic";
+					},
+					filter(event, player) {
+						if (
+							!game.hasPlayer(current => {
+								if (!current.hasSkill("jlsg_zhonghou") || current.hasStorage("jlsg_zhonghou_use", player)) {
+									return false;
+								} else if (current.isDying()) {
+									return false;
+								}
+								return current == player || player.inRangeOf(current);
+							})
+						) {
+							return false;
+						}
+						for (let i of lib.inpile) {
+							if (get.type(i) != "basic") {
+								continue;
+							}
+							if (i == "sha" && lib.inpile_nature.some(nat => event.filterCard(get.autoViewAs({ name: i, nature: nat }), player, event))) {
+								return true;
+							}
+							if (event.filterCard(get.autoViewAs({ name: i }), player, event)) {
+								return true;
+							}
+						}
+						return false;
+					},
+					chooseButton: {
+						dialog() {
+							var list = [];
+							for (var i of lib.inpile) {
+								var type = get.type(i);
+								if (type != "basic") {
+									continue;
+								}
+								list.push([type, "", i]);
+								if (i == "sha") {
+									for (var j of lib.inpile_nature) {
+										list.push([type, "", i, j]);
+									}
+								}
+							}
+							return ui.create.dialog("忠候", [list, "vcard"]);
+						},
+						filter(button, player) {
+							var evt = _status.event.getParent();
+							return evt.filterCard(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, []), player, evt);
+						},
+						check(button) {
+							let player = _status.event.player;
+							let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, []);
+							let val = _status.event.getParent().type == "phase" ? player.getUseValue(card) : 1;
+							if (val <= 0) {
+								return 0;
+							}
+							return val;
+						},
+						backup(links, player) {
+							return {
+								viewAs: {
+									name: links[0][2],
+									nature: links[0][3],
+								},
+								filterCard() {
+									return false;
+								},
+								selectCard: -1,
+								popupname: true,
+								log: false,
+								async precontent(event, trigger, player) {
+									player.logSkill("jlsg_zhonghou");
+								},
+							};
+						},
+					},
+					ai: {
+						fireAttack: true,
+						respondSha: true,
+						respondShan: true,
+						skillTagFilter(player, tag) {
+							return game.hasPlayer(current => {
+								if (!current.hasSkill("jlsg_zhonghou") || current.hasStorage("jlsg_zhonghou_use", player)) {
+									return false;
+								} else if (current.isDying()) {
+									return false;
+								}
+								return current == player || player.inRangeOf(current);
+							});
+						},
+					},
+				},
+				jlsg_ganglie: {
+					audio: "ext:极略/audio/skill:1",
+					trigger: { player: "phaseUseBegin" },
+					srlose: true,
+					check(event, player) {
+						if (player.countCards("h") < 3 && player.hp < 2) {
+							return false;
+						}
+						return player.countCards("hs", card => get.tag(card, "damage") && player.getUseValue(card));
+					},
+					async content(event, trigger, player) {
+						await player.loseHp(1);
+						player.addTempSkill("jlsg_ganglie_damage", "phaseAfter");
+						player.addTempSkill("jlsg_ganglie_phaseEnd", "phaseAfter");
+					},
+					subSkill: {
+						damage: {
+							trigger: { source: "damageBegin" },
+							filter: function (event) {
+								return event.num > 0;
+							},
+							forced: true,
+							async content(event, trigger, player) {
+								trigger.num++;
+								player.removeSkill(event.name);
+							},
+						},
+						phaseEnd: {
+							audio: "ext:极略/audio/skill:2",
+							trigger: { player: "phaseEnd" },
+							filter(event, player) {
+								return player.getStat("damage") > 0;
+							},
+							forced: true,
+							async content(event, trigger, player) {
+								await player.draw(player.getStat("damage"));
+							},
+						},
+					},
+				},
+			},
+			translate: {
+				jlsg_zhonghou: "忠侯",
+				jlsg_zhonghou_global: "忠侯",
+				jlsg_zhonghou_info: "当你攻击范围内的一名角色需要使用或打出基本牌时，其可以声明之，然后你可以失去1点体力，视为其使用或打出之（每个出牌阶段限一次）。",
+				jlsg_zhonghou_append: '<span style="font-family: yuanli">一名其他角色被你拒绝后，其本回合内不能再次发动忠候。你不能拒绝自己请求的忠候。</span>',
+				jlsg_ganglie: "刚烈",
+				jlsg_ganglie_info: "出牌阶段开始时，你可以失去1点体力，若如此做，当你于此回合内下一次造成伤害时，你令此伤害+1，回合结束时，你摸x张牌（x为你于此回合内造成的总伤害）。",
+			},
+		},
+	},
 	jlsgsr_ganning: {
 		1: {
 			skill: {
@@ -17,8 +214,8 @@ export default {
 					prompt: "你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢",
 					async content(event, trigger, player) {
 						const {
-								targets: [target],
-							} = event,
+							targets: [target],
+						} = event,
 							guohe = get.autoViewAs({ name: "guohe" }, []);
 						while (player.canCompare(target)) {
 							const compare = await player.chooseToCompare(target).forResult();
@@ -125,7 +322,7 @@ export default {
 					},
 				},
 			},
-			translate:{
+			translate: {
 				jlsg_jiexi: "劫袭",
 				jlsg_jiexi_info: "出牌阶段，你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢。",
 				jlsg_youxia: "游侠",
@@ -1410,10 +1607,10 @@ export default {
 						const buttons = skills.map(i => [
 							i,
 							'<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' +
-								get.translation(i) +
-								"】</div><div>" +
-								lib.translate[i + "_info"] +
-								"</div></div>",
+							get.translation(i) +
+							"】</div><div>" +
+							lib.translate[i + "_info"] +
+							"</div></div>",
 						]);
 						const result = await trigger.player
 							.chooseButton(true, ["选择要发动的技能", [buttons, "textbutton"]])
@@ -2060,14 +2257,14 @@ export default {
 								cards.length == 1
 									? { links: cards.slice(0), bool: true }
 									: await player
-											.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length])
-											.set("ai", () => {
-												if (ui.selected.buttons.length == 0) {
-													return 1;
-												}
-												return 0;
-											})
-											.forResult();
+										.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length])
+										.set("ai", () => {
+											if (ui.selected.buttons.length == 0) {
+												return 1;
+											}
+											return 0;
+										})
+										.forResult();
 							if (!bool) {
 								return;
 							}
@@ -2162,8 +2359,8 @@ export default {
 					},
 					async content(event, trigger, player) {
 						const {
-								targets: [target],
-							} = event,
+							targets: [target],
+						} = event,
 							sha = get.autoViewAs({ name: "sha" }, []);
 						await target.useCard(sha, player, false, "noai");
 						if (!player.isIn()) {

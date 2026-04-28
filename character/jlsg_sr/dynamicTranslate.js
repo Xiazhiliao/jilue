@@ -1,9 +1,29 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
+	jlsg_zhonghou(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_xiahoudun"]?.[2] || upgradeStorage.other?.jlsg_zhonghou;
+		if (improve || player?.index) {
+			return "每回合限两次，当其他角色使用基本牌或非延时锦囊牌指定目标后，若目标不包含其自己，你可以令此牌无效并获得此牌，若如此做，你可以对其使用【杀】。";
+		}
+		return lib.translate["jlsg_zhonghou_info"];
+	},
+	jlsg_ganglie(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_xiahoudun"]?.[2] || upgradeStorage.other?.jlsg_ganglie;
+		if (improve || player?.index) {
+			return "出牌阶段，你可以对一名其他角色造成1点伤害，然后若其手牌里有【杀】，你令其随机选择一张对你使用。若你以此法没有造成伤害或其手牌里没有【杀】，你回复1点体力令此技能于本回合内无效。";
+		}
+		return lib.translate["jlsg_ganglie_info"];
+	},
+
+
+
+
 	jlsg_jiexi(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_guanxing;
+		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_jiexi;
 		if (improve || player?.index) {
 			return "出牌阶段每名其他角色限一次，你可以获得一名其他角色的一张牌，然后若其有手牌，你可以与其拼点：当你赢后，你获得其一张牌并令此技能本阶段对其视为未发动过。当你以此法获得牌后，若此牌是【杀】或【决斗】，你可以将此牌对其使用。";
 		}
@@ -11,7 +31,7 @@ const dynamicTranslates = {
 	},
 	jlsg_youxia(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_guanxing;
+		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_youxia;
 		if (improve || player?.index) {
 			return "任意角色的回合开始阶段，你可以翻面并视为使用【杀】，若此【杀】造成了伤害，你摸一张牌并于本阶段结束后执行一个额外出牌阶段。若你背面朝上，【杀】和【决斗】对你无效。";
 		}
