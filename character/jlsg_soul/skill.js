@@ -7253,40 +7253,7 @@ const skills = {
 					}
 				},
 			};
-			const triggersList = [
-				"回合开始阶段，",
-				"判定阶段开始时，",
-				"摸牌阶段开始时，",
-				"出牌阶段开始时，",
-				"出牌阶段结束时，",
-				"弃牌阶段开始时，",
-				"弃牌阶段结束时，",
-				"回合结束阶段，",
-				"每回合限X次(X: 1-3)，当你的判定牌生效后，",
-				"每回合限X次(X: 1-3)，当你获得牌后，",
-				"每回合限X次(X: 1-3)，当你使用基本牌后，",
-				"每回合限X次(X: 1-3)，当你使用锦囊牌后，",
-				"每回合限X次(X: 1-3)，当你使用装备牌后，",
-				"每回合限X次(X: 1-3)，当你使用红色牌后，",
-				"每回合限X次(X: 1-3)，当你使用黑色牌后，",
-				"每回合限X次(X: 1-3)，当你成为非延时锦囊牌的目标后，",
-				"每回合限X次(X: 1-3)，当你失去装备区里的牌后，",
-				"每回合限X次(X: 1-3)，当你成为【杀】的目标时，",
-				"每回合限X次(X: 1-3)，当你成为【杀】的目标后，",
-				"每回合限X次(X: 1-3)，当你使用或打出【杀】时，",
-				"每回合限X次(X: 1-3)，当你使用或打出【闪】时，",
-				"每回合限X次(X: 1-3)，当你造成伤害时，",
-				"每回合限X次(X: 1-3)，当你造成伤害后，",
-				"每回合限X次(X: 1-3)，当你受到伤害时，",
-				"每回合限X次(X: 1-3)，当你受到伤害后，",
-				"每回合限X次(X: 1-3)，当你回复体力或加体力上限后，",
-				"每回合限X次(X: 1-3)，当你失去体力或减体力上限后，",
-				"每回合限X次(X: 1-3)，当你进入濒死状态时，",
-				"每回合限X次(X: 1-3)，当你脱离濒死状态后，",
-				"每回合限X次(X: 1-3)，当你获得技能后，",
-				"每回合限X次(X: 1-3)，当你失去技能后，",
-				"每回合限X次(X: 1-3)，当你横置/重置/翻面后，",
-			];
+			const triggersList = ["回合开始阶段，", "判定阶段开始时，", "摸牌阶段开始时，", "出牌阶段开始时，", "出牌阶段结束时，", "弃牌阶段开始时，", "弃牌阶段结束时，", "回合结束阶段，", "每回合限X次(X: 1-3)，当你的判定牌生效后，", "每回合限X次(X: 1-3)，当你获得牌后，", "每回合限X次(X: 1-3)，当你使用基本牌后，", "每回合限X次(X: 1-3)，当你使用锦囊牌后，", "每回合限X次(X: 1-3)，当你使用装备牌后，", "每回合限X次(X: 1-3)，当你使用红色牌后，", "每回合限X次(X: 1-3)，当你使用黑色牌后，", "每回合限X次(X: 1-3)，当你成为非延时锦囊牌的目标后，", "每回合限X次(X: 1-3)，当你失去装备区里的牌后，", "每回合限X次(X: 1-3)，当你成为【杀】的目标时，", "每回合限X次(X: 1-3)，当你成为【杀】的目标后，", "每回合限X次(X: 1-3)，当你使用或打出【杀】时，", "每回合限X次(X: 1-3)，当你使用或打出【闪】时，", "每回合限X次(X: 1-3)，当你造成伤害时，", "每回合限X次(X: 1-3)，当你造成伤害后，", "每回合限X次(X: 1-3)，当你受到伤害时，", "每回合限X次(X: 1-3)，当你受到伤害后，", "每回合限X次(X: 1-3)，当你回复体力或加体力上限后，", "每回合限X次(X: 1-3)，当你失去体力或减体力上限后，", "每回合限X次(X: 1-3)，当你进入濒死状态时，", "每回合限X次(X: 1-3)，当你脱离濒死状态后，", "每回合限X次(X: 1-3)，当你获得技能后，", "每回合限X次(X: 1-3)，当你失去技能后，", "每回合限X次(X: 1-3)，当你横置/重置/翻面后，"];
 			let choices = triggersList.randomGets(3).map(s => s.replace(`每回合限X次(X: 1-3)`, `每回合限${Math.floor(event.getRand() * 3) + 1}次`));
 			const chooseTrigger = await player
 				.chooseControlList("请选择机关技能的发动时机", choices)
@@ -12943,500 +12910,9 @@ const skills = {
 		},
 		get typeSkills() {
 			let list = {
-				征伐: [
-					"长驱",
-					"电界",
-					"横江",
-					"无双",
-					"龙胆",
-					"习武",
-					"酒诗",
-					"狂风",
-					"纵欲",
-					"慧觑",
-					"止戈",
-					"断粮",
-					"引兵",
-					"神速",
-					"咆哮",
-					"武圣",
-					"权倾",
-					"扫讨",
-					"笔伐",
-					"剑舞",
-					"贿生",
-					"悲歌",
-					"缮甲",
-					"献祭",
-					"征南",
-					"整毅",
-					"蒺藜",
-					"义从",
-					"扰梦",
-					"虎痴",
-					"啖睛",
-					"诈降",
-					"谱毁",
-					"无畏",
-					"焚营",
-					"伏诛",
-					"严教",
-					"授计",
-					"溃诛",
-					"祸世",
-					"鸩毒",
-					"湮灭",
-					"母仪",
-					"反间",
-					"千幻",
-					"神戟",
-					"琴音",
-					"顺世",
-					"铁骑",
-					"尚义",
-					"猛进",
-					"主宰",
-					"惴恐",
-					"逆施",
-					"奔袭",
-					"夙隐",
-					"诋毁",
-					"鱼忧",
-					"索魂",
-					"八门",
-					"三治",
-					"残掠",
-					"仇决",
-					"国色",
-					"鬼门",
-					"极弓",
-					"蛮裔",
-					"震魂",
-					"劫焰",
-					"刚烈",
-					"卸甲",
-					"调度",
-					"拒战",
-					"观虚",
-					"木牛",
-					"寝情",
-					"暴政",
-					"突围",
-					"轻袭",
-					"薮影",
-					"眩惑",
-					"神威",
-					"缔盟",
-					"鸡肋",
-					"魔兽",
-					"傲才",
-					"沉鱼",
-					"魔舞",
-					"魅心",
-					"送丧",
-					"落雷",
-					"狂傲",
-					"纵情",
-					"解烦",
-					"温酒",
-					"踏破",
-					"凤吟",
-					"虎啸",
-					"司敌",
-					"搏战",
-					"忠勇",
-					"求援",
-					"屯田",
-					"逐寇",
-					"曼舞",
-					"过论",
-					"忠魂",
-					"蚕食",
-					"勇继",
-					"国士",
-					"画策",
-					"游侠",
-					"贺春",
-					"炼体",
-					"狂斧",
-					"戟舞",
-					"献州",
-					"奋威",
-					"伏射",
-					"虚猩",
-					"活墨",
-					"天启",
-					"朝臣",
-					"颂词",
-					"驱虎",
-					"狼顾",
-					"灭计",
-					"谦冲",
-					"蓄劲",
-					"魔箭",
-					"奇袭",
-					"恃傲",
-					"制敌",
-					"死谏",
-					"弓骑",
-					"乱嗣",
-					"强袭",
-					"凌波",
-					"星舞",
-					"专擅",
-					"乱武",
-					"旋风",
-					"修罗",
-					"三绝",
-					"绝策",
-					"决裂",
-					"咒缚",
-					"激诏",
-					"攻心",
-					"延粮",
-					"谗陷",
-					"集军",
-					"折节",
-					"火计",
-					"醉酒",
-					"截军",
-					"妖惑",
-					"待劳",
-					"掠阵",
-					"乱政",
-					"凌怒",
-					"祸水",
-					"忧戎",
-					"悍勇",
-					"落雁",
-					"素检",
-					"藏书",
-					"永劫",
-					"神愤",
-					"舌剑",
-					"埋伏",
-					"烈弓",
-					"烈医",
-					"逐鹿",
-					"知命",
-					"摧锋",
-					"陷嗣",
-					"挑衅",
-					"横行",
-					"射戟",
-					"戚乱",
-					"龙咆",
-					"朝凰",
-					"酋首",
-					"龙魂",
-					"迷乱",
-					"极武",
-					"筹略",
-					"米道",
-					"罪论",
-					"布教",
-					"独进",
-					"战绝",
-					"飞军",
-				],
-				宁息: [
-					"甘露",
-					"孤城",
-					"芳馨",
-					"礼让",
-					"存嗣",
-					"严整",
-					"天辩",
-					"伏枥",
-					"豹变",
-					"法恩",
-					"匡弼",
-					"红颜",
-					"大雾",
-					"遗计",
-					"蛮王",
-					"兴学",
-					"秉壹",
-					"品第",
-					"天姿",
-					"姻盟",
-					"绝勇",
-					"御策",
-					"诛暴",
-					"羽化",
-					"据守",
-					"纵玄",
-					"义谏",
-					"谦逊",
-					"温良",
-					"明政",
-					"矫诏",
-					"威风",
-					"才遇",
-					"倾国",
-					"娇媚",
-					"无言",
-					"五禽",
-					"帷幕",
-					"锦织",
-					"鏖战",
-					"放权",
-					"狂暴",
-					"闭月",
-					"凤仪",
-					"经纶",
-					"连营",
-					"七星",
-					"乘风",
-					"隐世",
-					"天命",
-					"溃围",
-					"全政",
-					"智迟",
-					"极略",
-					"贤士",
-					"招降",
-					"闪戏",
-					"强识",
-					"衍息",
-					"仁德",
-					"恭慎",
-					"怀璧",
-					"奇才",
-					"勘误",
-					"享乐",
-					"帷幄",
-					"困奋",
-					"空城",
-					"储元",
-					"仁心",
-					"权略",
-					"淑贤",
-					"雅士",
-					"直言",
-					"良缘",
-					"游龙",
-					"捧日",
-					"归命",
-					"昭心",
-					"资国",
-					"尚俭",
-					"闺秀",
-					"归心",
-					"断念",
-					"奋激",
-					"涅槃",
-					"武志",
-					"省身",
-					"武继",
-					"忍忌",
-					"落英",
-					"扶汉",
-					"祸心",
-					"涉猎",
-					"好施",
-					"制衡",
-					"父志",
-					"普渡",
-					"缓兵",
-					"誓仇",
-					"八阵",
-					"忘隙",
-					"昂扬",
-					"陈情",
-					"密诏",
-					"明策",
-					"才捷",
-					"衡势",
-					"掣政",
-					"狡慧",
-					"追尊",
-					"倾城",
-					"虎踞",
-					"雅虑",
-					"儒宗",
-					"刚直",
-					"激词",
-					"伏间",
-					"鼓舌",
-					"自守",
-					"无前",
-					"迭嶂",
-					"宴诛",
-					"绝境",
-					"淫恣",
-					"英才",
-					"举荐",
-					"博略",
-					"行殇",
-					"怀异",
-					"拜月",
-					"重生",
-					"权计",
-					"矢北",
-					"仙授",
-					"结姻",
-					"刀侍",
-					"反骨",
-					"渐营",
-					"天香",
-					"雄略",
-					"龙变",
-					"元化",
-					"枭姬",
-					"单骑",
-					"同心",
-					"狂言",
-				],
-				混沌: [
-					"五禽",
-					"烈弓",
-					"冲阵",
-					"凌虐",
-					"募马",
-					"残掠",
-					"咆哮",
-					"勘误",
-					"征南",
-					"米道",
-					"智愚",
-					"凌弱",
-					"震魂",
-					"流离",
-					"乱武",
-					"刚直",
-					"摧锋",
-					"劝降",
-					"伏诛",
-					"刻死",
-					"享乐",
-					"掩杀",
-					"慷忾",
-					"品第",
-					"天策",
-					"搏战",
-					"大雾",
-					"剑舞",
-					"缓兵",
-					"太平",
-					"折节",
-					"箜篌",
-					"逆战",
-					"掣政",
-					"温良",
-					"当先",
-					"焚城",
-					"帷幕",
-					"天妒",
-					"神戟",
-					"国色",
-					"追击",
-					"制合",
-					"八门",
-					"炼体",
-					"雷魂",
-					"七星",
-					"三分",
-					"攻心",
-					"蒺藜",
-					"空城",
-					"观虚",
-					"火计",
-					"激词",
-					"变天",
-					"骄矜",
-					"恩怨",
-					"雷祭",
-					"洞察",
-					"魔箭",
-					"恃傲",
-					"烈医",
-					"虎缚",
-					"严整",
-					"饵敌",
-					"固政",
-					"忧恤",
-					"威震",
-					"闭月",
-					"飞军",
-					"蓄劲",
-					"追忆",
-					"龙吟",
-					"隐世",
-					"衡势",
-					"凤吟",
-					"断粮",
-					"娇媚",
-					"绝境",
-					"专擅",
-					"承志",
-					"伏枥",
-					"伏间",
-					"酒诗",
-					"连环",
-					"才鉴",
-					"乱政",
-					"素检",
-					"流云",
-					"离间",
-					"御象",
-					"战绝",
-					"暴政",
-					"狂暴",
-					"勇烈",
-					"蛮王",
-					"落英",
-					"涅槃",
-					"雅虑",
-					"狂傲",
-					"司敌",
-					"峻刑",
-					"回春",
-					"挑衅",
-					"惠敛",
-					"狂袭",
-					"倾城",
-					"横江",
-					"曼舞",
-					"商道",
-					"神愤",
-					"君望",
-					"天辩",
-					"悍勇",
-					"顺世",
-					"鱼忧",
-					"贤士",
-					"滔乱",
-					"雄异",
-					"机巧",
-					"弓骑",
-					"刀侍",
-					"怒发",
-					"魅惑",
-					"狂骨",
-					"风雅",
-					"魔舞",
-					"截军",
-					"匡弼",
-					"索魂",
-					"千幻",
-					"闪戏",
-					"挥泪",
-					"不屈",
-					"无畏",
-					"结姻",
-					"罪论",
-					"怀橘",
-					"巧变",
-					"淑贤",
-					"鏖战",
-					"忧戎",
-					"千骑",
-					"湮灭",
-					"狂言",
-					"仙授",
-					"纵玄",
-				],
+				征伐: ["长驱", "电界", "横江", "无双", "龙胆", "习武", "酒诗", "狂风", "纵欲", "慧觑", "止戈", "断粮", "引兵", "神速", "咆哮", "武圣", "权倾", "扫讨", "笔伐", "剑舞", "贿生", "悲歌", "缮甲", "献祭", "征南", "整毅", "蒺藜", "义从", "扰梦", "虎痴", "啖睛", "诈降", "谱毁", "无畏", "焚营", "伏诛", "严教", "授计", "溃诛", "祸世", "鸩毒", "湮灭", "母仪", "反间", "千幻", "神戟", "琴音", "顺世", "铁骑", "尚义", "猛进", "主宰", "惴恐", "逆施", "奔袭", "夙隐", "诋毁", "鱼忧", "索魂", "八门", "三治", "残掠", "仇决", "国色", "鬼门", "极弓", "蛮裔", "震魂", "劫焰", "刚烈", "卸甲", "调度", "拒战", "观虚", "木牛", "寝情", "暴政", "突围", "轻袭", "薮影", "眩惑", "神威", "缔盟", "鸡肋", "魔兽", "傲才", "沉鱼", "魔舞", "魅心", "送丧", "落雷", "狂傲", "纵情", "解烦", "温酒", "踏破", "凤吟", "虎啸", "司敌", "搏战", "忠勇", "求援", "屯田", "逐寇", "曼舞", "过论", "忠魂", "蚕食", "勇继", "国士", "画策", "游侠", "贺春", "炼体", "狂斧", "戟舞", "献州", "奋威", "伏射", "虚猩", "活墨", "天启", "朝臣", "颂词", "驱虎", "狼顾", "灭计", "谦冲", "蓄劲", "魔箭", "奇袭", "恃傲", "制敌", "死谏", "弓骑", "乱嗣", "强袭", "凌波", "星舞", "专擅", "乱武", "旋风", "修罗", "三绝", "绝策", "决裂", "咒缚", "激诏", "攻心", "延粮", "谗陷", "集军", "折节", "火计", "醉酒", "截军", "妖惑", "待劳", "掠阵", "乱政", "凌怒", "祸水", "忧戎", "悍勇", "落雁", "素检", "藏书", "永劫", "神愤", "舌剑", "埋伏", "烈弓", "烈医", "逐鹿", "知命", "摧锋", "陷嗣", "挑衅", "横行", "射戟", "戚乱", "龙咆", "朝凰", "酋首", "龙魂", "迷乱", "极武", "筹略", "米道", "罪论", "布教", "独进", "战绝", "飞军"],
+				宁息: ["甘露", "孤城", "芳馨", "礼让", "存嗣", "严整", "天辩", "伏枥", "豹变", "法恩", "匡弼", "红颜", "大雾", "遗计", "蛮王", "兴学", "秉壹", "品第", "天姿", "姻盟", "绝勇", "御策", "诛暴", "羽化", "据守", "纵玄", "义谏", "谦逊", "温良", "明政", "矫诏", "威风", "才遇", "倾国", "娇媚", "无言", "五禽", "帷幕", "锦织", "鏖战", "放权", "狂暴", "闭月", "凤仪", "经纶", "连营", "七星", "乘风", "隐世", "天命", "溃围", "全政", "智迟", "极略", "贤士", "招降", "闪戏", "强识", "衍息", "仁德", "恭慎", "怀璧", "奇才", "勘误", "享乐", "帷幄", "困奋", "空城", "储元", "仁心", "权略", "淑贤", "雅士", "直言", "良缘", "游龙", "捧日", "归命", "昭心", "资国", "尚俭", "闺秀", "归心", "断念", "奋激", "涅槃", "武志", "省身", "武继", "忍忌", "落英", "扶汉", "祸心", "涉猎", "好施", "制衡", "父志", "普渡", "缓兵", "誓仇", "八阵", "忘隙", "昂扬", "陈情", "密诏", "明策", "才捷", "衡势", "掣政", "狡慧", "追尊", "倾城", "虎踞", "雅虑", "儒宗", "刚直", "激词", "伏间", "鼓舌", "自守", "无前", "迭嶂", "宴诛", "绝境", "淫恣", "英才", "举荐", "博略", "行殇", "怀异", "拜月", "重生", "权计", "矢北", "仙授", "结姻", "刀侍", "反骨", "渐营", "天香", "雄略", "龙变", "元化", "枭姬", "单骑", "同心", "狂言"],
+				混沌: ["五禽", "烈弓", "冲阵", "凌虐", "募马", "残掠", "咆哮", "勘误", "征南", "米道", "智愚", "凌弱", "震魂", "流离", "乱武", "刚直", "摧锋", "劝降", "伏诛", "刻死", "享乐", "掩杀", "慷忾", "品第", "天策", "搏战", "大雾", "剑舞", "缓兵", "太平", "折节", "箜篌", "逆战", "掣政", "温良", "当先", "焚城", "帷幕", "天妒", "神戟", "国色", "追击", "制合", "八门", "炼体", "雷魂", "七星", "三分", "攻心", "蒺藜", "空城", "观虚", "火计", "激词", "变天", "骄矜", "恩怨", "雷祭", "洞察", "魔箭", "恃傲", "烈医", "虎缚", "严整", "饵敌", "固政", "忧恤", "威震", "闭月", "飞军", "蓄劲", "追忆", "龙吟", "隐世", "衡势", "凤吟", "断粮", "娇媚", "绝境", "专擅", "承志", "伏枥", "伏间", "酒诗", "连环", "才鉴", "乱政", "素检", "流云", "离间", "御象", "战绝", "暴政", "狂暴", "勇烈", "蛮王", "落英", "涅槃", "雅虑", "狂傲", "司敌", "峻刑", "回春", "挑衅", "惠敛", "狂袭", "倾城", "横江", "曼舞", "商道", "神愤", "君望", "天辩", "悍勇", "顺世", "鱼忧", "贤士", "滔乱", "雄异", "机巧", "弓骑", "刀侍", "怒发", "魅惑", "狂骨", "风雅", "魔舞", "截军", "匡弼", "索魂", "千幻", "闪戏", "挥泪", "不屈", "无畏", "结姻", "罪论", "怀橘", "巧变", "淑贤", "鏖战", "忧戎", "千骑", "湮灭", "狂言", "仙授", "纵玄"],
 			};
 			list["混沌"].addArray(list["征伐"].concat(list["宁息"])).unique();
 			delete this.typeSkills;
@@ -15774,7 +15250,7 @@ const skills = {
 			let card = get.autoViewAs(cardInfo, trigger.cards);
 			game.log(player, "将", trigger.card, "改为", card);
 			trigger.set("card", card);
-			game.log(player, "令", card, "不可响应");
+			game.log(player, "令", card, "不可响应且造成伤害为真实伤害");
 			trigger.directHit.addArray(game.players);
 			let next = player.draw(2);
 			next.gaintag.add("eternal_jlsg_qugu");
@@ -16023,194 +15499,506 @@ const skills = {
 	},
 	jlsg_yanfeng: {
 		audio: "ext:极略/audio/skill:2",
-		enable: "chooseToUse",
-		filter(event, player) {
-			return event.filterCard(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event);
-		},
-		position: "hes",
+		enable: ["chooseToUse"],
+		selectCard: 1,
 		filterCard: true,
-		check(card) {
-			let val = get.value(card);
-			if (get.color(card) == "red") {
-				val--;
-			}
-			if (get.name(card) == "sha") {
-				val--;
-			}
-			return 6 - val;
-		},
+		position: "hes",
 		viewAs: {
 			name: "sha",
 			nature: "fire",
 		},
-		group: ["jlsg_yanfeng_toTarget", "jlsg_yanfeng_nodamage", "jlsg_yanfeng_draw"],
-		subSkill: {
-			toTarget: {
-				audio: "jlsg_yanfeng",
-				trigger: {
-					player: "useCardToTargeted",
-				},
-				filter(event, player) {
-					if (!event.isFirstTarget || event.card.name != "sha" || !event.card.hasNature("fire")) {
-						return false;
+		trigger: {
+			player: ["useCard", "damageAfter"],
+		},
+		forced: true,
+		filter(event, player) {
+			if (event.name == "chooseToUse") {
+				return player.countCards("hes") > 0;
+			} else if (event.name == "damage") {
+				return event.nature.includes("fire");
+			} else {
+				const card = event.card;
+				if (get.name(card, false) == "sha" && get.natureList(card, false).includes("fire")) {
+					return true;
+				}
+				return get.color(card, false) == "red" || (card.cards.length == 1 && get.name(card.cards[0], false) == "sha");
+			}
+		},
+		async content(event, trigger, player) {
+			if (event.name == "chooseToUse") {
+				return;
+			} else if (trigger.name == "damage") {
+				await player.draw(2);
+			} else {
+				const card = trigger.card;
+				if (get.color(card, false) == "red") {
+					trigger.addCount = false;
+					const stat = player.getStat().card,
+						name = card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
 					}
-					return get.color(event.card) == "red" || event.cards.every(card => card.name == "sha");
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					if (get.color(trigger.card) == "red") {
-						trigger.getParent().baseDamage++;
-						if (trigger.getParent().addCount !== false) {
-							trigger.getParent().addCount = true;
-							const stat = player.getStat().card;
-							if (typeof stat["sha"] === "number") {
-								stat["sha"]--;
-							}
-						}
-					}
-					if (trigger.cards.every(card => card.name == "sha")) {
-						trigger.card.storage ??= {};
-						trigger.card.storage.jlsg_yanfeng = true;
-						trigger.getParent().directHit = game.filterPlayer2();
-					}
-				},
-				ai: {
-					unequip: true,
-					unequip_ai: true,
-					skillTagFilter(player, tag, arg) {
-						return arg?.card?.storage?.jlsg_yanfeng;
-					},
-				},
-			},
-			nodamage: {
-				audio: "jlsg_yanfeng",
-				trigger: {
-					player: "useCardAfter",
-				},
-				filter(event, player) {
-					return (
-						event.card.name == "sha" &&
-						event.card.hasNature("fire") &&
-						!game.hasPlayer2(current => {
-							return current.hasHistory("damage", evt => evt.card == event.card);
-						})
-					);
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					await player.damage(player, "fire");
-				},
-			},
-			draw: {
-				audio: "jlsg_yanfeng",
-				trigger: {
-					player: "damageEnd",
-				},
-				getIndex(event, player) {
-					return event.num;
-				},
-				filter(event, player) {
-					return game.hasNature(event, "fire");
-				},
-				forced: true,
-				locked: false,
-				async content(event, trigger, player) {
-					await player.draw(2);
-				},
-				ai: {
-					effect: {
-						target(card) {
-							if (get.tag(card, "fireDamage")) {
-								return [1, 2];
-							}
-						},
-					},
-				},
-			},
+					trigger.baseDamage++;
+				}
+				if (card.cards.length == 1 && get.name(card.cards[0], false) == "sha") {
+					game.log(player, "令", card, "不可响应且无视防具");
+					trigger.directHit.addArray(game.players);
+					trigger.card.yanfeng_unequip = true;
+				}
+			}
 		},
 		ai: {
-			respondSha: true,
+			unequip: true,
 			fireAttack: true,
-			skillTagFilter(player, tag) {
-				if (!player.countCards("hes") || tag != "use") {
+			respondSha: true,
+			unequip_ai: true,
+			skillTagFilter(player, tag, arg) {
+				if (["unequip", "unequip_ai"].includes(tag)) {
+					return player.getCards("hes").length > 0;
+				}
+				if (!arg?.card?.yanfeng_unequip) {
 					return false;
 				}
 			},
-			order(item, player) {
-				if (item != "jlsg_yanfeng") {
-					return 0;
-				}
-				return get.order({ name: "sha", nature: "fire" }, player) + 0.1;
-			},
-			result: {
-				player: 0.1,
+		},
+		group: ["jlsg_yanfeng_damage"],
+		subSkill: {
+			damage: {
+				trigger: {
+					player: ["useCardAfter"],
+				},
+				popup: false,
+				forced: true,
+				filter(event, player) {
+					if (get.name(event.card, false) != "sha" || !get.natureList(event.card, false).includes("fire")) {
+						return false;
+					}
+					const history = game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.card == event.card).length;
+					return !history;
+				},
+				async content(event, trigger, player) {
+					await player.damage({
+						source: player,
+						num: 1,
+						nature: "fire",
+					});
+				},
 			},
 		},
 	},
 	jlsg_shenji: {
 		audio: "ext:极略/audio/skill:2",
-		mark: true,
-		intro: {
-			content(storage, player) {
-				if (storage === true) {
-					return "可发动";
-				}
-				return "不可发动";
-			},
-		},
 		enable: "phaseUse",
 		usable: 1,
+		init(player, skill) {
+			player.storage.shenji = "unuse";
+		},
 		filter(event, player) {
-			return player.getStorage("jlsg_shenji", false) && player.maxHp > 1;
-		},
-		selectTarget() {
-			return [1, get.player().maxHp - 1];
-		},
-		filterTarget(_, player, target) {
-			return true;
-		},
-		async contentBefore(event, trigger, player) {
-			await player.loseMaxHp(event.targets.length);
+			return player.storage.shenji == "unuse";
 		},
 		async content(event, trigger, player) {
-			await event.target.damage(event.target.maxHp, "fire");
+			const max = player.maxHp;
+			player.setStorage("shenji", "used");
+			const { targets } = await player
+				.chooseTarget({
+					prompt: get.prompt2("jlsg_shenji"),
+					selectTarget: [1, max],
+					forced: true,
+				})
+				.set("ai", target => -get.attitude(player, target))
+				.forResult();
+			await player.loseMaxHp(targets.length);
+			await game.doAsyncInOrder(targets, target => {
+				return target.damage({
+					num: target.maxHp,
+					nature: "fire",
+					source: player,
+				});
+			});
 		},
-		async contentAfter(event, trigger, player) {
-			player.setStorage("jlsg_shenji", false, true);
+		ai: {
+			fireAttack: true,
+			skillTagFilter(player, tag, arg) {
+				return player.storage.shenji == "unuse";
+			},
 		},
-		group: "jlsg_shenji_damage",
+		group: ["jlsg_shenji_reset"],
 		subSkill: {
-			damage: {
-				charlotte: true,
-				audio: false,
+			reset: {
 				trigger: {
-					player: "damageEnd",
+					player: "damageAfter",
 				},
+				forced: true,
+				popup: false,
 				filter(event, player) {
-					return game.hasNature(event, "fire");
+					return player.storage.shenji == "used" && event.nature.includes("fire");
 				},
-				firstDo: true,
+				content(event, trigger, player) {
+					player.setStorage("shenji", "unuse");
+				},
+			},
+		},
+	},
+	jlsg_dieyun: {
+		audio: "ext:极略/audio/skill:2",
+		mark: true,
+		marktext: "韵",
+		intro: {
+			name: "叠韵",
+			content: "剩余刷新次数：#",
+		},
+		trigger: {
+			global: ["gainBefore", "recoverBefore", "addMark", "handLimitAdd", "useShaAdd", "damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkillBefore"],
+		},
+		init(player) {
+			lib.hooks.addSkillCheck.add(() => {});
+		},
+		transMap: {
+			gainBefore: "gain",
+			recoverBefore: "recover",
+			addMark: "addMark",
+		},
+		randomBuffList: [
+			{
+				str: "摸1张牌",
+				async eff(event, trigger, player) {
+					await player.draw();
+				},
+			},
+			{
+				str: "恢复1点体力",
+				async eff(event, trigger, player) {
+					await player.recover();
+				},
+			},
+			{
+				str: "出杀次数+1",
+				async eff(event, trigger, player) {
+					player.storage.jlsg_dieyun_buff.sxnum++;
+				},
+			},
+			{
+				str: "手牌上限+1",
+				async eff(event, trigger, player) {
+					player.storage.jlsg_dieyun_buff.shanum++;
+				},
+			},
+			{
+				str: "重置",
+				async eff(event, trigger, player) {
+					if (player.isLinked()) {
+						player.link();
+					}
+					if (player.isTurnedOver()) {
+						player.turnOver();
+					}
+				},
+			},
+			{
+				str: "受到一点伤害",
+				async eff(event, trigger, player) {
+					await player.damage();
+				},
+			},
+			{
+				str: "失去1点体力上限",
+				async eff(event, trigger, player) {
+					await player.loseMaxHp();
+				},
+			},
+			{
+				str: "失去1点体力",
+				async eff(event, trigger, player) {
+					await player.loseHp();
+				},
+			},
+			{
+				str: "横置",
+				async eff(event, trigger, player) {
+					if (!player.isLinked()) {
+						player.link();
+					}
+				},
+			},
+			{
+				str: "翻面",
+				async eff(event, trigger, player) {
+					if (!player.isTurnedOver()) {
+						player.turnOver();
+					}
+				},
+			},
+			{
+				str: "随机失去一个技能",
+				async eff(event, trigger, player) {
+					const skills = player.getSkills(null, false, false).filter(skill => {
+						const info = get.info(skill);
+						return info && !info.charlotte;
+					});
+					if (skills.length) {
+						const skill = skills.randomGet();
+						await player.removeSkills(skill);
+					}
+				},
+			},
+			{
+				str: "随机获得一个技能",
+				async eff(event, trigger, player) {
+					const skill = Object.keys(lib.skill)
+						.filter(skill => {
+							const info = get.info(skill);
+							return info && !info.charlotte && get.skillInfoTranslation(skill).length;
+						})
+						.randomGet();
+					await player.addSkills(skill);
+				},
+			},
+		],
+		getBuff(key, event, player) {
+			if (key == "gain") {
+				const cards = event.cards;
+				return [
+					{
+						bool: Boolean(cards?.length),
+						num: cards?.length || 0,
+						str: `获得${cards?.length || 0}张牌`,
+					},
+				];
+			} else if (key == "recover") {
+				const num = event.num;
+				return [
+					{
+						bool: num > 0,
+						num,
+						str: `恢复${num}点体力`,
+					},
+				];
+			} else if (key == "addMark") {
+				const list = [];
+				let info = player.getStorage("jlsg_dieyun");
+				const newList = [player.getHandcardLimit(), player.getCardUsable("sha", true)];
+				const oldList = info[player.playerid] || newList;
+				const sx = newList[0] - oldList[0];
+				const sha = newList[1] - oldList[1];
+				if (sx > 0) {
+					list.push({
+						name: "handLimitAdd",
+						bool: true,
+						num: sx,
+						str: `手牌上限+${sx}`,
+					});
+				}
+				if (sha > 0) {
+					list.push({
+						name: "useShaAdd",
+						bool: true,
+						num: sha,
+						str: `出杀次数+${sha}`,
+					});
+				}
+				return list;
+			}
+		},
+		filter(event, player, name, indexedData) {
+			if (event.getParent()?._trigger?.name == "jlsg_dieyun") {
+				return false;
+			}
+			return indexedData.bool;
+		},
+		getIndex(event, player, name) {
+			const target = event.player;
+			let key = lib.jlsg.debuffSkill.translate[event.name];
+			let buff = [lib.jlsg.debuffSkill.getInfo(event, target, key)];
+			if (!key) {
+				key = lib.skill.jlsg_dieyun.transMap[name];
+				buff = lib.skill.jlsg_dieyun.getBuff(key, event, target);
+			}
+			if (name == "changeSkillsBefore") {
+				if (event.addSkill) {
+					const num = event.addSkill.length;
+					buff.push({
+						name: "addSkills",
+						bool: num > 0,
+						str: `获得${num}个技能`,
+					});
+				}
+			} else if (name == "handLimitAdd") {
+				buff.push({
+					name: "handLimitAdd",
+					bool: true,
+					num: event.sxnum,
+					str: `手牌上限+${event.sxnum}`,
+				});
+			} else if (name == "useShaAdd") {
+				buff.push({
+					name: "useShaAdd",
+					bool: true,
+					num: event.shanum,
+					str: `出杀次数+${event.shanum}`,
+				});
+			}
+			const list = buff.filter(item => item.bool);
+			if (list.length) {
+				_status.jlsg_dieyun_buff = list;
+			}
+			return _status.jlsg_dieyun_buff;
+		},
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			const info = event.indexedData;
+			let randomEff = lib.skill.jlsg_dieyun.randomBuffList.randomGet();
+			const controls = [
+				link => {
+					if (link == "刷新") {
+						randomEff = lib.skill.jlsg_dieyun.randomBuffList.randomGet();
+						const prompt = `是否将${get.translation(target)}的${info.str}变为${randomEff.str}`;
+						get.event().dialog.querySelector(".caption").innerHTML = prompt;
+					}
+					return;
+				},
+			];
+			const next = player
+				.chooseBool(`是否将${get.translation(target)}的${info.str}变为${randomEff.str}`)
+				.set("controls", [ui.create.control(controls.concat(["刷新", "stayleft"]))])
+				.set("custom", {
+					add: {
+						confirm(bool) {
+							const event = get.event();
+							if (event.controls) {
+								event.controls.forEach(i => i.close());
+							}
+							if (ui.confirm) {
+								ui.confirm.close();
+							}
+						},
+					},
+				});
+			const result = await next.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: randomEff,
+			};
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const info = event.cost_data;
+			const data = event.indexedData;
+			const buffname = info.name || event.triggername;
+			if (buffname == "handLimitAdd") {
+				player.storage.jlsg_dieyun_buff.sxnum -= data.num;
+			} else if (buffname == "useShaAdd") {
+				player.storage.jlsg_dieyun_buff.shanum -= data.num;
+			} else if (buffname == "addSkills") {
+				event.addSkill = [];
+			} else if (buffname == "changeSkillsBefore") {
+				trigger.removeSkill = [];
+			} else {
+				trigger.cancel();
+			}
+			const next = game.createEvent("jlsg_dieyun_eff", false);
+			next.player = target;
+			next._trigger = event;
+			next.setContent(info.eff);
+			await next;
+		},
+		global: ["jlsg_dieyun_buff"],
+		group: ["jlsg_dieyun_init", "jlsg_dieyun_buff"],
+		subSkill: {
+			init: {
+				trigger: {
+					global: ["gameStart", "enterGame"],
+				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					player.setStorage("jlsg_shenji", true, true);
+					let info = player.getStorage("jlsg_dieyun");
+					if (!info.refresh) {
+						info = {
+							refresh: 3,
+						};
+					}
+					for (let curr of game.players) {
+						const newList = [curr.getHandcardLimit(), curr.getCardUsable("sha", true)];
+						if (info[curr.playerid]) {
+							const oldList = info[curr.playerid];
+							const sx = newList[0] - oldList[0];
+							const sha = newList[1] - oldList[1];
+							if (sx > 0) {
+								event.sxnum = sx;
+								await event.trigger("handLimitAdd");
+							}
+							if (sha > 0) {
+								event.shanum = sha;
+								await event.trigger("useShaAdd");
+							}
+						}
+						info[curr.playerid] = newList;
+					}
+					player.setStorage("jlsg_dieyun", info);
+				},
+			},
+			buff: {
+				charlotte: true,
+				init(player) {
+					if (!player.storage.jlsg_dieyun_buff) {
+						player.setStorage("jlsg_dieyun_buff", {
+							sxnum: 0,
+							shanum: 0,
+						});
+					}
+				},
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.storage.jlsg_dieyun_buff?.sxnum || 0;
+					},
+					cardUsable(card, player, num) {
+						if (card.name == "sha") {
+							return num + player.storage.jlsg_dieyun_buff?.shanum || 0;
+						}
+					},
 				},
 			},
 		},
-		ai: {
-			order: 1,
-			halfneg: true,
-			fireAttack: true,
-			result: {
-				player(player) {
-					if (!game.hasPlayer(current => get.damageEffect(current, player, player, "fire") > 1)) {
-						return 0;
-					}
-					return 0.5;
+	},
+	jlsg_juexian: {
+		trigger: {
+			player: "loseMaxHpAfter",
+		},
+		filter(event, player) {
+			return player.maxHp == 1;
+		},
+		async content(event, trigger, player) {
+			const { targets, links } = await player
+				.chooseButtonTarget({
+					createDialog: [get.prompt2("jlsg_juexian"), [lib.phaseName.map(i => [i, get.translation(i)]), "tdnodes"]],
+				})
+				.forResult();
+			if (targets[0]) {
+				if (!targets[0].storage.jlsg_juexian_buff) {
+					targets[0].storage.jlsg_juexian_buff = [];
+				}
+				targets[0].storage.jlsg_juexian_buff.push(links[0]);
+			}
+		},
+		global: ["jlsg_juexian_buff"],
+		subSkill: {
+			buff: {
+				charlotte: true,
+				trigger: {
+					player: ["phaseBefore"],
 				},
-				target: -1,
+				forced: true,
+				filter(event, player) {
+					return player.storage.jlsg_juexian_buff?.length;
+				},
+				async content(event, trigger, player) {
+					const list = trigger.phaseList ?? lib.phaseName;
+					const skip = player.storage.jlsg_juexian_buff;
+					skip.forEach(phase => {
+						list.remove(phase);
+					});
+					trigger.set("phaseList", list);
+				},
 			},
 		},
 	},

@@ -49,7 +49,8 @@ const characters = {
 	jlsgsoul_sp_zhenji: ["female", "shen", 7, ["jlsg_qixian"], ["wei", "name:甄|null"]],
 	jlsgsoul_dongzhuo: ["male", "shen", 5, ["jlsg_taotie", "jlsg_yaoling"], ["qun"]],
 	jlsgsoul_sp_zhouyu: ["male", "shen", 4, ["jlsg_qugu", "jlsg_suhui"], ["wu"]],
-	jlsgsoul_zhurong: ["female", "shen", 5, ["jlsg_yanfeng", "jlsg_shenji"], ["shu"]],
+	jlsgsoul_zhurong: ["female", "shen", 5, ["jlsg_yanfeng", "jlsg_shenji"], ["qun"]],
+	jlsgsoul_sp_daqiao: ["female", "shen", 2, ["jlsg_dieyun", "jlsg_juexian"], ["wu"]],
 };
 
 export default characters;
