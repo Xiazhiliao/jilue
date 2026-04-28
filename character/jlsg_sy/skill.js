@@ -5,7 +5,7 @@ const skills = {
 	jlsgsy_baonu: {
 		audio: "ext:极略/audio/skill:1",
 		skillAnimation: true,
-		trigger: { player: ["changeHp", "loseMaxHpBegin"] },
+		trigger: { player: ["changeHp","loseMaxHpBegin"] },
 		unique: true,
 		charlotte: true,
 		firstDo: true,
@@ -41,6 +41,10 @@ const skills = {
 			}
 			await event.trigger("jlsgsy_baonuBefore");
 			let least = 4;
+			if (player.hp < least) {
+				const num = Math.min(player.maxHp, least);
+				player.hp = num;
+			}
 			let name1 = player.name1,
 				name2 = player.name2;
 			if (name1.startsWith("jlsgsy_") && !name1.endsWith("baonu")) {
@@ -51,12 +55,10 @@ const skills = {
 				game.log(player, "将", get.translation(name2), "变更为", get.translation(name2 + "baonu"));
 				player.reinit(name2, name2 + "baonu");
 			}
+			//魔贾诩神秘bug,插眼等流年...
 			if (player.maxHp < 3) {
 				player.maxHp = 3;
-			}
-			if (player.hp < least) {
-				const num = Math.min(player.maxHp, least);
-				player.hp = num;
+				player.hp = 3;
 			}
 			player.update();
 			await event.trigger("jlsgsy_baonuAfter");
@@ -3665,7 +3667,7 @@ const skills = {
 			},
 		},
 		trigger: {
-			target: ["useCardToTarget"],
+			global: ["useCard"],
 		},
 		filter(event, player) {
 			const card = event.card;
@@ -3675,7 +3677,7 @@ const skills = {
 			if (get.type2(card, false) == "equip") {
 				return false;
 			}
-			return event.targets.length == 1 && event.player != player;
+			return event.targets.includes(player) && event.targets.length == 1 && event.player != player;
 		},
 		async content(event, trigger, player) {
 			const target = game.filterPlayer(curr => curr.isMaxMaxHp()).randomGet();
@@ -3683,9 +3685,9 @@ const skills = {
 			if (target == player) {
 				await player.draw(2);
 			}
-			trigger.getParent().cancel();
-			trigger.getParent().targets.remove(player);
-			trigger.getParent().all_excluded = true;
+			trigger.cancel();
+			trigger.targets.remove(player);
+			trigger.all_excluded = true;
 		},
 	},
 	jlsgsy_lianpo: {
@@ -3719,15 +3721,15 @@ const skills = {
 			if (links[0] == "red") {
 				await target.loseHp();
 				await target.gainMaxHp();
-				const card = target.getCards("he", card => get.color(card) == "red");
-				if (card.length) {
+				const card = target.getCards("he", card => get.color(card) == "red").randomGet();
+				if (card) {
 					await player.gain(card, "gain2");
 				}
 			} else {
 				await target.recover();
 				await target.loseMaxHp();
-				const card = target.getCards("he", card => get.color(card) == "black");
-				if (card.length) {
+				const card = target.getCards("he", card => get.color(card) == "black").randomGet();
+				if (card) {
 					await player.gain(card, "gain2");
 				}
 			}
@@ -3756,7 +3758,6 @@ const skills = {
 		forced: true,
 		filter(event, player) {
 			const targets = game.filterPlayer(curr => curr != player);
-			console.log(targets.map(p => p.maxHp));
 			return targets.map(p => p.maxHp).unique().length == 1 && game.filterPlayer(curr => curr != player).length > 0;
 		},
 		async content(event, trigger, player) {
