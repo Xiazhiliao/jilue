@@ -5152,7 +5152,7 @@ const skills = {
 			player.useCard(
 				{
 					name: "sha",
-					nature: lib.inpile_nature.concat(null).randomGet(),
+					nature: lib.inpile_nature.concat(undefined).randomGet(),
 					storage: {
 						jlsg_shajue: true,
 					},
@@ -5340,8 +5340,7 @@ const skills = {
 				.gainPlayerCard(trigger.player, "he")
 				.set("prompt", "掠阵：是否获得" + get.translation(trigger.player) + "的一张牌并翻面？")
 				.set("prompt2", "然后若你背面朝上，你可以结束当前回合")
-				.set("chooseonly", true)
-				.forResult();
+				.set("chooseonly", true);
 			event.result = {
 				bool: next.result?.bool,
 				targets: [trigger.player],
@@ -6704,8 +6703,134 @@ const skills = {
 				player.draw(cards.length);
 			}
 			cards = player.getExpansions(event.name);
+			if (cards.map(c => c.name).includes("muniu")) {
+				cards = cards.filter(c => c.name != "muniu");
+				player.addAdditionalSkill(event.name, "jlsg_jinlong_muniu", true);
+			}
 			let skills = get.skillsFromEquips(cards).filter(i => lib.skill[i]);
-			player.addAdditionalSkill(event.name, skills);
+			player.addAdditionalSkill(event.name, skills, true);
+		},
+	},
+	jlsg_jinlong_muniu: {
+		equipSkill: true,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.countCards("h");
+		},
+		check(card) {
+			if (card.name == "wuxie") {
+				return 15;
+			}
+			if (card.name == "du") {
+				return 20;
+			}
+			var player = _status.event.player;
+			var nh = player.countCards("h");
+			if (!player.needsToDiscard()) {
+				return 20 - get.value(card);
+			}
+			return 15 - get.useful(card);
+		},
+		usable: 1,
+		delay: false,
+		selectCard: 1,
+		filterCard: true,
+		discard: false,
+		lose: false,
+		prompt: "将一张手牌扣置于【木牛流马】下",
+		async content(event, trigger, player) {
+			let cards = event.cards;
+			await player.$give(1, player, false);
+			game.log(player, "将一张牌置于了【木牛流马】下");
+			await player.loseToSpecial(event.cards, "jlsg_jinlong_muniu");
+			player.addSkill("jlsg_jinlong_muniu_unmark");
+			player.markSkill("jlsg_jinlong_muniu");
+			await game.delayx();
+			player.updateMarks();
+		},
+		marktext: "辎",
+		intro: {
+			content(storage, player) {
+				var cards = player.getCards("s", function (card) {
+					return card.hasGaintag("jlsg_jinlong_muniu");
+				});
+				if (!cards.length) {
+					return "共有零张牌";
+				}
+				if (player.isUnderControl(true)) {
+					dialog.addAuto(cards);
+				} else {
+					return "共有" + get.cnNumber(cards.length) + "张牌";
+				}
+			},
+			mark(dialog, storage, player) {
+				var cards = player.getCards("s", function (card) {
+					return card.hasGaintag("jlsg_jinlong_muniu");
+				});
+				if (!cards.length) {
+					return "共有零张牌";
+				}
+				if (player.isUnderControl(true)) {
+					dialog.addAuto(cards);
+				} else {
+					return "共有" + get.cnNumber(cards.length) + "张牌";
+				}
+			},
+			markcount(storage, player) {
+				return player.countCards("s", function (card) {
+					return card.hasGaintag("jlsg_jinlong_muniu");
+				});
+			},
+			onunmark(storage, player) {
+				var cards = player.getCards("s", function (card) {
+					return card.hasGaintag("jlsg_jinlong_muniu");
+				});
+				if (cards.length) {
+					player.loseToDiscardpile(cards);
+				}
+			},
+		},
+		mod: {
+			aiOrder(player, card, num) {
+				if (get.itemtype(card) == "card" && card.hasGaintag("jlsg_jinlong_muniu")) {
+					return (
+						num +
+						(player.countCards("s", function (card) {
+							return card.hasGaintag("jlsg_jinlong_muniu");
+						}) > player.maxHp
+							? 0.5
+							: -0.5)
+					);
+				}
+			},
+		},
+		subSkill: {
+			unmark: {
+				trigger: {
+					player: "loseAfter",
+				},
+				filter(event, player) {
+					if (!event.ss || !event.ss.length) {
+						return false;
+					}
+					return !player.countCards("s", function (card) {
+						return card.hasGaintag("jlsg_jinlong_muniu");
+					});
+				},
+				charlotte: true,
+				forced: true,
+				silent: true,
+				content() {
+					player.unmarkSkill("jlsg_jinlong_muniu");
+					player.removeSkill("jlsg_jinlong_muniu_unmark");
+				},
+			},
+		},
+		ai: {
+			order: 1,
+			result: {
+				player: 1,
+			},
 		},
 	},
 	jlsg_liegong: {
@@ -13955,7 +14080,7 @@ const skills = {
 					};
 				},
 				intro: {
-					noucount: true,
+					nocount: true,
 					content(storage, player) {
 						const { players, record } = storage;
 						let str = `已被${get.translation(players)}封印<br>
@@ -15065,7 +15190,7 @@ const skills = {
 				marktext: "↑",
 				intro: {
 					name: "七弦",
-					noucount: true,
+					nocount: true,
 					mark(dialog, storage, player) {
 						const translate = {
 							maxHandcard: "手牌上限",
@@ -15136,7 +15261,7 @@ const skills = {
 				marktext: "↓",
 				intro: {
 					name: "七弦",
-					noucount: true,
+					nocount: true,
 					mark(dialog, storage, player) {
 						const translate = {
 							filterDamage: "下次造成伤害",
