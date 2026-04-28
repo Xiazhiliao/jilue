@@ -15712,7 +15712,7 @@ const skills = {
 			},
 			{
 				str: "手牌上限+1",
-				key: "handcardLimitAdd",
+				key: "handLimitAdd",
 				async eff(event, trigger, player) {
 					let num = player.storage.jlsg_dieyun_sxnum ?? 0;
 					player.setStorage("jlsg_dieyun_sxnum", ++num);
@@ -15847,9 +15847,11 @@ const skills = {
 				];
 			} else if (key == "addMark") {
 				const list = [];
-				let info = player.getStorage("jlsg_dieyun_count");
 				const newList = [player.getHandcardLimit(), player.getCardUsable("sha", true)];
-				const oldList = info[player.playerid] || newList;
+				let info = player.storage.jlsg_dieyun_count ?? {
+					[player.playerid]: newList,
+				};
+				const oldList = info[player.playerid];
 				const sx = newList[0] - oldList[0];
 				const sha = newList[1] - oldList[1];
 				if (sx > 0) {
@@ -15857,7 +15859,7 @@ const skills = {
 					if (sx > 0) {
 						str = `手牌上限+${sx}`;
 					} else if (sx < 0) {
-						str = `手牌上限-${sx}`;
+						str = `手牌上限${sx}`;
 					}
 					list.push({
 						key: "handLimitAdd",
@@ -15871,7 +15873,7 @@ const skills = {
 					if (sha > 0) {
 						str = `出杀次数+${sha}`;
 					} else if (sha < 0) {
-						str = `出杀次数-${sha}`;
+						str = `出杀次数${sha}`;
 					}
 					list.push({
 						key: "useShaAdd",
@@ -15882,31 +15884,35 @@ const skills = {
 				}
 				return list;
 			} else if (key == "handLimitAdd") {
+				const list = [];
 				let str = "";
 				if (event.sxnum > 0) {
 					str = `手牌上限+${event.sxnum}`;
 				} else if (event.sxnum < 0) {
-					str = `手牌上限-${event.sxnum}`;
+					str = `手牌上限${event.sxnum}`;
 				}
-				buff.push({
+				list.push({
 					key: "handLimitAdd",
 					bool: true,
 					num: event.sxnum,
 					str: str,
 				});
+				return list;
 			} else if (key == "useShaAdd") {
+				const list = [];
 				let str = "";
 				if (event.shanum > 0) {
 					str = `出杀次数+${event.shanum}`;
 				} else if (event.shanum < 0) {
-					str = `出杀次数-${event.shanum}`;
+					str = `出杀次数${event.shanum}`;
 				}
-				buff.push({
+				list.push({
 					key: "useShaAdd",
 					bool: true,
 					num: event.shanum,
 					str: str,
 				});
+				return list;
 			}
 		},
 		filter(event, player, name, indexedData) {
@@ -15921,7 +15927,7 @@ const skills = {
 			let buff = [{ key: key, ...lib.jlsg.debuffSkill.getInfo(event, target, key) }];
 			if (!key) {
 				key = lib.skill.jlsg_dieyun.transMap[name];
-				buff = lib.skill.jlsg_dieyun.getBuff(key, event, player, target);
+				buff = lib.skill.jlsg_dieyun.getBuff(key, event, player);
 			}
 			if (name == "changeSkillsBefore") {
 				if (event.addSkill) {
@@ -16046,13 +16052,15 @@ const skills = {
 				async content(event, trigger, player) {
 					if (!_status.jlsg_dieyun_init) {
 						_status.jlsg_dieyun_init = true;
-						lib.hooks.addSkillCheck.push(player => {
+						lib.hooks.addSkillCheck.push((_, player) => {
 							const event = get.event();
 							const next = game.createEvent("jlsg_dieyun_effx", false);
 							next.player = player;
 							next.setContent(async (event, trigger, curr) => {
-								const info = curr.storage.jlsg_dieyun_count ?? {};
 								const newList = [curr.getHandcardLimit(), curr.getCardUsable("sha", true)];
+								const info = curr.storage.jlsg_dieyun_count ?? {
+									[curr.playerid]: newList,
+								};
 								if (info[curr.playerid]) {
 									const oldList = info[curr.playerid];
 									const sx = newList[0] - oldList[0];
@@ -16066,14 +16074,18 @@ const skills = {
 										await event.trigger("useShaAdd");
 									}
 								}
-								curr.setStorage("jlsg_dieyun_count", newList);
+								curr.setStorage("jlsg_dieyun_count", {
+									[curr.playerid]: newList,
+								});
 							});
 							event.next.unshift(next);
 						});
 					}
 					for (let curr of game.players) {
-						const info = curr.storage.jlsg_dieyun_count ?? {};
 						const newList = [curr.getHandcardLimit(), curr.getCardUsable("sha", true)];
+						const info = curr.storage.jlsg_dieyun_count ?? {
+							[curr.playerid]: newList,
+						};
 						if (info[curr.playerid]) {
 							const oldList = info[curr.playerid];
 							const sx = newList[0] - oldList[0];
@@ -16087,7 +16099,9 @@ const skills = {
 								await event.trigger("useShaAdd");
 							}
 						}
-						curr.setStorage("jlsg_dieyun_count", newList);
+						curr.setStorage("jlsg_dieyun_count", {
+							[curr.playerid]: newList,
+						});
 					}
 				},
 			},
