@@ -15499,143 +15499,194 @@ const skills = {
 	},
 	jlsg_yanfeng: {
 		audio: "ext:极略/audio/skill:2",
-		enable: ["chooseToUse"],
-		selectCard: 1,
-		filterCard: true,
+		enable: "chooseToUse",
+		filter(event, player) {
+			return event.filterCard(get.autoViewAs({ name: "sha", nature: "fire" }, "unsure"), player, event);
+		},
 		position: "hes",
+		filterCard: true,
+		check(card) {
+			let val = get.value(card);
+			if (get.color(card) == "red") {
+				val--;
+			}
+			if (get.name(card) == "sha") {
+				val--;
+			}
+			return 6 - val;
+		},
 		viewAs: {
 			name: "sha",
 			nature: "fire",
 		},
-		trigger: {
-			player: ["useCard", "damageAfter"],
-		},
-		forced: true,
-		filter(event, player) {
-			if (event.name == "chooseToUse") {
-				return player.countCards("hes") > 0;
-			} else if (event.name == "damage") {
-				return event.nature.includes("fire");
-			} else {
-				const card = event.card;
-				if (get.name(card, false) == "sha" && get.natureList(card, false).includes("fire")) {
-					return true;
-				}
-				return get.color(card, false) == "red" || (card.cards.length == 1 && get.name(card.cards[0], false) == "sha");
-			}
-		},
-		async content(event, trigger, player) {
-			if (event.name == "chooseToUse") {
-				return;
-			} else if (trigger.name == "damage") {
-				await player.draw(2);
-			} else {
-				const card = trigger.card;
-				if (get.color(card, false) == "red") {
-					trigger.addCount = false;
-					const stat = player.getStat().card,
-						name = card.name;
-					if (typeof stat[name] == "number") {
-						stat[name]--;
+		group: ["jlsg_yanfeng_toTarget", "jlsg_yanfeng_nodamage", "jlsg_yanfeng_draw"],
+		subSkill: {
+			toTarget: {
+				audio: "jlsg_yanfeng",
+				trigger: {
+					player: "useCardToTargeted",
+				},
+				filter(event, player) {
+					if (!event.isFirstTarget || event.card.name != "sha" || !event.card.hasNature("fire")) {
+						return false;
 					}
-					trigger.baseDamage++;
-				}
-				if (card.cards.length == 1 && get.name(card.cards[0], false) == "sha") {
-					game.log(player, "令", card, "不可响应且无视防具");
-					trigger.directHit.addArray(game.players);
-					trigger.card.yanfeng_unequip = true;
-				}
-			}
+					return get.color(event.card) == "red" || event.cards.every(card => card.name == "sha");
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					if (get.color(trigger.card) == "red") {
+						trigger.getParent().baseDamage++;
+						if (trigger.getParent().addCount !== false) {
+							trigger.getParent().addCount = true;
+							const stat = player.getStat().card;
+							if (typeof stat["sha"] === "number") {
+								stat["sha"]--;
+							}
+						}
+					}
+					if (trigger.cards.every(card => card.name == "sha")) {
+						trigger.card.storage ??= {};
+						trigger.card.storage.jlsg_yanfeng = true;
+						trigger.getParent().directHit = game.filterPlayer2();
+					}
+				},
+				ai: {
+					unequip: true,
+					unequip_ai: true,
+					skillTagFilter(player, tag, arg) {
+						return arg?.card?.storage?.jlsg_yanfeng;
+					},
+				},
+			},
+			nodamage: {
+				audio: "jlsg_yanfeng",
+				trigger: {
+					player: "useCardAfter",
+				},
+				filter(event, player) {
+					return (
+						event.card.name == "sha" &&
+						event.card.hasNature("fire") &&
+						!game.hasPlayer2(current => {
+							return current.hasHistory("damage", evt => evt.card == event.card);
+						})
+					);
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.damage(player, "fire");
+				},
+			},
+			draw: {
+				audio: "jlsg_yanfeng",
+				trigger: {
+					player: "damageEnd",
+				},
+				getIndex(event, player) {
+					return event.num;
+				},
+				filter(event, player) {
+					return game.hasNature(event, "fire");
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					await player.draw(2);
+				},
+				ai: {
+					effect: {
+						target(card) {
+							if (get.tag(card, "fireDamage")) {
+								return [1, 2];
+							}
+						},
+					},
+				},
+			},
 		},
 		ai: {
-			unequip: true,
-			fireAttack: true,
 			respondSha: true,
-			unequip_ai: true,
-			skillTagFilter(player, tag, arg) {
-				if (["unequip", "unequip_ai"].includes(tag)) {
-					return player.getCards("hes").length > 0;
-				}
-				if (!arg?.card?.yanfeng_unequip) {
+			fireAttack: true,
+			skillTagFilter(player, tag) {
+				if (!player.countCards("hes") || tag != "use") {
 					return false;
 				}
 			},
-		},
-		group: ["jlsg_yanfeng_damage"],
-		subSkill: {
-			damage: {
-				trigger: {
-					player: ["useCardAfter"],
-				},
-				popup: false,
-				forced: true,
-				filter(event, player) {
-					if (get.name(event.card, false) != "sha" || !get.natureList(event.card, false).includes("fire")) {
-						return false;
-					}
-					const history = game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.card == event.card).length;
-					return !history;
-				},
-				async content(event, trigger, player) {
-					await player.damage({
-						source: player,
-						num: 1,
-						nature: "fire",
-					});
-				},
+			order(item, player) {
+				if (item != "jlsg_yanfeng") {
+					return 0;
+				}
+				return get.order({ name: "sha", nature: "fire" }, player) + 0.1;
+			},
+			result: {
+				player: 0.1,
 			},
 		},
 	},
 	jlsg_shenji: {
 		audio: "ext:极略/audio/skill:2",
-		enable: "phaseUse",
-		usable: 1,
-		init(player, skill) {
-			player.storage.shenji = "unuse";
-		},
-		filter(event, player) {
-			return player.storage.shenji == "unuse";
-		},
-		async content(event, trigger, player) {
-			const max = player.maxHp;
-			player.setStorage("shenji", "used");
-			const { targets } = await player
-				.chooseTarget({
-					prompt: get.prompt2("jlsg_shenji"),
-					selectTarget: [1, max],
-					forced: true,
-				})
-				.set("ai", target => -get.attitude(player, target))
-				.forResult();
-			await player.loseMaxHp(targets.length);
-			await game.doAsyncInOrder(targets, target => {
-				return target.damage({
-					num: target.maxHp,
-					nature: "fire",
-					source: player,
-				});
-			});
-		},
-		ai: {
-			fireAttack: true,
-			skillTagFilter(player, tag, arg) {
-				return player.storage.shenji == "unuse";
+		mark: true,
+		intro: {
+			content(storage, player) {
+				if (storage === true) {
+					return "可发动";
+				}
+				return "不可发动";
 			},
 		},
-		group: ["jlsg_shenji_reset"],
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return player.getStorage("jlsg_shenji", false) && player.maxHp > 1;
+		},
+		selectTarget() {
+			return [1, get.player().maxHp - 1];
+		},
+		filterTarget(_, player, target) {
+			return true;
+		},
+		async contentBefore(event, trigger, player) {
+			await player.loseMaxHp(event.targets.length);
+		},
+		async content(event, trigger, player) {
+			await event.target.damage(event.target.maxHp, "fire");
+		},
+		async contentAfter(event, trigger, player) {
+			player.setStorage("jlsg_shenji", false, true);
+		},
+		group: "jlsg_shenji_damage",
 		subSkill: {
-			reset: {
+			damage: {
+				charlotte: true,
+				audio: false,
 				trigger: {
-					player: "damageAfter",
+					player: "damageEnd",
 				},
+				filter(event, player) {
+					return game.hasNature(event, "fire");
+				},
+				firstDo: true,
 				forced: true,
 				popup: false,
-				filter(event, player) {
-					return player.storage.shenji == "used" && event.nature.includes("fire");
+				async content(event, trigger, player) {
+					player.setStorage("jlsg_shenji", true, true);
 				},
-				content(event, trigger, player) {
-					player.setStorage("shenji", "unuse");
+			},
+		},
+		ai: {
+			order: 1,
+			halfneg: true,
+			fireAttack: true,
+			result: {
+				player(player) {
+					if (!game.hasPlayer(current => get.damageEffect(current, player, player, "fire") > 1)) {
+						return 0;
+					}
+					return 0.5;
 				},
+				target: -1,
 			},
 		},
 	},
@@ -15712,7 +15763,7 @@ const skills = {
 			},
 			{
 				str: "手牌上限+1",
-				key: "handcardLimitAdd",
+				key: "handLimitAdd",
 				async eff(event, trigger, player) {
 					let num = player.storage.jlsg_dieyun_sxnum ?? 0;
 					player.setStorage("jlsg_dieyun_sxnum", ++num);
@@ -15847,9 +15898,11 @@ const skills = {
 				];
 			} else if (key == "addMark") {
 				const list = [];
-				let info = player.getStorage("jlsg_dieyun_count");
 				const newList = [player.getHandcardLimit(), player.getCardUsable("sha", true)];
-				const oldList = info[player.playerid] || newList;
+				let info = player.storage.jlsg_dieyun_count ?? {
+					[player.playerid]: newList,
+				};
+				const oldList = info[player.playerid];
 				const sx = newList[0] - oldList[0];
 				const sha = newList[1] - oldList[1];
 				if (sx > 0) {
@@ -15857,7 +15910,7 @@ const skills = {
 					if (sx > 0) {
 						str = `手牌上限+${sx}`;
 					} else if (sx < 0) {
-						str = `手牌上限-${sx}`;
+						str = `手牌上限${sx}`;
 					}
 					list.push({
 						key: "handLimitAdd",
@@ -15871,7 +15924,7 @@ const skills = {
 					if (sha > 0) {
 						str = `出杀次数+${sha}`;
 					} else if (sha < 0) {
-						str = `出杀次数-${sha}`;
+						str = `出杀次数${sha}`;
 					}
 					list.push({
 						key: "useShaAdd",
@@ -15882,31 +15935,35 @@ const skills = {
 				}
 				return list;
 			} else if (key == "handLimitAdd") {
+				const list = [];
 				let str = "";
 				if (event.sxnum > 0) {
 					str = `手牌上限+${event.sxnum}`;
 				} else if (event.sxnum < 0) {
-					str = `手牌上限-${event.sxnum}`;
+					str = `手牌上限${event.sxnum}`;
 				}
-				buff.push({
+				list.push({
 					key: "handLimitAdd",
 					bool: true,
 					num: event.sxnum,
 					str: str,
 				});
+				return list;
 			} else if (key == "useShaAdd") {
+				const list = [];
 				let str = "";
 				if (event.shanum > 0) {
 					str = `出杀次数+${event.shanum}`;
 				} else if (event.shanum < 0) {
-					str = `出杀次数-${event.shanum}`;
+					str = `出杀次数${event.shanum}`;
 				}
-				buff.push({
+				list.push({
 					key: "useShaAdd",
 					bool: true,
 					num: event.shanum,
 					str: str,
 				});
+				return list;
 			}
 		},
 		filter(event, player, name, indexedData) {
@@ -15921,7 +15978,7 @@ const skills = {
 			let buff = [{ key: key, ...lib.jlsg.debuffSkill.getInfo(event, target, key) }];
 			if (!key) {
 				key = lib.skill.jlsg_dieyun.transMap[name];
-				buff = lib.skill.jlsg_dieyun.getBuff(key, event, player, target);
+				buff = lib.skill.jlsg_dieyun.getBuff(key, event, player);
 			}
 			if (name == "changeSkillsBefore") {
 				if (event.addSkill) {
@@ -16046,13 +16103,15 @@ const skills = {
 				async content(event, trigger, player) {
 					if (!_status.jlsg_dieyun_init) {
 						_status.jlsg_dieyun_init = true;
-						lib.hooks.addSkillCheck.push(player => {
+						lib.hooks.addSkillCheck.push((_, player) => {
 							const event = get.event();
 							const next = game.createEvent("jlsg_dieyun_effx", false);
 							next.player = player;
 							next.setContent(async (event, trigger, curr) => {
-								const info = curr.storage.jlsg_dieyun_count ?? {};
 								const newList = [curr.getHandcardLimit(), curr.getCardUsable("sha", true)];
+								const info = curr.storage.jlsg_dieyun_count ?? {
+									[curr.playerid]: newList,
+								};
 								if (info[curr.playerid]) {
 									const oldList = info[curr.playerid];
 									const sx = newList[0] - oldList[0];
@@ -16066,14 +16125,18 @@ const skills = {
 										await event.trigger("useShaAdd");
 									}
 								}
-								curr.setStorage("jlsg_dieyun_count", newList);
+								curr.setStorage("jlsg_dieyun_count", {
+									[curr.playerid]: newList,
+								});
 							});
 							event.next.unshift(next);
 						});
 					}
 					for (let curr of game.players) {
-						const info = curr.storage.jlsg_dieyun_count ?? {};
 						const newList = [curr.getHandcardLimit(), curr.getCardUsable("sha", true)];
+						const info = curr.storage.jlsg_dieyun_count ?? {
+							[curr.playerid]: newList,
+						};
 						if (info[curr.playerid]) {
 							const oldList = info[curr.playerid];
 							const sx = newList[0] - oldList[0];
@@ -16087,7 +16150,9 @@ const skills = {
 								await event.trigger("useShaAdd");
 							}
 						}
-						curr.setStorage("jlsg_dieyun_count", newList);
+						curr.setStorage("jlsg_dieyun_count", {
+							[curr.playerid]: newList,
+						});
 					}
 				},
 			},
