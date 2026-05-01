@@ -15847,7 +15847,7 @@ const skills = {
 				key: "",
 				async eff(event, trigger, player) {
 					let num = player.storage.jlsg_dieyun_sxnum ?? 0;
-					player.setStorage("jlsg_dieyun_buff_sxnum", num--);
+					player.setStorage("jlsg_dieyun_buff_sxnum", --num);
 				},
 			},
 			{
@@ -15855,7 +15855,7 @@ const skills = {
 				key: "",
 				async eff(event, trigger, player) {
 					let num = player.storage.jlsg_dieyun_shanum ?? 0;
-					player.setStorage("jlsg_dieyun_buff_shanum", num--);
+					player.setStorage("jlsg_dieyun_buff_shanum", --num);
 				},
 			},
 			{
@@ -15984,7 +15984,7 @@ const skills = {
 				if (event.addSkill) {
 					const num = event.addSkill.length;
 					buff.push({
-						key: "addSkills",
+						key: "addSkill",
 						bool: num > 0,
 						str: `获得${num}个技能:${event.addSkill.map(get.poptip).join("、")}`,
 					});
@@ -16018,7 +16018,7 @@ const skills = {
 				link => {
 					if (link == "刷新") {
 						if (player.storage.jlsg_dieyun > 0) {
-							randomEff = lib.skill.jlsg_dieyun.randomBuffList.randomGet();
+							randomEff = lib.skill.jlsg_dieyun.randomBuffList.filter(i => i.key != info.key).randomGet();
 							if (typeof randomEff.str == "string") {
 								str = randomEff.str;
 							} else {
@@ -16028,6 +16028,7 @@ const skills = {
 							get.event().dialog.querySelector(".caption").innerHTML = prompt;
 							let num = player.storage.jlsg_dieyun;
 							player.setStorage("jlsg_dieyun", --num);
+							player.markSkill("jlsg_dieyun");
 						} else {
 							player.chat("没有刷新次数了哦");
 						}
@@ -16040,22 +16041,22 @@ const skills = {
 			} else {
 				str = randomEff.str(target);
 			}
-			const next = player
-				.chooseBool(`是否将${get.translation(target)}的${info.str}变为${str}`)
-				.set("controls", [ui.create.control(controls.concat(["刷新", "stayleft"]))])
-				.set("custom", {
-					add: {
-						confirm(bool) {
-							const event = get.event();
-							if (event.controls) {
-								event.controls.forEach(i => i.close());
-							}
-							if (ui.confirm) {
-								ui.confirm.close();
-							}
-						},
+			const next = player.chooseBool(`是否将${get.translation(target)}的${info.str}变为${str}`).set("custom", {
+				add: {
+					confirm(bool) {
+						const event = get.event();
+						if (event.controls) {
+							event.controls.forEach(i => i.close());
+						}
+						if (ui.confirm) {
+							ui.confirm.close();
+						}
 					},
-				});
+				},
+			});
+			if (event.isMine()) {
+				next.set("controls", [ui.create.control(controls.concat(["刷新", "stayleft"]))]);
+			}
 			const result = await next.forResult();
 			event.result = {
 				bool: result.bool,
@@ -16074,17 +16075,19 @@ const skills = {
 			} else if (buffname == "useShaAdd") {
 				let num = player.storage.jlsg_dieyun_shanum ?? 0;
 				num -= data.num;
-				console.log(num);
 				target.setStorage("jlsg_dieyun_shanum", num);
-			} else if (buffname == "addSkills") {
-				event.addSkill = [];
+			} else if (buffname == "addSkill") {
+				trigger.addSkill = [];
 			} else if (buffname == "changeSkillsBefore") {
 				trigger.removeSkill = [];
 			} else {
 				trigger.cancel();
 			}
+			game.log(player, "将", target, "的", data.str, "变为", info.str);
+			await player.draw();
 			let num = player.storage.jlsg_dieyun;
 			player.setStorage("jlsg_dieyun", ++num);
+			player.markSkill("jlsg_dieyun");
 			const next = game.createEvent("jlsg_dieyun_eff", false);
 			next.player = target;
 			next._trigger = event;
@@ -16182,6 +16185,7 @@ const skills = {
 					let num = player.storage.jlsg_dieyun;
 					num += 2;
 					player.setStorage("jlsg_dieyun", num);
+					player.markSkill("jlsg_dieyun");
 				},
 			},
 		},

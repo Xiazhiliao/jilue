@@ -5,7 +5,7 @@ const skills = {
 	jlsgsy_baonu: {
 		audio: "ext:极略/audio/skill:1",
 		skillAnimation: true,
-		trigger: { player: ["changeHp","loseMaxHpBegin"] },
+		trigger: { player: ["changeHp", "loseMaxHpBegin"] },
 		unique: true,
 		charlotte: true,
 		firstDo: true,
@@ -3660,6 +3660,7 @@ const skills = {
 		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_huiying: {
+		audio: "ext:极略/audio/skill:2",
 		forced: true,
 		mod: {
 			maxHandcard(player, num) {
@@ -3691,6 +3692,7 @@ const skills = {
 		},
 	},
 	jlsgsy_lianpo: {
+		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
 		selectCard: -1,
 		selectTarget: 1,
@@ -3752,6 +3754,7 @@ const skills = {
 		},
 	},
 	jlsgsy_zhongzao: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			global: ["gainMaxHpAfter", "loseMaxHpAfter"],
 		},
