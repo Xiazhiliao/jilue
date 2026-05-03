@@ -174,11 +174,11 @@ const skills = {
 										return numx(player);
 									}
 								: function (player) {
-									if (player == me) {
-										return numx + 3;
-									}
-									return numx;
-								};
+										if (player == me) {
+											return numx + 3;
+										}
+										return numx;
+									};
 					});
 					event.info[0] = true;
 				},
@@ -5716,8 +5716,12 @@ const skills = {
 		},
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		usable: function (event, player) {
-			return _status._jlsgsr_upgrade?.[player.playerid]?.other?.jlsg_zhonghou || false ? 2 : 1;
+		usable(skill, player) {
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+				return 1;
+			}
+			return 2;
 		},
 		trigger: {
 			global: "useCardToPlayered",
@@ -5726,11 +5730,14 @@ const skills = {
 			if (event.player == player) {
 				return false;
 			}
-			if (!["basic", "trick"].includes(get.type(event.card, event.player))) {
+			if (!["basic", "trick"].includes(get.type(event.card, null, event.player))) {
 				return false;
 			}
 
-			return !event.targets.includes(event.player)
+			return !event.targets.includes(event.player);
+		},
+		check(event, player) {
+			return event.targets.reduce((sum, target) => sum + get.effect(target, event.card, event.player, player)) <= 0;
 		},
 		async content(event, trigger, player) {
 			trigger.targets.length = 0;
@@ -5738,8 +5745,10 @@ const skills = {
 			if (trigger.cards?.someInD()) {
 				await player.gain(trigger.cards.filterInD(), "gain2");
 			}
-			await player.chooseToUse(`是否对${get.translation(trigger.player)}使用一张【杀】？`, trigger.player, { name: 'sha' }).set("addCount", false).forResult();
-
+			await player
+				.chooseToUse(`是否对${get.translation(trigger.player)}使用一张【杀】？`, trigger.player, { name: "sha" })
+				.set("addCount", false)
+				.forResult();
 		},
 	},
 
@@ -5759,7 +5768,7 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		enable: "phaseUse",
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			return player != target;
 		},
 		async content(event, trigger, player) {
@@ -5767,18 +5776,27 @@ const skills = {
 			let next = target.damage();
 			await next;
 			if (!target.isIn()) {
-				return
+				return;
 			}
-			let card = target.getCards("h", 'sha').randomGet();
+			let card = target.getCards("h", card => get.name(card) == "sha" && target.canUse(card, player, false, false)).randomGet();
 			if (card) {
-				target.useCard(card, player)
+				await target.useCard(card, player);
 			}
-			if (!game.hasPlayer2(p => p.getHistory("damage", e => e == next).length) || !card) {
-				if (_status._jlsgsr_upgrade?.[player.playerid]?.other?.jlsg_ganglie || false) {
-					player.recover();
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const upgrade = upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] || event.name in upgradeStorage.other;
+			if (!player.hasHistory("sourceDamage", evt => evt == next) || !card) {
+				if (upgrade) {
+					await player.recover();
 				}
-				player.tempBanSkill("jlsg_ganglie")
+				player.tempBanSkill("jlsg_ganglie");
 			}
+		},
+		ai: {
+			order: 8,
+			result: {
+				player: 1,
+				target: -1,
+			},
 		},
 	},
 };
