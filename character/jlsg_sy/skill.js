@@ -56,10 +56,10 @@ const skills = {
 				player.reinit(name2, name2 + "baonu");
 			}
 			//魔贾诩神秘bug,插眼等流年...
-			if (player.maxHp < 3) {
-				player.maxHp = 3;
-				player.hp = 3;
-			}
+			//if (player.maxHp < 3) {
+			//	player.maxHp = 3;
+			//	player.hp = 3;
+			//}
 			player.update();
 			await event.trigger("jlsgsy_baonuAfter");
 			const cards = Array.from(ui.ordering.childNodes);
@@ -3661,7 +3661,6 @@ const skills = {
 	},
 	jlsgsy_huiying: {
 		audio: "ext:极略/audio/skill:2",
-		forced: true,
 		mod: {
 			maxHandcard(player, num) {
 				return num + game.players.length;
@@ -3671,17 +3670,19 @@ const skills = {
 			global: ["useCard"],
 		},
 		filter(event, player) {
-			const card = event.card;
-			if (get.natureList(card)?.[0] && get.name(card, false) == "sha") {
+			if (event.card.hasNature() && event.card.name == "sha") {
 				return false;
 			}
-			if (get.type2(card, false) == "equip") {
+			if (get.type2(event.card, false) == "equip") {
 				return false;
 			}
 			return event.targets.includes(player) && event.targets.length == 1 && event.player != player;
 		},
+		forced: true,
+		popup: false,
 		async content(event, trigger, player) {
 			const target = game.filterPlayer(curr => curr.isMaxMaxHp()).randomGet();
+			player.logSkill(event.name, target);
 			await target.loseMaxHp();
 			if (target == player) {
 				await player.draw(2);
@@ -3694,14 +3695,14 @@ const skills = {
 	jlsgsy_lianpo: {
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
-		selectCard: -1,
-		selectTarget: 1,
-		filterCard: false,
-		filterTarget(card, player, target) {
-			return !player.getStorage("jlsgsy_lianpo_used").includes(target);
-		},
 		filter(event, player) {
 			return game.filterPlayer(curr => !player.getStorage("jlsgsy_lianpo_used").includes(curr)).length;
+		},
+		selectCard: -1,
+		filterCard: false,
+		selectTarget: 1,
+		filterTarget(card, player, target) {
+			return !player.getStorage("jlsgsy_lianpo_used").includes(target);
 		},
 		async content(event, trigger, player) {
 			const { links } = await player
@@ -3758,11 +3759,11 @@ const skills = {
 		trigger: {
 			global: ["gainMaxHpAfter", "loseMaxHpAfter"],
 		},
-		forced: true,
 		filter(event, player) {
 			const targets = game.filterPlayer(curr => curr != player);
 			return targets.map(p => p.maxHp).unique().length == 1 && game.filterPlayer(curr => curr != player).length > 0;
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			let num = game.players.length - 1;
 			while (num > 0) {
@@ -3772,6 +3773,7 @@ const skills = {
 					const targets = game.filterPlayer(curr => curr != player);
 					const source = targets.randomGet();
 					const target = targets.randomGet();
+					source.line(target);
 					await target.damage(source);
 				}
 			}

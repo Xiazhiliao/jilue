@@ -2240,7 +2240,7 @@ const skills = {
 				const suit = get.suit(cards[0], player);
 				let name = { diamond: "sha", club: "shan", heart: "tao", spade: "wuxie" }[suit];
 				if (name) {
-					return { name, nature: name == "sha" ? "fire" : null };
+					return { name, nature: name == "sha" ? "fire" : undefined };
 				}
 			}
 			return null;
@@ -2249,8 +2249,10 @@ const skills = {
 			const filter = event.filterCard;
 			const map = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
 			for (let name of Object.keys(map)) {
-				if (filter(get.autoViewAs({ name, nature: name == "sha" ? "fire" : null }, "unsure"), player, event)) {
-					return player.countCards("hes", { suit: map[name] });
+				if (filter(get.autoViewAs({ name, nature: name == "sha" ? "fire" : undefined }, "unsure"), player, event)) {
+					if (player.countCards("hes", { suit: map[name] })) {
+						return true;
+					};
 				}
 			}
 			return false;
@@ -2267,7 +2269,7 @@ const skills = {
 				suit = get.suit(card, player);
 			const name = { diamond: "sha", club: "shan", heart: "tao", spade: "wuxie" }[suit];
 			if (name) {
-				return filter(get.autoViewAs({ name }, "unsure"), player, event);
+				return filter(get.autoViewAs({ name, nature: name == "sha" ? "fire" : undefined }, "unsure"), player, event);
 			}
 			return false;
 		},
@@ -2294,7 +2296,7 @@ const skills = {
 				double = true,
 				max = 0;
 			for (let name in map) {
-				let useCard = get.autoViewAs({ name, nature: name == "sha" ? "fire" : null }, "unsure");
+				let useCard = get.autoViewAs({ name, nature: name == "sha" ? "fire" : undefined }, "unsure");
 				if (!event._backup.filterCard(useCard, player, event)) {
 					continue;
 				} else if (!event.valueList[map[name]]?.length) {
@@ -2389,9 +2391,10 @@ const skills = {
 				return true;
 			}
 			let suit = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
-			return name && Object.keys(suit).includes(name) && player.countCards("hes", { suit: suit[name] }) > 0;
+			return name && name in suit && player.countCards("hes", { suit: suit[name] }) > 0;
 		},
 		ai: {
+			save: true,
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player, tag) {
@@ -2417,7 +2420,7 @@ const skills = {
 					let max = 0;
 					const map = { sha: "diamond", shan: "club", tao: "heart" };
 					for (let name in map) {
-						let card = get.autoViewAs({ name: name, nature: name == "sha" ? "fire" : null }, "unsure");
+						let card = get.autoViewAs({ name: name, nature: name == "sha" ? "fire" : undefined }, "unsure");
 						if (!event.filterCard(card, player, event)) {
 							continue;
 						} else if (!player.countCards("hes", i => get.suit(i, player) == map[name])) {
@@ -15691,20 +15694,6 @@ const skills = {
 		},
 	},
 	jlsg_dieyun: {
-		audio: "ext:极略/audio/skill:2",
-		mark: true,
-		marktext: "韵",
-		intro: {
-			name: "叠韵",
-			content(_, player) {
-				const num = player.storage.jlsg_dieyun;
-				return `剩余刷新次数：${num}`;
-			},
-		},
-		usable: 3,
-		trigger: {
-			global: ["gainBefore", "recoverBefore", "addMark", "handLimitAdd", "useShaAdd", "damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkillBefore"],
-		},
 		init(player) {
 			if (!_status.jlsg_dieyun_skill) {
 				const list = [];
@@ -15717,6 +15706,20 @@ const skills = {
 				}
 				_status.jlsg_dieyun_skill = list;
 			}
+		},
+		audio: "ext:极略/audio/skill:2",
+		mark: true,
+		marktext: "韵",
+		intro: {
+			name: "叠韵",
+			content(storage, player, skill) {
+				const num = player.getStorage(skill, 0);
+				return `剩余刷新次数：${num}`;
+			},
+		},
+		usable: 3,
+		trigger: {
+			global: ["gainBefore", "recoverBefore", "addMark", "handLimitAdd", "useShaAdd", "damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkillBefore"],
 		},
 		transMap: {
 			gainBefore: "gain",
