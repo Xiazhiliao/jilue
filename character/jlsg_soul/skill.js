@@ -2252,7 +2252,7 @@ const skills = {
 				if (filter(get.autoViewAs({ name, nature: name == "sha" ? "fire" : undefined }, "unsure"), player, event)) {
 					if (player.countCards("hes", { suit: map[name] })) {
 						return true;
-					};
+					}
 				}
 			}
 			return false;
@@ -15694,6 +15694,20 @@ const skills = {
 		},
 	},
 	jlsg_dieyun: {
+		audio: "ext:极略/audio/skill:2",
+		mark: true,
+		marktext: "韵",
+		intro: {
+			name: "叠韵",
+			content(_, player) {
+				const num = player.storage.jlsg_dieyun;
+				return `剩余刷新次数：${num}`;
+			},
+		},
+		usable: 3,
+		trigger: {
+			global: ["gainBefore", "recoverBefore", "addMark", "damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkillBefore"],
+		},
 		init(player) {
 			if (!_status.jlsg_dieyun_skill) {
 				const list = [];
@@ -15706,27 +15720,10 @@ const skills = {
 				}
 				_status.jlsg_dieyun_skill = list;
 			}
-		},
-		audio: "ext:极略/audio/skill:2",
-		mark: true,
-		marktext: "韵",
-		intro: {
-			name: "叠韵",
-			content(storage, player, skill) {
-				const num = player.getStorage(skill, 0);
-				return `剩余刷新次数：${num}`;
-			},
-		},
-		usable: 3,
-		trigger: {
-			global: ["gainBefore", "recoverBefore", "addMark", "handLimitAdd", "useShaAdd", "damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBegin", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkillBefore"],
-		},
-		transMap: {
-			gainBefore: "gain",
-			recoverBefore: "recover",
-			addMark: "addMark",
-			handLimitAdd: "handLimitAdd",
-			useShaAdd: "useShaAdd",
+			game.players.forEach(current => {
+				current.addSkill("jlsg_dieyun_buff");
+			});
+			game.players.forEach(p => p.setStorage("jlsg_dieyun_note", [p.getHandcardLimit(), p.getCardUsable("sha", true)]));
 		},
 		randomBuffList: [
 			{
@@ -15878,141 +15875,93 @@ const skills = {
 				},
 			},
 		],
-		getBuff(key, event, player, target) {
-			if (key == "gain") {
-				const cards = event.cards;
-				return [
-					{
-						key: key,
-						bool: Boolean(cards?.length),
-						num: cards?.length || 0,
-						str: `获得${cards?.length || 0}张牌`,
-					},
-				];
-			} else if (key == "recover") {
-				const num = event.num;
-				return [
-					{
-						key: key,
-						bool: num > 0,
-						num,
-						str: `恢复${num}点体力`,
-					},
-				];
-			} else if (key == "addMark") {
-				const list = [];
-				const newList = [player.getHandcardLimit(), player.getCardUsable("sha", true)];
-				let info = player.storage.jlsg_dieyun_count ?? {
-					[player.playerid]: newList,
-				};
-				const oldList = info[player.playerid];
-				const sx = newList[0] - oldList[0];
-				const sha = newList[1] - oldList[1];
-				if (sx > 0) {
-					let str = "";
-					if (sx > 0) {
-						str = `手牌上限+${sx}`;
-					} else if (sx < 0) {
-						str = `手牌上限${sx}`;
-					}
-					list.push({
-						key: "handLimitAdd",
-						bool: true,
-						num: sx,
-						str: str,
-					});
-				}
-				if (sha > 0) {
-					let str = "";
-					if (sha > 0) {
-						str = `出杀次数+${sha}`;
-					} else if (sha < 0) {
-						str = `出杀次数${sha}`;
-					}
-					list.push({
-						key: "useShaAdd",
-						bool: true,
-						num: sha,
-						str: str,
-					});
-				}
-				return list;
-			} else if (key == "handLimitAdd") {
-				const list = [];
-				let str = "";
-				if (event.sxnum > 0) {
-					str = `手牌上限+${event.sxnum}`;
-				} else if (event.sxnum < 0) {
-					str = `手牌上限${event.sxnum}`;
-				}
-				list.push({
-					key: "handLimitAdd",
-					bool: true,
-					num: event.sxnum,
-					str: str,
-				});
-				return list;
-			} else if (key == "useShaAdd") {
-				const list = [];
-				let str = "";
-				if (event.shanum > 0) {
-					str = `出杀次数+${event.shanum}`;
-				} else if (event.shanum < 0) {
-					str = `出杀次数${event.shanum}`;
-				}
-				list.push({
-					key: "useShaAdd",
-					bool: true,
-					num: event.shanum,
-					str: str,
-				});
-				return list;
-			}
-		},
 		filter(event, player, name, indexedData) {
 			return indexedData.bool;
 		},
 		getIndex(event, player, name) {
-			if (event.getParent()?._trigger?.name == "jlsg_dieyun") {
-				return 0;
-			}
+			if (event._trigger.name == "jlsg_dieyun") return 0;
 			const target = event.player;
-			let key = lib.jlsg.debuffSkill.translate[event.name];
-			let buff = [{ key: key, ...lib.jlsg.debuffSkill.getInfo(event, target, key) }];
-			if (!key) {
-				key = lib.skill.jlsg_dieyun.transMap[name];
-				buff = lib.skill.jlsg_dieyun.getBuff(key, event, player);
+			const key = lib.jlsg.debuffSkill.translate[event.name];
+			const info = lib.jlsg.debuffSkill.getInfo(event, target, key);
+			const list = [];
+			if (key && info.bool) {
+				info.key = key;
+				list.push(info);
 			}
-			if (name == "changeSkillsBefore") {
-				if (event.addSkill) {
-					const num = event.addSkill.length;
-					buff.push({
+			if (!key || !info.bool) {
+				if (event.name == "gain") {
+					const num = event.cards.length;
+					list.push({
+						key: "gain",
+						bool: true,
+						num: num,
+						str: `获得${num}张牌`,
+					});
+				} else if (event.name == "gainMaxHp") {
+					const num = event.num;
+					list.push({
+						key: "gainMaxHp",
+						bool: true,
+						num: num,
+						str: `获得${num}点体力上限`,
+					});
+				} else if (event.name == "recover") {
+					const num = event.num;
+					list.push({
+						key: "recover",
+						bool: true,
+						num: num,
+						str: `回复${num}点体力`,
+					});
+				} else if (event.name == "link" && player.isLinked()) {
+					list.push({ key: "link", bool: true, str: "重置" });
+				} else if (event.name == "turnOver" && player.isTurnedOver()) {
+					list.push({ key: "turnover", bool: true, str: "翻至正面" });
+				}
+			}
+			if (["changeSkills", "addMark"].includes(event.name)) {
+				if (event.addSkill.length) {
+					list.push({
 						key: "addSkill",
-						bool: num > 0,
-						str: `获得${num}个技能:${event.addSkill.map(get.poptip).join("、")}`,
+						bool: true,
+						str: `获得技能:${event.addSkill.map(item => get.poptip(item)).join("、")}`,
 					});
 				}
-			} else if (key == "link" && target.isLinked()) {
-				buff.push({
-					key: "relink",
-					bool: true,
-					str: "重置",
-				});
-			} else if (key == "turnover" && target.isTurnedOver()) {
-				buff.push({
-					key: "returnover",
-					bool: true,
-					str: "翻至正面",
-				});
+				const note = target.getStorage("jlsg_dieyun_note") || [target.hp, 1];
+				const note2 = [target.getHandcardLimit(), target.getCardUsable("sha", true)];
+				const limit = note[0] - note2[0],
+					sha = note[1] - note2[1];
+				if (limit > 0) {
+					list.push({
+						key: "handLimitAdd",
+						num: limit,
+						str: `手牌上限+${limit}`,
+					});
+				} else if (limit < 0) {
+					list.push({
+						key: "handLimitAdd",
+						num: -limit,
+						str: `手牌上限-${limit}`,
+					});
+				}
+				if (sha > 0) {
+					list.push({
+						key: "useShaAdd",
+						num: sha,
+						str: `出杀次数+${sha}`,
+					});
+				} else if (sha < 0) {
+					list.push({
+						key: "useShaAdd",
+						num: -sha,
+						str: `出杀次数-${sha}`,
+					});
+				}
 			}
-			const list = buff.filter(item => item.bool);
-			if (list.length) {
-				_status.jlsg_dieyun_buff = list;
-			}
-			return _status.jlsg_dieyun_buff;
+			game.broadcastAll((player, note) => target.setStorage("jlsg_dieyun_note", note), player, note2);
+			return list;
 		},
 		async cost(event, trigger, player) {
-			delete _status.jlsg_dieyun_buff;
 			const target = trigger.player;
 			const info = event.indexedData;
 			let str = "";
@@ -16070,7 +16019,7 @@ const skills = {
 			const target = trigger.player;
 			const info = event.cost_data;
 			const data = event.indexedData;
-			const buffname = data.key || event.triggername;
+			const buffname = data.key;
 			if (buffname == "handLimitAdd") {
 				let num = player.storage.jlsg_dieyun_xnum ?? 0;
 				num -= data.num;
@@ -16081,10 +16030,16 @@ const skills = {
 				target.setStorage("jlsg_dieyun_shanum", num);
 			} else if (buffname == "addSkill") {
 				trigger.addSkill = [];
-			} else if (buffname == "changeSkillsBefore") {
+			} else if (buffname == "removeSkill") {
 				trigger.removeSkill = [];
 			} else {
 				trigger.cancel();
+			}
+			let str = "";
+			if (typeof info.str == "string") {
+				str = info.str;
+			} else {
+				str = info.str(player);
 			}
 			game.log(player, "将", target, "的", data.str, "变为", info.str);
 			await player.draw();
@@ -16097,71 +16052,8 @@ const skills = {
 			next.setContent(info.eff);
 			await next;
 		},
-		global: ["jlsg_dieyun_buff"],
-		group: ["jlsg_dieyun_init", "jlsg_dieyun_refresh"],
+		group: ["jlsg_dieyun_refresh"],
 		subSkill: {
-			init: {
-				trigger: {
-					global: ["gameStart", "enterGame"],
-				},
-				forced: true,
-				popup: false,
-				async content(event, trigger, player) {
-					if (!_status.jlsg_dieyun_init) {
-						_status.jlsg_dieyun_init = true;
-						lib.hooks.addSkillCheck.push((_, player) => {
-							const event = get.event();
-							const next = game.createEvent("jlsg_dieyun_effx", false);
-							next.player = player;
-							next.setContent(async (event, trigger, curr) => {
-								const newList = [curr.getHandcardLimit(), curr.getCardUsable("sha", true)];
-								const info = curr.storage.jlsg_dieyun_count ?? {
-									[curr.playerid]: newList,
-								};
-								if (info[curr.playerid]) {
-									const oldList = info[curr.playerid];
-									const sx = newList[0] - oldList[0];
-									const sha = newList[1] - oldList[1];
-									if (sx != 0) {
-										event.sxnum = sx;
-										await event.trigger("handLimitAdd");
-									}
-									if (sha != 0) {
-										event.shanum = sha;
-										await event.trigger("useShaAdd");
-									}
-								}
-								curr.setStorage("jlsg_dieyun_count", {
-									[curr.playerid]: newList,
-								});
-							});
-							event.next.unshift(next);
-						});
-					}
-					for (let curr of game.players) {
-						const newList = [curr.getHandcardLimit(), curr.getCardUsable("sha", true)];
-						const info = curr.storage.jlsg_dieyun_count ?? {
-							[curr.playerid]: newList,
-						};
-						if (info[curr.playerid]) {
-							const oldList = info[curr.playerid];
-							const sx = newList[0] - oldList[0];
-							const sha = newList[1] - oldList[1];
-							if (sx != 0) {
-								event.sxnum = sx;
-								await event.trigger("handLimitAdd");
-							}
-							if (sha != 0) {
-								event.shanum = sha;
-								await event.trigger("useShaAdd");
-							}
-						}
-						curr.setStorage("jlsg_dieyun_count", {
-							[curr.playerid]: newList,
-						});
-					}
-				},
-			},
 			buff: {
 				charlotte: true,
 				mod: {
@@ -16197,6 +16089,9 @@ const skills = {
 		trigger: {
 			player: "loseMaxHpAfter",
 		},
+		init(player) {
+			player.addSkill("jlsg_juexian_buff");
+		},
 		filter(event, player) {
 			return player.maxHp == 1;
 		},
@@ -16213,7 +16108,6 @@ const skills = {
 				targets[0].storage.jlsg_juexian_buff.push(links[0]);
 			}
 		},
-		global: ["jlsg_juexian_buff"],
 		subSkill: {
 			buff: {
 				charlotte: true,

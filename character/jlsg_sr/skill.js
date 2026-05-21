@@ -3120,7 +3120,7 @@ const skills = {
 				},
 				forced: true,
 				async content(event, tigger, player) {
-					player.unmarkSkill("jlsg_jiexi_used");
+					player.setStorage("jlsg_jiexi_used", []);
 				},
 			},
 		},
