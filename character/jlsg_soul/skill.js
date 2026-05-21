@@ -15879,7 +15879,7 @@ const skills = {
 			return indexedData.bool;
 		},
 		getIndex(event, player, name) {
-			if (event._trigger.name == "jlsg_dieyun") return 0;
+			if (event._trigger?.name == "jlsg_dieyun") return 0;
 			const target = event.player;
 			const key = lib.jlsg.debuffSkill.translate[event.name];
 			const info = lib.jlsg.debuffSkill.getInfo(event, target, key);
@@ -15957,8 +15957,8 @@ const skills = {
 						str: `出杀次数-${sha}`,
 					});
 				}
+				game.broadcastAll((player, note) => target.setStorage("jlsg_dieyun_note", note), player, note2);
 			}
-			game.broadcastAll((player, note) => target.setStorage("jlsg_dieyun_note", note), player, note2);
 			return list;
 		},
 		async cost(event, trigger, player) {
