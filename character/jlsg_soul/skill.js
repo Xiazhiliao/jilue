@@ -15732,6 +15732,9 @@ const skills = {
 				async eff(event, trigger, player) {
 					await player.draw();
 				},
+				ai(player) {
+					return get.effect(player, { name: "draw" }, player, player);
+				},
 			},
 			{
 				str: "恢复1点体力",
@@ -15739,12 +15742,18 @@ const skills = {
 				async eff(event, trigger, player) {
 					await player.recover();
 				},
+				ai(player) {
+					return get.recoverEffect(player, player, player);
+				},
 			},
 			{
 				str: "加1点体力上限",
 				key: "gainMaxHp",
 				async eff(event, trigger, player) {
 					await player.gainMaxHp();
+				},
+				ai(player) {
+					return 3;
 				},
 			},
 			{
@@ -15760,6 +15769,12 @@ const skills = {
 				async eff(event, trigger, player) {
 					await player.addSkills(_status.jlsg_dieyun_skillx);
 				},
+				ai(player) {
+					const info = get.info(_status.jlsg_dieyun_skillx);
+					if (info?.ai?.combo || info?.ai?.neg) {
+						return false;
+					}
+				},
 			},
 			{
 				str: "手牌上限+1",
@@ -15768,6 +15783,7 @@ const skills = {
 					let num = player.storage.jlsg_dieyun_sxnum ?? 0;
 					player.setStorage("jlsg_dieyun_sxnum", ++num);
 				},
+				ai: () => 1,
 			},
 			{
 				str: "出杀次数+1",
@@ -15776,23 +15792,31 @@ const skills = {
 					let num = player.storage.jlsg_dieyun_shanum ?? 0;
 					player.setStorage("jlsg_dieyun_shanum", ++num);
 				},
+				ai: () => 1,
 			},
 			{
 				str: "重置",
 				key: "relink",
 				async eff(event, trigger, player) {
 					if (player.isLinked()) {
-						player.link();
+						await player.link();
 					}
 				},
+				ai: 1,
 			},
 			{
 				str: "翻至正面",
 				key: "returnover",
 				async eff(event, trigger, player) {
 					if (player.isTurnedOver()) {
-						player.turnOver();
+						await player.turnOver();
 					}
+				},
+				ai(player) {
+					if (player.isTurnedOver()) {
+						return 7;
+					}
+					return 0;
 				},
 			},
 			{
@@ -15802,12 +15826,16 @@ const skills = {
 					const card = player.getCards("he").randomGet();
 					await player.discard(card);
 				},
+				ai: -1,
 			},
 			{
 				str: "受到一点伤害",
 				key: "damage",
 				async eff(event, trigger, player) {
 					await player.damage();
+				},
+				ai(player) {
+					return get.damageEffect(player, player, player);
 				},
 			},
 			{
@@ -15816,12 +15844,16 @@ const skills = {
 				async eff(event, trigger, player) {
 					await player.loseMaxHp();
 				},
+				ai: () => -4,
 			},
 			{
 				str: "失去1点体力",
 				key: "loseHp",
 				async eff(event, trigger, player) {
 					await player.loseHp();
+				},
+				ai(player) {
+					return get.effect(player, { name: "losehp" }, player, player);
 				},
 			},
 			{
@@ -15832,6 +15864,7 @@ const skills = {
 						player.link();
 					}
 				},
+				ai: () => -1,
 			},
 			{
 				str: "翻面",
@@ -15841,6 +15874,7 @@ const skills = {
 						player.turnOver();
 					}
 				},
+				ai: () => -7,
 			},
 			{
 				str: "手牌上限-1",
@@ -15849,6 +15883,7 @@ const skills = {
 					let num = player.storage.jlsg_dieyun_sxnum ?? 0;
 					player.setStorage("jlsg_dieyun_buff_sxnum", --num);
 				},
+				ai: () => -1,
 			},
 			{
 				str: "出杀次数-1",
@@ -15857,6 +15892,7 @@ const skills = {
 					let num = player.storage.jlsg_dieyun_shanum ?? 0;
 					player.setStorage("jlsg_dieyun_buff_shanum", --num);
 				},
+				ai: () => -1,
 			},
 			{
 				str(player) {
@@ -15873,19 +15909,21 @@ const skills = {
 				async eff(event, trigger, player) {
 					await player.removeSkills(_status.jlsg_dieyun_skilly);
 				},
+				ai: () => -10,
 			},
 		],
 		filter(event, player, name, indexedData) {
 			return indexedData.bool;
 		},
 		getIndex(event, player, name) {
-			if (event._trigger?.name == "jlsg_dieyun") return 0;
+			if (event.getParent("jlsg_dieyun").name) return 0;
 			const target = event.player;
 			const key = lib.jlsg.debuffSkill.translate[event.name];
 			const info = lib.jlsg.debuffSkill.getInfo(event, target, key);
 			const list = [];
 			if (key && info.bool) {
 				info.key = key;
+				info.debuff = true;
 				list.push(info);
 			}
 			if (!key || !info.bool) {
@@ -15941,6 +15979,7 @@ const skills = {
 					list.push({
 						key: "handLimitAdd",
 						num: -limit,
+						debuff: true,
 						str: `手牌上限-${limit}`,
 					});
 				}
@@ -15954,6 +15993,7 @@ const skills = {
 					list.push({
 						key: "useShaAdd",
 						num: -sha,
+						debuff: true,
 						str: `出杀次数-${sha}`,
 					});
 				}
@@ -15993,19 +16033,37 @@ const skills = {
 			} else {
 				str = randomEff.str(target);
 			}
-			const next = player.chooseBool(`是否将${get.translation(target)}的${info.str}变为${str}`).set("custom", {
-				add: {
-					confirm(bool) {
-						const event = get.event();
-						if (event.controls) {
-							event.controls.forEach(i => i.close());
-						}
-						if (ui.confirm) {
-							ui.confirm.close();
-						}
+			const next = player
+				.chooseBool(`是否将${get.translation(target)}的${info.str}变为${str}`)
+				.set("custom", {
+					add: {
+						confirm(bool) {
+							const event = get.event();
+							if (event.controls) {
+								event.controls.forEach(i => i.close());
+							}
+							if (ui.confirm) {
+								ui.confirm.close();
+							}
+						},
 					},
-				},
-			});
+				})
+				.set("ai", (event, player) => {
+					const evt = get.event();
+					const debuff = evt.debuff;
+					const buff = evt.eff;
+					const target = evt.dy_target;
+					const att = get.attitude(player, target);
+					if (att > 0) {
+						return debuff.debuff || buff.ai(target) > debuff.num;
+					} else {
+						const num = buff.ai(target);
+						return (!debuff.debuff && num < debuff.num) || num < 0;
+					}
+				})
+				.set("debuff", info)
+				.set("eff", randomEff)
+				.set("dy_target", target);
 			if (event.isMine()) {
 				next.set("controls", [ui.create.control(controls.concat(["刷新", "stayleft"]))]);
 			}
@@ -16048,7 +16106,6 @@ const skills = {
 			player.markSkill("jlsg_dieyun");
 			const next = game.createEvent("jlsg_dieyun_eff", false);
 			next.player = target;
-			next._trigger = event;
 			next.setContent(info.eff);
 			await next;
 		},
@@ -16056,6 +16113,7 @@ const skills = {
 		subSkill: {
 			buff: {
 				charlotte: true,
+				skillBlocker(player, skill) {},
 				mod: {
 					maxHandcard(player, num) {
 						return num + (player.storage.jlsg_dieyun_sxnum ?? 0);
@@ -16086,6 +16144,7 @@ const skills = {
 		},
 	},
 	jlsg_juexian: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			player: "loseMaxHpAfter",
 		},

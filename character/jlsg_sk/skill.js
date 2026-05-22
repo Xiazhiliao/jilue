@@ -1,5 +1,4 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
-import skill from "../../../../noname/library/skill.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
@@ -20217,6 +20216,190 @@ const skills = {
 					});
 				} else {
 					await player.draw();
+				}
+			}
+		},
+	},
+	jlsg_junbing: {
+		audio: "ext:极略/audio/skill:2",
+		enable: "phaseUse",
+		filterCard(card, player) {
+			return get.name(card, player) == "sha" && lib.filter.cardDiscardable(card, player);
+		},
+		selectTarget: 1,
+		selectCard: 1,
+		filterTarget: true,
+		init() {
+			game.players.forEach(curr => {
+				if (!curr.hasSkill("jlsg_junbing_effect", null, false, false)) {
+					curr.setStorage("jlsg_junbing_effect", [0, 0, 0]);
+					curr.addSkill("jlsg_junbing_effect");
+					curr.markSkill("jlsg_junbing_effect");
+				}
+			});
+		},
+		lose: false,
+		discard: false,
+		delay: false,
+		usable: 1,
+		filter(event, player) {
+			return player.countCards("he", card => get.name(card, player) == "sha" && lib.filter.cardDiscardable(card, player));
+		},
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			const target = event.targets[0];
+			let list = target.getStorage("jlsg_junbing_effect");
+			list[0] += 1;
+			list[1] += 1;
+			target.setStorage("jlsg_junbing_effect", list);
+			target.markSkill("jlsg_junbing_effect");
+			await target.draw(2);
+			if (!["shu", "wu", "qun"].includes(target.group)) {
+				await target.draw(2);
+			}
+		},
+		ai: {
+			order: 10,
+			result: {
+				target: 10,
+			},
+		},
+		group: ["jlsg_junbing_damage"],
+		subSkill: {
+			damage: {
+				trigger: {
+					player: ["damageEnd"],
+				},
+				filter(event, player) {
+					return player.countCards("he", card => get.name(card, player) == "sha" && lib.filter.cardDiscardable(card, player));
+				},
+				usable: 1,
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseCardTarget({
+							prompt: "你可以弃置一张【杀】并选择一名角色，令其摸一张牌，使用【杀】的次数上限和攻击范围+1，若目标角色的势力不为蜀、吴、群，你令其额外摸两张牌。",
+							filterCard: (card, player) => get.name(card, player) == "sha" && lib.filter.cardDiscardable(card, player),
+							ai2(target) {
+								const player = get.player();
+								return get.attitude(player, target);
+							},
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const {
+						cards,
+						targets: [target],
+					} = event;
+					await player.discard(cards);
+					const list = target.getStorage("jlsg_junbing_effect");
+					list[0] += 1;
+					list[1] += 1;
+					target.setStorage("jlsg_junbing_effect", list);
+					target.markSkill("jlsg_junbing_effect");
+					await target.draw(2);
+					if (!["shu", "wu", "qun"].includes(target.group)) {
+						await target.draw(2);
+					}
+				},
+			},
+			effect: {
+				charlotte: true,
+				mark: true,
+				marktext: "兵",
+				intro: {
+					content(storage, player) {
+						const note = player.getStorage("jlsg_junbing_effect");
+						return `出杀次数+${note?.[0] || 0},攻击范围+${note?.[1] || 0},摸牌数+${note?.[2] || 0}`;
+					},
+				},
+				trigger: {
+					player: ["phaseDrawBegin2"],
+				},
+				forced: true,
+				filter(event, player) {
+					return !event.numFixed;
+				},
+				async content(event, trigger, player) {
+					const note = player.getStorage("jlsg_junbing_effect");
+					trigger.num += note[2];
+				},
+				mod: {
+					cardUsable(card, player, num) {
+						const note = player.getStorage("jlsg_junbing_effect");
+						if (note.length) {
+							const add = note[1];
+							if (get.name(card, false) == "sha") {
+								return (num += add);
+							}
+						}
+					},
+					attackRange(player, num) {
+						const note = player.getStorage("jlsg_junbing_effect");
+						if (note.length) {
+							const add = note[0];
+							return (num += add);
+						}
+					},
+				},
+			},
+		},
+	},
+	jlsg_quji: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			global: ["damageEnd"],
+		},
+		init() {
+			game.players.forEach(curr => {
+				if (!curr.hasSkill("jlsg_junbing_effect", null, false, false)) {
+					curr.setStorage("jlsg_junbing_effect", [0, 0]);
+					curr.addSkill("jlsg_junbing_effect");
+					curr.markSkill("jlsg_junbing_effect");
+				}
+			});
+		},
+		usable: 1,
+		filter(event, player) {
+			return player.countCards("he", card => get.name(card, player) == "shan" && lib.filter.cardDiscardable(card, player)) && event.source && event.source != event.player;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard({
+					prompt: "你可以弃置一张【闪】并令其回复1点体力，若目标角色的势力不为蜀、吴、群，你令其体力、体力上限、摸牌数中最小的一项属性+1。",
+					filterCard: (card, player) => get.name(card, player) == "shan" && lib.filter.cardDiscardable(card, player),
+					ai() {
+						const target = get.event().damageTarget;
+						const player = get.player();
+						return get.attitude(player, target);
+					},
+				})
+				.set("damageTarget", trigger.player)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards } = event;
+			const target = trigger.player;
+			await player.discard(cards);
+			await target.recover();
+			if (!["shu", "wu", "qun"].includes(target.group)) {
+				const note = target.getStorage("jlsg_junbing_effect");
+				const list = [note[2] + 2, target.hp, target.maxHp];
+				const max = Math.min(...list);
+				switch (list.indexOf(max)) {
+					case 0:
+						note[2] += 1;
+						target.setStorage("jlsg_junbing_effect", note);
+						target.markSkill("jlsg_junbing_effect");
+						break;
+					case 1:
+						target.hp += 1;
+						target.update();
+						break;
+					case 2:
+						target.maxHp += 1;
+						target.update();
+						break;
 				}
 			}
 		},
