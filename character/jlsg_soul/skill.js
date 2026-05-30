@@ -15808,7 +15808,7 @@ const skills = {
 						await player.link();
 					}
 				},
-				ai: 1,
+				ai: () => 1,
 			},
 			{
 				str: "翻至正面",
@@ -15832,7 +15832,7 @@ const skills = {
 					const card = player.getCards("he").randomGet();
 					await player.discard(card);
 				},
-				ai: -1,
+				ai: () => -1,
 			},
 			{
 				str: "受到一点伤害",
