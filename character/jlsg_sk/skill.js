@@ -20405,6 +20405,7 @@ const skills = {
 		},
 	},
 	jlsg_falu: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			player: ["enterGame"],
 			global: ["phaseBefore"],
@@ -20446,6 +20447,7 @@ const skills = {
 		group: ["jlsg_falu_effect"],
 		subSkill: {
 			effect: {
+				audio: "jlsg_falu",
 				trigger: {
 					player: ["loseAfter"],
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -20520,6 +20522,7 @@ const skills = {
 		},
 	},
 	jlsg_zhenyi: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			player: ["damageBegin3"],
 		},
@@ -20571,6 +20574,7 @@ const skills = {
 		},
 		subSkill: {
 			note: {
+				audio: "ext:极略/audio/skill:2",
 				trigger: {
 					player: ["phaseBegin"],
 				},
@@ -20587,6 +20591,7 @@ const skills = {
 		},
 	},
 	jlsg_dianhua: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			player: ["changeSkillsBefore"],
 		},

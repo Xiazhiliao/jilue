@@ -4328,6 +4328,7 @@ const skills = {
 		},
 	},
 	jlsg_wenjiu: {
+		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			global: ["phaseUseBegin"],
 		},
@@ -4364,6 +4365,7 @@ const skills = {
 		},
 		group: ["jlsg_wenjiu_sha", "jlsg_wenjiu_tao"],
 		subSkill: {
+			audio: "jlsg_wenjiu",
 			sha: {
 				trigger: {
 					source: ["damageBegin1"],
@@ -4403,6 +4405,7 @@ const skills = {
 				},
 			},
 			tao: {
+				audio: "jlsg_wenjiu",
 				trigger: {
 					player: ["dyingBegin"],
 				},
@@ -4443,6 +4446,7 @@ const skills = {
 		},
 	},
 	jlsg_shuixi: {
+		audio: "ext:极略/audio/skill:2",
 		init(player, skill) {
 			if (!_status.gameStarted) {
 				return;
