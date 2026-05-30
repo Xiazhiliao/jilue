@@ -4365,8 +4365,8 @@ const skills = {
 		},
 		group: ["jlsg_wenjiu_sha", "jlsg_wenjiu_tao"],
 		subSkill: {
-			audio: "jlsg_wenjiu",
 			sha: {
+				audio: "jlsg_wenjiu",
 				trigger: {
 					source: ["damageBegin1"],
 				},
