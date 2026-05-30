@@ -1,6 +1,23 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
+	jlsg_wenjiu(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_guanyu"]?.[2] || upgradeStorage.other?.jlsg_wenjiu;
+		if (improve || player?.index) {
+			return "任意角色的出牌阶段开始时，你可以摸一张牌，若此牌为黑色，将之置于你的武将牌上，称为“酒”。当你使用【杀】造成伤害时，你可以将任意张“酒”置入手牌，令此【杀】加等量的伤害。当你进入濒死状态时，你可以将任意张“酒”置入手牌，回复等量的体力。";
+		}
+		return lib.translate["jlsg_wenjiu_info"];
+	},
+	jlsg_shuixi(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_guanyu"]?.[2] || upgradeStorage.other?.jlsg_shuixi;
+		if (improve || player?.index) {
+			return "任意角色的回合开始阶段，你可以展示一张手牌并选择一名其他角色，除非该角色弃置两张相同花色的手牌，否则你令其失去1点体力并令其一个技能于本回合内无效。";
+		}
+		return lib.translate["jlsg_shuixi_info"];
+	},
+
 	jlsg_zhonghou(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_xiahoudun"]?.[2] || upgradeStorage.other?.jlsg_zhonghou;
@@ -17,9 +34,6 @@ const dynamicTranslates = {
 		}
 		return lib.translate["jlsg_ganglie_info"];
 	},
-
-
-
 
 	jlsg_jiexi(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};

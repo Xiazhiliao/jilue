@@ -1,5 +1,162 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export default {
+	jlsgsr_guanyu: {
+		1: {
+			skill: {
+				jlsg_wenjiu: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					marktext: "酒",
+					intro: {
+						content: "expansion",
+						markcount: "expansion",
+					},
+					onremove(player, skill) {
+						const cards = player.getExpansions(skill);
+						if (cards.length) {
+							player.loseToDiscardpile(cards);
+						}
+					},
+					enable: "phaseUse",
+					usable: 1,
+					filter(event, player) {
+						return player.countCards("h", { color: "black" }) > 0;
+					},
+					filterCard(card) {
+						return get.color(card) == "black";
+					},
+					check(card) {
+						return 6 - get.value(card);
+					},
+					discard: false,
+					prepare(cards, player) {
+						player.$give(1, player);
+					},
+					async content(event, trigger, player) {
+						const next = player.addToExpansion(event.cards);
+						next.gaintag.add(event.name);
+						await next;
+					},
+					group: "jlsg_wenjiu_sha",
+					subSkill: {
+						sha: {
+							audio: "ext:极略/audio/skill/jlsg_wenjiu21.mp3",
+							trigger: { player: "shaBegin" },
+							filter(event, player) {
+								return player.countExpansions("jlsg_wenjiu");
+							},
+							check(event, player) {
+								return get.attitude(player, event.target) < 0;
+							},
+							async content(event, trigger, player) {
+								const result = await player
+									.chooseCardButton("请弃置一张「酒」，该伤害+1点", true, player.getExpansions("jlsg_wenjiu"))
+									.set("ai", function (button) {
+										if (get.attitude(player, trigger.target) < 0) {
+											return 1;
+										}
+										return 0;
+									})
+									.forResult();
+								if (result.bool) {
+									await player.loseToDiscardpile(result.links);
+									trigger.baseDamage++;
+									player
+										.when({ player: ["shaMiss", "useCardAfter"] })
+										.filter(evt => evt.card == trigger.card)
+										.step(async (event, trigger, player) => {
+											if (trigger.name != "useCard") {
+												await player.draw(1);
+											}
+										});
+								}
+							},
+						},
+					},
+					ai: {
+						order: 10,
+						result: {
+							player: function (player) {
+								return 2 - player.getExpansions("jlsg_wenjiu").length;
+							},
+						},
+					},
+				},
+				jlsg_shuixi: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					trigger: { player: "phaseZhunbeiBegin" },
+					filter(event, player) {
+						return player.countCards("h") > 0;
+					},
+					async cost(event, trigger, player) {
+						event.result = await player
+							.chooseCardTarget({
+								filterCard: true,
+								filterTarget(card, player, target) {
+									return target != player;
+								},
+								ai1(card) {
+									return get.value(card);
+								},
+								ai2(target) {
+									return -get.attitude(player, target);
+								},
+								prompt: "水袭：展示一张手牌并选择一名其他角色",
+							})
+							.forResult();
+					},
+					async content(event, trigger, player) {
+						const {
+							targets: [target],
+							cards: [card],
+						} = event;
+						player.showCards(card, "水袭");
+						const suit = get.suit(card, player);
+						const result = await target
+							.chooseToDiscard(`请弃置一张${get.translation(suit + "2")}牌，否则失去1点体力`)
+							.set("suit", suit)
+							.set("filterCard", (card, player) => get.suit(card, player) == get.event().suit)
+							.set("ai", card => {
+								const player = get.player();
+								if (player.hasSkillTag("maihp") && (player.hp > 2 || player.hasCard("tao", "h"))) {
+									return -1;
+								}
+								return 7.9 - get.value(card);
+							})
+							.forResult();
+						if (!result?.bool) {
+							await target.loseHp();
+							player.addTempSkill("jlsg_shuixi_ban", "phaseAfter");
+						}
+					},
+					subSkill: {
+						ban: {
+							charlotte: true,
+							mark: true,
+							intro: {
+								content: "水袭失败,不能使用【杀】",
+							},
+							mod: {
+								cardEnabled(card, player) {
+									if (get.name(card, player) == "sha") {
+										return false;
+									}
+								},
+							},
+						},
+					},
+					ai: {
+						expose: 0.4,
+					},
+				},
+			},
+			translate: {
+				jlsg_wenjiu_info: "出牌阶段限一次，你可以将一张黑色手牌置于你的武将牌上，称为「酒」。当你使用【杀】选择目标后，你可以将一张「酒」置入弃牌堆，然后当此【杀】造成伤害时，该伤害+1；当此【杀】被【闪】响应后，你摸一张牌。",
+				jlsg_shuixi_info: "准备阶段开始时，你可以展示一张手牌并选择一名其他角色，令其选择一项：弃置一张与之相同花色的手牌，或失去1点体力。若该角色因此法失去体力，则此回合的出牌阶段，你不能使用【杀】。",
+			},
+		},
+	},
 	jlsgsr_xiahoudun: {
 		1: {
 			skill: {
@@ -214,8 +371,8 @@ export default {
 					prompt: "你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢",
 					async content(event, trigger, player) {
 						const {
-							targets: [target],
-						} = event,
+								targets: [target],
+							} = event,
 							guohe = get.autoViewAs({ name: "guohe" }, []);
 						while (player.canCompare(target)) {
 							const compare = await player.chooseToCompare(target).forResult();
@@ -327,7 +484,7 @@ export default {
 				jlsg_jiexi_info: "出牌阶段，你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢。",
 				jlsg_youxia: "游侠",
 				jlsg_youxia_info: "出牌阶段，若你的武将牌正面朝上，你可以将你的武将牌翻面，然后从一至两名其他角色处各获得一张牌；锁定技，若你的武将牌背面朝上，你不能成为【杀】和【决斗】的目标。",
-			}
+			},
 		},
 	},
 	jlsgsr_zhugeliang: {
@@ -446,10 +603,8 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_sanfen_info:
-					"出牌阶段限一次，你可以选择两名其他角色，其中一名你选择的角色须对另一名角色使用一张【杀】，然后另一名角色须对你使用一张【杀】，你弃置不如此做者一张牌。（有距离限制）",
-				jlsg_guanxing_info:
-					"回合开始/结束阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且最多为3），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。",
+				jlsg_sanfen_info: "出牌阶段限一次，你可以选择两名其他角色，其中一名你选择的角色须对另一名角色使用一张【杀】，然后另一名角色须对你使用一张【杀】，你弃置不如此做者一张牌。（有距离限制）",
+				jlsg_guanxing_info: "回合开始/结束阶段开始时，你可以观看牌堆顶的X张牌（X为存活角色的数量，且最多为3），将其中任意数量的牌以任意顺序置于牌堆顶，其余以任意顺序置于牌堆底。",
 				jlsg_weiwo_info: "锁定技，当你有手牌时，你防止受到的属性伤害；当你没有手牌时，你防止受到的非属性伤害。",
 			},
 		},
@@ -658,8 +813,7 @@ export default {
 			translate: {
 				jlsg_guicai_info: "在任意角色的判定牌生效前，你可以选择一项：1、打出一张手牌代替之。2、亮出牌堆顶的一张牌代替之。",
 				jlsg_langgu_info: "每当你造成或受到一次伤害后，你可以进行一次判定，若为黑色，你获得对方一张牌。",
-				jlsg_zhuizun_info:
-					"限定技，当你进入濒死状态时，你可以恢复体力至1点，令所有其他角色依次交给你一张手牌。然后当前回合结束后，你进行1个额外的回合。",
+				jlsg_zhuizun_info: "限定技，当你进入濒死状态时，你可以恢复体力至1点，令所有其他角色依次交给你一张手牌。然后当前回合结束后，你进行1个额外的回合。",
 			},
 		},
 	},
@@ -853,11 +1007,7 @@ export default {
 							var chaiTarget = false;
 							for (var i = 0; i < game.players.length; i++) {
 								if (get.attitude(player, game.players[i]) > 0) {
-									if (
-										player != game.players[i] &&
-										!game.players[i].getCards("e", { subtype: get.subtype(button.link) })[0] &&
-										get.attitude(player, game.players[i]) > 0
-									) {
+									if (player != game.players[i] && !game.players[i].getCards("e", { subtype: get.subtype(button.link) })[0] && get.attitude(player, game.players[i]) > 0) {
 										equipTarget = true;
 									}
 								}
@@ -949,16 +1099,10 @@ export default {
 											var shunTarget = false;
 											var chaiTarget = false;
 											for (var i = 0; i < game.players.length; i++) {
-												if (
-													player.canUse("shunshou", game.players[i]) &&
-													get.effect(game.players[i], { name: "shunshou" }, player)
-												) {
+												if (player.canUse("shunshou", game.players[i]) && get.effect(game.players[i], { name: "shunshou" }, player)) {
 													shunTarget = true;
 												}
-												if (
-													player.canUse("guohe", game.players[i]) &&
-													get.effect(game.players[i], { name: "guohe" }, player) >= 0
-												) {
+												if (player.canUse("guohe", game.players[i]) && get.effect(game.players[i], { name: "guohe" }, player) >= 0) {
 													chaiTarget = true;
 												}
 											}
@@ -1020,10 +1164,7 @@ export default {
 											var player = _status.event.player;
 											var shaTarget = false;
 											for (var i = 0; i < game.players.length; i++) {
-												if (
-													player.canUse("sha", game.players[i]) &&
-													get.effect(game.players[i], { name: "sha" }, player) > 0
-												) {
+												if (player.canUse("sha", game.players[i]) && get.effect(game.players[i], { name: "sha" }, player) > 0) {
 													shaTarget = true;
 												}
 											}
@@ -1107,10 +1248,8 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_quanheng_info:
-					"出牌阶段限一次，你可以将至少一张手牌当【无中生有】或【杀】使用，若你以此法使用的牌被【无懈可击】或【闪】响应时，你摸等量的牌。",
-				jlsg_xionglve_info:
-					"摸牌阶段，你可以放弃摸牌，改为展示牌堆顶的两张牌，你获得其中一张牌，然后将另一张牌置于你的武将牌上，称为「略」。出牌阶段，你可以将一张基本牌或锦囊牌的「略」当与之同类别的任意一张牌（延时类锦囊牌除外）使用，将一张装备牌的「略」置于一名其他角色装备区内的相应位置。",
+				jlsg_quanheng_info: "出牌阶段限一次，你可以将至少一张手牌当【无中生有】或【杀】使用，若你以此法使用的牌被【无懈可击】或【闪】响应时，你摸等量的牌。",
+				jlsg_xionglve_info: "摸牌阶段，你可以放弃摸牌，改为展示牌堆顶的两张牌，你获得其中一张牌，然后将另一张牌置于你的武将牌上，称为「略」。出牌阶段，你可以将一张基本牌或锦囊牌的「略」当与之同类别的任意一张牌（延时类锦囊牌除外）使用，将一张装备牌的「略」置于一名其他角色装备区内的相应位置。",
 			},
 		},
 	},
@@ -1141,15 +1280,12 @@ export default {
 							next.ai = function (card) {
 								const player = get.player(),
 									trigger = get.event().getTrigger();
-								var income = Math.min(
-									-get.effect(trigger.target, trigger.card, trigger.player, player) * 1.5,
-									get.effect(trigger.player, { name: "shunshou_copy2" }, player, player) / 1.5
-								);
+								var income = Math.min(-get.effect(trigger.target, trigger.card, trigger.player, player) * 1.5, get.effect(trigger.player, { name: "shunshou_copy2" }, player, player) / 1.5);
 								return income - get.value(card);
 							};
 							next.logSkill = ["jlsg_zhaoxiang", trigger.player];
 						}
-						("step 1");
+						"step 1";
 						if (result.bool) {
 							if (!result.cards) {
 								player.logSkill("jlsg_zhaoxiang", trigger.player);
@@ -1172,7 +1308,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2";
 						if (!result.bool) {
 							trigger.untrigger();
 							trigger.finish();
@@ -1221,13 +1357,9 @@ export default {
 						}
 						if (cards[0].name == "shan") {
 							target
-								.chooseCard(
-									"请展示一张【闪】，令" + get.translation(target) + "恢复1点体力，否则你受到1点伤害",
-									"h",
-									function (card, player, target) {
-										return get.name(card) == "shan";
-									}
-								)
+								.chooseCard("请展示一张【闪】，令" + get.translation(target) + "恢复1点体力，否则你受到1点伤害", "h", function (card, player, target) {
+									return get.name(card) == "shan";
+								})
 								.set("ai", function () {
 									if (_status.nono == true) {
 										return false;
@@ -1236,11 +1368,11 @@ export default {
 								})
 								.set("nono", nono);
 						}
-						("step 1");
+						"step 1";
 						if (cards[0].name == "shan" && result.cards) {
 							target.showCards(result.cards[0]);
 						}
-						("step 2");
+						"step 2";
 						if (result.bool) {
 							player.recover();
 							target.recover();
@@ -1264,10 +1396,8 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_zhaoxiang_info:
-					"当一名其他角色使用【杀】指定目标后，你可以令其选择一项：1、交给你一张牌。2、令此【杀】对该目标无效；若其或【杀】的目标在你的攻击范围内，你须先弃置一张手牌。",
-				jlsg_zhishi_info:
-					"出牌阶段限一次，你可以指定一名有手牌的其他角色，你选择其中一项执行：1.你展示一张【杀】令其弃置一张【杀】，若其执行，你与其恢复1点体力，否则你对其造成1点伤害；2.你展示一张【闪】令其弃置一张【闪】，若其执行，你与其恢复1点体力，否则你对其造成1点伤害。",
+				jlsg_zhaoxiang_info: "当一名其他角色使用【杀】指定目标后，你可以令其选择一项：1、交给你一张牌。2、令此【杀】对该目标无效；若其或【杀】的目标在你的攻击范围内，你须先弃置一张手牌。",
+				jlsg_zhishi_info: "出牌阶段限一次，你可以指定一名有手牌的其他角色，你选择其中一项执行：1.你展示一张【杀】令其弃置一张【杀】，若其执行，你与其恢复1点体力，否则你对其造成1点伤害；2.你展示一张【闪】令其弃置一张【闪】，若其执行，你与其恢复1点体力，否则你对其造成1点伤害。",
 			},
 		},
 		2: {
@@ -1296,15 +1426,12 @@ export default {
 							next.ai = function (card) {
 								const player = get.player(),
 									trigger = get.event().getTrigger();
-								var income = Math.min(
-									-get.effect(trigger.target, trigger.card, trigger.player, player) * 1.5,
-									get.effect(trigger.player, { name: "shunshou_copy2" }, player, player) / 1.5
-								);
+								var income = Math.min(-get.effect(trigger.target, trigger.card, trigger.player, player) * 1.5, get.effect(trigger.player, { name: "shunshou_copy2" }, player, player) / 1.5);
 								return income - get.value(card);
 							};
 							next.logSkill = ["jlsg_zhaoxiang", trigger.player];
 						}
-						("step 1");
+						"step 1";
 						if (result.bool) {
 							if (!result.cards) {
 								player.logSkill("jlsg_zhaoxiang", trigger.player);
@@ -1327,7 +1454,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						("step 2");
+						"step 2";
 						if (!result.bool) {
 							trigger.untrigger();
 							trigger.finish();
@@ -1355,9 +1482,7 @@ export default {
 							event.finish();
 							return;
 						}
-						target.chooseToDiscard("弃置一张基本牌，并回复一点体力。或受到一点伤害并回复一点体力。", { type: "basic" }).ai = function (
-							card
-						) {
+						target.chooseToDiscard("弃置一张基本牌，并回复一点体力。或受到一点伤害并回复一点体力。", { type: "basic" }).ai = function (card) {
 							if (target.hasSkillTag("maixie") && target.hp > 1) {
 								return 0;
 							}
@@ -1366,7 +1491,7 @@ export default {
 							}
 							return -1;
 						};
-						("step 1");
+						"step 1";
 						if (result.bool) {
 							target.recover();
 						} else {
@@ -1395,10 +1520,8 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_zhaoxiang_info:
-					"当一名其他角色使用【杀】指定目标后，你可以令其选择一项：1、交给你一张牌。2、令此【杀】对该目标无效；若其或【杀】的目标在你的攻击范围内，你须先弃置一张手牌。",
-				jlsg_zhishi_info:
-					"出牌阶段限一次，你可以令一名其他角色选择一项：1、弃置一张基本牌，然后回复一点体力。2、受到你造成的一点伤害，然后回复一点体力。",
+				jlsg_zhaoxiang_info: "当一名其他角色使用【杀】指定目标后，你可以令其选择一项：1、交给你一张牌。2、令此【杀】对该目标无效；若其或【杀】的目标在你的攻击范围内，你须先弃置一张手牌。",
+				jlsg_zhishi_info: "出牌阶段限一次，你可以令一名其他角色选择一项：1、弃置一张基本牌，然后回复一点体力。2、受到你造成的一点伤害，然后回复一点体力。",
 			},
 		},
 		3: {
@@ -1523,27 +1646,11 @@ export default {
 									if (get.is.zhuanhuanji(skill2, trigger.player)) {
 										continue;
 									}
-									if (
-										!info ||
-										!info.trigger ||
-										!info.trigger.player ||
-										info.silent ||
-										info.limited ||
-										info.juexingji ||
-										info.hiddenSkill ||
-										info.dutySkill ||
-										(info.zhuSkill && !trigger.player.isZhu2())
-									) {
+									if (!info || !info.trigger || !info.trigger.player || info.silent || info.limited || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !trigger.player.isZhu2())) {
 										continue;
 									}
-									if (
-										info.trigger.player == "damageEnd" ||
-										(Array.isArray(info.trigger.player) && info.trigger.player.includes("damageEnd"))
-									) {
-										if (
-											info.ai &&
-											((info.ai.combo && !trigger.player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)
-										) {
+									if (info.trigger.player == "damageEnd" || (Array.isArray(info.trigger.player) && info.trigger.player.includes("damageEnd"))) {
+										if (info.ai && ((info.ai.combo && !trigger.player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)) {
 											continue;
 										}
 										if (info.init) {
@@ -1604,14 +1711,7 @@ export default {
 						if (!skills.length) {
 							return;
 						}
-						const buttons = skills.map(i => [
-							i,
-							'<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' +
-							get.translation(i) +
-							"】</div><div>" +
-							lib.translate[i + "_info"] +
-							"</div></div>",
-						]);
+						const buttons = skills.map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
 						const result = await trigger.player
 							.chooseButton(true, ["选择要发动的技能", [buttons, "textbutton"]])
 							.set("ai", button => get.skillRank(button.link, "out"))
@@ -1664,8 +1764,7 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_zhaoxiang_info:
-					"当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择一项：1．令此【杀】不能被响应；2．将此【杀】的目标改为你。",
+				jlsg_zhaoxiang_info: "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择一项：1．令此【杀】不能被响应；2．将此【杀】的目标改为你。",
 				jlsg_zhishi_info: "当任意角色受到伤害后，你可以令其从随机两个能在此时机发动的技能中选择一个并发动。",
 			},
 		},
@@ -1747,20 +1846,11 @@ export default {
 						await game.cardsGotoOrdering(cards);
 						await player.showCards(event.cards1);
 						const types = cards.map(card => get.type2(card, false)).sort();
-						let prompt =
-							"弃置一张与展示牌类别均不同的牌,然后令" +
-							get.translation(player) +
-							"获得" +
-							get.translation(event.cards1) +
-							",或受到来自" +
-							get.translation(player) +
-							"的1点伤害并获得其中一种类别的牌.";
+						let prompt = "弃置一张与展示牌类别均不同的牌,然后令" + get.translation(player) + "获得" + get.translation(event.cards1) + ",或受到来自" + get.translation(player) + "的1点伤害并获得其中一种类别的牌.";
 						// value from card ownership
 						let cardDiff = 0;
 						for (let type of types) {
-							let newCardDiff = cards
-								.filter(c => get.type(c) == type)
-								.reduce((a, b) => a - get.value(b, player) * get.sgnAttitude(target, player) + get.value(b, target), 0);
+							let newCardDiff = cards.filter(c => get.type(c) == type).reduce((a, b) => a - get.value(b, player) * get.sgnAttitude(target, player) + get.value(b, target), 0);
 							if (newCardDiff > cardDiff) {
 								cardDiff = newCardDiff;
 							}
@@ -1839,8 +1929,7 @@ export default {
 			},
 			translate: {
 				jlsg_rende_info: "任一角色的结束阶段结束时，你可以将任意数量的手牌交给该角色，然后该角色进行1个额外的出牌阶段。",
-				jlsg_chouxi_info:
-					"出牌阶段限一次，你可以弃置一张手牌并展示牌堆顶的两张牌，然后令一名其他角色选择一项：1. 弃置一张与展示牌类别均不同的牌，然后令你获得展示的牌；2. 受到你造成的1点伤害并获得其中一种类别的牌，然后你获得其余的牌。",
+				jlsg_chouxi_info: "出牌阶段限一次，你可以弃置一张手牌并展示牌堆顶的两张牌，然后令一名其他角色选择一项：1. 弃置一张与展示牌类别均不同的牌，然后令你获得展示的牌；2. 受到你造成的1点伤害并获得其中一种类别的牌，然后你获得其余的牌。",
 			},
 		},
 	},
@@ -1984,8 +2073,7 @@ export default {
 			},
 			translate: {
 				jlsg_dailao_info: "出牌阶段限一次，你可以令一名其他角色与你各摸一张牌或各弃置一张牌，然后你与其依次将武将牌翻面。",
-				jlsg_youdi_info:
-					"若你的武将牌背面朝上，你可以翻面并视为你使用一张【闪】。你使用【闪】响应一名角色使用的【杀】时，你可以弃置任意数量的手牌，然后该角色弃置等量的牌。",
+				jlsg_youdi_info: "若你的武将牌背面朝上，你可以翻面并视为你使用一张【闪】。你使用【闪】响应一名角色使用的【杀】时，你可以弃置任意数量的手牌，然后该角色弃置等量的牌。",
 			},
 		},
 	},
@@ -2101,9 +2189,7 @@ export default {
 					srlose: true,
 					trigger: { global: "damageSource" },
 					filter: function (event, player) {
-						return (
-							player.countDiscardableCards(player, "he") && event.source && event.source.getEquips(1).length && event.source != player
-						);
+						return player.countDiscardableCards(player, "he") && event.source && event.source.getEquips(1).length && event.source != player;
 					},
 					async cost(event, trigger, player) {
 						let prompt = "弃置一张牌，然后",
@@ -2226,10 +2312,8 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_jiwu_info:
-					"出牌阶段限一次，你可以将你的手牌调整至一张，若如此做，本回合你的攻击范围无限，且你下一次使用的【杀】造成的伤害+1。锁定技，若你的装备区没有牌，你使用【杀】可以额外指定至多两名目标。",
-				jlsg_sheji_info:
-					"当一名装备区有武器牌的其他角色对另一名角色造成伤害后，你可以弃置一张牌，然后获得该角色的武器牌。你可以将装备牌当无距离限制的【杀】使用或打出，你以此法使用的【杀】须连续使用两张【闪】才能抵消。",
+				jlsg_jiwu_info: "出牌阶段限一次，你可以将你的手牌调整至一张，若如此做，本回合你的攻击范围无限，且你下一次使用的【杀】造成的伤害+1。锁定技，若你的装备区没有牌，你使用【杀】可以额外指定至多两名目标。",
+				jlsg_sheji_info: "当一名装备区有武器牌的其他角色对另一名角色造成伤害后，你可以弃置一张牌，然后获得该角色的武器牌。你可以将装备牌当无距离限制的【杀】使用或打出，你以此法使用的【杀】须连续使用两张【闪】才能抵消。",
 			},
 		},
 	},
@@ -2257,14 +2341,14 @@ export default {
 								cards.length == 1
 									? { links: cards.slice(0), bool: true }
 									: await player
-										.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length])
-										.set("ai", () => {
-											if (ui.selected.buttons.length == 0) {
-												return 1;
-											}
-											return 0;
-										})
-										.forResult();
+											.chooseCardButton("遗计：请选择要分配的牌", true, cards, [1, cards.length])
+											.set("ai", () => {
+												if (ui.selected.buttons.length == 0) {
+													return 1;
+												}
+												return 0;
+											})
+											.forResult();
 							if (!bool) {
 								return;
 							}
@@ -2334,8 +2418,7 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_yiji_info:
-					"当你受到伤害后，可以观看牌堆顶的两张牌，并将其交给任意名角色，若你将所有的牌交给了同一名角色，你进行一次判定：判定牌为红桃，恢复1点体力。",
+				jlsg_yiji_info: "当你受到伤害后，可以观看牌堆顶的两张牌，并将其交给任意名角色，若你将所有的牌交给了同一名角色，你进行一次判定：判定牌为红桃，恢复1点体力。",
 			},
 		},
 	},
@@ -2359,8 +2442,8 @@ export default {
 					},
 					async content(event, trigger, player) {
 						const {
-							targets: [target],
-						} = event,
+								targets: [target],
+							} = event,
 							sha = get.autoViewAs({ name: "sha" }, []);
 						await target.useCard(sha, player, false, "noai");
 						if (!player.isIn()) {
@@ -2398,8 +2481,7 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_zhaxiang_info:
-					"出牌阶段限一次，你可以指定一名其它角色，视为该角色对你使用一张【杀】，然后你摸两张牌并视为对其使用一张【杀】（你的此【杀】无视防具）。",
+				jlsg_zhaxiang_info: "出牌阶段限一次，你可以指定一名其它角色，视为该角色对你使用一张【杀】，然后你摸两张牌并视为对其使用一张【杀】（你的此【杀】无视防具）。",
 			},
 		},
 	},
@@ -2536,10 +2618,8 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_jiexi_info:
-					"若你的武将牌正面朝上，你可以指定一名有手牌的角色进行拼点：若你赢，你视为对其使用一张【过河拆桥】，否则本回合不可发动此技能；锁定技，若你的武将牌正面朝上并触发技能〈劫袭〉后，且你的手牌数小于4时，你将武将牌背面朝上并摸一张牌；若你的武将牌背面朝上，你不能成为【南蛮入侵】和【闪电】的目标。",
-				jlsg_youxia_info:
-					"出牌阶段限一次，你可以将你的武将牌翻面，然后从1至2名其他角色的区域各弃置一张牌；锁定技，若你的武将牌背面朝上，你不能成为【杀】和【兵粮寸断】的目标。",
+				jlsg_jiexi_info: "若你的武将牌正面朝上，你可以指定一名有手牌的角色进行拼点：若你赢，你视为对其使用一张【过河拆桥】，否则本回合不可发动此技能；锁定技，若你的武将牌正面朝上并触发技能〈劫袭〉后，且你的手牌数小于4时，你将武将牌背面朝上并摸一张牌；若你的武将牌背面朝上，你不能成为【南蛮入侵】和【闪电】的目标。",
+				jlsg_youxia_info: "出牌阶段限一次，你可以将你的武将牌翻面，然后从1至2名其他角色的区域各弃置一张牌；锁定技，若你的武将牌背面朝上，你不能成为【杀】和【兵粮寸断】的目标。",
 			},
 		},
 	},

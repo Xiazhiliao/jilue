@@ -20463,7 +20463,7 @@ const skills = {
 					player.setStorage("jlsg_falu_note", list);
 					if (list.length == 3) {
 						player.setStorage("jlsg_falu_note", []);
-						await player.draw(3);
+						await player.draw(2);
 						const color = list.toUniqued();
 						if (color.length == 1) {
 							if (color[0] == "red") {
@@ -20490,7 +20490,7 @@ const skills = {
 									await target.addSkills(skills);
 								} else {
 									const skills = player.getStorage("jlsg_falu_skill");
-									const cb = _status.jlsg_falu_skill.filter(sk => !skills.includes(sk)).randomGets(3);
+									const cb = _status.jlsg_falu_skill.filter(sk => !skills.includes(sk)).randomGets(2);
 									skills.addArray(cb);
 									player.setStorage("jlsg_falu_skill", skills);
 								}
@@ -20507,7 +20507,7 @@ const skills = {
 								if (targets?.[0]) {
 									const target = targets[0];
 									await target.damage({
-										num: 3,
+										num: 2,
 										nature: "thunder",
 										source: player,
 									});
@@ -20600,7 +20600,8 @@ const skills = {
 			const now = skillList.filter(sk => !trigger.player.hasSkill(sk, null, false, false));
 			const { links, bool } = await player
 				.chooseButton({
-					createDialog: [`令${get.translation(trigger.player)}${str}改为获得一个储备技能`, [skillList.map(sk => [sk, `${get.translation(sk)}:${get.skillInfoTranslation(sk)}`]), "textbutton"]],
+					selectButton: [1, 3],
+					createDialog: [`令${get.translation(trigger.player)}${str}改为获得一至三个储备技能`, [skillList.map(sk => [sk, `${get.translation(sk)}:${get.skillInfoTranslation(sk)}`]), "textbutton"]],
 				})
 				.forResult();
 			event.result = {

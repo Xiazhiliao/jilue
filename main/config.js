@@ -64,6 +64,29 @@ let block = {
 	},
 	oldCharacterReplace = {
 		sr: {
+			jlsgsr_guanyu: {
+				name: "SR关羽",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				jlsg_upgrade: true,
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_guanyu", item);
+					if (item == "false" || Number(item) > 1) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_guanyu");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_guanyu")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_guanyu");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
 			jlsgsr_xiahoudun: {
 				name: "SR夏侯惇",
 				init: "false",

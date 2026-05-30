@@ -140,6 +140,16 @@ const skills = {
 		},
 		//属性突破列表
 		upgradeContent: {
+			jlsgsr_guanyu: {
+				"出【杀】次数+2": async function (event, trigger, player) {
+					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+					event.info[0] = "sha|2";
+				},
+				"手牌上限+3": async function (event, trigger, player) {
+					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+					event.info[0] = "maxHandcard|3";
+				},
+			},
 			jlsgsr_xiahoudun: {
 				"摸牌数+1": async function (event, trigger, player) {
 					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
@@ -4318,150 +4328,209 @@ const skills = {
 		},
 	},
 	jlsg_wenjiu: {
-		audio: "ext:极略/audio/skill:1",
-		srlose: true,
+		trigger: {
+			global: ["phaseUseBegin"],
+		},
+		selose: true,
+		mark: true,
 		marktext: "酒",
 		intro: {
 			content: "expansion",
-			markcount: "expansion",
 		},
-		onremove(player, skill) {
-			const cards = player.getExpansions(skill);
-			if (cards.length) {
-				player.loseToDiscardpile(cards);
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
+			}
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_guanyu"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
 		},
-		enable: "phaseUse",
-		usable: 1,
-		filter(event, player) {
-			return player.countCards("h", { color: "black" }) > 0;
-		},
-		filterCard(card) {
-			return get.color(card) == "black";
-		},
-		check(card) {
-			return 6 - get.value(card);
-		},
-		discard: false,
-		prepare(cards, player) {
-			player.$give(1, player);
-		},
+		check: () => true,
 		async content(event, trigger, player) {
-			const next = player.addToExpansion(event.cards);
-			next.gaintag.add(event.name);
-			await next;
+			const { cards } = await player.draw().forResult();
+			if (cards?.length > 0) {
+				const card = cards[0];
+				if (get.color(card, false) == "black") {
+					await player.addToExpansion({
+						cards: [card],
+						gaintag: ["jlsg_wenjiu"],
+					});
+				}
+			}
 		},
-		group: "jlsg_wenjiu_sha",
+		group: ["jlsg_wenjiu_sha", "jlsg_wenjiu_tao"],
 		subSkill: {
 			sha: {
-				audio: "ext:极略/audio/skill/jlsg_wenjiu21.mp3",
-				trigger: { player: "shaBegin" },
+				trigger: {
+					source: ["damageBegin1"],
+				},
 				filter(event, player) {
-					return player.countExpansions("jlsg_wenjiu");
+					return event.card?.name == "sha" && player.getExpansions("jlsg_wenjiu").length > 0;
 				},
-				check(event, player) {
-					return get.attitude(player, event.target) < 0;
-				},
-				async content(event, trigger, player) {
-					const result = await player
-						.chooseCardButton("请弃置一张「酒」，该伤害+1点", true, player.getExpansions("jlsg_wenjiu"))
-						.set("ai", function (button) {
-							if (get.attitude(player, trigger.target) < 0) {
-								return 1;
-							}
-							return 0;
+				async cost(event, trigger, player) {
+					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+					const upgrade = upgradeStorage?.other?.["jlsg_wenjiu"];
+					const num = upgrade ? [1, Infinity] : 1;
+					const str = upgrade ? "任意" : "一";
+					const cards = player.getExpansions("jlsg_wenjiu");
+					const { bool, links } = await player
+						.chooseButton({
+							selectButton: num,
+							ai(button) {
+								if (ui.selected.buttons.length == 0) {
+									return 1;
+								}
+								return -1;
+							},
+							createDialog: [`当你使用【杀】造成伤害时，你可以将${str}张“酒”置入手牌，令此【杀】加等量的伤害`, [cards, "card"]],
 						})
 						.forResult();
-					if (result.bool) {
-						await player.loseToDiscardpile(result.links);
-						trigger.baseDamage++;
-						player
-							.when({ player: ["shaMiss", "useCardAfter"] })
-							.filter(evt => evt.card == trigger.card)
-							.step(async (event, trigger, player) => {
-								if (trigger.name != "useCard") {
-									await player.draw(1);
-								}
-							});
-					}
+					event.result = {
+						bool: bool,
+						cost_data: {
+							cards: links,
+						},
+					};
+				},
+				async content(event, trigger, player) {
+					const { cards } = event.cost_data;
+					await player.lose(cards);
+					trigger.num += cards.length;
 				},
 			},
-		},
-		ai: {
-			order: 10,
-			result: {
-				player: function (player) {
-					return 2 - player.getExpansions("jlsg_wenjiu").length;
+			tao: {
+				trigger: {
+					player: ["dyingBegin"],
 				},
+				filter(event, player) {
+					return player.getExpansions("jlsg_wenjiu").length > 0;
+				},
+				async cost(event, trigger, player) {
+					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+					const upgrade = upgradeStorage?.other?.["jlsg_wenjiu"];
+					const num = upgrade ? [1, Infinity] : 1;
+					const str = upgrade ? "任意" : "一";
+					const cards = player.getExpansions("jlsg_wenjiu");
+					const { bool, links } = await player
+						.chooseButton({
+							selectButton: num,
+							createDialog: [`当你进入濒死状态时，你可以将${str}张“酒”置入手牌，回复等量的体力`, [cards, "card"]],
+							ai(button) {
+								if (ui.selected.buttons.length + player.hp < 0) {
+									return 1;
+								}
+								return -1;
+							},
+						})
+						.forResult();
+					event.result = {
+						bool: bool,
+						cost_data: {
+							cards: links,
+						},
+					};
+				},
+			},
+			async content(event, trigger, player) {
+				const { cards } = event.cost_data;
+				await player.lose(cards);
+				await player.recover(cards.length);
 			},
 		},
 	},
 	jlsg_shuixi: {
-		audio: "ext:极略/audio/skill:1",
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
+			}
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_guanyu"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
+			}
+		},
+		trigger: {
+			global: ["phaseBegin"],
+		},
 		srlose: true,
-		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
 		async cost(event, trigger, player) {
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const upgrade = upgradeStorage?.other?.["jlsg_shuixi"];
+			const str = upgrade ? "你可以展示一张手牌并选择一名其他角色，除非该角色弃置张相同花色的手牌，否则你令其失去1点体力" : "你可以展示一张手牌并选择一名其他角色，除非该角色弃置一张相同花色的手牌，否则你令其失去1点体力";
 			event.result = await player
 				.chooseCardTarget({
-					filterCard: true,
-					filterTarget(card, player, target) {
-						return target != player;
-					},
+					prompt: str,
 					ai1(card) {
 						return get.value(card);
 					},
 					ai2(target) {
 						return -get.attitude(player, target);
 					},
-					prompt: "水袭：展示一张手牌并选择一名其他角色",
 				})
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const {
-				targets: [target],
-				cards: [card],
-			} = event;
-			player.showCards(card, "水袭");
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const upgrade = upgradeStorage?.other?.["jlsg_shuixi"];
+			const { cards, targets } = event;
+			await player.showCards(cards);
+			const card = cards[0];
 			const suit = get.suit(card, player);
+			const target = targets[0];
+			const num = upgrade ? 2 : 1;
+			const str = upgrade ? `弃置两张${get.translation(suit)}的手牌，否则失去1点体力且一个技能于本回合内无效` : `弃置一张${get.translation(suit)}的手牌，否则失去1点体力`;
 			const result = await target
-				.chooseToDiscard(`请弃置一张${get.translation(suit + "2")}牌，否则失去1点体力`)
-				.set("suit", suit)
-				.set("filterCard", (card, player) => get.suit(card, player) == get.event().suit)
-				.set("ai", card => {
-					const player = get.player();
-					if (player.hasSkillTag("maihp") && (player.hp > 2 || player.hasCard("tao", "h"))) {
-						return -1;
-					}
-					return 7.9 - get.value(card);
+				.chooseToDiscard(str, "h", num, (card, player, target) => {
+					const suit = get.event().jlsg_shuixi_suit;
+					return get.suit(card, player) == suit && lib.filter.cardDiscardable(card, player);
 				})
+				.set("jlsg_shuixi_suit", suit)
 				.forResult();
-			if (!result?.bool) {
+			if (!result.bool) {
 				await target.loseHp();
-				player.addTempSkill("jlsg_shuixi_ban", "phaseAfter");
+				const skills = target.getSkills(null, false, false).filter(skill => {
+					const info = get.info(skill);
+					return info && !info.persevereSkill && !info.charlotte && get.skillInfoTranslation(skill).length > 0;
+				});
+				if (skills.length > 0) {
+					const { links } = await player
+						.chooseButton({
+							createDialog: ["选择一个技能于本回合内无效", [skills, "skill"]],
+						})
+						.forResult();
+					if (links?.length > 0) {
+						target.setStorage("jlsg_shuixi_disable", links);
+						target.addTempSkill("jlsg_shuixi_disable");
+					}
+				}
 			}
 		},
 		subSkill: {
-			ban: {
-				charlotte: true,
-				mark: true,
-				intro: {
-					content: "水袭失败,不能使用【杀】",
+			disable: {
+				onremove(player, skill) {
+					player.setStorage("jlsg_shuixi_disable", []);
+					player.enableSkill(skill);
 				},
-				mod: {
-					cardEnabled(card, player) {
-						if (get.name(card, player) == "sha") {
-							return false;
-						}
+				init(player, skill) {
+					player.disableSkill(skill, player.getStorage("jlsg_shuixi_disable"));
+				},
+				mark: true,
+				marktext: "袭",
+				intro: {
+					content(storage) {
+						return `无效技能: ${get.translation(storage[0])}`;
 					},
 				},
 			},
-		},
-		ai: {
-			expose: 0.4,
 		},
 	},
 	jlsg_sanfen: {
