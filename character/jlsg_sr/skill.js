@@ -4332,7 +4332,7 @@ const skills = {
 		trigger: {
 			global: ["phaseUseBegin"],
 		},
-		selose: true,
+		srlose: true,
 		mark: true,
 		marktext: "酒",
 		intro: {

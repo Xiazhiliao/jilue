@@ -15700,7 +15700,7 @@ const skills = {
 		intro: {
 			name: "叠韵",
 			content(_, player) {
-				const num = player.storage.jlsg_dieyun;
+				const num = player.storage.jlsg_dieyun || 0;
 				return `剩余刷新次数：${num}`;
 			},
 		},
@@ -15970,7 +15970,7 @@ const skills = {
 				}
 			}
 			if (["changeSkills", "addMark"].includes(event.name)) {
-				if (event.addSkill.length) {
+				if (event.addSkill?.length) {
 					list.push({
 						key: "addSkill",
 						bool: true,
@@ -16141,7 +16141,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					let num = player.storage.jlsg_dieyun;
+					let num = player.storage.jlsg_dieyun || 0;
 					num += 2;
 					player.setStorage("jlsg_dieyun", num);
 					player.markSkill("jlsg_dieyun");
