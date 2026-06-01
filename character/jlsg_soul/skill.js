@@ -16171,7 +16171,7 @@ const skills = {
 							}
 							return true;
 						}
-						return false;
+						return true;
 					},
 					complexSelect: true,
 				})
