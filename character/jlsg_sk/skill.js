@@ -15689,7 +15689,7 @@ const skills = {
 	jlsg_guanxu: {
 		audio: "ext:极略/audio/skill:2",
 		init(player) {
-			player.storage.jlsg_guanxu = Array.from({ length: 8 }, (v, i) => i).randomGet();
+			player.setStorage("jlsg_guanxu", Array.from({ length: 8 }, (v, i) => i).randomGet());
 			player.markSkill("jlsg_guanxu");
 		},
 		onremove: true,
@@ -16048,9 +16048,12 @@ const skills = {
 				await game.delayx();
 			}
 			let num2 = player.storage.jlsg_guanxu;
-			player.storage.jlsg_guanxu = Array.from({ length: 8 }, (v, i) => i)
-				.remove(num2)
-				.randomGet();
+			player.setStorage(
+				"jlsg_guanxu",
+				Array.from({ length: 8 }, (v, i) => i)
+					.remove(num2)
+					.randomGet()
+			);
 			player.update();
 		},
 		ai: {
