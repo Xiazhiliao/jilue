@@ -16167,9 +16167,9 @@ const skills = {
 						const link = button.link;
 						const player = get.player();
 						if (link == "phaseUse") {
-							return game.filterPlayer(p => !p.getStorage("jlsg_juexian_buff").includes(link) && get.attitude(player, target) < 0).length * 114;
+							return game.filterPlayer(p => !p.getStorage("jlsg_juexian_buff").includes(link) && get.attitude(player, p) < 0).length * 114;
 						} else if (link == "phaseDiscard") {
-							return game.filterPlayer(p => !p.getStorage("jlsg_juexian_buff").includes(link) && get.attitude(player, target) > 0).length;
+							return game.filterPlayer(p => !p.getStorage("jlsg_juexian_buff").includes(link) && get.attitude(player, p) > 0).length;
 						} else if (["phaseJudge", "phaseDraw"].includes(link)) {
 							return 2;
 						}

@@ -147,7 +147,7 @@ const skills = {
 				},
 				"手牌上限+3": async function (event, trigger, player) {
 					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "maxHandcard|3";
+					event.info[1] = "maxHandcard|3";
 				},
 			},
 			jlsgsr_xiahoudun: {
@@ -4437,11 +4437,11 @@ const skills = {
 						},
 					};
 				},
-			},
-			async content(event, trigger, player) {
-				const { cards } = event.cost_data;
-				await player.lose(cards);
-				await player.recover(cards.length);
+				async content(event, trigger, player) {
+					const { cards } = event.cost_data;
+					await player.lose(cards);
+					await player.recover(cards.length);
+				},
 			},
 		},
 	},
