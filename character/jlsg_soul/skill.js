@@ -2948,7 +2948,7 @@ const skills = {
 						}
 						return !(ui.selected.cards?.length * ui.selected.targets?.length);
 					},
-					processAI,
+					processAI: () => processAI,
 				})
 				.forResult();
 			if (event.result?.bool) {

@@ -4400,7 +4400,13 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const { cards } = event.cost_data;
-					await player.lose(cards);
+					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+					const upgrade = upgradeStorage?.other?.["jlsg_wenjiu"];
+					if (upgrade) {
+						await player.gain({ cards: cards, animate: "gain2" });
+					} else {
+						await player.lose(cards);
+					}
 					trigger.num += cards.length;
 				},
 			},
@@ -4439,7 +4445,13 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const { cards } = event.cost_data;
-					await player.lose(cards);
+					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+					const upgrade = upgradeStorage?.other?.["jlsg_wenjiu"];
+					if (upgrade) {
+						await player.gain({ cards: cards, animate: "gain2" });
+					} else {
+						await player.lose(cards);
+					}
 					await player.recover(cards.length);
 				},
 			},
@@ -4497,6 +4509,7 @@ const skills = {
 					const suit = get.event().jlsg_shuixi_suit;
 					return get.suit(card, player) == suit && lib.filter.cardDiscardable(card, player);
 				})
+				.set("ai", card => 10)
 				.set("jlsg_shuixi_suit", suit)
 				.forResult();
 			if (!result.bool) {

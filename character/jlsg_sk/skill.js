@@ -20475,7 +20475,7 @@ const skills = {
 								const skillList = player.getStorage("jlsg_falu_skill");
 								const { targets } = await player
 									.chooseTarget({
-										prompt: "令一名角色获得你储备技能中的一个技能;否则你获得三个已拥有且未上场的群势力储备技能",
+										prompt: "令一名角色获得你储备技能中的一个技能;否则你获得两个已拥有且未上场的群势力储备技能",
 										filterTarget(card, player, target) {
 											const skills = get.event().jlsg_falu_skill;
 											return skills.some(sk => !target.hasSkill(sk, null, false, false));
@@ -20502,7 +20502,7 @@ const skills = {
 							} else if (color[0] == "black") {
 								const { targets } = await player
 									.chooseTarget({
-										prompt: "对一名角色造成3点雷电伤害",
+										prompt: "对一名角色造成2点雷电伤害",
 										ai(target) {
 											const player = get.player();
 											return -get.attitude(player, target);

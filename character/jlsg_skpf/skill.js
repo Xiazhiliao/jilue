@@ -18,11 +18,7 @@ const skills = {
 			let cards = lib.cardPile.standard
 				.concat(lib.cardPile.extra)
 				.filter(info => {
-					return (
-						info[0] == "heart" &&
-						["basic", "trick"].includes(get.type2(info[2], false)) &&
-						player.hasUseTarget({ name: info[2] }, true, false)
-					);
+					return info[0] == "heart" && ["basic", "trick"].includes(get.type2(info[2], false)) && player.hasUseTarget({ name: info[2] }, true, false);
 				})
 				.reduce((list, info) => {
 					if (!list.some(infox => infox[2] == info[2] && infox[3] == info[3])) {
@@ -43,17 +39,14 @@ const skills = {
 				return ui.create.dialog("选择一张红桃牌当作一张花色包含红桃的基本牌或普通锦囊牌使用", [hand, "card"], "<hr />", [cards, "vcard"]);
 			},
 			filter(button) {
-				let evt = get.event();
-				if (evt != _status.txEvt) {
-					let list = Array.from(get.event().dialog.querySelectorAll(".buttons"));
-					_status.txEvt = get.event();
-					_status.txButtos = Array.from(list[1].children);
+				const link = button.link;
+				const player = get.player();
+				const num = ui.selected.buttons.length;
+				if (get.owner(link) == player) {
+					return !num;
+				} else {
+					return num > 0;
 				}
-				let bool = ui.selected.buttons.length;
-				if (_status.txButtos.includes(button)) {
-					return bool;
-				}
-				return !bool;
 			},
 			select: 2,
 			backup(links, player) {
@@ -92,17 +85,14 @@ const skills = {
 				})
 				.set("complexSelect", true)
 				.set("filterButton", button => {
-					let evt = get.event();
-					if (evt != _status.txEvt) {
-						let list = Array.from(get.event().dialog.querySelectorAll(".buttons"));
-						_status.txEvt = get.event().id;
-						_status.txButtos = Array.from(list[1].children);
+					const link = button.link;
+					const player = get.player();
+					const num = ui.selected.buttons.length;
+					if (get.owner(link) == player) {
+						return !num;
+					} else {
+						return num > 0;
 					}
-					let bool = ui.selected.buttons.length;
-					if (_status.txButtos.includes(button)) {
-						return bool;
-					}
-					return !bool;
 				})
 				.forResult();
 			event.result = {
@@ -553,12 +543,7 @@ const skills = {
 		locked: false,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return (
-				event.player != player &&
-				event.card &&
-				(event.card.name == "sha" || get.type(event.card) == "trick") &&
-				player.getCards("h").some(card => get.color(card) == "black")
-			);
+			return event.player != player && event.card && (event.card.name == "sha" || get.type(event.card) == "trick") && player.getCards("h").some(card => get.color(card) == "black");
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -1575,13 +1560,7 @@ const skills = {
 			if (player.hp == player.maxHp || player.countCards("h") <= 1) {
 				const players = game.filterPlayer();
 				for (let i = 0; i < players.length; i++) {
-					if (
-						players[i].hasSkill("haoshi") &&
-						!players[i].isTurnedOver() &&
-						!players[i].hasJudge("lebu") &&
-						get.attitude(player, players[i]) >= 3 &&
-						get.attitude(players[i], player) >= 3
-					) {
+					if (players[i].hasSkill("haoshi") && !players[i].isTurnedOver() && !players[i].hasJudge("lebu") && get.attitude(player, players[i]) >= 3 && get.attitude(players[i], player) >= 3) {
 						return 11 - get.value(card) + useValue;
 					}
 				}
