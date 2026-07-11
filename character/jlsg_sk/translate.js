@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const translates = {
+	jlsgsk_caohua: "SK曹华",
+	jlsg_caiyi: "彩翼",
+	jlsg_caiyi_info: "当你使用牌时，你可以弃置所有手牌，然后摸四张牌，若你以此法弃置的牌和摸的牌包含四种花色，你令一名角色依次执行：横置、翻面、随机弃置两张牌、失去1点体力，然后令此技能于本回合内失效效。",
+	jlsg_guili: "归离",
+	jlsg_guili_info: "锁定技，你的自然回合结束后，你执行一个额外回合，本回合的回合结束时，若你于本回合内没有造成过伤害，你翻面。",
 	jlsgsk_simashi: "SK司马师",
 	jlsg_quanlue: "权略",
 	jlsg_quanlue_info: "出牌阶段开始时，你可以展示所有手牌并选择其中一种花色的手牌，然后摸与之等量的牌。若如此做，此阶段结束时，你须展示手牌并弃置所有此花色的手牌。",

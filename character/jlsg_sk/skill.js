@@ -2,6 +2,95 @@ import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	jlsg_caiyi: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			player: "useCard",
+		},
+		prompt: "彩翼：是否弃置所有手牌并摸四张牌？",
+		frequent: "check",
+		check(event, player) {
+			const hs = player.getCards("h");
+			return hs.filter(card => player.getUseValue(card) > 0).length < 4;
+		},
+		async content(event, trigger, player) {
+			const suits = [];
+			if (player.hasCards("h")) {
+				const next = player.modedDiscard({ cards: player.getCards("h") });
+				await next;
+				const { cards } = next;
+				suits.addArray(cards.map(card => get.suit(card)));
+			}
+			const result = await player.draw({ num: 4 }).forResult();
+			if (result?.bool && result.cards?.length) {
+				suits.addArray(result.cards.map(card => get.suit(card)));
+			}
+			if (suits.length > 3) {
+				const result = await player
+					.chooseTarget({
+						prompt: "###彩翼：请选择一名角色###令其依次执行：横置、翻面、随机弃置两张牌、失去1点体力，然后令此技能于本回合内失效",
+						ai(target) {
+							return -get.attitude(player, target);
+						},
+						forced: true,
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					player.logSkill("jlsg_caiyi", result.targets);
+					const [target] = result.targets;
+					await target.link(true);
+					await target.turnOver();
+					await target.randomDiscard({ num: 2 });
+					await target.loseHp(1);
+					player.tempBanSkill(event.name);
+				}
+			}
+		},
+	},
+	jlsg_guili: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			player: "phaseAfter",
+		},
+		filter(event, player) {
+			return !event.skill && event.getParent().name == "phaseLoop";
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			player.insertPhase(event.name);
+			player.addSkill(`${event.name}_start`);
+		},
+		subSkill: {
+			start: {
+				charlotte: true,
+				trigger: {
+					player: "phaseBegin",
+				},
+				filter(event, player) {
+					return event.skill == "jlsg_guili";
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					player.addTempSkill("jlsg_guili_over");
+				},
+			},
+			over: {
+				charlotte: true,
+				trigger: {
+					player: "phaseEnd",
+				},
+				filter(event, player) {
+					return !player.hasHistory("sourceDamage", evt => evt.getParent("phase") === event);
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					await player.turnOver();
+				},
+			},
+		},
+	},
 	jlsg_zhengyi: {
 		audio: "ext:极略/audio/skill:2",
 		enable: ["chooseToUse", "chooseToRespond"],
