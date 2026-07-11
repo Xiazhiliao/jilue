@@ -10,6 +10,8 @@ const characterTitle = {
 	jlsgsk_lffw_huangyueying: "鸾飞凤舞",
 	jlsgsk_shhs_guojia: "神毫绘世",
 	jlsgsk_lhsh_liubei: "龙横蜀汉",
+	//jlsgsk_fqym_xiaoqiao: "",
+	jlsgsk_dmtt_xiahoudun: "独目吞天",
 };
 
 export default characterTitle;

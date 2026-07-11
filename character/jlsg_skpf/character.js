@@ -8,7 +8,8 @@ const characters = {
 	jlsgsk_lffw_huangyueying: ["female", "shu", 3, ["jlsg_lffw_lingxin", "jlsg_lffw_jiqiao"], ["name:黄|null"]],
 	jlsgsk_shhs_guojia: ["male", "wei", 3, ["jlsg_shhs_tiandu", "jlsg_shhs_yiji"], []],
 	jlsgsk_lhsh_liubei: ["male", "shu", 4, ["jlsg_lhsh_dade"], []],
-	jlsgsk_fqym_xiaoqiao:["female", "wu", 3, ["jlsg_fqym_tianxiang", "jlsg_fqym_hongyan"], []],
+	jlsgsk_fqym_xiaoqiao: ["female", "wu", 3, ["jlsg_fqym_tianxiang", "jlsg_fqym_hongyan"], ["name:乔|null"]],
+	jlsgsk_dmtt_xiahoudun: ["male", "wei", 4, ["jlsg_dmtt_shichou"], ["name:夏侯|惇"]],
 };
 
 export default characters;

@@ -53,6 +53,10 @@ const translates = {
 	jlsg_fqym_tianxiang_info: "每回合每种牌名限一次，出牌阶段，或当你受到伤害时，你可以将一张红桃牌当不计入次数限制的花色包含红桃的基本牌或锦囊牌使用，若你因受到伤害发动此技能，你可以将此伤害转移给一名其他角色。",
 	jlsg_fqym_hongyan: "红颜",
 	jlsg_fqym_hongyan_info: "锁定技，你的黑桃牌视为红桃牌，你的红桃牌不计入手牌上限。当你失去红桃牌后，你循环执行一项：1．摸两张牌；2．令一名其他角色失去1点体力。",
+	jlsgsk_dmtt_xiahoudun: "SPF夏侯惇",
+	jlsgsk_dmtt_xiahoudun_ab: "夏侯惇",
+	jlsg_dmtt_shichou: "誓仇",
+	jlsg_dmtt_shichou_info: "其他角色的准备阶段，你可以令其视为对你使用随机基本牌或非延时锦囊牌。当你受到伤害后、失去体力后、弃置牌后，若效果来源不为你，你可以令效果来源执行相同的效果，此效果的数值为该角色能够执行的最大值，若以此法有角色进入濒死状态，你摸等同于此效果数值的牌。",
 };
 
 export default translates;

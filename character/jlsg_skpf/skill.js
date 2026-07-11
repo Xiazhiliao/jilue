@@ -1763,6 +1763,122 @@ const skills = {
 			},
 		},
 	},
+	jlsg_dmtt_shichou: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			player: ["damageEnd", "loseHpAfter", "loseAfter"],
+			global: "loseAsyncAfter",
+		},
+		filter(event, player) {
+			const source = get.info("jlsg_dmtt_shichou").getSource(event, player);
+			if (!source?.isIn() || source == player) {
+				return false;
+			}
+			if (["damage", "loseHp"].includes(event.name)) {
+				return event.num > 0;
+			}
+			return true;
+		},
+		getSource(event, player) {
+			if (event.name == "damage") {
+				return event.source;
+			} else if (event.name == "loseHp") {
+				const source = event.getParent()?.player;
+				return source;
+			} else if (event.type != "discard" || !event.getl(player)?.cards2?.length) {
+				return null;
+			}
+			return event.getlx === false ? event.getParent()?.player : event.discarder;
+		},
+		getMaxNum(event, player, source) {
+			if (["damage", "loseHp"].includes(event.name)) {
+				return source.getHp();
+			}
+			return source.countDiscardableCards(player, "he");
+		},
+		logTarget(event, player) {
+			const { getSource } = get.info("jlsg_dmtt_shichou");
+			return getSource(event, player);
+		},
+		prompt(event, player) {
+			const source = get.info("jlsg_dmtt_shichou").getSource(event, player);
+			return `恃仇：是否对${get.translation(source)}展开对等报复？`;
+		},
+		prompt2(event, player) {
+			const { getSource, getMaxNum } = get.info("jlsg_dmtt_shichou");
+			const source = getSource(event, player);
+			const num = getMaxNum(event, player, source);
+			let str = `令其`;
+			if (event.name == "damage") {
+				str += `受到${num}点${trigger.nature ? `(${get.translation(trigger.nature)})` : ""}伤害`;
+			} else if (event.name == "loseHp") {
+				str += `失去${num}点体力`;
+			} else {
+				str += `弃置${num}张牌`;
+			}
+			return str;
+		},
+		async content(event, trigger, player) {
+			const { getSource, getMaxNum } = get.info("jlsg_dmtt_shichou");
+			const source = getSource(trigger, player);
+			const num = getMaxNum(trigger, player, source);
+			event.num = num;
+			if (trigger.name == "damage") {
+				await source.damage({ num, nature: trigger.nature });
+			} else if (trigger.name == "loseHp") {
+				await source.loseHp({ num });
+			} else {
+				await source.chooseToDiscard({
+					position: "he",
+					selectCard: [num, num],
+					forced: true,
+				});
+			}
+		},
+		group: ["jlsg_dmtt_shichou_dying", "jlsg_dmtt_shichou_phaseZhunbei"],
+		subSkill: {
+			dying: {
+				audio: "jlsg_dmtt_shichou",
+				trigger: { global: "dying" },
+				filter(event, player) {
+					const evt = event.getParent(2);
+					return evt.name == "jlsg_dmtt_shichou" && evt.num > 0;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					const evt = trigger.getParent(2);
+					await player.draw({ num: evt.num });
+				},
+			},
+			phaseZhunbei: {
+				audio: "jlsg_dmtt_shichou",
+				trigger: { global: "phaseZhunbeiBegin" },
+				filter(event, player) {
+					return event.player != player;
+				},
+				logTarget: "player",
+				prompt2(event, player) {
+					return `令其视为对你使用随机基本牌或非延时锦囊牌`;
+				},
+				check(event, player) {
+					return get.attitude(player, event.player) < 0 && player.getHp() > 2;
+				},
+				async content(event, trigger, player) {
+					const vcards = get.inpileVCardList(([type, _, name, nature]) => {
+						if (!["basic", "trick"].includes(type)) {
+							return false;
+						}
+						const vcard = get.autoViewAs({ name, nature }, []);
+						return trigger.player.canUse(vcard, player, false, false);
+					});
+					if (vcards.length) {
+						let [type, _, name, nature] = vcards.randomGet();
+						await trigger.player.useCard({ name, nature }, player, false);
+					}
+				},
+			},
+		},
+	},
 };
 
 export default skills;
