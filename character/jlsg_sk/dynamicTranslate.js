@@ -17,7 +17,7 @@ const dynamicTranslates = {
 	},
 	jlsg_tiandao(player) {
 		let storage = player?.storage?.jlsg_tiandao || [1, 1, 1, 1];
-		return `锁定技，回合开始阶段，你摸${storage[0]}张牌，随机获得${storage[1]}个群势力技能，然后可以选择一名角色，令其随机弃置${storage[2]}张牌，对其造成${storage[3]}点雷电伤害。`;
+		return `锁定技，准备阶段，你摸${storage[0]}张牌，随机获得${storage[1]}个群势力技能，然后可以选择一名角色，令其随机弃置${storage[2]}张牌，对其造成${storage[3]}点雷电伤害。`;
 	},
 	jlsg_guolun(player) {
 		switch (player?.storage?.jlsg_guolun) {

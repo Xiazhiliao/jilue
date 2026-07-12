@@ -13,7 +13,7 @@ const dynamicTranslates = {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_guanyu"]?.[2] || upgradeStorage.other?.jlsg_shuixi;
 		if (improve || player?.index) {
-			return "任意角色的回合开始阶段，你可以展示一张手牌并选择一名其他角色，除非该角色弃置两张相同花色的手牌，否则你令其失去1点体力并令其一个技能于本回合内无效。";
+			return "任意角色的准备阶段，你可以展示一张手牌并选择一名其他角色，除非该角色弃置两张相同花色的手牌，否则你令其失去1点体力并令其一个技能于本回合内无效。";
 		}
 		return lib.translate["jlsg_shuixi_info"];
 	},
@@ -47,7 +47,7 @@ const dynamicTranslates = {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_youxia;
 		if (improve || player?.index) {
-			return "任意角色的回合开始阶段，你可以翻面并视为使用【杀】，若此【杀】造成了伤害，你摸一张牌并于本阶段结束后执行一个额外出牌阶段。若你背面朝上，【杀】和【决斗】对你无效。";
+			return "任意角色的准备阶段，你可以翻面并视为使用【杀】，若此【杀】造成了伤害，你摸一张牌并于本阶段结束后执行一个额外出牌阶段。若你背面朝上，【杀】和【决斗】对你无效。";
 		}
 		return lib.translate["jlsg_youxia_info"];
 	},
@@ -55,7 +55,7 @@ const dynamicTranslates = {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_guanxing;
 		if (improve || player?.index) {
-			return "回合开始阶段，或回合结束阶段，你可以观看牌堆顶的五张牌，将这些牌以任意顺序置于牌堆顶或牌堆底，然后你可以将牌堆底牌置于你的武将牌上，称为“星”。出牌阶段限一次，你可以获得任意张“星”，然后摸等量的牌，你以此法获得的牌无次数限制。";
+			return "准备阶段，或结束阶段，你可以观看牌堆顶的五张牌，将这些牌以任意顺序置于牌堆顶或牌堆底，然后你可以将牌堆底牌置于你的武将牌上，称为“星”。出牌阶段限一次，你可以获得任意张“星”，然后摸等量的牌，你以此法获得的牌无次数限制。";
 		}
 		return lib.translate["jlsg_guanxing_info"];
 	},
@@ -134,7 +134,7 @@ const dynamicTranslates = {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_liubei"]?.[2] || upgradeStorage.other?.jlsg_rende;
 		if (improve || player?.index) {
-			return "任意角色的回合结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
+			return "任意角色的结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
 		} else {
 			return get.translation("jlsg_rende_info");
 		}

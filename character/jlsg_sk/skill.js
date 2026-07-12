@@ -12492,14 +12492,14 @@ const skills = {
 		intro: {
 			markcount: storage => storage,
 			content(storage) {
-				return `回合开始阶段，你摸${storage[0]}张牌，随机获得不在场上且你拥有的群势力武将的${storage[1]}个技能，然后可与选择一名角色，令其随机弃置${storage[2]}张牌，对其造成${storage[3]}点雷电伤害。`;
+				return `准备阶段，你摸${storage[0]}张牌，随机获得不在场上且你拥有的群势力武将的${storage[1]}个技能，然后可与选择一名角色，令其随机弃置${storage[2]}张牌，对其造成${storage[3]}点雷电伤害。`;
 			},
 		},
 		init(player, skill) {
 			player.storage[skill] = [1, 1, 1, 1];
 			lib.dynamicTranslate[skill] = function (player) {
 				const storage = player.storage.jlsg_tiandao;
-				return `锁定技回合开始阶段，你摸${storage[0]}张牌，随机获得不在场上且你拥有的群势力武将的${storage[1]}个技能，然后可与选择一名角色，令其随机弃置${storage[2]}张牌，对其造成${storage[3]}点雷电伤害。`;
+				return `锁定技准备阶段，你摸${storage[0]}张牌，随机获得不在场上且你拥有的群势力武将的${storage[1]}个技能，然后可与选择一名角色，令其随机弃置${storage[2]}张牌，对其造成${storage[3]}点雷电伤害。`;
 			};
 		},
 		onremove: true,
