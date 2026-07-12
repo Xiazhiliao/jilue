@@ -16789,7 +16789,7 @@ const skills = {
 			if (event.name == "damage") {
 				return event.hasNature("fire") && player.isLinked() && event.num > 0;
 			}
-			return ["basic", "trick"].includes(get.type2(event.card));
+			return ["basic", "trick"].includes(get.type2(event.card)) && !player.isLinked();
 		},
 		forced: true,
 		logAudio(event, player) {
