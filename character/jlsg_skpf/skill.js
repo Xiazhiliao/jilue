@@ -1002,7 +1002,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = game.filterPlayer(cur => cur != player),
 				cards = [];
-			let position = ["h", "e", "j"];
+			let position = ["h", "e", /*"j"*/];
 			for (let target of targets) {
 				for (let i of position) {
 					let cardx = { shown: [], hide: [] };

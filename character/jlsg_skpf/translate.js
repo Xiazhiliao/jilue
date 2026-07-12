@@ -24,7 +24,7 @@ const translates = {
 	jlsg_smdq_lijian: "离间",
 	jlsg_smdq_lijian_info: "出牌阶段限一次，你可以选择两名角色，从先选择的角色开始，其轮流视为对对方使用【决斗】（不能被【无懈可击】响应），直到其中一名角色进入濒死或以此法没有造成伤害。你可以将任意手牌当【杀】打出响应【决斗】。",
 	jlsg_smdq_biyue: "闭月",
-	jlsg_smdq_biyue_info: "结束阶段，你可以从每个不属于你的区域里随机获得一张牌。",
+	jlsg_smdq_biyue_info: "结束阶段，你可以从每名其他角色的手牌、装备区、牌堆、弃牌堆内各随机获得一张牌。",
 	jlsgsk_gygs_sunce: "SPF孙策",
 	jlsgsk_gygs_sunce_ab: "孙策",
 	jlsg_gygs_angyang: "昂扬",
