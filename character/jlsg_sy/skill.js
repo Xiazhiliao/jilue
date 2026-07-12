@@ -2044,67 +2044,70 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			let dealers = game.me.getAllHistory("damage").map(e => e.source);
+			let dealers = player.getAllHistory("damage").map(e => e.source);
 			return game.hasPlayer(p => p != player && dealers.includes(p));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2(event.name), [1, Infinity], (_, player, target) => target.getAllHistory("sourceDamage", e => e.player == _status.event.player).length)
-				.set("ai", (target, targets) => {
-					if (get.attitude(_status.event.player, target) >= 0) {
-						return 0;
-					}
-					let cnt = target.getAllHistory("sourceDamage", e => e.player == _status.event.player).length;
-					let cnt2 = target.countDiscardableCards(target, "he");
-					return Math.min(target.isHealthy() ? 2 : 1, cnt < cnt2 ? cnt : Infinity) - (get.attitude(_status.event.player, target) + Math.random()) / 10;
-				});
-			"step 1";
-			if (!result.bool) {
-				event.finish();
-				return;
-			}
-			event.targets = result.targets.sortBySeat();
-			player.logSkill(event.name, event.targets);
-
-			for (let p of event.targets.slice().sort((a, b) => b.ai.shown - a.ai.shown)) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `选择至少一名对你造成过伤害的其他角色，除非其弃置X张牌(X为其对你造成过伤害的次数)，否则你令其减1点体力上限`,
+					selectTarget: [1, Infinity],
+					filterTarget(card, player, target) {
+						return target.hasAllHistory("sourceDamage", evt => evt.player == player);
+					},
+					ai(target) {
+						const player = get.player();
+						const att = get.attitude(player, target);
+						if (att > 0) {
+							return 0;
+						}
+						const damage = target.countAllHistory("sourceDamage", evt => evt.player == player),
+							hs = target.countDiscardableCards(target, "he");
+						return Math.min(target.isHealthy() ? 2 : 1, damage < hs ? damage : Infinity) - att / 10;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			for (let p of event.targets) {
 				if (p.ai.shown > player.ai.shown) {
 					player.addExpose(0.2);
 				}
 			}
-			"step 2";
-			var target = event.targets.shift();
-			event.target = target;
-			if (!target) {
-				event.finish();
-				return;
+			const targets = event.targets.slice(0).sortBySeat();
+			while (targets.length) {
+				const target = targets.shift();
+				if (!target.isIn()) {
+					continue;
+				}
+				const damage = target.countAllHistory("sourceDamage", evt => evt.player == player),
+					hs = target.countDiscardableCards(target, "he");
+				let result;
+				if (damage > hs) {
+					result = { bool: false };
+				} else {
+					result = await target.chooseToDiscard({
+						prompt2: "否则减一点体力上限",
+						position: "he",
+						selectCard: [hs, hs],
+						ai(card) {
+							const player = get.player();
+							if (player.maxHp == 1 && !player.storage.nohp) {
+								return 20 - get.value(c);
+							}
+							let v = 7 - _status.event.selectCard[0] - get.value(c);
+							if (player.isHealthy()) {
+								v += 3;
+							}
+							return v;
+						},
+					});
+				}
+				if (!result?.bool || !result.cards?.length) {
+					await target.loseMaxHp({ num: 1 });
+				}
 			}
-			var cnt = target.getAllHistory("sourceDamage", e => e.player == _status.event.player).length;
-			var cnt2 = target.countDiscardableCards(target, "he");
-			if (cnt > cnt2) {
-				event._result = { bool: false };
-				return;
-			}
-			target
-				.chooseToDiscard(cnt)
-				.set("prompt2", "否则减一点体力上限")
-				.set("ai", c => {
-					let player = _status.event.player;
-					if (player.maxHp == 1 && !player.storage.nohp) {
-						return 20 - get.value(c);
-					}
-					let v = 7 - _status.event.selectCard[0] - get.value(c);
-					if (player.isHealthy()) {
-						v += 3;
-					}
-					return v;
-				});
-			"step 3";
-			if (!result.bool) {
-				target.loseMaxHp();
-			}
-			event.goto(2);
 		},
 	},
 	jlsgsy_baonucaocao: {
