@@ -552,15 +552,15 @@ let jlsg_qs = {
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (target.hasSkill("jlsgqs_mei_tmep")) {
+				if (target.hasSkill("jlsgqs_mei_temp")) {
 					await target.draw("nodelay");
 				} else if (target.isDying()) {
 					await target.recover(1);
 				} else if (target.getHp() == 1 && target.isDamaged()) {
 					await target.recover(2);
 				} else {
-					await target.draw(2, "nodelay");
-					target.addTempSkill("jlsgqs_mei_tmep");
+					await target.draw(3, "nodelay");
+					target.addTempSkill("jlsgqs_mei_temp");
 				}
 			},
 			ai: {

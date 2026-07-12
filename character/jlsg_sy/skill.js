@@ -2396,7 +2396,7 @@ const skills = {
 			if (event.getParent("jlsgsy_mowu").name == "jlsgsy_mowu") {
 				return false;
 			}
-			if (event.getParent().triggeredTargets3.length > 1) {
+			if (!event.isFirstTarget) {
 				return false;
 			}
 			if (!["basic", "trick"].includes(get.type(event.card, event.player))) {
