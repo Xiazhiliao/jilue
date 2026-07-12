@@ -1193,10 +1193,6 @@ const skills = {
 		forced: true,
 		priority: 100,
 		async content(event, trigger, player) {
-			const cards = Array.from(ui.ordering.childNodes);
-			while (cards.length) {
-				cards.shift().discard();
-			}
 			game.broadcastAll(ui.clear);
 			let evt = trigger.getParent(1, true);
 			while (evt?.name != "phaseLoop") {
