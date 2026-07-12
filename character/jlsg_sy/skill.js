@@ -2928,7 +2928,7 @@ const skills = {
 			if (!trigger) {
 				player.addTempSkill("jlsgsy_ejue_used", { player: "phaseUseAfter" });
 			}
-			const draw = await player.draw(2).forResult();
+			const { draw } = await player.draw(2).forResult();
 			if (!draw?.length) {
 				return;
 			}
@@ -3598,8 +3598,8 @@ const skills = {
 		async content(event, trigger, player) {
 			let next = trigger.player.draw();
 			next.gaintag.add("jlsgsy_xueyan");
-			let cards = await next.forResult();
-			if (cards) {
+			let { cards } = await next.forResult();
+			if (cards?.length) {
 				trigger.player.markAuto("jlsgsy_xueyan", cards);
 			}
 			if (trigger.cards.some(card => trigger.player.storage.jlsgsy_xueyan?.includes(card))) {
