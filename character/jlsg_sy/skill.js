@@ -587,37 +587,43 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		forced: true,
 		trigger: { global: "phaseDrawAfter" },
-		filter: function (event, player) {
+		filter(event, player) {
 			return event.player != player;
 		},
 		logTarget: "player",
-		content: function () {
-			"step 0";
-			trigger.player
-				.chooseCard(`交给${get.translation(event.player)}一张锦囊牌`, function (card) {
-					return get.type(card, "trick") == "trick";
+		async content(event, trigger, player) {
+			const result = await trigger.player
+				.chooseToGive({
+					prompt: `${get.translation(player)}对你发动了“暴政”`,
+					prompt2: `交给${get.translation(player)}一张锦囊牌，否则其对你使用一张【杀】`,
+					filterCard(card, player) {
+						return get.type(card, "trick") == "trick";
+					},
+					ai(card) {
+						const { source, player } = get.event();
+						let val = get.val(card),
+							shaEff = get.effect(player, { name: "sha" }, source, player);
+						if (shaEff >= 0) {
+							return 0;
+						}
+						return 10 - val;
+					},
+					source: player,
 				})
-				.set("ai", function (card, cards) {
-					let player = _status.event.player;
-					let source = _status.event.source;
-					let v = -get.value(card, player) * get.attitude(player, player) + get.value(card, source) * get.attitude(player, source);
-					// console.log("card v", card.name, v);
-					v -= get.effect(player, { name: "sha" }, source, player) * 7;
-					// console.log("add v", v);
-					return v;
-				})
-				.set("source", player);
-			"step 1";
-			if (result.bool) {
+				.forResult();
+			if (result?.bool && result.cards?.length) {
 				if (get.attitude(trigger.player, player) > 0 && trigger.player.ai.shown < player.ai.shown) {
 					trigger.player.addExpose(0.2);
 				}
-				player.gain(result.cards[0], trigger.player, "give");
 			} else {
 				if (get.attitude(trigger.player, player) < 0 && trigger.player.ai.shown < player.ai.shown && trigger.player.countCards("h") > 0) {
 					trigger.player.addExpose(0.05);
 				}
-				player.useCard({ name: "sha", isCard: true }, trigger.player, "noai");
+				await player.useCard({
+					card: { name: "sha", isCard: true },
+					target: trigger.player,
+					addCount: false,
+				});
 			}
 		},
 		ai: {
