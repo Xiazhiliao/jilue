@@ -1698,10 +1698,10 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return game.filterPlayer(current => current != player).some(current => current.countDiscardableCards(player, "h"));
+			return game.filterPlayer(current => current != player).some(current => current.countGainableCards(player, "h"));
 		},
 		check(event, player) {
-			let gain = game.filterPlayer(current => current != player).reduce((a, b) => a + b.countDiscardableCards(player, "h"), 0);
+			let gain = game.filterPlayer(current => current != player).reduce((a, b) => a + b.countGainableCards(player, "h"), 0);
 			let lose = Math.floor((gain + player.countCards("h")) / 2);
 			return gain * 1.2 > lose;
 		},
@@ -1727,34 +1727,28 @@ const skills = {
 			} else {
 				await game.delay();
 			}
-			if (!player.getCards("h").length) {
+			if (!player.hasCards("h")) {
 				return;
 			}
-			const result = await player.chooseCard(true, "h", Math.floor(player.countCards("h") / 2)).forResult();
-			if (!result?.bool || !result.cards?.length) {
-				return;
+			let giveNum = Math.floor(player.countCards("h") / 2),
+				hs = player.getCards("h").slice(0);
+			const gain_list = [],
+				list = new Array(event.targets.length).fill(0);
+			while (giveNum > 0) {
+				let index = Math.floor(Math.random() * event.targets.length);
+				list[index]++;
+				giveNum--;
 			}
-			const giveCards = result.cards;
-			const gain_list = [];
-			let cards = giveCards.slice().randomSort();
-			if (giveCards.length <= event.targets.length) {
-				let targets = event.targets.slice().randomSort();
-				while (cards.length) {
-					gain_list.push([targets.randomRemove(), cards.randomRemove(1)]);
-				}
-			} else {
-				let giveNum = cards.length;
-				for (let target of event.targets) {
-					let num = Math.floor(Math.random() * giveNum);
-					giveNum -= num;
-					let cardsx = cards.randomRemove(num + 1);
-					gain_list.push([target, cardsx]);
+			for (let i = 0; i < event.targets.length; i++) {
+				let num = list[i];
+				if (num > 0) {
+					gain_list.push([event.targets[i], hs.randomRemove(list[i])]);
 				}
 			}
 			await game
 				.loseAsync({
 					gain_list,
-					cards: giveCards,
+					cards: gain_list.map(i => i[1]).flat(),
 					player,
 					giver: player,
 					animate: "giveAuto",
@@ -2443,8 +2437,8 @@ const skills = {
 			if (!target?.isIn() || target == player || target == _status.currentPhase) {
 				return false;
 			}
-			if (event.name!="recover" && player.isHealthy()) {
-				return false;	
+			if (event.name != "recover" && player.isHealthy()) {
+				return false;
 			}
 			return !player.hasHistory("useSkill", evt => {
 				if (evt.skill != "jlsgsy_yinzi") {
