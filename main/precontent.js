@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 import { characters } from "../character/index.js";
-import { card as jlsg_qs } from "../card/jlsg_qs.js";
+import { cards } from "../card/index.js";
 export async function precontent(config, originalPack) {
 	if (!config.enable) {
 		return;
@@ -2156,6 +2156,6 @@ export async function precontent(config, originalPack) {
 
 	await game.import("card", function () {
 		lib.config.all.cards.push("jlsg_qs");
-		return jlsg_qs;
+		return cards;
 	});
 }
