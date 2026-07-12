@@ -1764,7 +1764,7 @@ const skills = {
 		},
 	},
 	jlsg_dmtt_shichou: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:3",
 		trigger: {
 			player: ["damageEnd", "loseHpAfter", "loseAfter"],
 			global: "loseAsyncAfter",
