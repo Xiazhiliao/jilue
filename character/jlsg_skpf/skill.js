@@ -18,7 +18,7 @@ const skills = {
 			let cards = lib.cardPile.standard
 				.concat(lib.cardPile.extra)
 				.filter(info => {
-					return info[0] == "heart" && ["basic", "trick"].includes(get.type2(info[2], false)) && player.hasUseTarget({ name: info[2] }, true, false);
+					return info[0] == "heart" && ["basic", "trick"].includes(get.type2(info[2], false));
 				})
 				.reduce((list, info) => {
 					if (!list.some(infox => infox[2] == info[2] && infox[3] == info[3])) {
@@ -34,7 +34,7 @@ const skills = {
 		chooseButton: {
 			dialog(event, player) {
 				let used = player.getHistory("useCard", evt => evt.card.storage.fqym).map(evt => evt.card.name);
-				let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2])),
+				let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2]) && player.hasUseTarget({ name: info[2], nature: info[3], storage: { fqym: true } })),
 					hand = player.getCards("he").filter(card => get.suit(card, player) == "heart");
 				return ui.create.dialog("选择一张红桃牌当作一张花色包含红桃的基本牌或普通锦囊牌使用", [hand, "card"], "<hr />", [cards, "vcard"]);
 			},
