@@ -144,7 +144,7 @@ const skills = {
 			jlsgsr_sunshangxiang: {
 				"手牌上限+3": async function (event, trigger, player) {
 					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "maxHandcard|3";
+					event.info[0] = "maxHandcard|3";
 				},
 				"摸牌数+1": async function (event, trigger, player) {
 					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
@@ -2068,14 +2068,13 @@ const skills = {
 		},
 		selectCard: [1, Infinity],
 		filterCard(card, player) {
-			if (!ui.selected.cards?.length) {
+			if (!ui.selected.cards.length) {
 				return true;
 			}
-			const type = get.type2(card);
-			return ui.selected.cards.every(i => get.type2(card) === type);
+			return ui.selected.cards.every(cardx => get.type2(cardx, player) == get.type2(card, player));
 		},
 		complexCard: true,
-		allowChooseAll: true,
+		complexSelect: true,
 		check(card) {
 			const hs = get.selectableCards(),
 				cards = ui.selected.cards;
@@ -2117,7 +2116,7 @@ const skills = {
 					})
 					.forResult();
 				if (bool) {
-					await target.modedDiscard(target.getDiscardableCards(target, "h", card => get.type2(card) === type));
+					await target.modedDiscard(target.getDiscardableCards(target, "h", card => get.type2(card) != type));
 				}
 			}
 		},
