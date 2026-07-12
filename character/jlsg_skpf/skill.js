@@ -1788,7 +1788,7 @@ const skills = {
 			} else if (event.type != "discard" || !event.getl(player)?.cards2?.length) {
 				return null;
 			}
-			return event.getlx === false ? event.getParent()?.player : event.discarder;
+			return event.name == "loseAsync" ? event.getParent()?.player : event.discarder;
 		},
 		getMaxNum(event, player, source) {
 			if (["damage", "loseHp"].includes(event.name)) {
@@ -1802,7 +1802,7 @@ const skills = {
 		},
 		prompt(event, player) {
 			const source = get.info("jlsg_dmtt_shichou").getSource(event, player);
-			return `恃仇：是否对${get.translation(source)}展开对等报复？`;
+			return `恃仇：是否对${get.translation(source)}展开报复？`;
 		},
 		prompt2(event, player) {
 			const { getSource, getMaxNum } = get.info("jlsg_dmtt_shichou");
@@ -1810,13 +1810,19 @@ const skills = {
 			const num = getMaxNum(event, player, source);
 			let str = `令其`;
 			if (event.name == "damage") {
-				str += `受到${num}点${trigger.nature ? `(${get.translation(trigger.nature)})` : ""}伤害`;
+				str += `受到${num}点${event.nature ? `(${get.translation(event.nature)})` : ""}伤害`;
 			} else if (event.name == "loseHp") {
 				str += `失去${num}点体力`;
 			} else {
 				str += `弃置${num}张牌`;
 			}
 			return str;
+		},
+		check(event, player) {
+			const { getSource, getMaxNum } = get.info("jlsg_dmtt_shichou");
+			const source = getSource(event, player);
+			const num = getMaxNum(event, player, source);
+			return num > 0 && get.attitude(player, source) < 0;
 		},
 		async content(event, trigger, player) {
 			const { getSource, getMaxNum } = get.info("jlsg_dmtt_shichou");
