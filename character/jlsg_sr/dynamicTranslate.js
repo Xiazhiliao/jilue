@@ -1,6 +1,30 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
+	jlsg_yinmeng(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage.other?.jlsg_yinmeng;
+		if (improve || player?.index) {
+			return "出牌阶段限一次，你可以将任意张类别相同的手牌交给一名其他男性角色，然后摸等同于其手牌里此类别牌数的牌，若如此做，你可以令其弃置所有不为此类别的手牌。";
+		}
+		return lib.translate["jlsg_yinmeng_info"];
+	},
+	jlsg_xiwu(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage.other?.jlsg_xiwu;
+		if (improve || player?.index) {
+			return "当你使用【杀】后，若此【杀】没有造成伤害，你可以摸三张牌，然后依次执行未执行过的一项：1．令你使用【杀】无次数限制；2．令你使用【杀】造成的伤害+1；3．令你使用的【杀】不能被【闪】响应。";
+		}
+		return lib.translate["jlsg_xiwu_info"];
+	},
+	jlsg_juelie(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage.other?.jlsg_juelie;
+		if (improve || player?.index) {
+			return "每回合限一次，当你对其他角色或其他角色对你造成伤害时，你可以令其随机弃置X张手牌（X为你的手牌数）";
+		}
+		return lib.translate["jlsg_juelie_info"];
+	},
 	jlsg_wenjiu(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_guanyu"]?.[2] || upgradeStorage.other?.jlsg_wenjiu;
