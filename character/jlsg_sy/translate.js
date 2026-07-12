@@ -142,7 +142,7 @@ const translates = {
 	jlsgsy_longbian_info: "回合开始时，你可以令你大于0的两项互换，然后令另一项+1:使用【杀】的次数上限;摸牌阶段摸牌基数;体力上限。",
 	jlsgsy_zoushi: "妖媚之殃",
 	jlsgsy_huoshi: "祸世",
-	jlsgsy_huoshi_info: "锁定技，当其他角色使用基本牌或非延时锦囊牌指定目标后，你令随机一名不是此牌目标的角色也成为此牌的目标。",
+	jlsgsy_huoshi_info: "锁定技，当其他角色使用基本牌或非延时锦囊牌指定目标时，你令随机一名不是此牌目标的角色也成为此牌的目标。",
 	jlsgsy_baonuzoushi: "暴怒",
 	jlsgsy_baonuzoushi_info: "锁定技，当你的体力值降至4或更低时，你进入暴怒状态并立即开始你的回合。",
 	jlsgsy_zoushibaonu: "妖媚之殃",

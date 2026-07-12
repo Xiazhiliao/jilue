@@ -2388,7 +2388,7 @@ const skills = {
 	},
 	jlsgsy_huoshi: {
 		audio: "ext:极略/audio/skill:2",
-		trigger: { global: "useCardToPlayered" },
+		trigger: { global: "useCardToPlayer" },
 		filter(event, player) {
 			if (event.player == player) {
 				return false;
@@ -2436,6 +2436,9 @@ const skills = {
 		filter(event, player, name, target) {
 			if (!target?.isIn() || target == player || target == _status.currentPhase) {
 				return false;
+			}
+			if (event.name!="recover" && player.isHealthy()) {
+				return false;	
 			}
 			return !player.hasHistory("useSkill", evt => {
 				if (evt.skill != "jlsgsy_yinzi") {
