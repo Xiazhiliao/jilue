@@ -3497,8 +3497,12 @@ const skills = {
 			player: ["damageEnd", "loseHpAfter", "loseMaxHpAfter", "loseAfter", "changeSkillsAfter", "linkAfter", "turnOverAfter", "disableSkillEnd"],
 		},
 		filter(event, player) {
-			let key = lib.jlsg.debuffSkill.translate[event.name];
-			return lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
+			const key = lib.jlsg.debuffSkill.translate[event.name];
+			const bool = lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
+			if (["link", "turnOver"].includes(event.name)) {
+				return !bool;
+			}
+			return bool;
 		},
 		async cost(event, trigger, player) {
 			const result = await player
