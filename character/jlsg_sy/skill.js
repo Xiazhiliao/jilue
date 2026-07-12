@@ -1194,7 +1194,7 @@ const skills = {
 		priority: 100,
 		async content(event, trigger, player) {
 			game.broadcastAll(ui.clear);
-			let evt = trigger.getParent(1, true);
+			let evt = trigger.getParent(0, true, true);
 			while (evt?.name != "phaseLoop") {
 				if (evt) {
 					if (evt.name == "phase") {
