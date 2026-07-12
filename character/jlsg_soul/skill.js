@@ -13480,11 +13480,14 @@ const skills = {
 			} = event;
 			await player.discard(card);
 			target.addTempSkill("jlsg_fengtian_effect", { global: ["phaseAfter", "phaseBefore"] });
-			target.storage.jlsg_fengtian_effect.players.add(player);
+			const storage = target.getStorage("jlsg_fengtian_effect", new Map());
+			if (!storage.has(player)) {
+				storage.set(player, { draw: false, discard: false, useCard: [] });
+			}
 			if (get.name(card) == "sha") {
 				target.addSkillBlocker("jlsg_fengtian_effect");
 			}
-			target.markSkill("jlsg_fengtian_effect");
+			target.setStorage("jlsg_fengtian_effect", storage, true);
 		},
 		group: ["jlsg_fengtian_sha"],
 		subSkill: {
@@ -13503,10 +13506,10 @@ const skills = {
 					return [];
 				},
 				filter(event, player, name, target) {
-					if (!target?.storage?.jlsg_fengtian_effect?.players?.includes(player)) {
+					if (!target?.getStorage("jlsg_fengtian_effect", new Map())?.has?.(player)) {
 						return false;
 					}
-					const record = target.storage.jlsg_fengtian_effect.record;
+					const record = target.getStorage("jlsg_fengtian_effect").get(player);
 					if (event.name == "useCard") {
 						return !record.useCard.includes(event.card.name);
 					} else if (event.name == "draw") {
@@ -13522,18 +13525,21 @@ const skills = {
 					const {
 						targets: [target],
 					} = event;
+					const storage = target.getStorage("jlsg_fengtian_effect");
+					const record = storage.get(player);
 					switch (trigger.name) {
 						case "useCard":
-							target.storage.jlsg_fengtian_effect.record.useCard.add(trigger.card.name);
+							record.useCard.add(trigger.card.name);
 							break;
 						case "draw":
-							target.storage.jlsg_fengtian_effect.record.draw = true;
+							record.draw = true;
 							break;
 						default:
-							target.storage.jlsg_fengtian_effect.record.discard = true;
+							record.discard = true;
 							break;
 					}
-					target.markSkill("jlsg_fengtian_effect");
+					storage.set(player, record);
+					target.setStorage("jlsg_fengtian_effect", storage, true);
 					const sha = get.autoViewAs({ name: "sha" }, []);
 					if (player.canUse(sha, target, false)) {
 						await player.useCard(sha, target);
@@ -13544,25 +13550,29 @@ const skills = {
 				sourceSkill: "jlsg_fengtian",
 				sub: true,
 				audio: false,
-				init(player, skill) {
-					player.storage[skill] = {
-						players: [],
-						record: {
-							draw: false,
-							discard: false,
-							useCard: [],
-						},
-					};
-				},
 				intro: {
 					nocount: true,
 					content(storage, player) {
-						const { players, record } = storage;
+						const players = [],
+							records = { draw: false, discard: false, useCard: [] };
+						for (const [target, record] of storage) {
+							players.add(target);
+							if (record.draw && !records.draw) {
+								records.draw = true;
+							}
+							if (record.discard && !records.discard) {
+								records.discard = true;
+							}
+							if (record.useCard.length) {
+								records.useCard.addArray(record.useCard);
+							}
+						}
+						records.useCard.sort(lib.sort.card);
 						let str = `已被${get.translation(players)}封印<br>
-									已使用牌：${record.useCard.length ? get.translation(record.useCard) : "无"}<br>
-									摸牌：${record.draw ? "是" : "否"}<br>
-									弃牌：${record.discard ? "是" : "否"}`;
-						if (player.storage.skill_blocker?.includes("jlsg_fengtian_effect")) {
+									已使用牌：${records.useCard.length ? get.translation(records.useCard) : "无"}<br>
+									摸牌：${records.draw ? "是" : "否"}<br>
+									弃牌：${records.discard ? "是" : "否"}`;
+						if (player.hasStorage("skill_blocker", "jlsg_fengtian_effect")) {
 							const list = player.getSkills(null, false, false).filter(function (i) {
 								return lib.skill.jlsg_fengtian_effect.skillBlocker(i, player);
 							});
@@ -13583,16 +13593,17 @@ const skills = {
 				},
 				trigger: { source: "damageSource" },
 				filter(event, player) {
-					return player.storage.jlsg_fengtian_effect.players.includes(event.player);
+					return player.getStorage("jlsg_fengtian_effect", new Map()).has(event.player);
 				},
 				charlotte: true,
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					player.storage.jlsg_fengtian_effect.players.remove(trigger.player);
-					player.markSkill("jlsg_fengtian_effect");
-					if (!player.storage.jlsg_fengtian_effect.players.length) {
-						player.removeSkill("jlsg_fengtian_effect");
+					const storage = player.getStorage(event.name, new Map())
+					storage.delete(trigger.player);
+					player.setStorage(event.name, storage, true);
+					if (!storage.keys().length) {
+						player.removeSkill(event.name);
 					}
 				},
 			},
