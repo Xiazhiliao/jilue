@@ -214,7 +214,8 @@ const skills = {
 			if (event.card?.name != "juedou" || event.player == player) {
 				return false;
 			}
-			return event.getParent(evtx => evtx.name == "useCard" && evtx.card == event.card && evtx.player != player && evtx.targets.includes(player)).name;
+			const useCard = event.getParent(evtx => evtx.name == "useCard" && evtx.card == event.card && evtx.player != player && evtx.targets?.includes(player));
+			return useCard?.name === "useCard" && get.number(useCard.card) % 2 !== 0;
 		},
 		forced: true,
 		direct: true,
