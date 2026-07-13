@@ -1,5 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
-import { CacheContext } from "@/library/cache/cacheContext.js";
+import { CacheContext } from "../../../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
