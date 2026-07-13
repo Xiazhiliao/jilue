@@ -1,4 +1,5 @@
 const characters = {
+	jlsgsk_madai: ["male", "shu", 4, ["jlsg_qianxi", "mashu"], []],
 	jlsgsk_caohua: ["female", "wei", 3, ["jlsg_caiyi", "jlsg_guili"], ["name:曹|null"]],
 	jlsgsk_simashi: ["male", "wei", 4, ["jlsg_quanlue"], ["name:司马|师"]],
 	jlsgsk_xianglang: ["male", "shu", 3, ["jlsg_cangshu", "jlsg_kanwu"], []],

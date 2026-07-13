@@ -2,6 +2,144 @@ import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	jlsg_qianxi: {
+		audio: "ext:极略/audio/skill:2",
+		enable: "phaseUse",
+		usable: 1,
+		async content(event, trigger, player) {
+			await player.draw({ num: 2 });
+			if (!player.hasCards("h")) {
+				return;
+			}
+			const { cards } = await player
+				.chooseCard({
+					prompt: `${get.translation(event.name)} :请展示一张手牌`,
+					prompt2: "与你距离为1的角色不能使用或打出与此牌颜色相同的牌，你使用与此牌牌名相同的牌无次数限制且对距离为1的角色造成的伤害+1。本阶段若你未使用与此牌牌名相同的牌，你跳过本回合的弃牌阶段。",
+					position: "h",
+					ai(card) {
+						const { choice } = get.event();
+						if (choice && choice === card.name) {
+							return 20 - get.value(card);
+						}
+						return 0;
+					},
+					choice: (function () {
+						let hs = player
+							.getCards("h")
+							.map(card => get.name(card))
+							.unique();
+						hs = hs.sort((a, b) => {
+							return player.getUseValue(b, void 0, false) - player.getUseValue(a, void 0, false);
+						});
+						while (hs.length) {
+							let name = hs.shift();
+							if (!player.hasStorage(`${event.name}_effect`, name)) {
+								return name;
+							}
+						}
+						return false;
+					})(),
+				})
+				.forResult();
+			if (cards?.length) {
+				await player.showCards(cards);
+				const name = get.name(cards[0]);
+				player.markAuto(`${event.name}_global`, [[cards[0], event.getParent("phaseUse")]]);
+				player.addTempSkill(`${event.name}_effect`);
+			}
+		},
+		global: "jlsg_qianxi_global",
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage["jlsg_qianxi_global"];
+				},
+				mark: true,
+				intro: {
+					mark(dialog, _, player, skill) {
+						const cards = player.getStorage("jlsg_qianxi_global", []).map(info => info[0]);
+						if (cards.length) {
+							dialog.add(cards);
+						} else {
+							return `没有【${get.translation(skill)}】牌`;
+						}
+					},
+				},
+				mod: {
+					cardUsable(card, player, num) {
+						const names = player.getStorage("jlsg_qianxi_global", []).map(info => info[0].name);
+						if (names.includes(get.name(card))) {
+							return Infinity;
+						}
+					},
+				},
+				trigger: {
+					player: ["useCard", "phaseUseAfter"],
+				},
+				filter(event, player) {
+					const storage = player.getStorage("jlsg_qianxi_global", []);
+					if (event.name == "useCard") {
+						return storage.some(([card]) => card.name == event.card.name);
+					}
+					const info = storage.find(([_, phaseUse]) => phaseUse === event);
+					return !player.hasHistory("useCard", evt => evt.getParent("phseUse") === event && evt.card.name === info[0].name);
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					if (trigger.name == "useCard") {
+						if (get.is.damageCard(trigger.card) && trigger.targets?.length) {
+							const targets = trigger.targets.filter(target => get.distance(player, target) <= 1),
+								map = trigger.customArgs;
+							for (const target of targets) {
+								const id = target.playerid;
+								map[id] ??= {};
+								if (typeof map[id].extraDamage != "number") {
+									map[id].extraDamage = 0;
+								}
+								map[id].extraDamage++;
+							}
+						}
+					} else {
+						if (!player.skipList.includes("phaseDiscard")) {
+							player.skip("phaseDiscard");
+						}
+					}
+				},
+			},
+			global: {
+				charlotte: true,
+				mod: {
+					cardEnabled(card, player) {
+						for (let current of game.players) {
+							if (current == player) {
+								continue;
+							}
+							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", [])) {
+								const colors = current.getStorage("jlsg_qianxi_global", []).map(info => get.color(info[0]));
+								if (colors.includes(get.color(card))) {
+									return false;
+								}
+							}
+						}
+					},
+					cardSavable(card, player) {
+						for (let current of game.players) {
+							if (current == player) {
+								continue;
+							}
+							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", [])) {
+								const colors = current.getStorage("jlsg_qianxi_global", []).map(info => get.color(info[0]));
+								if (colors.includes(get.color(card))) {
+									return false;
+								}
+							}
+						}
+					},
+				},
+			},
+		},
+	},
 	jlsg_caiyi: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
