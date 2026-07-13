@@ -1649,7 +1649,7 @@ export default {
 						"step 0";
 						player.showCards(cards[0]);
 						var nono = false;
-						if (ai.get.damageEffect(target, player, player)) {
+						if (get.damageEffect(target, player, player)) {
 							nono = true;
 						}
 						if (cards[0].name == "sha") {

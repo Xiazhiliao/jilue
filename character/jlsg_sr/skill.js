@@ -3933,7 +3933,7 @@ const skills = {
 					if (player.countCards("h", "shan") >= 2) {
 						return false;
 					}
-					return 6 - ai.get.value(card);
+					return 6 - get.value(card);
 				})
 				.set("chooseonly", true)
 				.forResult();

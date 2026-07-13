@@ -56,7 +56,7 @@ let old_jlsg_qs = {
 							}
 							if (target.hp == 2) {
 								for (var i = 0; i < game.players.length; i++) {
-									if (target != game.players[i] && ai.get.attitude(target, game.players[i]) >= 3) {
+									if (target != game.players[i] && get.attitude(target, game.players[i]) >= 3) {
 										if (game.players[i].hp <= 1) {
 											return 0;
 										}
@@ -70,7 +70,7 @@ let old_jlsg_qs = {
 						if (target.hp < 0 && target != player && target.identity != "zhu") {
 							return 0;
 						}
-						var att = ai.get.attitude(player, target);
+						var att = get.attitude(player, target);
 						if (att < 3 && att >= 0 && player != target) {
 							return 0;
 						}

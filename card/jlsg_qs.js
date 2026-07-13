@@ -74,9 +74,9 @@ let jlsg_qs = {
 							return -10;
 						}
 						if (player.hp == 1) {
-							return 15 - ai.get.value(card);
+							return 15 - get.value(card);
 						}
-						return 8 - ai.get.value(card);
+						return 8 - get.value(card);
 					})
 					.set("prompt2", "太平要术：弃置一张红色手牌，否则失去1点体力")
 					.forResult();
@@ -229,13 +229,13 @@ let jlsg_qs = {
 						let hs = player.countCards("h"),
 							bool = false;
 						for (let i = 0; i < hs.length; i++) {
-							if (hs[i].number >= 9 && ai.get.value(hs[i]) < 7) {
+							if (hs[i].number >= 9 && get.value(hs[i]) < 7) {
 								bool = true;
 								break;
 							}
 						}
 						if (!bool) {
-							return ai.get.recoverEffect(target);
+							return get.recoverEffect(target);
 						}
 						return 0;
 					},
@@ -452,10 +452,10 @@ let jlsg_qs = {
 					},
 					player(player, target) {
 						let num = 0;
-						if (ai.get.attitude(target, player) < -1) {
+						if (get.attitude(target, player) < -1) {
 							num--;
 						}
-						if (ai.get.attitude(target, player) > 1) {
+						if (get.attitude(target, player) > 1) {
 							num++;
 						}
 						if (target.countCards("h") == 0) {
@@ -590,7 +590,7 @@ let jlsg_qs = {
 							}
 							if (target.hp == 2) {
 								for (let i = 0; i < game.players.length; i++) {
-									if (target != game.players[i] && ai.get.attitude(target, game.players[i]) >= 3) {
+									if (target != game.players[i] && get.attitude(target, game.players[i]) >= 3) {
 										if (game.players[i].hp <= 1) {
 											return 0;
 										}
@@ -604,7 +604,7 @@ let jlsg_qs = {
 						if (target.hp < 0 && target != player && target.identity != "zhu") {
 							return 0;
 						}
-						let att = ai.get.attitude(player, target);
+						let att = get.attitude(player, target);
 						if (att < 3 && att >= 0 && player != target) {
 							return 0;
 						}

@@ -217,10 +217,10 @@ export default {
 						event.current = player.next;
 						"step 1"
 						event.current.chooseCard("交给" + get.translation(player) + "一张手牌或令其摸一张牌").ai = function (card) {
-							if (ai.get.attitude(event.current, player) > 0) {
+							if (get.attitude(event.current, player) > 0) {
 								return -1;
 							} else {
-								return 3 - ai.get.value(card);
+								return 3 - get.value(card);
 							}
 						};
 						"step 2"

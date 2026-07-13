@@ -995,7 +995,7 @@ const skills = {
 			order: 9.5,
 			result: {
 				target: function (player, target) {
-					var att = ai.get.attitude(player, target);
+					var att = get.attitude(player, target);
 					if (att < 0) {
 						return att;
 					}
@@ -1054,7 +1054,7 @@ const skills = {
 					if (target.countCards("he") < 1) {
 						return 0;
 					}
-					var att = ai.get.attitude(player, target);
+					var att = get.attitude(player, target);
 					if (att < 0) {
 						return -target.countCards("he");
 					}

@@ -52,7 +52,7 @@ export default {
 								if (target.countCards("he") < 1) {
 									return 0;
 								}
-								var att = ai.get.attitude(player, target);
+								var att = get.attitude(player, target);
 								if (att < 0) {
 									return -target.countCards("he");
 								}
