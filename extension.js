@@ -17,6 +17,11 @@ Visit Repository</a><br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
 汇报bug点我</span><br>
+
+<span style="font-size: large;">历史：</span><br>
+
+`;
+/*
 2025.05.26更新<br>
 &ensp; 更新武将<div style="display:inline; font-family: xingkai, xinwei;" data-nature="qunmm">SK葛玄</div><br>
 &ensp; 修复bug（观虚、羽化、星舞、同心、暴怒、离魂、储元、天辩）<br>
@@ -26,9 +31,7 @@ style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline
 &ensp; 对SR包和SK包内的武将姓名进行补充/更正<br>
 &ensp; 对SR武将进行翻修（张辽、甄姬、许诸、司马懿、郭嘉、吕布、华佗、貂蝉、孙尚香、大乔、黄盖、吕蒙）<br>
 &ensp; 从extension.js中拆分help，并补充相关信息（许愿、临时牌）<br>
-<span style="font-size: large;">历史：</span><br>
-`;
-
+*/
 export let type = "extension";
 export default async function () {
 	const extensionInfo = await lib.init.promises.json(`${basic.extensionDirectoryPath}info.json`);
