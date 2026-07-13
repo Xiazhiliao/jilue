@@ -153,56 +153,21 @@ let jlsg_qs = {
 			enable: true,
 			selectTarget: 1,
 			filterTarget(card, player, target) {
-				return target.countCards("h") != 0 && player != target;
+				return player != target;
 			},
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (!target.countCards("h")) {
-					return;
-				}
-				const { cards: shownCards } = await target
-					.chooseCard("请展示一张手牌", true, "h")
-					.set("ai", card => {
-						const evt = _status.event.getParent();
-						if (get.recoverEffect(evt.target, evt.player, evt.target) > get.recoverEffect(evt.player, evt.player, evt.target)) {
-							return get.number(card);
-						} else {
-							return 14 - get.number(card);
-						}
-					})
-					.forResult();
-				if (!shownCards?.length) {
-					return;
-				}
-				await target.showCards(shownCards).setContent(function () {});
-				event.dialog = ui.create.dialog(get.translation(target) + "展示的手牌", shownCards);
-				event.videoId = lib.status.videoId++;
-				game.broadcast("createDialog", event.videoId, get.translation(target) + "展示的手牌", shownCards);
-				game.addVideo("cardDialog", null, [get.translation(target) + "展示的手牌", get.cardsInfo(shownCards), event.videoId]);
-				event.card2 = shownCards[0];
-				game.log(target, "展示了", event.card2);
-				game.addCardKnower(shownCards, "everyone");
-				const { cards: discardCards } = await player
-					.chooseToDiscard()
-					.set("ai", card => {
-						const evt = _status.event.getParent();
-						let value = -get.value(card);
-						value += get.number(evt.card2, evt.target) >= get.number(card, evt.player) ? get.recoverEffect(evt.target, evt.player, evt.player) : get.recoverEffect(evt.player, evt.player, evt.player);
-						return value;
-					})
-					.set("prompt", false)
-					.forResult();
-				await game.delayx(2);
-				if (discardCards?.length) {
-					if (get.number(discardCards[0]) <= get.number(event.card2, target)) {
-						await target.recover(1);
-					} else {
-						await player.recover(1);
+				if (player.hp > target.hp) {
+					await player.draw();
+					if (target.isDamaged()) {
+						await target.recover();
+					}
+				} else if (player.hp < target.hp) {
+					await target.draw();
+					if (player.isDamaged()) {
+						await player.recover();
 					}
 				}
-				event.dialog.close();
-				game.addVideo("cardDialog", null, event.videoId);
-				game.broadcast("closeDialog", event.videoId);
 			},
 			ai: {
 				basic: {
@@ -216,28 +181,23 @@ let jlsg_qs = {
 					}
 				},
 				result: {
+					player(player, target) {
+						let num = 1;
+						if (player.hp > target.hp) {
+							num++;
+						} else if (player.hp < target.hp && player.isDamaged()) {
+							num += get.recoverEffect(player, player, player) / get.attitude(player, player);
+						}
+						return num;
+					},
 					target(player, target) {
-						if (target.hp == target.maxHp) {
-							return 0;
+						let num = 1;
+						if (player.hp > target.hp) {
+							num++;
+						} else if (player.hp < target.hp && player.isDamaged()) {
+							num += get.recoverEffect(player, player, player) / get.attitude(player, player);
 						}
-						if (player.hp == player.maxHp) {
-							return 0;
-						}
-						if (target.hp == 1) {
-							return 2;
-						}
-						let hs = player.countCards("h"),
-							bool = false;
-						for (let i = 0; i < hs.length; i++) {
-							if (hs[i].number >= 9 && get.value(hs[i]) < 7) {
-								bool = true;
-								break;
-							}
-						}
-						if (!bool) {
-							return get.recoverEffect(target);
-						}
-						return 0;
+						return num;
 					},
 				},
 				tag: {
@@ -492,7 +452,7 @@ let jlsg_qs = {
 			async content(event, trigger, player) {
 				const target = event.target;
 				if (target.getHp() <= 1 && target.isDamaged()) {
-					await target.recover(1);
+					await target.recover(2);
 				} else {
 					await target.draw(2, "nodelay");
 				}
@@ -529,7 +489,7 @@ let jlsg_qs = {
 				},
 				tag: {
 					draw: 2,
-					recover: 1,
+					recover: 2,
 					multitarget: 1,
 				},
 			},
@@ -1147,7 +1107,7 @@ let jlsg_qs = {
 		jlsgqs_jinnangdai: "锦囊袋",
 		jlsgqs_jinnangdai_info: "锁定技，你的手牌上限+1；你失去装备区里的【锦囊袋】时，摸一张牌。",
 		jlsgqs_qingmeizhujiu: "青梅煮酒",
-		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名有手牌的其他角色使用，该角色展示一张手牌，然后你可以弃置一张点数大于此牌的手牌并回复一点体力，或者弃置一张点数不大于此牌的手牌令其回复一点体力",
+		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名其他角色使用，你与目标角色中手牌数较少的角色摸两张牌，体力较少的角色回复1点体力。",
 		jlsgqs_shuiyanqijun: "水淹七军",
 		jlsgqs_shuiyanqijun_info: "出牌阶段，对你攻击范围内的一名其他角色使用。若判定结果不为方片，则该角色出牌阶段开始时须弃置一半数量的手牌（向上取整）",
 		jlsgqs_yuqingguzong: "欲擒故纵",
@@ -1155,7 +1115,7 @@ let jlsg_qs = {
 		jlsgqs_caochuanjiejian: "草船借箭",
 		jlsgqs_caochuanjiejian_info: "出牌阶段，对除你以外的所有角色使用。每名目标角色须依次选择一项：对你使用一张【杀】；或令你获得其一张牌。",
 		jlsgqs_wangmeizhike: "望梅止渴",
-		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1且已受伤，则回复1点体力；否则其摸两张牌",
+		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1且已受伤，则回复2点体力；否则其摸两张牌",
 		jlsgqs_mei: "梅",
 		jlsgqs_mei_info: "出牌阶段，对一名角色使用。若目标角色的体力为1点，回复2点体力，否则摸三张牌，然后你令目标角色本回合再次受到的【梅】的效果时改为摸一张牌。一名其他角色濒死时，对其使用，令其回复1点体力。",
 	},
