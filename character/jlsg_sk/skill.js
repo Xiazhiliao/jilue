@@ -1,4 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
+import { CacheContext } from "@/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
@@ -15579,9 +15580,12 @@ const skills = {
 		direct: true,
 		trigger: { global: "phaseUseEnd" },
 		filter(event, player) {
-			return player.hasHistory("useCard", evt => evt.getParent("phaseUse") == event);
+			return player.hasHistory("useCard", evt => evt.getParent("phaseUse") == event) && game.hasPlayer(current => current != player);
 		},
 		async content(event, trigger, player) {
+			if (!game.hasPlayer(current => current != player)) {
+				return;
+			}
 			const func = () => {
 				const event = get.event();
 				const controls = [
@@ -15617,8 +15621,67 @@ const skills = {
 			const result = await player
 				.chooseTarget(`逐寇：是否分配至多${sum}点伤害？`, [1, sum], false)
 				.set("filterTarget", (card, player, target) => target != player)
-				.set("ai", function (target) {
-					return get.damageEffect(target, player, player);
+				.set("complexTarget", true)
+				.set("ai", target => {
+					if (!_status.event.extraAIed) {
+						_status.event.extraAIed = true;
+						const { player, sum, extraAI, check } = get.event();
+						const bool = extraAI(check, player, sum);
+					}
+					return 0;
+				})
+				.set("check", target => {
+					let damage = get.damageEffect(target, player, player);
+					if (damage <= 0) {
+						return 0;
+					}
+					if (ui.selected.targets.includes(target)) {
+						damage = Math.log(damage) / Math.log(get.numOf(ui.selected.targets, target));
+					}
+					return damage;
+				})
+				//此流程修改自ai.basic.chooseTarget
+				.set("extraAI", function (check, player, sum) {
+					const range = [1, sum];
+					let i, j, targets, targets2, effect;
+					let ok = false;
+					let iwhile = 100;
+					while (iwhile--) {
+						if (ui.selected.targets.length >= range[0]) {
+							ok = true;
+						}
+						targets = game.filterPlayer(current => current != player);
+						targets2 = targets.slice(0);
+						let ix = 0;
+						CacheContext.setCacheContext(new CacheContext({ lib, game, get }));
+						CacheContext.setInCacheEnvironment(true);
+						let checkix = check(targets[0], targets2);
+						for (i = 1; i < targets.length; i++) {
+							let checkixtmp = check(targets[i], targets2);
+							if (checkixtmp > checkix) {
+								ix = i;
+								checkix = checkixtmp;
+							}
+						}
+						if (check(targets[ix]) <= 0) {
+							if (ok) {
+								CacheContext.setInCacheEnvironment(false);
+								CacheContext.removeCacheContext();
+								return;
+							}
+						}
+						CacheContext.setInCacheEnvironment(false);
+						CacheContext.removeCacheContext();
+						targets[ix].classList.add("selected");
+						ui.selected.targets.push(targets[ix]);
+						game.check();
+						if (ui.selected.targets.length >= range[0]) {
+							ok = true;
+						}
+						if (ui.selected.targets.length == range[1]) {
+							return true;
+						}
+					}
 				})
 				.set("custom", {
 					add: {
