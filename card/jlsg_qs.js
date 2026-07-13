@@ -158,12 +158,12 @@ let jlsg_qs = {
 			async content(event, trigger, player) {
 				const target = event.target;
 				if (player.hp > target.hp) {
-					await player.draw();
+					await player.draw(2);
 					if (target.isDamaged()) {
 						await target.recover();
 					}
 				} else if (player.hp < target.hp) {
-					await target.draw();
+					await target.draw(2);
 					if (player.isDamaged()) {
 						await player.recover();
 					}
