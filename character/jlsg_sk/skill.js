@@ -20856,7 +20856,7 @@ const skills = {
 					})
 					.set("source", source)
 					.forResult();
-				if (links.length) {
+				if (links?.length) {
 					await source.removeSkills(links);
 					const note = source.getStorage("jlsg_zhenyi_note");
 					note.add(links[0]);
