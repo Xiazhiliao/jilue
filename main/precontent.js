@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 import { characters } from "../character/index.js";
-import { card as jlsg_qs } from "../card/jlsg_qs.js";
+import { cards } from "../card/index.js";
 export async function precontent(config, originalPack) {
 	if (!config.enable) {
 		return;
@@ -39,6 +39,22 @@ export async function precontent(config, originalPack) {
 			return `${get.prefixSpan("★SP", name)}${get.prefixSpan("极略SK", name)}`;
 		},
 	});
+	//真实伤害补丁
+	let originalFilterEnable = lib.filter.filterEnable;
+	lib.filter.filterEnable = function (event, player, skill) {
+		let triggername = event.name;
+		if (
+			player._hookTrigger &&
+			player._hookTrigger.some(i => {
+				const info = lib.skill[i].hookTrigger;
+				return info && info.block && info.block(event, player, triggername, skill);
+			})
+		) {
+			return false;
+		}
+		return originalFilterEnable.apply(this, arguments);
+	};
+
 	//魔势力及前缀创建
 	if (lib.config?.extension_极略_syRefactor) {
 		game.addGroup("jlsgsy", "魔", "极略三英", { color: "#8B4A51" });
@@ -163,10 +179,9 @@ export async function precontent(config, originalPack) {
 					}
 					event.num = event.disableSkills.length;
 				}
+				await event.trigger(event.name + "Before");
 				await event.trigger(event.name + "Begin");
-				await event.trigger(event.name);
-				if (event.cancel == true) {
-					await event.trigger(event.name + "Cancelled");
+				if (event._cancelled) {
 					return;
 				}
 				if (event.type.endsWith("Sub")) {
@@ -174,7 +189,7 @@ export async function precontent(config, originalPack) {
 				} else {
 					lib.disableSkill[event.type].apply(player, event.args);
 				}
-				await event.trigger(event.name + "End");
+				await event.trigger(event.name + "Omitted");
 			};
 			lib.element.player.tempBanSkill = function (...args) {
 				let str = "disableSkill";
@@ -194,7 +209,8 @@ export async function precontent(config, originalPack) {
 				evt.num = Array.isArray(args[0]) ? args[0].length : 1;
 				evt.disableSkills = args[0];
 				evt.args = args;
-				evt.cancel = false;
+				//Before, Begin, Omitted手动trigger，方便修改
+				evt._triggered = 2;
 				evt.setContent("DisableSkill");
 			};
 			lib.element.player.disableSkill = function (...args) {
@@ -215,6 +231,8 @@ export async function precontent(config, originalPack) {
 				evt.num = Array.isArray(args[1]) ? args[1].length : 1;
 				evt.disableSkills = args[1];
 				evt.args = args;
+				//Before, Begin, Omitted手动trigger，方便修改
+				evt._triggered = 2;
 				evt.setContent("DisableSkill");
 			};
 			lib.element.player.addSkillBlocker = function (arg) {
@@ -232,6 +250,8 @@ export async function precontent(config, originalPack) {
 				evt.disableSkills = list;
 				evt.num = list.length;
 				evt.args = [arg];
+				//Before, Begin, Omitted手动trigger，方便修改
+				evt._triggered = 2;
 				evt.blocker = skill.skillBlocker;
 				evt.setContent("DisableSkill");
 			};
@@ -362,24 +382,6 @@ export async function precontent(config, originalPack) {
 					addEventListener("pointercancel", listener);
 				}
 			}, ele);
-		},
-		/**
-		 *
-		 * @param {Array<Number>} dist
-		 * @returns {Number}
-		 */
-		distributionGet(dist) {
-			var res = Math.random();
-			let sum = dist.reduce((a, b) => a + b);
-			console.assert(sum > 0, `utils.distributionGet received param ${JSON.stringify(dist)}`);
-			dist = dist.map(v => v / sum);
-			for (let i = 0; ; ) {
-				if (res < dist[i]) {
-					return i;
-				}
-				res -= dist[i];
-				++i;
-			}
 		},
 		showRepo() {
 			var mirrorURL = lib.extensionPack["极略"] && lib.extensionPack["极略"].mirrorURL;
@@ -717,8 +719,8 @@ export async function precontent(config, originalPack) {
 				return c1 > c2;
 			},
 			handcard: function (a, b) {
-				var c1 = a.num("h");
-				var c2 = b.num("h");
+				var c1 = a.countCards("h");
+				var c2 = b.countCards("h");
 				if (c1 == c2) {
 					return jlsg.sort.defense(a, b);
 				}
@@ -734,13 +736,13 @@ export async function precontent(config, originalPack) {
 				return jlsg.getDefenseSha(a) < jlsg.getDefenseSha(b);
 			},
 			threat: function (a, b) {
-				var d1 = a.num("h");
+				var d1 = a.countCards("h");
 				for (var i = 0; i < game.players.length; i++) {
 					if (a.canUse("sha", game.players[i]) && a != game.players[i]) {
 						d1 = d1 + 10 / jlsg.getDefense(game.players[i]);
 					}
 				}
-				var d2 = b.num("h");
+				var d2 = b.countCards("h");
 				for (var i = 0; i < game.players.length; i++) {
 					if (b.canUse("sha", game.players[i]) && b != game.players[i]) {
 						d2 = d2 + 10 / jlsg.getDefense(game.players[i]);
@@ -768,10 +770,10 @@ export async function precontent(config, originalPack) {
 			if (player.countCards("e", "bagua")) {
 				return true;
 			}
-			if (player.hasSkill("bazhen") && !player.get("e", "2")) {
+			if (player.hasSkill("bazhen") && !player.getCards("e", { subtype: "equip2" })) {
 				return true;
 			}
-			if (player.hasSkill("linglong") && !player.get("e", "2")) {
+			if (player.hasSkill("linglong") && !player.getCards("e", { subtype: "equip2" })) {
 				return true;
 			}
 			return false;
@@ -789,7 +791,7 @@ export async function precontent(config, originalPack) {
 			return false;
 		},
 		hasZhuqueEffect: function (player) {
-			var cards = player.get("h");
+			var cards = player.getCards("h");
 			for (var i = 0; i < cards.length; i++) {
 				if (cards[i].name == "sha" && cards[i].nature == "fire") {
 					return true;
@@ -814,7 +816,7 @@ export async function precontent(config, originalPack) {
 			}
 			if (player.hasSkill("qingxi")) {
 				var num = 1;
-				var info = get.info(player.get("e", "1"));
+				var info = get.info(player.getCards("e", { subtype: "equip1" }));
 				if (info && info.distance && info.distance.attackFrom) {
 					num -= info.distance.attackFrom;
 				}
@@ -1073,7 +1075,7 @@ export async function precontent(config, originalPack) {
 			return false;
 		},
 		getViewAsCard: function (card, player) {
-			var skills = player.get("s", true).concat(lib.skill.global);
+			var skills = player.getSkills(true).concat(lib.skill.global);
 			game.expandSkills(skills);
 			var list = [];
 			for (var i = 0; i < skills.length; i++) {
@@ -1089,7 +1091,7 @@ export async function precontent(config, originalPack) {
 			return null;
 		},
 		getSkillViewCard: function (card, name, player, place) {
-			var skills = player.get("s", true).concat(lib.skill.global);
+			var skills = player.getSkills(true).concat(lib.skill.global);
 			game.expandSkills(skills);
 			for (var i = 0; i < skills.length; i++) {
 				var ifo = get.info(skills[i]);
@@ -1112,13 +1114,13 @@ export async function precontent(config, originalPack) {
 		getCardPlace: function (card) {
 			var owner = get.owner(card);
 			if (owner) {
-				if (owner.get("h").includes(card)) {
+				if (owner.getCards("h").includes(card)) {
 					return "h";
 				}
-				if (owner.get("e").includes(card)) {
+				if (owner.getCards("e").includes(card)) {
 					return "e";
 				}
-				if (owner.get("j").includes(card)) {
+				if (owner.getCards("j").includes(card)) {
 					return "j";
 				}
 				return "s";
@@ -1166,7 +1168,7 @@ export async function precontent(config, originalPack) {
 				forbid = true;
 			}
 			from = from || _status.event.player;
-			var cards = player.get(flags);
+			var cards = player.getCards(flags);
 			var know = 0;
 			for (var i = 0; i < cards.length; i++) {
 				var card = cards[i];
@@ -1195,7 +1197,7 @@ export async function precontent(config, originalPack) {
 			}
 			if (attacker.hasSkill("reliegong")) {
 				var num = 0;
-				if (player.countCards("h") >= attacker.num("h")) {
+				if (player.countCards("h") >= attacker.countCards("h")) {
 					num++;
 				}
 				if (player.hp >= attacker.hp) {
@@ -1255,7 +1257,7 @@ export async function precontent(config, originalPack) {
 			}
 			var jlsgsr_zhangliao = jlsg.findPlayerBySkillName("jlsg_yansha");
 			if (jlsgsr_zhangliao && jlsgsr_zhangliao.storage.jlsg_yansha2 && jlsgsr_zhangliao.storage.jlsg_yansha2.length) {
-				if (jlsg.isFriend(player, jlsgsr_zhangliao) && get.attitude(jlsgsr_zhangliao, attacker) < 0 && attacker.num("he")) {
+				if (jlsg.isFriend(player, jlsgsr_zhangliao) && get.attitude(jlsgsr_zhangliao, attacker) < 0 && attacker.countCards("he")) {
 					defense += 0.5;
 				}
 			}
@@ -1378,14 +1380,14 @@ export async function precontent(config, originalPack) {
 
 			var defense = jlsg.getValue(player);
 
-			if (player.get("e", "2")) {
+			if (player.getCards("e", { subtype: "equip2" })) {
 				defense += 2;
 			}
-			if (player.get("e", "3")) {
+			if (player.getCards("e", { subtype: "equip3" })) {
 				defense++;
 			}
-			if (player.countCards("e", "muniu") && player.get("e", "5").cards) {
-				defense += player.get("e", "5").cards.length;
+			if (player.countCards("e", "muniu") && player.getCards("e", { subtype: "equip5" }).cards) {
+				defense += player.getCards("e", { subtype: "equip5" }).cards.length;
 			}
 
 			if (jlsg.hasBaguaEffect(player)) {
@@ -1537,7 +1539,7 @@ export async function precontent(config, originalPack) {
 
 			defense = defense + (game.players.length - (get.distance(player, _status.currentPhase, "absolute") % game.players.length)) / 4;
 
-			defense = defense + player.get("s").length * 0.25;
+			defense = defense + player.getSkills().length * 0.25;
 
 			return defense;
 		},
@@ -1724,9 +1726,9 @@ export async function precontent(config, originalPack) {
 			if (player == undefined || get.itemtype(player) != "player") {
 				player = _status.event.player;
 			}
-			var cards = player.get("h");
-			if (player.countCards("e", "muniu") && player.get("e", "5").cards && player.get("e", "5").cards.length) {
-				cards = cards.concat(player.get("e", "5").cards);
+			var cards = player.getCards("h");
+			if (player.countCards("e", "muniu") && player.getCards("e", { subtype: "equip5" }).cards && player.getCards("e", { subtype: "equip5" }).cards.length) {
+				cards = cards.concat(player.getCards("e", { subtype: "equip5" }).cards);
 			}
 			var num = 0,
 				shownum = 0,
@@ -1806,7 +1808,7 @@ export async function precontent(config, originalPack) {
 					}
 				}
 			}
-			var ecards = player.get("e");
+			var ecards = player.getCards("e");
 			for (var i = 0; i < ecards.length; i++) {
 				var card = ecards[i];
 				equipcard++;
@@ -1948,7 +1950,7 @@ export async function precontent(config, originalPack) {
 			},
 		},
 		debuffSkill: {
-			trigger: { player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBefore", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkill"] },
+			trigger: { player: ["damageBefore", "loseHpBefore", "loseMaxHpBefore", "loseBefore", "changeSkillsBefore", "linkBefore", "turnOverBefore", "disableSkillBefore"] },
 			filter(event, player) {
 				let key = lib.jlsg.debuffSkill.translate[event.name];
 				return lib.jlsg.debuffSkill.getInfo(event, player, key).bool;
@@ -2019,31 +2021,30 @@ export async function precontent(config, originalPack) {
 					str = "";
 				if (key == "discard") {
 					if (event) {
-						bool =
-							(event.type == "discard" || event.getParent().name == "discard") &&
-							event.cards.some(card => {
-								if (get.owner(card) != event.player) {
-									return false;
-								}
-								return ["h", "e"].includes(get.position(card));
-							});
-						if (!num) {
-							num = event.cards.filter(card => {
-								if (get.owner(card) != event.player) {
-									return false;
-								}
-								return ["h", "e"].includes(get.position(card));
-							}).length;
+						if (event.type != "discard" && event.getParent().name != "discard") {
+							bool = false;
+						} else {
+							let evt = event.getl(player),
+								cards = [];
+							if (evt.hs || evt.es) {
+								cards = evt.hs.concat(evt.es);
+							} else {
+								cards = evt.cards.filter(card => get.owner(card) == player && ["h", "e"].includes(get.position(card)));
+							}
+							bool = cards.length;
+							if (!num) {
+								num = cards.length;
+							}
 						}
 					}
 					str = `弃置${num}张牌`;
 				} else if (key == "removeSkill") {
 					if (event) {
-						bool = event.removeSkill.length;
+						bool = event.removeSkill?.length;
 						if (!num) {
-							num = event.removeSkill.length;
+							num = event.removeSkill?.length;
 						}
-						const translation = event.removeSkill.map(item => get.poptip(item)).join("、");
+						const translation = event.removeSkill?.map(item => get.poptip(item)).join("、");
 						str = `失去${num}个技能：${translation}`;
 					} else {
 						str = `失去${num}个技能`;
@@ -2063,7 +2064,16 @@ export async function precontent(config, originalPack) {
 						bool = event.num;
 						num = event.num;
 						const translation = event.disableSkills?.map(item => get.poptip(item)).join("、") ?? get.poptip(event.disableSkills);
-						str = `失效${num}个技能：${translation}`;
+						if (event.type !== "addSkillBlocker") {
+							str = `失效${num}个技能：${translation}`;
+						} else {
+							let skill = event.args[0];
+							if (skill.endsWith("_block")) {
+								skill = skill.slice(0, -6);
+							}
+							skill = get.poptip(skill);
+							str = `受${skill}影响失效技能：${translation}`;
+						}
 					} else {
 						str = `失效${num}个技能`;
 					}
@@ -2103,16 +2113,6 @@ export async function precontent(config, originalPack) {
 	//资料卡换肤
 	//因本体资料卡换肤只停留于表层，故这部分无法实现
 	//需本体PR-202507276及以上版本
-	lib.arenaReady.push(function () {
-		if (lib.hooks.refreshSkin && !lib.hooks.refreshSkin.some(i => i.name == "changeSkin")) {
-			const changeSkin = function (name, skin) {
-				if ((get.nameList(game.me) || []).includes(name)) {
-					game.me.changeSkin({ characterName: name }, skin);
-				}
-			};
-			lib.hooks.refreshSkin.push(changeSkin);
-		}
-	});
 	let skinCheck = true,
 		characterSkinList;
 	let [files] = await game.promises.getFileList(`extension/极略`);
@@ -2134,6 +2134,8 @@ export async function precontent(config, originalPack) {
 				if (!characterSkinList.includes(character)) {
 					continue;
 				}
+				pack.character[character].skinPath = `ext:极略/skin/image/${character}/`;
+				/*
 				pack.characterSubstitute ??= {};
 				pack.characterSubstitute[character] ??= [];
 				const [folders, files] = await game.promises.getFileList(`extension/极略/skin/image/${character}`);
@@ -2143,6 +2145,7 @@ export async function precontent(config, originalPack) {
 						pack.characterSubstitute[character].push([skinName, [`img:${lib.assetURL}extension/极略/skin/image/${character}/${file}`]]);
 					}
 				}
+				*/
 			}
 		}
 		//导入武将包
@@ -2153,6 +2156,6 @@ export async function precontent(config, originalPack) {
 
 	await game.import("card", function () {
 		lib.config.all.cards.push("jlsg_qs");
-		return jlsg_qs;
+		return cards;
 	});
 }

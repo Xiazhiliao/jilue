@@ -49,12 +49,12 @@ export default {
 								if (game.players.length <= 2) {
 									return 0;
 								}
-								if (target.num("he") < 1) {
+								if (target.countCards("he") < 1) {
 									return 0;
 								}
-								var att = ai.get.attitude(player, target);
+								var att = get.attitude(player, target);
 								if (att < 0) {
-									return -target.num("he");
+									return -target.countCards("he");
 								}
 							},
 						},
@@ -160,7 +160,7 @@ export default {
 				},
 			},
 			translate: {
-				jlsgsy_shiao_info: "回合开始阶段开始时，你可以视为对手牌数少于你的一名其他角色使用一张【杀】；回合结束阶段开始时你可以视为对手牌数大于你的一名其他角色使用一张【杀】",
+				jlsgsy_shiao_info: "准备阶段开始时，你可以视为对手牌数少于你的一名其他角色使用一张【杀】；结束阶段开始时你可以视为对手牌数大于你的一名其他角色使用一张【杀】",
 			},
 		},
 	},

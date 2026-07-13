@@ -58,7 +58,7 @@ let jlsg_qs = {
 			enable: true,
 			skills: ["jlsgqs_taipingyaoshu_skill"],
 			onEquip: async function (event, trigger, player) {
-				const { result } = await player
+				const result = await player
 					.chooseToDiscard("h", function (card) {
 						if (get.color(card) != "red") {
 							return false;
@@ -74,11 +74,12 @@ let jlsg_qs = {
 							return -10;
 						}
 						if (player.hp == 1) {
-							return 15 - ai.get.value(card);
+							return 15 - get.value(card);
 						}
-						return 8 - ai.get.value(card);
+						return 8 - get.value(card);
 					})
-					.set("prompt2", "太平要术：弃置一张红色手牌，否则失去1点体力");
+					.set("prompt2", "太平要术：弃置一张红色手牌，否则失去1点体力")
+					.forResult();
 				if (!result?.bool) {
 					await player.loseHp();
 				}
@@ -152,56 +153,21 @@ let jlsg_qs = {
 			enable: true,
 			selectTarget: 1,
 			filterTarget(card, player, target) {
-				return target.countCards("h") != 0 && player != target;
+				return player != target;
 			},
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (!target.countCards("h")) {
-					return;
-				}
-				const shownCards = await target
-					.chooseCard("请展示一张手牌", true, "h")
-					.set("ai", card => {
-						const evt = _status.event.getParent();
-						if (get.recoverEffect(evt.target, evt.player, evt.target) > get.recoverEffect(evt.player, evt.player, evt.target)) {
-							return get.number(card);
-						} else {
-							return 14 - get.number(card);
-						}
-					})
-					.forResultCards();
-				if (!shownCards?.length) {
-					return;
-				}
-				await target.showCards(shownCards).setContent(function () {});
-				event.dialog = ui.create.dialog(get.translation(target) + "展示的手牌", shownCards);
-				event.videoId = lib.status.videoId++;
-				game.broadcast("createDialog", event.videoId, get.translation(target) + "展示的手牌", shownCards);
-				game.addVideo("cardDialog", null, [get.translation(target) + "展示的手牌", get.cardsInfo(shownCards), event.videoId]);
-				event.card2 = shownCards[0];
-				game.log(target, "展示了", event.card2);
-				game.addCardKnower(shownCards, "everyone");
-				const discardCards = await player
-					.chooseToDiscard()
-					.set("ai", card => {
-						const evt = _status.event.getParent();
-						let value = -get.value(card);
-						value += get.number(evt.card2, evt.target) >= get.number(card, evt.player) ? get.recoverEffect(evt.target, evt.player, evt.player) : get.recoverEffect(evt.player, evt.player, evt.player);
-						return value;
-					})
-					.set("prompt", false)
-					.forResultCards();
-				await game.delayx(2);
-				if (discardCards?.length) {
-					if (get.number(discardCards[0]) <= get.number(event.card2, target)) {
-						await target.recover(1);
-					} else {
-						await player.recover(1);
+				if (player.hp > target.hp) {
+					await player.draw(2);
+					if (target.isDamaged()) {
+						await target.recover();
+					}
+				} else if (player.hp < target.hp) {
+					await target.draw(2);
+					if (player.isDamaged()) {
+						await player.recover();
 					}
 				}
-				event.dialog.close();
-				game.addVideo("cardDialog", null, event.videoId);
-				game.broadcast("closeDialog", event.videoId);
 			},
 			ai: {
 				basic: {
@@ -215,28 +181,23 @@ let jlsg_qs = {
 					}
 				},
 				result: {
+					player(player, target) {
+						let num = 1;
+						if (player.hp > target.hp) {
+							num++;
+						} else if (player.hp < target.hp && player.isDamaged()) {
+							num += get.recoverEffect(player, player, player) / get.attitude(player, player);
+						}
+						return num;
+					},
 					target(player, target) {
-						if (target.hp == target.maxHp) {
-							return 0;
+						let num = 1;
+						if (player.hp > target.hp) {
+							num++;
+						} else if (player.hp < target.hp && player.isDamaged()) {
+							num += get.recoverEffect(player, player, player) / get.attitude(player, player);
 						}
-						if (player.hp == player.maxHp) {
-							return 0;
-						}
-						if (target.hp == 1) {
-							return 2;
-						}
-						let hs = player.countCards("h"),
-							bool = false;
-						for (let i = 0; i < hs.length; i++) {
-							if (hs[i].number >= 9 && ai.get.value(hs[i]) < 7) {
-								bool = true;
-								break;
-							}
-						}
-						if (!bool) {
-							return ai.get.recoverEffect(target);
-						}
-						return 0;
+						return num;
 					},
 				},
 				tag: {
@@ -312,7 +273,7 @@ let jlsg_qs = {
 					await target.damage("fire");
 					return;
 				}
-				const control = await target
+				const { control } = await target
 					.chooseControl("获得你两张牌", "对你造成伤害")
 					.set("prompt", `请选择一项`)
 					.set("prompt2", `${get.translation(player)}对你使用【欲擒故纵】`)
@@ -335,7 +296,7 @@ let jlsg_qs = {
 						}
 						return "对你造成伤害";
 					})
-					.forResultControl();
+					.forResult();
 				if (control == "获得你两张牌") {
 					await player.gainPlayerCard(target, "h", 2, true);
 				} else if (control == "对你造成伤害") {
@@ -369,7 +330,7 @@ let jlsg_qs = {
 						if (player == target) {
 							return -2;
 						}
-						var nh = target.countCards("h");
+						let nh = target.countCards("h");
 						if (nh > 2) {
 							return -0.5;
 						}
@@ -401,7 +362,7 @@ let jlsg_qs = {
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				const { result } = await target
+				const result = await target
 					.chooseToUse(player, "草船借箭：对" + get.translation(player) + "使用一张杀，或令其获得你的一张牌")
 					.set("filterCard", (card, player) => {
 						if (get.name(card, player) != "sha") {
@@ -410,7 +371,8 @@ let jlsg_qs = {
 						return lib.filter.filterCard.apply(this, arguments);
 					})
 					.set("respondTo", [player, event.card])
-					.set("targetRequired", true);
+					.set("targetRequired", true)
+					.forResult();
 				if (!result.bool && target.countGainableCards(player, "he") > 0) {
 					await player.gainPlayerCard(target, "he", true);
 				}
@@ -430,8 +392,8 @@ let jlsg_qs = {
 				},
 				result: {
 					target(player, target) {
-						var num = 0;
-						for (var i = 0; i < game.players.length; i++) {
+						let num = 0;
+						for (let i = 0; i < game.players.length; i++) {
 							if (game.players[i].ai.shown == 0) {
 								num++;
 							}
@@ -439,7 +401,7 @@ let jlsg_qs = {
 						if (num > 1) {
 							return 0;
 						}
-						var nh = target.countCards("h");
+						let nh = target.countCards("h");
 						if (nh > 2) {
 							return -0.5;
 						}
@@ -449,11 +411,11 @@ let jlsg_qs = {
 						return -0.8;
 					},
 					player(player, target) {
-						var num = 0;
-						if (ai.get.attitude(target, player) < -1) {
+						let num = 0;
+						if (get.attitude(target, player) < -1) {
 							num--;
 						}
-						if (ai.get.attitude(target, player) > 1) {
+						if (get.attitude(target, player) > 1) {
 							num++;
 						}
 						if (target.countCards("h") == 0) {
@@ -486,16 +448,13 @@ let jlsg_qs = {
 			enable: true,
 			selectTarget: -1,
 			filterTarget: true,
-			ignoreTarget(card, player, target) {
-				return (target.isHealthy() && target.hp == 1) || target.hp < 1;
-			},
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (target.hp > 1) {
-					await target.draw(2, "nodelay");
+				if (target.getHp() <= 1 && target.isDamaged()) {
+					await target.recover(2);
 				} else {
-					await target.recover(1);
+					await target.draw(2, "nodelay");
 				}
 			},
 			ai: {
@@ -530,7 +489,7 @@ let jlsg_qs = {
 				},
 				tag: {
 					draw: 2,
-					recover: 1,
+					recover: 2,
 					multitarget: 1,
 				},
 			},
@@ -553,43 +512,45 @@ let jlsg_qs = {
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (target.hp > 1) {
-					await target.draw(2);
+				if (target.hasSkill("jlsgqs_mei_temp")) {
+					await target.draw("nodelay");
+				} else if (target.isDying()) {
+					await target.recover(1);
+				} else if (target.getHp() == 1 && target.isDamaged()) {
+					await target.recover(2);
 				} else {
-					await target.recover();
-				}
-				if (target.hp > 0 && event.getParent(2).type == "dying") {
-					await target.draw(1);
+					await target.draw(3, "nodelay");
+					target.addTempSkill("jlsgqs_mei_temp");
 				}
 			},
 			ai: {
 				basic: {
 					order(card, player) {
-						return get.order({ name: "tao" }, player) - 0.5;
+						return get.order({ name: "tao" }, player) + 0.5;
 					},
 					useful: [8, 6.5],
 					value: [8, 6.5],
 				},
 				result: {
-					target: function (player, target) {
+					target(player, target) {
 						if (target.hp == target.maxHp && target.hp == 1) {
 							return 0;
 						}
-						var nh = target.countCards("h");
-						var keep = false;
+						let nh = target.countCards("h");
+						let keep = false;
 						if (nh <= target.hp) {
 							keep = true;
 						} else if (nh == target.hp + 1 && target.hp >= 2 && target.countCards("h", "tao") <= 1) {
 							keep = true;
 						}
-						var mode = get.mode();
+						let mode = get.mode();
 						if (target.hp >= 2 && keep && target.hasFriend()) {
 							if (target.hp > 2) {
 								return 0;
 							}
 							if (target.hp == 2) {
-								for (var i = 0; i < game.players.length; i++) {
-									if (target != game.players[i] && ai.get.attitude(target, game.players[i]) >= 3) {
+								for (let i = 0; i < game.players.length; i++) {
+									if (target != game.players[i] && get.attitude(target, game.players[i]) >= 3) {
 										if (game.players[i].hp <= 1) {
 											return 0;
 										}
@@ -603,14 +564,19 @@ let jlsg_qs = {
 						if (target.hp < 0 && target != player && target.identity != "zhu") {
 							return 0;
 						}
-						var att = ai.get.attitude(player, target);
+						let att = get.attitude(player, target);
 						if (att < 3 && att >= 0 && player != target) {
 							return 0;
 						}
-						var tri = _status.event.getTrigger();
+						let tri = _status.event.getTrigger();
+						if (tri?.name == "dying") {
+							if (target.hasSkill("jlsgqs_mei_temp")) {
+								return att / 10;
+							}
+						}
 						if (mode == "identity" && player.identity == "fan" && target.identity == "fan") {
 							if (tri && tri.name == "dying" && tri.source && tri.source.identity == "fan" && tri.source != target) {
-								var num = 0;
+								let num = 0;
 								for (let aplayer of game.players) {
 									if (aplayer.identity == "fan") {
 										num += aplayer.countCards("h", "tao");
@@ -637,13 +603,16 @@ let jlsg_qs = {
 					},
 				},
 				tag: {
-					recover: 1,
+					recover: 2,
 					save: 1,
 				},
 			},
 		},
 	},
 	skill: {
+		jlsgqs_mei_temp: {
+			charlotte: true,
+		},
 		jlsgqs_kongmingdeng_skill: {
 			equipSkill: true,
 			popname: true,
@@ -776,7 +745,7 @@ let jlsg_qs = {
 			},
 			forced: true,
 			async content(event, trigger, player) {
-				const { result } = await player
+				const result = await player
 					.chooseToDiscard("h", "木牛流马：请弃置一张基本牌，否则失去1点体力", function (card) {
 						if (get.type(card) != "basic") {
 							return false;
@@ -806,7 +775,8 @@ let jlsg_qs = {
 							}
 							return false;
 						})()
-					);
+					)
+					.forResult();
 				if (!result.bool) {
 					await player.loseHp(1);
 				}
@@ -891,14 +861,14 @@ let jlsg_qs = {
 				order: 9,
 				result: {
 					target(player, target) {
-						var att = get.attitude(player, target);
+						let att = get.attitude(player, target);
 						if (target.countCards("h") >= 4) {
 							return 0;
 						}
 						if (target.countCards("h") == 0 && att > 0) {
 							return 2;
 						}
-						var num = target.countCards("h");
+						let num = target.countCards("h");
 						if (att > 0) {
 							return att - num;
 						}
@@ -1131,13 +1101,13 @@ let jlsg_qs = {
 		jlsgqs_qixingbaodao: "七星宝刀",
 		jlsgqs_qixingbaodao_info: "当你使用的【杀】被目标角色的【闪】响应后，你可以将装备区的【七星宝刀】交给该名角色，然后获得其装备区的一张牌",
 		jlsgqs_xiujian: "袖箭",
-		jlsgqs_xiujian_info: "回合开始阶段开始时，你可以弃置你装备区中的【袖箭】，然后对一名其他角色造成一点伤害；锁定技，当你从装备区失去【袖箭】时，你摸一张牌",
+		jlsgqs_xiujian_info: "准备阶段开始时，你可以弃置你装备区中的【袖箭】，然后对一名其他角色造成一点伤害；锁定技，当你从装备区失去【袖箭】时，你摸一张牌",
 		jlsgqs_yuxi: "玉玺",
-		jlsgqs_yuxi_info: "锁定技，你的手牌上限+2，回合开始阶段开始时，你摸一张牌；一名角色使用【杀】对你造成伤害时，可获得你装备区中的【玉玺】",
+		jlsgqs_yuxi_info: "锁定技，你的手牌上限+2，准备阶段开始时，你摸一张牌；一名角色使用【杀】对你造成伤害时，可获得你装备区中的【玉玺】",
 		jlsgqs_jinnangdai: "锦囊袋",
 		jlsgqs_jinnangdai_info: "锁定技，你的手牌上限+1；你失去装备区里的【锦囊袋】时，摸一张牌。",
 		jlsgqs_qingmeizhujiu: "青梅煮酒",
-		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名有手牌的其他角色使用，该角色展示一张手牌，然后你可以弃置一张点数大于此牌的手牌并回复一点体力，或者弃置一张点数不大于此牌的手牌令其回复一点体力",
+		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名其他角色使用，你与目标角色中手牌数较少的角色摸两张牌，体力较少的角色回复1点体力。",
 		jlsgqs_shuiyanqijun: "水淹七军",
 		jlsgqs_shuiyanqijun_info: "出牌阶段，对你攻击范围内的一名其他角色使用。若判定结果不为方片，则该角色出牌阶段开始时须弃置一半数量的手牌（向上取整）",
 		jlsgqs_yuqingguzong: "欲擒故纵",
@@ -1145,9 +1115,9 @@ let jlsg_qs = {
 		jlsgqs_caochuanjiejian: "草船借箭",
 		jlsgqs_caochuanjiejian_info: "出牌阶段，对除你以外的所有角色使用。每名目标角色须依次选择一项：对你使用一张【杀】；或令你获得其一张牌。",
 		jlsgqs_wangmeizhike: "望梅止渴",
-		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1，则回复1点体力；若体力值大于1，则摸两张牌",
+		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1且已受伤，则回复2点体力；否则其摸两张牌",
 		jlsgqs_mei: "梅",
-		jlsgqs_mei_info: "出牌阶段，对一名角色使用，若其体力值大于1，则摸两张牌；否则其回复1点体力。一名其他角色处于濒死状态时，对其使用，其回复1点体力，若因此脱离濒死状态，该角色摸一张牌。",
+		jlsgqs_mei_info: "出牌阶段，对一名角色使用。若目标角色的体力为1点，回复2点体力，否则摸三张牌，然后你令目标角色本回合再次受到的【梅】的效果时改为摸一张牌。一名其他角色濒死时，对其使用，令其回复1点体力。",
 	},
 	list: [
 		["spade", 4, "sha"],
@@ -1263,5 +1233,4 @@ for (let skill in jlsg_qs.skill) {
 		jlsg_qs.translate[skill] = jlsg_qs.translate[translate];
 	}
 }
-
-export let card = jlsg_qs;
+export default jlsg_qs;

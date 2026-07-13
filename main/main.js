@@ -1,6 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 import { characters } from "../character/index.js";
-import { card as cardx } from "../card/jlsg_qs.js";
+import { cards } from "../card/index.js";
 import { basic } from "./basic.js";
 let character = {
 		connect: true,

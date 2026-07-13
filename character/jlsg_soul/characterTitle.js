@@ -9,6 +9,8 @@ const characterTitle = {
 	jlsgsoul_zhoutai: "百战不灭",
 	jlsg_soul_sp_zhenji: "弦落九天",
 	jlsgsoul_dongzhuo: "贪欲无餍",
+	jlsgsoul_sp_zhouyu: "谈笑挽天河",
+	jlsgsoul_zhurong: "绝祀之炎",
 };
 
 export default characterTitle;

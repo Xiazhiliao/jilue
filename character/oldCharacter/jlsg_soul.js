@@ -217,10 +217,10 @@ export default {
 						event.current = player.next;
 						"step 1"
 						event.current.chooseCard("交给" + get.translation(player) + "一张手牌或令其摸一张牌").ai = function (card) {
-							if (ai.get.attitude(event.current, player) > 0) {
+							if (get.attitude(event.current, player) > 0) {
 								return -1;
 							} else {
-								return 3 - ai.get.value(card);
+								return 3 - get.value(card);
 							}
 						};
 						"step 2"
@@ -493,7 +493,7 @@ export default {
 						event.result = await player
 							.chooseToDiscard("h", get.prompt2("jlsg_zhiming", trigger.player))
 							.set("ai", card => {
-								if (get.attitude(get.player(), get.event("target")) < 0) {
+								if (get.attitude(get.player(), get.event().target) < 0) {
 									return 10 - get.value(card);
 								}
 								return 0;
@@ -515,7 +515,7 @@ export default {
 							.discardPlayerCard(trigger.player, "知命", "h", true)
 							.set("ai", button => {
 								const event = get.event();
-								const isVisible = get.event("isVisible") || event.visible;
+								const isVisible = get.event().isVisible || event.visible;
 								if (isVisible) {
 									const color1 = event.color1;
 									if (get.color(button.link) == color1) {
@@ -535,9 +535,7 @@ export default {
 							const color1 = get.color(event.cards[0]),
 								color2 = get.color(cardx);
 							if (color1 == color2) {
-								const {
-									result: { control },
-								} = await player.chooseControl("跳过摸牌", "跳过出牌").set("ai", (event, player) => {
+								const { control } = await player.chooseControl("跳过摸牌", "跳过出牌").set("ai", (event, player) => {
 									const phase = event.getParent("phase");
 									const num = phase.num;
 									let phaseList = phase.phaseList;
@@ -548,7 +546,7 @@ export default {
 										return "跳过摸牌";
 									}
 									return "跳过出牌";
-								});
+								}).forResult();
 								if (control == "跳过摸牌") {
 									trigger.player.skip("phaseDraw");
 									game.log(trigger.player, "跳过了摸牌阶段");
@@ -602,7 +600,7 @@ export default {
 				},
 			},
 			translate: {
-				jlsg_zhiming_info: "其他角色的回合开始阶段开始时，若其有手牌，你可以弃置一张手牌，然后弃置其一张手牌，若两张牌颜色相同，你令其跳过此回合的摸牌阶段或出牌阶段。",
+				jlsg_zhiming_info: "其他角色的准备阶段开始时，若其有手牌，你可以弃置一张手牌，然后弃置其一张手牌，若两张牌颜色相同，你令其跳过此回合的摸牌阶段或出牌阶段。",
 				jlsg_suyin_info: "你的回合外，当你失去最后的手牌时，可令一名其他角色将其武将牌翻面。",
 			},
 		},
@@ -629,7 +627,7 @@ export default {
 					content: function () {
 						"step 0"
 						var num = target.countCards("h");
-						target.discard(target.get("h"));
+						target.discard(target.getCards("h"));
 						target.draw(num);
 						target.showHandcards();
 						"step 1"
@@ -639,7 +637,7 @@ export default {
 						// var num = target.countCards('h', function (card) {
 						//   return get.type(card) != 'basic';
 						// });
-						// target.discard(target.get('h', function (card) {
+						// target.discard(target.getCards('h', function (card) {
 						//   return get.type(card) != 'basic';
 						// }));
 						if (cards.length) {
@@ -671,7 +669,7 @@ export default {
 							return player != target && trigger.player != target;
 						}).ai = function (target) {
 							// if (trigger.card.name == 'sha') {
-							//   if (target.countCards('e', '2') && target.get('e') != 'baiyin') return 0;
+							//   if (target.countCards('e', '2') && target.getCards('e') != 'baiyin') return 0;
 							//   return -get.attitude(player, target);
 							// }
 							// if (trigger.card.name == 'tao') {
@@ -801,7 +799,7 @@ export default {
 								if (player.countCards("h", "juedou") > 0) {
 									return 2;
 								}
-								var ph = player.get("h");
+								var ph = player.getCards("h");
 								var num = 0;
 								for (var i = 0; i < ph.length; i++) {
 									if (get.tag(ph[i], "damage")) {
@@ -842,9 +840,9 @@ export default {
 						"step 2"
 						if (event.targets2.length) {
 							var cur = event.targets2.shift();
-							if (cur && cur.num("he")) {
-								if (cur.num("e")) {
-									cur.discard(cur.get("e"));
+							if (cur && cur.countCards("he")) {
+								if (cur.countCards("e")) {
+									cur.discard(cur.getCards("e"));
 								}
 								cur.chooseToDiscard("h", true, 4);
 							}
@@ -907,13 +905,14 @@ export default {
 						};
 						while (num < 4) {
 							num++;
-							const control = await player
+							const result = await player
 								.chooseControl(["basic", "trick", "equip"], (event, player) => {
 									return ["basic", "trick", "equip"].randomGet();
 								})
 								.set("prompt", "涉猎")
 								.set("prompt2", "请选择想要获得的第" + get.cnNumber(num, true) + "张牌的类型")
-								.forResultControl();
+								.forResult();
+							const control = result?.control;
 							const card = get.cardPile2(card => get.type(card) == control && !event.cards.includes(card));
 							if (card) {
 								event.cards.add(card);
@@ -948,9 +947,9 @@ export default {
 							await target.discard(event.cards);
 							await target.damage(1, player);
 						} else {
-							const { result } = await player.chooseButton(["攻心", "请选择获得一张牌", "hidden", event.cards], true).set("ai", button => {
+							const result = await player.chooseButton(["攻心", "请选择获得一张牌", "hidden", event.cards], true).set("ai", button => {
 								return get.value(button.link);
-							});
+							}).forResult();
 							if (result.bool) {
 								await player.gain(result.links, target, "give", "log");
 							}
@@ -1072,7 +1071,7 @@ export default {
 					filter: function (event, player) {
 						var num = player.countCards("h");
 						for (var i = 0; i < game.players.length; i++) {
-							if (game.players[i].num("h") > num) {
+							if (game.players[i].countCards("h") > num) {
 								return false;
 							}
 						}
@@ -1230,7 +1229,7 @@ export default {
 						order: 6,
 						result: {
 							player: function (player) {
-								var cards = player.get("he");
+								var cards = player.getCards("he");
 								var suits = [];
 								for (var i = 0; i < cards.length; i++) {
 									if (!suits.includes(get.suit(cards[i]))) {
@@ -2377,8 +2376,8 @@ export default {
 			},
 			translate: {
 				jlsg_qixing_info: "分发起始手牌时，你将获得起始手牌改为观看牌堆顶十一张牌并获得其中4张手牌，然后将其余7张牌扣置于武将牌上，称为「星」；摸牌阶段结束时，你可以用一-三张手牌来替换一-二枚「星」",
-				jlsg_kuangfeng_info: "回合开始阶段开始时，你可以将一张「星」置入弃牌堆，然后选择一名角色获得一枚「风」标记，若如此做，当其于你的下回合开始前受到火焰伤害时，该伤害+1；雷电伤害时，你令其弃置两张牌；普通伤害时，你摸一张牌置入「星」。",
-				jlsg_dawu_info: "回合结束阶段开始时，你可以弃掉至少一张「星」，然后选择等量的角色获得「雾」标记，若如此做，当其于你的下回合开始前受到非雷电伤害时，你防止之。",
+				jlsg_kuangfeng_info: "准备阶段开始时，你可以将一张「星」置入弃牌堆，然后选择一名角色获得一枚「风」标记，若如此做，当其于你的下回合开始前受到火焰伤害时，该伤害+1；雷电伤害时，你令其弃置两张牌；普通伤害时，你摸一张牌置入「星」。",
+				jlsg_dawu_info: "结束阶段开始时，你可以弃掉至少一张「星」，然后选择等量的角色获得「雾」标记，若如此做，当其于你的下回合开始前受到非雷电伤害时，你防止之。",
 			},
 		},
 	},
@@ -2548,11 +2547,9 @@ export default {
 					},
 					async content(event, trigger, player) {
 						const target = event.targets[0];
-						const {
-							result: { index },
-						} = await player
+						const { index } = await player
 							.chooseControl("令其摸三张牌", "令其弃三张牌")
-							.set("ai", () => get.event("choice"))
+							.set("ai", () => get.event().choice)
 							.set(
 								"choice",
 								(function () {
@@ -2560,8 +2557,9 @@ export default {
 										discardEff = get.effect(target, { name: "guohe_copy2" }, player, player);
 									return drawEff > discardEff ? 0 : 1;
 								})()
-							);
-						await player.logSkill("jlsg_danjing", event.targets, null, null, [index + 1]);
+							)
+							.forResult();
+						player.logSkill("jlsg_danjing", event.targets, null, null, [index + 1]);
 						if (index == 0) {
 							await player.loseHp();
 							await target.draw(3);
@@ -2639,7 +2637,7 @@ export default {
 						event.result = await player
 							.chooseTarget(get.prompt("jlsg_nizhan"), "令一名角色获得一枚「袭」标记")
 							.set("filterTarget", (_, player, target) => {
-								const targetx = get.event("targetsx");
+								const targetx = get.event().targetsx;
 								return targetx.includes(target) && target != player;
 							})
 							.set("ai", target => -get.attitude(get.player(), target))

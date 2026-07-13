@@ -28,15 +28,15 @@ export default {
 				while (list.length) {
 					let skills = list.filter(skill => !player.hasSkill(skill, null, false, false)).randomGets(3);
 					const buttons = skills.map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
-					let links = await player
+					let result = await player
 						.chooseButton(["极略主公buff：请选择一项主公技获得", [buttons, "textbutton"]])
 						.set("selectButton", [1, 1])
 						.set("forced", true)
 						.set("ai", () => get.event().getRand())
-						.forResultLinks();
+						.forResult();
 					event.num++;
-					if (links?.length) {
-						player.addSkill(links);
+					if (result?.bool && result.links?.length) {
+						player.addSkill(result.links);
 					}
 					//双将适配
 					if (get.config("double_character") != true || event.num > 1) {
@@ -72,7 +72,7 @@ export default {
 			selectCard: -1,
 			log: false,
 			async precontent(event, trigger, player) {
-				await player.logSkill("jlsg_zhugong_yuren", event.result.targets);
+				player.logSkill("jlsg_zhugong_yuren", event.result.targets);
 				let evt = event.getParent();
 				evt.set("jlsg_zhugong_yuren", true);
 				while (true) {
@@ -352,7 +352,7 @@ export default {
 				}
 			},
 			async content(event, trigger, player) {
-				await trigger.source.logSkill(event.name, event.targets);
+				trigger.source.logSkill(event.name, event.targets);
 				await player.draw();
 			},
 			priority: 0,
@@ -503,7 +503,7 @@ export default {
 				}
 			},
 			async content(event, trigger, player) {
-				await trigger.player.logSkill("jlsg_zhugong_jianxiong", player);
+				trigger.player.logSkill("jlsg_zhugong_jianxiong", player);
 				await player.gain(trigger.cards.filterInD("od"), "gain2", "log");
 			},
 			priority: 0,
@@ -532,7 +532,7 @@ export default {
 				}
 			},
 			async content(event, trigger, player) {
-				await trigger.player.logSkill("jlsg_zhugong_songwei", player);
+				trigger.player.logSkill("jlsg_zhugong_songwei", player);
 				await player.draw();
 			},
 			priority: 0,
@@ -571,10 +571,13 @@ export default {
 			async content(event, trigger, player) {
 				let playerList = game.filterPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target));
 				for (let target of playerList) {
-					const { result } = await target.chooseBool("是否令" + get.translation(player) + "摸一张牌").set("ai", (event, player) => {
-						const source = event.player;
-						return get.effect(source, { name: "draw" }, player, player) > 0;
-					});
+					const result = await target
+						.chooseBool("是否令" + get.translation(player) + "摸一张牌")
+						.set("ai", (event, player) => {
+							const source = event.player;
+							return get.effect(source, { name: "draw" }, player, player) > 0;
+						})
+						.forResult();
 					if (result.bool) {
 						game.log(target, "响应了", player);
 						target.line(player, "green");
@@ -582,7 +585,7 @@ export default {
 						target.chat("我来助你！");
 						let node = target.node.avatar;
 						if (node._jlsg_zhugong_fuzheng) {
-							node._jlsg_zhugong_fuzheng.push(`extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`);
+							node._jlsg_zhugong_fuzheng.push(`${lib.assetURL}extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`);
 						} else {
 							const func = function () {
 								if (node._jlsg_zhugong_fuzheng.length) {
@@ -604,7 +607,7 @@ export default {
 									target.setAvatar(target.name, target.name, false, false);
 								}
 							};
-							node._jlsg_zhugong_fuzheng = [`extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`];
+							node._jlsg_zhugong_fuzheng = [`${lib.assetURL}extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`];
 							node._jlsg_zhugong_fuzhengInterval = setInterval(func, 1000);
 							func();
 						}
@@ -643,12 +646,15 @@ export default {
 				for (let target of playerList) {
 					if (target.hasSha()) {
 						await target
-							.chooseToUse(function (card, player, event) {
-								if (get.name(card) != "sha") {
-									return false;
-								}
-								return lib.filter.filterCard.apply(this, arguments);
-							}, "协力：是否对" + get.translation(targetx) + "使用一张杀？")
+							.chooseToUse(
+								function (card, player, event) {
+									if (get.name(card) != "sha") {
+										return false;
+									}
+									return lib.filter.filterCard.apply(this, arguments);
+								},
+								"协力：是否对" + get.translation(targetx) + "使用一张杀？"
+							)
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("filterTarget", function (card, player, target) {
@@ -712,7 +718,7 @@ export default {
 							if (!lib.skill._jlsg_zhuBuff.groupCheck(target, player)) {
 								return false;
 							}
-							return lib.filter.canBeGained(card, player, target) && get.event("list").includes(target);
+							return lib.filter.canBeGained(card, player, target) && get.event().list.includes(target);
 						},
 						list,
 						ai1(card) {
