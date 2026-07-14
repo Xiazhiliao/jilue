@@ -16,7 +16,9 @@ Visit Repository</a><br>
 备用群：1058928074<br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
-汇报bug点我</span><br>
+汇报bug点我（已无人受理）</span><br><span onclick="if (jlsg) jlsg.openLink('https://github.com/Xiazhiliao/jilue/issues')" 
+style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
+仓库issues反馈（可能受理）</span><br>
 
 <span style="font-size: large;">历史：</span><br>
 
