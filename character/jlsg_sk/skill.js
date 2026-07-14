@@ -15322,12 +15322,7 @@ const skills = {
 			const evt = trigger?.name == "chooseToCompare" ? trigger : event.getParent(2);
 			evt.set("jlsg_tianbian", true);
 			const cards = get.cards(3, true);
-			const cardsx = cards.slice().map(card => {
-				const cardx = ui.create.card();
-				cardx.init(get.cardInfo(card));
-				cardx._cardid = card.cardid;
-				return cardx;
-			});
+			const cardsx = game.createFakeCards(cards);
 			player.directgains(cardsx, null, "jlsg_tianbian_hs");
 			let str = "天辩：选择要",
 				next;
@@ -15426,23 +15421,7 @@ const skills = {
 			if (result.bool) {
 				card = cards.find(card => card.cardid === result.cards[0]._cardid);
 			}
-			const cards2 = player.getCards("s", card => card.hasGaintag("jlsg_tianbian_hs"));
-			if (player.isOnline2()) {
-				player.send(
-					(cards, player) => {
-						cards.forEach(i => i.delete());
-						if (player == game.me) {
-							ui.updatehl();
-						}
-					},
-					cards2,
-					player
-				);
-			}
-			cards2.forEach(i => i.delete());
-			if (player == game.me) {
-				ui.updatehl();
-			}
+			game.deleteFakeCards(cardsx);
 			if (evt.name != "chooseToCompare") {
 				if (card) {
 					let cardx = get.autoViewAs(card, card),
