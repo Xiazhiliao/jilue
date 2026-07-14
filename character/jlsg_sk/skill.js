@@ -5620,7 +5620,7 @@ const skills = {
 						filter
 					);
 				}
-				const resultA = await player.chooseButtonOL([[player, { dialog: id, selectButton: [event.num / 2, event.num / 2] }]]).forResult();
+				const resultA = await player.chooseButtonOL([[player, { dialog: id, selectButton: [1, 3] }]]).forResult();
 				if (resultA?.[player.playerid]?.links?.length) {
 					extraCharacter.addArray(resultA[player.playerid].links);
 				}
@@ -5795,7 +5795,7 @@ const skills = {
 			}
 			const result = await next;
 			game.resume();
-			const info = result.skills;
+			const info = result.skills.unique();
 			let remove = storage.list.filter(skill => player.hasSkill(skill, null, false, false) && !info.includes(skill)),
 				add = info.filter(skill => !player.hasSkill(skill, null, false, false));
 			await player.changeSkills(add, remove);
