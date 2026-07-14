@@ -24,16 +24,16 @@ export default {
 						return num >= 2;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						event.num2 = trigger.num;
-						"step 1"
+						"step 1";
 						var targets = game.filterPlayer();
 						targets.remove(player);
 						targets.sort(lib.sort.seat);
 						event.targets = targets;
 						event.num = 0;
 						player.line(targets, "green");
-						"step 2"
+						"step 2";
 						if (num < event.targets.length) {
 							var hej = event.targets[num].getCards("hej");
 							if (hej.length) {
@@ -49,17 +49,17 @@ export default {
 							event.num++;
 							event.redo();
 						}
-						"step 3"
+						"step 3";
 						player.draw(game.dead.length);
 						player.turnOver();
-						"step 4"
+						"step 4";
 						event.num2--;
 						if (event.num2 > 0) {
 							player.chooseBool(get.prompt2("jlsg_guixin"));
 						} else {
 							event.finish();
 						}
-						"step 5"
+						"step 5";
 						if (result.bool) {
 							player.logSkill("jlsg_guixin");
 							event.goto(1);
@@ -196,6 +196,7 @@ export default {
 			translate: {
 				jlsg_zhiji_info: "出牌阶段限一次，你可以弃置至少一张武器牌，然后对一名其他角色造成等同于此次弃置武器牌数点伤害。当你受到伤害后，你可以从弃牌堆或牌堆随机获得一张武器牌。",
 			},
+			info: ["male", "shen", 6, ["jlsg_zhiji"], ["wei"]],
 		},
 	},
 	jlsgsoul_diaochan: {
@@ -212,10 +213,10 @@ export default {
 						return game.countPlayer() - event.num > 1;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						trigger.changeToZero();
 						event.current = player.next;
-						"step 1"
+						"step 1";
 						event.current.chooseCard("交给" + get.translation(player) + "一张手牌或令其摸一张牌").ai = function (card) {
 							if (get.attitude(event.current, player) > 0) {
 								return -1;
@@ -223,7 +224,7 @@ export default {
 								return 3 - get.value(card);
 							}
 						};
-						"step 2"
+						"step 2";
 						if (result.bool == false) {
 							event.current.line(player, "green");
 							game.log(get.translation(event.current) + "让" + get.translation(player) + "摸了一张牌");
@@ -376,9 +377,9 @@ export default {
 						return event.nature;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						player.addMark("jlsg_lianti");
-						"step 1"
+						"step 1";
 						player.loseMaxHp();
 					},
 				},
@@ -427,9 +428,9 @@ export default {
 					multiline: true,
 
 					content: function () {
-						"step 0"
+						"step 0";
 						player.useCard({ name: "tiesuo", isCard: true }, targets);
-						"step 1"
+						"step 1";
 						if (!game.players.some(current => current.isLinked())) {
 							event.finish();
 							return;
@@ -445,7 +446,7 @@ export default {
 								}
 								return Math.random();
 							});
-						"step 2"
+						"step 2";
 						if (result.bool && result.targets?.length) {
 							result.targets[0].damage("fire");
 						}
@@ -535,18 +536,21 @@ export default {
 							const color1 = get.color(event.cards[0]),
 								color2 = get.color(cardx);
 							if (color1 == color2) {
-								const { control } = await player.chooseControl("跳过摸牌", "跳过出牌").set("ai", (event, player) => {
-									const phase = event.getParent("phase");
-									const num = phase.num;
-									let phaseList = phase.phaseList;
-									let num1 = phaseList.findIndex(name => name.startsWith("phaseZhunbei"));
-									phaseList = phaseList.slice(num > num1 ? num : num1);
-									const phaseDraw = phaseList.find(name => name.startsWith("phaseDraw"));
-									if (phaseDraw) {
-										return "跳过摸牌";
-									}
-									return "跳过出牌";
-								}).forResult();
+								const { control } = await player
+									.chooseControl("跳过摸牌", "跳过出牌")
+									.set("ai", (event, player) => {
+										const phase = event.getParent("phase");
+										const num = phase.num;
+										let phaseList = phase.phaseList;
+										let num1 = phaseList.findIndex(name => name.startsWith("phaseZhunbei"));
+										phaseList = phaseList.slice(num > num1 ? num : num1);
+										const phaseDraw = phaseList.find(name => name.startsWith("phaseDraw"));
+										if (phaseDraw) {
+											return "跳过摸牌";
+										}
+										return "跳过出牌";
+									})
+									.forResult();
 								if (control == "跳过摸牌") {
 									trigger.player.skip("phaseDraw");
 									game.log(trigger.player, "跳过了摸牌阶段");
@@ -625,12 +629,12 @@ export default {
 						return player != target && target.countCards("h");
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						var num = target.countCards("h");
 						target.discard(target.getCards("h"));
 						target.draw(num);
 						target.showHandcards();
-						"step 1"
+						"step 1";
 						var cards = target.getCards("h", function (card) {
 							return get.type(card) != "basic";
 						});
@@ -664,7 +668,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						player.chooseTarget("是否发动【顺世】?", [1, 3], function (card, player, target) {
 							return player != target && trigger.player != target;
 						}).ai = function (target) {
@@ -678,7 +682,7 @@ export default {
 							// }
 							return get.effect(target, { name: trigger.card.name }, player);
 						};
-						"step 1"
+						"step 1";
 						if (result.bool) {
 							player.logSkill("jlsg_shunshi", result.targets);
 							player.draw();
@@ -737,7 +741,7 @@ export default {
 						return get.type(event.card) == "trick";
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						if (player.storage.jlsg_kuangbao > 0) {
 							player.chooseControl("选项一", "选项二").set("prompt", '无谋<br><br><div class="text">1:弃置1枚「暴」标记</div><br><div class="text">2:受到1点伤害</div></br>').ai = function () {
 								if (player.storage.jlsg_kuangbao > 6) {
@@ -752,7 +756,7 @@ export default {
 							player.damage("nosource");
 							event.finish();
 						}
-						"step 1"
+						"step 1";
 						if (result.control == "选项一") {
 							player.storage.jlsg_kuangbao--;
 							player.syncStorage("jlsg_kuangbao");
@@ -772,9 +776,9 @@ export default {
 						return player.storage.jlsg_kuangbao > 1;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						player.removeMark("jlsg_kuangbao", 2);
-						"step 1"
+						"step 1";
 						player.addTempSkill("wushuang", "phaseAfter");
 						player.addTempSkill("jlsg_wuqian_buff", "phaseAfter");
 					},
@@ -825,19 +829,19 @@ export default {
 					animationColor: "metal",
 					mark: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						player.storage.jlsg_kuangbao -= 6;
 						player.syncStorage("jlsg_kuangbao");
 						event.targets = game.players.slice(0);
 						event.targets.remove(player);
 						event.targets.sort(lib.sort.seat);
 						event.targets2 = event.targets.slice(0);
-						"step 1"
+						"step 1";
 						if (event.targets.length) {
 							event.targets.shift().damage();
 							event.redo();
 						}
-						"step 2"
+						"step 2";
 						if (event.targets2.length) {
 							var cur = event.targets2.shift();
 							if (cur && cur.countCards("he")) {
@@ -848,7 +852,7 @@ export default {
 							}
 							event.redo();
 						}
-						"step 3"
+						"step 3";
 						player.turnOver();
 					},
 					ai: {
@@ -947,9 +951,12 @@ export default {
 							await target.discard(event.cards);
 							await target.damage(1, player);
 						} else {
-							const result = await player.chooseButton(["攻心", "请选择获得一张牌", "hidden", event.cards], true).set("ai", button => {
-								return get.value(button.link);
-							}).forResult();
+							const result = await player
+								.chooseButton(["攻心", "请选择获得一张牌", "hidden", event.cards], true)
+								.set("ai", button => {
+									return get.value(button.link);
+								})
+								.forResult();
 							if (result.bool) {
 								await player.gain(result.links, target, "give", "log");
 							}
@@ -1079,7 +1086,7 @@ export default {
 					},
 					forced: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						player
 							.chooseControl("选项一", "选项二", function () {
 								if (
@@ -1093,7 +1100,7 @@ export default {
 								return "选项一";
 							})
 							.set("prompt", '虎踞<br><br><div class="text">1：失去1点体力</div><br><div class="text">2：减1点体力上限，失去【虎踞】，获得【制衡】和【虎缚】</div></br>');
-						"step 1"
+						"step 1";
 						if (result.control == "选项一") {
 							game.trySkillAudio("jlsg_hujuStill");
 							player.loseHp();
@@ -1153,12 +1160,12 @@ export default {
 						return !player.hasSkill("jlsg_jilve2");
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						player.draw("nodelay");
 						player.chooseToUse().filterCard = function (card, player) {
 							return lib.filter.cardEnabled(card, player, event.parent.parent) && lib.filter.cardUsable(card, player, event.parent.parent);
 						};
-						"step 1"
+						"step 1";
 						if (!result.bool) {
 							player.chooseToDiscard("he", true);
 							player.addTempSkill("jlsg_jilve2", "phaseAfter");
@@ -1206,7 +1213,7 @@ export default {
 					},
 					derivation: ["zhiheng", "guanxing", "fankui", "wansha"],
 					content: function () {
-						"step 0"
+						"step 0";
 						var suits = cards.map(card => get.suit(card));
 						let skills = [];
 						if (suits.includes("spade")) {
@@ -1222,7 +1229,7 @@ export default {
 							skills.push("wansha");
 						}
 						player.addSkills(skills);
-						"step 1"
+						"step 1";
 						player.awakenSkill("jlsg_tongtian");
 					},
 					ai: {
@@ -1284,12 +1291,12 @@ export default {
 						return 1;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						trigger.cancel();
 						player.judge(function (card) {
 							return get.color(card) == "black" ? 1.5 : -1;
 						});
-						"step 1"
+						"step 1";
 						if (result.bool) {
 							player.chooseTarget("选择一个目标对其造成2点雷电伤害").ai = function (target) {
 								// if (player.hp == 1) return target == player ? 1 : -1;
@@ -1303,13 +1310,13 @@ export default {
 							};
 							event.goto(3);
 						}
-						"step 2"
+						"step 2";
 						if (result.bool) {
 							player.line(result.targets[0], "thunder");
 							result.targets[0].damage("thunder", 2);
 						}
 						event.finish();
-						"step 3"
+						"step 3";
 						if (result.bool) {
 							player.line(result.targets, "thunder");
 							for (var i = 0; i < result.targets.length; i++) {
@@ -1404,7 +1411,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						player
 							.chooseTarget(get.prompt(event.name))
 							.set("prompt2", "令一名角色回复1点体力，若其未受伤则改为加1点体力上限。")
@@ -1417,7 +1424,7 @@ export default {
 								}
 								return eff - 0.5 + Math.random();
 							});
-						"step 1"
+						"step 1";
 						if (!result.bool) {
 							event.finish();
 							return;
@@ -1477,7 +1484,7 @@ export default {
 					},
 					direct: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						player
 							.chooseTarget(get.prompt(event.name))
 							.set("prompt2", "对一名角色造成1点雷电伤害，若其已受伤则改为减1点体力上限。")
@@ -1490,7 +1497,7 @@ export default {
 								}
 								return eff - 0.5 + Math.random();
 							});
-						"step 1"
+						"step 1";
 						if (!result.bool) {
 							event.finish();
 							return;
@@ -1546,7 +1553,7 @@ export default {
 					direct: true,
 					frequent: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						event.colors = [];
 						var evt = trigger.getl(player);
 						event.cards = evt.cards2;
@@ -1564,10 +1571,10 @@ export default {
 							event.finish();
 							return;
 						}
-						"step 1"
+						"step 1";
 						event.color = event.colors.shift();
 						player.chooseBool(get.prompt(event.name), true).set("prompt2", `你可以摸一张${lib.translate[event.color]}牌`).set("frequentSkill", event.name);
-						"step 2"
+						"step 2";
 						if (result.bool) {
 							player.logSkill(event.name);
 							player.removeMark(event.name);
@@ -1603,9 +1610,9 @@ export default {
 					},
 					forced: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						player.showHandcards();
-						"step 1"
+						"step 1";
 						if (!player.countCards("h", "sha")) {
 							player.addTempSkill("jlsg_shayi_buff", "phaseAfter");
 						} else {
@@ -2041,7 +2048,7 @@ export default {
 						return true;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						event.top = [ui.cardPile.firstChild];
 						player.storage.jlsg_tianji_top = [ui.cardPile.firstChild];
 						event.dialog = ui.create.dialog("天机", event.top, true);
@@ -2060,7 +2067,7 @@ export default {
 							}
 							return 0;
 						};
-						"step 1"
+						"step 1";
 						if (result.control == "获得") {
 							player.draw();
 							event.finish();
@@ -2080,7 +2087,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						"step 2"
+						"step 2";
 						event.card = result.cards[0];
 						if (!event.card) {
 							event.finish();
@@ -2088,7 +2095,7 @@ export default {
 						}
 						// player.lose(event.card, ui.special);
 						player.draw();
-						"step 3"
+						"step 3";
 						player.$throw(1, 1000);
 						player.storage.jlsg_tianji_top = [event.card];
 						player.lose(event.card, ui.cardPile, "insert");
@@ -2119,16 +2126,16 @@ export default {
 						return event.name != "phase" || game.phaseNumber == 0;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						player.gain(get.cards(7))._triggered = null;
-						"step 1"
+						"step 1";
 						if (player == game.me) {
 							game.addVideo("delay", null);
 						}
 						player.chooseCard("选择七张牌作为「星」", 7, true).ai = function (card) {
 							return get.value(card);
 						};
-						"step 2"
+						"step 2";
 						player.addToExpansion(result.cards, player, "giveAuto").gaintag.add(event.name);
 					},
 					mark: true,
@@ -2163,11 +2170,11 @@ export default {
 						return player.getExpansions("jlsg_qixing").length;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						player.chooseCard(get.prompt("jlsg_qixing"), [1, 3]).ai = function (card) {
 							return 1;
 						};
-						"step 1"
+						"step 1";
 						if (result.bool) {
 							player.logSkill("jlsg_qixing");
 							player.addToExpansion(result.cards, player, "giveAuto").gaintag.add("jlsg_qixing");
@@ -2175,7 +2182,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						"step 2"
+						"step 2";
 						player.chooseCardButton(player.getExpansions("jlsg_qixing"), "选择1-2张牌作为手牌", [1, 2], true).ai = function (button) {
 							if (player.skipList.includes("phaseUse") && button.link != "du") {
 								return -get.value(button.link);
@@ -2185,7 +2192,7 @@ export default {
 						if (player == game.me && _status.auto) {
 							game.delay(0.5);
 						}
-						"step 3"
+						"step 3";
 						//  player.gain(result.links)._triggered=null;
 						player.gain(result.links)._triggered = null;
 						player.syncStorage("jlsg_qixing");
@@ -2202,7 +2209,7 @@ export default {
 						return player.getExpansions("jlsg_qixing").length;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						var clearKuangfeng = jlsg.findPlayerBySkillName("jlsg_kuangfeng2");
 						if (clearKuangfeng) {
 							clearKuangfeng.removeSkill("jlsg_kuangfeng2");
@@ -2214,7 +2221,7 @@ export default {
 							}
 							return -1;
 						};
-						"step 1"
+						"step 1";
 						if (result.bool) {
 							result.targets[0].addSkill("jlsg_kuangfeng2");
 							result.targets[0].popup("jlsg_kuangfeng");
@@ -2223,7 +2230,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						"step 2"
+						"step 2";
 						player.discard(result.links);
 					},
 				},
@@ -2282,7 +2289,7 @@ export default {
 					},
 					audio: "ext:极略/audio/skill:2",
 					content: function () {
-						"step 0"
+						"step 0";
 						player.chooseTarget("选择角色获得大雾标记", [1, Math.min(game.players.length, player.getExpansions("jlsg_qixing").length)]).ai = function (target) {
 							if (target.isMin()) {
 								return 0;
@@ -2305,7 +2312,7 @@ export default {
 							}
 							return -1;
 						};
-						"step 1"
+						"step 1";
 						if (result.bool) {
 							var length = result.targets.length;
 							for (var i = 0; i < length; i++) {
@@ -2317,7 +2324,7 @@ export default {
 						} else {
 							event.finish();
 						}
-						"step 2"
+						"step 2";
 						player.discard(result.links);
 					},
 					group: ["jlsg_dawu_remove"],
@@ -2395,11 +2402,11 @@ export default {
 						return get.attitude(player, event.target) < 0;
 					},
 					content: function () {
-						"step 0"
+						"step 0";
 						event.cards = get.cards(3);
 						game.cardsGotoOrdering(cards);
 						player.showCards(event.cards);
-						"step 1"
+						"step 1";
 						event.numx = 0;
 						for (var i = 0; i < event.cards.length; i++) {
 							if (get.type(event.cards[i]) != "basic") {
@@ -2518,9 +2525,9 @@ export default {
 					},
 					forced: true,
 					content: function () {
-						"step 0"
+						"step 0";
 						player.draw();
-						"step 1"
+						"step 1";
 						var next = player.phaseUse();
 						event.next.remove(next);
 						trigger.next.push(next);
@@ -2670,7 +2677,7 @@ export default {
 					audio: "ext:极略/audio/skill:1",
 					trigger: { player: "phaseJieshuBegin" },
 					filter(player) {
-						return game.countPlayer(current => current.countMark("jlsg_nizhan_mark")) > 4;
+						return game.countPlayer(current => current.countMark("jlsg_nizhan_mark")) >= 4;
 					},
 					forced: true,
 					async content(event, trigger, player) {
@@ -2679,9 +2686,9 @@ export default {
 							if (!target.hasMark("jlsg_nizhan_mark")) {
 								continue;
 							}
-							const hs = target.countGainableCards(player, "h"),
+							const hs = target.gettGainableCards(player, "h"),
 								marks = target.countMark("jlsg_nizhan_mark");
-							if (hs >= marks) {
+							if (hs.length >= marks) {
 								await player.gainPlayerCard("摧锋", target, "h", get.select(marks));
 							} else {
 								await player.gain(target, hs, "give");

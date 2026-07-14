@@ -3040,13 +3040,13 @@ const skills = {
 			if (upgrade) {
 				bool = player.getStorage("jlsg_jiexi_used").includes(target);
 			}
-			return target != player && target.countCards("hes") && !bool;
+			return target != player && target.countCards("he") && !bool;
 		},
 		async content(event, trigger, player) {
 			let target = event.targets[0];
 			let result = await player
 				.choosePlayerCard({
-					position: "hes",
+					position: "he",
 					target: target,
 					forced: true,
 				})
@@ -3055,8 +3055,12 @@ const skills = {
 			if (["sha", "juedou"].includes(result.cards[0].name)) {
 				await player.chooseUseTarget({
 					card: result.cards[0],
+					filterTarget(card, player, target) {
+						return target === get.event()?.targetx;
+					},
 					addCount: false,
 					nodistance: true,
+					targetx: target,
 				});
 			}
 			if (target.countCards("h")) {
@@ -3065,7 +3069,7 @@ const skills = {
 						prompt: `是否与${get.translation(target)}拼点`,
 					})
 					.forResult();
-				if (result1.bool) {
+				if (result1?.bool) {
 					let result2 = await player
 						.chooseToCompare(target, card => {
 							let player = get.owner(card),
@@ -3080,18 +3084,29 @@ const skills = {
 						.forResult();
 					if (result2.bool !== true) {
 						player.markAuto("jlsg_jiexi_used", target);
-					} else {
-						let result = await player
-							.choosePlayerCard({
-								position: "hes",
+					} else if (target.hasGainableCards(player, "he")) {
+						const { cards } = await player
+							.gainPlayerCard({
+								position: "he",
 								target: target,
 								forced: true,
 							})
 							.forResult();
-						await player.gain(result.cards);
+						if (cards?.length) {
+							if (["sha", "juedou"].includes(cards[0].name)) {
+								await player.chooseUseTarget({
+									card: cards[0],
+									filterTarget(card, player, target) {
+										return target === get.event()?.targetx;
+									},
+									addCount: false,
+									nodistance: true,
+									targetx: target,
+								});
+							}
+						}
 					}
-				}
-				if (!result1.bool) {
+				} else {
 					player.markAuto("jlsg_jiexi_used", target);
 				}
 			}

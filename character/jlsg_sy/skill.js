@@ -602,7 +602,7 @@ const skills = {
 					},
 					ai(card) {
 						const { source, player } = get.event();
-						let val = get.val(card),
+						let val = get.value(card),
 							shaEff = get.effect(player, { name: "sha" }, source, player);
 						if (shaEff >= 0) {
 							return 0;

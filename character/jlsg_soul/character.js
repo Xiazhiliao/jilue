@@ -28,7 +28,7 @@ const characters = {
 	jlsgsoul_ganning: ["male", "shen", 4, ["jlsg_lvezhen", "jlsg_youlong"], ["wu"]],
 	jlsgsoul_sp_ganning: ["male", "shen", 4, ["jlsg_jieying", "jlsg_jinlong"], ["wu"]],
 	jlsgsoul_xiahoudun: ["male", "shen", 5, ["jlsg_danjing", "jlsg_zhonghun"], ["wei", "name:夏侯|惇"]],
-	jlsgsoul_dianwei: ["male", "shen", 6, ["jlsg_zhiji"], ["wei"]],
+	jlsgsoul_dianwei: ["male", "shen", 5, ["jlsg_zhiji"], ["wei"]],
 	jlsgsoul_huatuo: ["male", "shen", 3, ["jlsg_yuanhua", "jlsg_guiyuan", "jlsg_chongsheng"], ["qun"]],
 	jlsgsoul_zhouyu: ["male", "shen", 4, ["jlsg_qinyin", "jlsg_yeyan"], ["wu"]],
 	jlsgsoul_machao: ["male", "shen", 4, ["jlsg_qianqi", "jlsg_juechen"], ["shu"]],

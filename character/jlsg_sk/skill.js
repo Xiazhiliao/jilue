@@ -16223,15 +16223,15 @@ const skills = {
 				.set("custom", {
 					add: {
 						confirm: function (bool) {
-							if (bool != true) {
-								return;
-							}
 							const event = get.event().parent;
 							if (event.controls) {
 								event.controls.forEach(i => i.close());
 							}
 							if (ui.confirm) {
 								ui.confirm.close();
+							}
+							if (bool != true) {
+								return;
 							}
 							game.uncheck();
 						},
@@ -20546,7 +20546,7 @@ const skills = {
 			list[1] += 1;
 			target.setStorage("jlsg_junbing_effect", list);
 			target.markSkill("jlsg_junbing_effect");
-			await target.draw(2);
+			await target.draw(1);
 			if (!["shu", "wu", "qun"].includes(target.group)) {
 				await target.draw(2);
 			}
@@ -20734,6 +20734,9 @@ const skills = {
 		async content(event, trigger, player) {
 			const skills = player.getStorage("jlsg_falu_skill");
 			const cb = _status.jlsg_falu_skill.filter(sk => !skills.includes(sk)).randomGets(3);
+			game.broadcastAll(cb => {
+				_status.jlsg_falu_skill.removeArray(cb);
+			}, cb)
 			skills.addArray(cb);
 			player.setStorage("jlsg_falu_skill", skills);
 		},

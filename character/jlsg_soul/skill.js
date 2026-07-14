@@ -4377,6 +4377,9 @@ const skills = {
 						return get.attitude(player, target);
 					})
 					.forResult();
+				if (!targets?.length) {
+					return
+				}
 				if (targets[0] != player) {
 					player.line(result.targets[0], "green");
 				}
