@@ -5570,13 +5570,12 @@ const skills = {
 	jlsg_qianhuan: {
 		unique: true,
 		init(player, skill) {
-			player.setStorage(skill, { list: [], num: 2 });
-			if (get.config("double_character") === true) {
+			let map = player.getStorage(skill, { list: [], num: 2 });
+			if (get.config("double_character") === true || player.name2) {
 				player.changeCharacter(["jlsgsk_zuoci"]);
-				let map = player.getStorage(skill);
 				map.num = 4;
-				player.setStorage(skill, map);
 			}
+			player.setStorage(skill, map, true);
 		},
 		onremove: true,
 		audio: "ext:极略/audio/skill:2",
@@ -5594,13 +5593,49 @@ const skills = {
 		async content(event, trigger, player) {
 			let storage = player.getStorage(event.name, { list: [], num: 2 });
 			event.num = storage.num;
+			const extraCharacter = [];
+			if (game.getExtensionConfig("极略", "jlsgsk_zuoci")) {
+				if (player.isUnderControl()) {
+					game.swapPlayerAuto(player);
+				}
+				const id = lib.status.videoId++,
+					filter = function (name) {
+						if (name.indexOf("zuoci") > -1 || name.indexOf("xushao") > -1 || name.startsWith("jlsgsoul_sp_")) {
+							return true;
+						}
+						return game.filterPlayer2().some(current => get.nameList(current).includes(name));
+					};
+				if (event.isMine()) {
+					let dialog = ui.create.characterDialog("heightset", filter);
+					dialog.videoId = id;
+					dialog.open();
+				} else if (event.isOnline()) {
+					event.player.send(
+						(id, filter) => {
+							let dialog = ui.create.characterDialog("heightset", filter);
+							dialog.videoId = id;
+							dialog.open();
+						},
+						id,
+						filter
+					);
+				}
+				const resultA = await player.chooseButtonOL([[player, { dialog: id, selectButton: [event.num / 2, event.num / 2] }]]).forResult();
+				if (resultA?.[player.playerid]?.links?.length) {
+					extraCharacter.addArray(resultA[player.playerid].links);
+				}
+			}
 			const characterlist = lib.jlsg.characterList.slice().randomSort(),
 				map = {};
 			for (const current of game.filterPlayer2(() => true, undefined, true)) {
 				characterlist.removeArray(get.nameList(current));
 			}
+			characterlist.removeArray(extraCharacter);
+			for (let name of extraCharacter) {
+				characterlist.unshift(name);
+			}
 			for (let name of characterlist) {
-				if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
+				if (name.indexOf("zuoci") > -1 || name.indexOf("xushao") > -1 || name.startsWith("jlsgsoul_sp_")) {
 					continue;
 				}
 				let skills = (get.character(name)[3] || []).filter(skill => {
@@ -5647,11 +5682,11 @@ const skills = {
 					skills: skills.slice(0, event.num),
 				});
 			};
-			const chooseButton = function (map, num) {
+			const chooseButton = function (player, map, num) {
 				const { promise, resolve } = Promise.withResolvers();
 				const event = _status.event;
 				event.num ??= num;
-				const player = event.player;
+				player ??= event.player;
 				if (!event._result) {
 					event._result = {};
 				}
@@ -5743,10 +5778,10 @@ const skills = {
 			};
 			let next;
 			if (event.isMine()) {
-				next = chooseButton(map, event.num);
+				next = chooseButton(player, map, event.num);
 			} else if (event.isOnline()) {
 				const { promise, resolve } = Promise.withResolvers();
-				event.player.send(chooseButton, map, event.num);
+				event.player.send(chooseButton, player, map, event.num);
 				event.player.wait(async result => {
 					if (result == "ai") {
 						result = await switchToAuto();
@@ -20736,7 +20771,7 @@ const skills = {
 			const cb = _status.jlsg_falu_skill.filter(sk => !skills.includes(sk)).randomGets(3);
 			game.broadcastAll(cb => {
 				_status.jlsg_falu_skill.removeArray(cb);
-			}, cb)
+			}, cb);
 			skills.addArray(cb);
 			player.setStorage("jlsg_falu_skill", skills);
 		},

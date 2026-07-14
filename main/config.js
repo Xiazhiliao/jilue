@@ -327,6 +327,11 @@ let block = {
 			},
 		},
 		sk: {
+			jlsgsk_zuoci: {
+				name:"SK左慈",
+				intro: "开启后“千幻”会在展示武将牌前进行一次自由选将，将选择结果传入展示的武将牌（占用展示数量）",
+				init: false,
+			},
 			jlsgsk_xiahoushi: {
 				name: "Sk夏侯氏",
 				init: "false",
