@@ -3035,7 +3035,7 @@ const skills = {
 		},
 		filterTarget: function (card, player, target) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.other?.["jlsg_jiexi"];
+			const upgrade = upgradeStorage?.["jlsgsr_ganning"]?.[2] || upgradeStorage?.other?.["jlsg_jiexi"];
 			let bool = player.getStorage("jlsg_jiexi_used").length;
 			if (upgrade) {
 				bool = player.getStorage("jlsg_jiexi_used").includes(target);
@@ -3043,24 +3043,21 @@ const skills = {
 			return target != player && target.countCards("he") && !bool;
 		},
 		async content(event, trigger, player) {
-			let target = event.targets[0];
+			player.addTempSkill(`${event.name}_used`, ["phaseBeginStart", "phaseUseAfter", "phaseAfter"])
+			const target = event.target;
 			let result = await player
-				.choosePlayerCard({
+				.gainPlayerCard({
 					position: "he",
 					target: target,
 					forced: true,
 				})
 				.forResult();
-			await player.gain(result.cards);
 			if (["sha", "juedou"].includes(result.cards[0].name)) {
 				await player.chooseUseTarget({
 					card: result.cards[0],
-					filterTarget(card, player, target) {
-						return target === get.event()?.targetx;
-					},
 					addCount: false,
 					nodistance: true,
-					targetx: target,
+					targets: [target],
 				});
 			}
 			if (target.countCards("h")) {
@@ -3083,7 +3080,7 @@ const skills = {
 						})
 						.forResult();
 					if (result2.bool !== true) {
-						player.markAuto("jlsg_jiexi_used", target);
+						player.markAuto("jlsg_jiexi_used", [target]);
 					} else if (target.hasGainableCards(player, "he")) {
 						const { cards } = await player
 							.gainPlayerCard({
@@ -3096,29 +3093,27 @@ const skills = {
 							if (["sha", "juedou"].includes(cards[0].name)) {
 								await player.chooseUseTarget({
 									card: cards[0],
-									filterTarget(card, player, target) {
-										return target === get.event()?.targetx;
-									},
 									addCount: false,
 									nodistance: true,
-									targetx: target,
+									targets: [target],
 								});
 							}
 						}
 					}
 				} else {
-					player.markAuto("jlsg_jiexi_used", target);
+					player.markAuto("jlsg_jiexi_used", [target]);
 				}
 			}
 		},
 		subSkill: {
 			used: {
-				mark: true,
 				charlotte: true,
-				marktext: "劫",
 				init(player, skill) {
 					player.setStorage(skill, []);
 				},
+				onremove: true,
+				mark: true,
+				marktext: "劫",
 				intro: {
 					name: "劫袭",
 					mark(dialog, storage) {
@@ -3129,15 +3124,6 @@ const skills = {
 							dialog.addText("未发动过劫袭");
 						}
 					},
-				},
-			},
-			clear: {
-				trigger: {
-					player: ["phaseAfter"],
-				},
-				forced: true,
-				async content(event, tigger, player) {
-					player.setStorage("jlsg_jiexi_used", []);
 				},
 			},
 		},
