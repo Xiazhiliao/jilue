@@ -3218,6 +3218,7 @@ const skills = {
 				filter(event, player) {
 					return player.isTurnedOver() && ["sha", "juedou"].includes(event.card.name);
 				},
+				forced: true,
 				async content(event, trigger, player) {
 					trigger.targets.remove(player);
 					trigger.excluded.add(player);
