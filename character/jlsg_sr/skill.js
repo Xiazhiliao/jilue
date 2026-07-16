@@ -3013,12 +3013,8 @@ const skills = {
 		},
 	},
 	jlsg_jiexi: {
-		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		enable: "phaseUse",
 		init(player, skill) {
-			player.addSkill("jlsg_jiexi_used");
-			player.addSkill("jlsg_jiexi_clear");
 			if (!_status.gameStarted) {
 				return;
 			}
@@ -3030,6 +3026,8 @@ const skills = {
 				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
 		},
+		audio: "ext:极略/audio/skill:1",
+		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(curr => get.info("jlsg_jiexi").filterTarget(null, player, curr));
 		},
@@ -3043,8 +3041,9 @@ const skills = {
 			return target != player && target.countCards("he") && !bool;
 		},
 		async content(event, trigger, player) {
-			player.addTempSkill(`${event.name}_used`, ["phaseBeginStart", "phaseUseAfter", "phaseAfter"])
+			player.addTempSkill(`${event.name}_used`, ["phaseBeginStart", "phaseUseAfter", "phaseAfter"]);
 			const target = event.target;
+			player.markAuto(`${event.name}_used`, [target]);
 			let result = await player
 				.gainPlayerCard({
 					position: "he",
@@ -3064,6 +3063,9 @@ const skills = {
 				let result1 = await player
 					.chooseBool({
 						prompt: `是否与${get.translation(target)}拼点`,
+						ai(event, player) {
+							return get.attitude(player, event.target) < 0;
+						},
 					})
 					.forResult();
 				if (result1?.bool) {
@@ -3079,29 +3081,28 @@ const skills = {
 							return num;
 						})
 						.forResult();
-					if (result2.bool !== true) {
-						player.markAuto("jlsg_jiexi_used", [target]);
-					} else if (target.hasGainableCards(player, "he")) {
-						const { cards } = await player
-							.gainPlayerCard({
-								position: "he",
-								target: target,
-								forced: true,
-							})
-							.forResult();
-						if (cards?.length) {
-							if (["sha", "juedou"].includes(cards[0].name)) {
-								await player.chooseUseTarget({
-									card: cards[0],
-									addCount: false,
-									nodistance: true,
-									targets: [target],
-								});
+					if (result2.bool) {
+						player.unmarkAuto(`${event.name}_used`, [target]);
+						if (target.hasGainableCards(player, "he")) {
+							const { cards } = await player
+								.gainPlayerCard({
+									position: "he",
+									target: target,
+									forced: true,
+								})
+								.forResult();
+							if (cards?.length) {
+								if (["sha", "juedou"].includes(cards[0].name)) {
+									await player.chooseUseTarget({
+										card: cards[0],
+										addCount: false,
+										nodistance: true,
+										targets: [target],
+									});
+								}
 							}
 						}
 					}
-				} else {
-					player.markAuto("jlsg_jiexi_used", [target]);
 				}
 			}
 		},
