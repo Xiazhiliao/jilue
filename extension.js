@@ -40,6 +40,7 @@ export default async function () {
 	let extension = {
 		name: extensionInfo.name,
 		editable: false,
+		connect: true,
 		content: content,
 		precontent: precontent,
 		config: await basic.resolve(config),

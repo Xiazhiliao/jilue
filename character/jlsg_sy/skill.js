@@ -595,6 +595,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const result = await trigger.player
 				.chooseToGive({
+					target: player,
 					prompt: `${get.translation(player)}对你发动了“暴政”`,
 					prompt2: `交给${get.translation(player)}一张锦囊牌，否则其对你使用一张【杀】`,
 					filterCard(card, player) {
