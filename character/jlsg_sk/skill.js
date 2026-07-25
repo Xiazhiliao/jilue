@@ -11503,46 +11503,8 @@ const skills = {
 		},
 	},
 	jlsg_jili: {
-		audio: "ext:极略/audio/skill:2",
-		trigger: { player: "useCardAfter" },
-		filter(event, player) {
-			if (get.type2(event.card) == "trick") {
-				return false;
-			}
-			return game.hasPlayer(p => p != player && p.inRangeOf(player) && p.countCards("he"));
-		},
-		check(event, player) {
-			if (player.getHistory("useCard").length <= player.getAttackRange()) {
-				return true;
-			}
-			return (
-				game
-					.filterPlayer(p => p != player && p.inRangeOf(player) && p.countCards("he"))
-					.map(p => Math.sign(get.attitude(player, p)))
-					.reduce((a, b) => a + b, 0) < 0
-			);
-		},
 		locked: false,
-		content() {
-			"step 0";
-			event.targets = game.filterPlayer(p => p != player && p.inRangeOf(player) && p.countCards("he")).sortBySeat();
-			event.discardEvents = [];
-			for (let p of event.targets) {
-				let card = p.getCards("he").randomGet();
-				if (!card) {
-					continue;
-				}
-				let next = p.discard(card, "notBySelf");
-				next.delay = false;
-				event.discardEvents.push(next);
-				game.delayex(0.5);
-			}
-			"step 1";
-			if (player.getHistory("useCard").length <= player.getAttackRange()) {
-				// TODO: better handling of discard failure
-				player.draw(event.discardEvents.length);
-			}
-		},
+		audio: "ext:极略/audio/skill:2",
 		mod: {
 			aiOrder: function (player, card, num) {
 				if (get.subtype(card) == "equip4" && !get.cardtag(card, "gifts")) {
@@ -11563,6 +11525,44 @@ const skills = {
 					}
 				}
 			},
+		},
+		trigger: {
+			player: ["useCardAfter", "respondAfter"],
+		},
+		filter(event, player) {
+			if (get.type2(event.card) == "trick") {
+				return false;
+			}
+			return game.hasPlayer(p => p != player && p.inRangeOf(player) && p.countCards("he"));
+		},
+		check(event, player) {
+			if (player.getHistory("useCard").length <= player.getAttackRange()) {
+				return true;
+			}
+			return (
+				game.countPlayer(current => {
+					if (current == player || !current.inRangeOf(player) || !current.hasDiscardableCards(current, "he")) {
+						return 0;
+					}
+					return get.sgnAttitude(player, current);
+				}) < 0
+			);
+		},
+		logTarget(event, player) {
+			return game.filterPlayer(current => current != player && current.inRangeOf(player)).sortBySeat();
+		},
+		async content(event, trigger, player) {
+			event.num = 0;
+			for (const target of event.targets) {
+				if (target.hasDiscardableCards(target, "he")) {
+					await target.randomDiscard();
+					event.num++;
+				}
+			}
+			await game.delayex(0.5);
+			if (player.getHistory("useCard").length <= player.getAttackRange() && event.num > 0) {
+				await player.draw({ num: event.num });
+			}
 		},
 	},
 	jlsg_dujin: {

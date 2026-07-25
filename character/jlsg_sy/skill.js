@@ -2991,7 +2991,7 @@ const skills = {
 		mod: {
 			aiOrder(player, card, num) {
 				if (get.name(card, player) == "sha") {
-					if (["card", "vcard"].includes(get.itemtype(card)) && !card.hasNature()) {
+					if (typeof card.hasNature === "function" && !card.hasNature()) {
 						return num + 2;
 					}
 				}
