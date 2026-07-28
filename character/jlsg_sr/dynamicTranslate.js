@@ -1,6 +1,30 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
+	jlsg_piaoling(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage.other?.jlsg_piaoling;
+		if (improve || player?.index) {
+			return `任意角色的准备阶段，你可以令其失去1点体力并获得五张红桃临时牌，你以此法获得的牌不计入手牌上限。`;
+		}
+		return lib.translate["jlsg_piaoling_info"];
+	},
+	jlsg_miluo(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage.other?.jlsg_miluo;
+		if (improve || player?.index) {
+			return `出牌阶段限一次，你可以选择两名角色，令先选择的角色回复1点体力，后选择的角色失去1点体力。本次回复体力的角色若是你上次发动此技能失去体力的角色，其改为回复3点体力；本次失去体力的角色若是你上次发动此技能回复体力的角色，其改为失去3点体力。`;
+		}
+		return lib.translate["jlsg_miluo_info"];
+	},
+	jlsg_jueyan(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let improve = upgradeStorage["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage.other?.jlsg_jueyan;
+		if (improve || player?.index) {
+			return `限定技，当你进入濒死状态时，你可以回复体力至体力上限，然后令一名角色的体力上限、体力、摸牌数、手牌上限均+2或-2。`;
+		}
+		return lib.translate["jlsg_jueyan_info"];
+	},
 	jlsg_yinmeng(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let improve = upgradeStorage["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage.other?.jlsg_yinmeng;

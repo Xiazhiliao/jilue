@@ -12929,7 +12929,7 @@ const skills = {
 		 * @param { Boolean | undefined } [isInPile] 该牌是否是牌堆内已有的牌，会覆盖除name以外的参数
 		 * @returns { Card | undefind } 若牌名存在，则返回Card，否则为undefind
 		 */
-		createTempCard(name, suit, nature, number, isInPile) {
+		createTempCard:function(name, suit, nature, number, isInPile) {
 			if (!(name in lib.card) && name !== null) {
 				return;
 			}

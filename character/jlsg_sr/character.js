@@ -24,6 +24,8 @@ const characters = {
 	jlsgsr_lvbu: ["male", "qun", 4, ["jlsg_jiwu", "jlsg_sheji"], []],
 	jlsgsr_huatuo: ["male", "qun", 3, ["jlsg_xingyi", "jlsg_guagu", "jlsg_wuqin"], []],
 	jlsgsr_diaochan: ["female", "qun", 3, ["jlsg_lijian", "jlsg_manwu", "jlsg_baiyue"], ["name:null|null"]],
+	//万万没想到还能出新将
+	jlsgsr_xiaoqiao: ["female", "wu", 3, ["jlsg_piaoling", "jlsg_miluo", "jlsg_jueyan"], ["name:桥|null"]],
 };
 
 export default characters;
