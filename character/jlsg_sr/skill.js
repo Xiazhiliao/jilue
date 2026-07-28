@@ -20,6 +20,7 @@ const skills = {
 		},
 		forced: true,
 		popup: false,
+		//因为以前的突破将都有旧版本，用config控制突破，列表，SR小乔开始没有旧版本，所以单独列表
 		originUpgradeList: ["jlsgsr_xiaoqiao"],
 		async content(event, trigger, player) {
 			const nameList = get.nameList(player),
@@ -39,7 +40,7 @@ const skills = {
 						info = info.slice(0, -1);
 						choiceList = choiceList.slice(0, -1);
 					}
-					game.broadcastAll(function (player, skills) {
+					game.broadcastAll(function (player) {
 						_status._jlsgsr_upgrade ??= {};
 						_status._jlsgsr_upgrade[player.playerid] ??= {};
 						_status._jlsgsr_upgrade[player.playerid].other ??= {};
@@ -1244,7 +1245,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -1321,8 +1322,8 @@ const skills = {
 				game.log(trigger.player, "的判定牌改为", cards);
 				await game.delay(2);
 				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const improve = upgradeStorage?.other?.[event.name];
-				await player.draw(improve ? 2 : 1);
+				const upgrade = upgradeStorage?.["jlsgsr_simayi"]?.[2] || upgradeStorage?.other?.[event.name];
+				await player.draw(upgrade ? 2 : 1);
 			}
 		},
 		ai: {
@@ -1339,7 +1340,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && !upgradeStorage?.other?.skill) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -1364,8 +1365,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const improve = upgradeStorage?.other?.[event.name];
-			if (improve) {
+			const upgrade = upgradeStorage?.["jlsgsr_simayi"]?.[2] || upgradeStorage?.other?.[event.name];
+			if (upgrade) {
 				await player.draw();
 			}
 			await player
@@ -1449,7 +1450,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -1474,8 +1475,8 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const improve = upgradeStorage?.other?.[event.name];
-			await player.recoverTo(improve ? player.maxHp : 1);
+			const upgrade = upgradeStorage?.["jlsgsr_simayi"]?.[2] || upgradeStorage?.other?.[event.name];
+			await player.recoverTo(upgrade ? player.maxHp : 1);
 			const result = await player.judge(event.name).forResult();
 			if (!result || !result?.suit) {
 				return;
@@ -1491,7 +1492,7 @@ const skills = {
 					cards.addArray(hs);
 				}
 			}
-			if (improve) {
+			if (upgrade) {
 				let discardPile = _status.discarded.filter(card => get.suit(card) == suit && get.position(card) == "d");
 				if (discardPile.length) {
 					player.$gain2(discardPile, false);
@@ -1645,7 +1646,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_lvbu"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_lvbu"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -1689,11 +1690,11 @@ const skills = {
 			if (trigger.name == "useCard") {
 				player.logSkill(event.name);
 				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const improve = upgradeStorage?.other?.[event.name];
-				if (trigger.jlsg_jiwu || (improve && player.getHistory("useCard").indexOf(trigger) == 0)) {
+				const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.[event.name];
+				if (trigger.jlsg_jiwu || (upgrade && player.getHistory("useCard").indexOf(trigger) == 0)) {
 					game.log(trigger.card, "不可响应");
 					trigger.directHit.addArray(game.players);
-					if (improve) {
+					if (upgrade) {
 						trigger.baseDamage++;
 					}
 				}
@@ -1716,7 +1717,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_lvbu"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_lvbu"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -1726,10 +1727,10 @@ const skills = {
 		enable: "chooseToUse",
 		filter(event, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const improve = upgradeStorage?.other?.["jlsg_sheji"],
+			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"],
 				hs = player.getCards("h"),
 				equip1 = player.getCards("e", card => get.subtype(card) == "equip1");
-			if (improve && hs.length) {
+			if (upgrade && hs.length) {
 				for (let card of hs) {
 					if (game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
 						return false;
@@ -1750,15 +1751,15 @@ const skills = {
 		prompt(event) {
 			const player = event.player;
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const improve = upgradeStorage?.other?.["jlsg_sheji"];
-			return `将一张装备区内的武器牌${improve ? "或所有手牌" : ""}当作【杀】使用`;
+			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"];
+			return `将一张装备区内的武器牌${upgrade ? "或所有手牌" : ""}当作【杀】使用`;
 		},
 		position: "he",
 		selectCard() {
 			const player = get.player();
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const improve = upgradeStorage?.other?.["jlsg_sheji"];
-			if (improve) {
+			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"];
+			if (upgrade) {
 				return [1, player.countCards("h")];
 			}
 			return [1, 1];
@@ -1768,8 +1769,8 @@ const skills = {
 				return get.subtype(card) == "equip1";
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const improve = upgradeStorage?.other?.["jlsg_sheji"];
-			return improve && get.position(card) == "h";
+			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"];
+			return upgrade && get.position(card) == "h";
 		},
 		check(card) {
 			if (get.position(card) == "e") {
@@ -1784,8 +1785,8 @@ const skills = {
 			}
 			const player = get.player();
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const improve = upgradeStorage?.other?.["jlsg_sheji"];
-			return improve && ui.selected.cards.every(card => get.position(card) == "h") && ui.selected.cards.length == player.countCards("h");
+			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"];
+			return upgrade && ui.selected.cards.every(card => get.position(card) == "h") && ui.selected.cards.length == player.countCards("h");
 		},
 		group: "jlsg_sheji_buff",
 		subSkill: {
@@ -2084,7 +2085,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -2135,7 +2136,7 @@ const skills = {
 				await player.draw({ num });
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || (upgradeStorage?.other && event.name in upgradeStorage.other)) {
+			if (upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.[event.name]) {
 				const { bool } = await player
 					.chooseBool({
 						prompt: get.prompt(event.name, target),
@@ -2176,7 +2177,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -2196,7 +2197,7 @@ const skills = {
 				return false;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || (upgradeStorage?.other && "jlsg_xiwu" in upgradeStorage.other);
+			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.["jlsg_xiwu"];
 			if (upgrade) {
 				return true;
 			}
@@ -2211,7 +2212,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || (upgradeStorage?.other && event.name in upgradeStorage.other);
+			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.[event.name];
 			if (upgrade) {
 				await player.draw({ num: 3 });
 			}
@@ -2268,7 +2269,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -2287,7 +2288,7 @@ const skills = {
 			}
 			let target = name === "damageEnd" ? event.source : event.player;
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || (upgradeStorage?.other && "jlsg_juelie" in upgradeStorage.other);
+			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.["jlsg_juelie"];
 			if (!upgrade && name === "damageSource") {
 				return false;
 			}
@@ -2327,7 +2328,7 @@ const skills = {
 				},
 				player(card, player, target) {
 					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || (upgradeStorage?.other && "jlsg_juelie" in upgradeStorage.other);
+					const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.["jlsg_juelie"];
 					if (!upgrade) {
 						return;
 					}
@@ -3050,7 +3051,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_ganning"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_ganning"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -3189,7 +3190,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_ganning"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_ganning"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -3511,7 +3512,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunquan"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_sunquan"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -3712,7 +3713,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunquan"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_sunquan"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -3810,8 +3811,9 @@ const skills = {
 			next.gaintag.add("jlsg_xionglve");
 			await next;
 			player.markSkill(event.name);
-			const improve = _status._jlsgsr_upgrade?.[player.playerid]?.other?.[event.name];
-			if (!improve) {
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const upgrade = upgradeStorage?.["jlsgsr_sunquan"]?.[2] || upgradeStorage?.other?.[event.name];
+			if (!upgrade) {
 				return;
 			}
 			let useCards = event.cards
@@ -4369,7 +4371,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_guanyu"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_guanyu"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -4490,7 +4492,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_guanyu"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_guanyu"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -4584,7 +4586,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -4762,7 +4764,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -4874,7 +4876,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -5229,7 +5231,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_liubei"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_liubei"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -5316,7 +5318,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_liubei"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_liubei"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -5442,7 +5444,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_caocao"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_caocao"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -5589,7 +5591,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_caocao"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_caocao"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -5819,7 +5821,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -5830,7 +5832,7 @@ const skills = {
 		srlose: true,
 		usable(skill, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				return 1;
 			}
 			return 2;
@@ -5869,7 +5871,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -5894,7 +5896,7 @@ const skills = {
 				await target.useCard(card, player);
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] || (upgradeStorage?.other && event.name in upgradeStorage.other);
+			const upgrade = upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] || upgradeStorage?.other?.[event.name];
 			if (!player.hasHistory("sourceDamage", evt => evt == next) || !card) {
 				if (upgrade) {
 					await player.recover();
@@ -5917,7 +5919,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -5943,7 +5945,7 @@ const skills = {
 		logTarget: "player",
 		prompt(event, player) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || (upgradeStorage?.other && "jlsg_piaoling" in upgradeStorage.other);
+			const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.["jlsg_piaoling"];
 			let str = `${event.player == player ? "" : "令其"}失去一点体力并获得${upgrade ? "5" : "3"}张红桃临时牌`;
 			if (event.player == player) {
 				str += `，你以此法获得的牌不计入手牌上限`;
@@ -5974,7 +5976,7 @@ const skills = {
 			}
 			if (list.length) {
 				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || (upgradeStorage?.other && event.name in upgradeStorage.other);
+				const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.[event.name];
 				let num = upgrade ? 5 : 3;
 				event.cards = [];
 				while (num-- > 0) {
@@ -6000,7 +6002,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -6037,7 +6039,7 @@ const skills = {
 			let num = 1;
 			if (event.target === lastTarget) {
 				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || (upgradeStorage?.other && event.name in upgradeStorage.other);
+				const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.[event.name];
 				num = upgrade ? 3 : 2;
 			}
 			await event.target[type](num);
@@ -6070,7 +6072,7 @@ const skills = {
 				return;
 			}
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && (!upgradeStorage?.other || !(skill in upgradeStorage.other))) {
+			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && !upgradeStorage?.other?.[skill]) {
 				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
 				next.set("player", player);
 				next.set("skill", skill);
@@ -6086,7 +6088,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			await player.recoverTo(player.maxHp);
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || (upgradeStorage?.other && event.name in upgradeStorage.other);
+			const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.[event.name];
 			let num = upgrade ? 2 : 1;
 			const result = await player
 				.chooseButtonTarget({
