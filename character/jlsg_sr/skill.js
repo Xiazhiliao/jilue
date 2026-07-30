@@ -5987,7 +5987,7 @@ const skills = {
 					}
 				}
 				if (event.cards.length) {
-					const next = trigger.player.gain({ cards: event.cards, animate: "gain", log: true });
+					const next = trigger.player.gain({ cards: event.cards, animate: "draw", log: true });
 					if (trigger.player == player) {
 						next.gaintag.add(event.name);
 					}
@@ -6148,6 +6148,7 @@ const skills = {
 			storage += num;
 			player.setStorage("jlsg_jueyan_buff", storage, true);
 			player.addSkill("jlsg_jueyan_buff");
+			return game.delayx();
 		},
 		subSkill: {
 			buff: {
