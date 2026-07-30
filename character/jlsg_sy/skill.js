@@ -3798,6 +3798,217 @@ const skills = {
 			}
 		},
 	},
+	jlsgsy_baonuliushan: {
+		animationStr: "打打杀杀多无趣，不如陪朕，醉生梦死。",
+		inherit: "jlsgsy_baonu",
+		mode: ["identity", "guozhan", "boss", "stone"],
+	},
+	jlsgsy_duoquan: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			global: ["phaseBegin", "phaseEnd"],
+		},
+		filter(event, player) {
+			return event.player != player && event.player.hasGainableCards(player, "h");
+		},
+		logTarget: "player",
+		forced: true,
+		async content(event, trigger, player) {
+			await player.randomGain({ target: trigger.player, position: "h" }).set("animate", "giveAuto");
+			if (
+				player.hasHistory("gain", evt => {
+					if (evt.source != trigger.player) {
+						return false;
+					}
+					return evt.cards.some(card => get.suit(card, false) == "heart");
+				})
+			) {
+				let evt = event.getParent("phase", false, true);
+				let next;
+				if (evt && evt.parent && evt.parent.next) {
+					evt = evt.parent;
+				} else if (event.parent && event.parent.next) {
+					evt = event.parent;
+				} else {
+					evt = null;
+				}
+				if (evt) {
+					if (evt.next.some(evtx => evtx.skill == event.name)) {
+						return;
+					}
+					next = game.createEvent("phase", false, evt);
+				} else {
+					next = game.createEvent("phase", false);
+				}
+				next.player = player;
+				next.forceDie = true;
+				next.includeOut = true;
+				next.skill = event.name;
+				next.setContent("phase");
+			}
+		},
+		ai: {
+			threaten: 1.1,
+		},
+	},
+	jlsgsy_fenle: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			global: "useCard",
+		},
+		filter(event, player) {
+			return event.player != player && event.player.hasGainableCards(player, "h");
+		},
+		logTarget: "player",
+		forced: true,
+		async content(event, trigger, player) {
+			await player.randomGain({ target: trigger.player, position: "h" }).set("animate", "giveAuto");
+			if (get.suit(trigger.card) == "heart" && player.hasGainableCards(trigger.player, "h")) {
+				await trigger.player.randomGain({ target: player, position: "h" }).set("animate", "giveAuto");
+			}
+		},
+		global: "jlsgsy_fenle_globalAI",
+		subSkill: {
+			globalAI: {
+				charlotte: true,
+				ai: {
+					player(card, player, target) {
+						if (!game.hasPlayer(current => current != player && current.hasSkill("jlsgsy_fenle"))) {
+							return;
+						}
+						let vcard = get.autoViewAs(card);
+						if (player.hasCards("h", cardx => !vcard.cards.includes(card))) {
+							return [1, -0.3];
+						}
+					},
+				},
+			},
+		},
+		ai: {
+			threaten: 1.1,
+		},
+	},
+	jlsgsy_wangduan: {
+		mod: {
+			ignoredHandcard(card, player) {
+				if (card.hasGaintag("jlsgsy_wangduan")) {
+					return true;
+				}
+			},
+			cardDiscardable(card, player, name) {
+				if (name == "phaseDiscard" && card.hasGaintag("jlsgsy_wangduan")) {
+					return false;
+				}
+			},
+			cardUsable(card, player) {
+				if (card.hasGaintag?.("jlsgsy_wangduan")) {
+					return Infinity;
+				}
+			},
+		},
+		audio: "ext:极略/audio/skill:2",
+		enable: "phaseUse",
+		usable: 1,
+		direct: true,
+		chooseButton: {
+			dialog(event, player) {
+				return ui.create.dialog(get.prompt2("jlsgsy_wangduan"), "hidden");
+			},
+			chooseControl(event, player) {
+				return ["basic", "trick", "equip", "cancel2"];
+			},
+			check(event, player) {
+				const { controls } = get.event();
+				let choice = [];
+				for (const type of controls) {
+					if (type == "cancel2") {
+						continue;
+					}
+					const hs = player.getDiscardableCards(player, "h", card => get.type2(card) == type);
+					if (!hs.length) {
+						continue;
+					}
+					if (!choice[0] || choice[1] < hs.length) {
+						choice = [type, hs.length];
+					}
+				}
+				if (!choice) {
+					return "equip";
+				}
+				return choice[0];
+			},
+			backup(result, player) {
+				return {
+					audio: "jlsgsy_wangduan",
+					control: result.control,
+					log: false,
+					async content(event, trigger, player) {
+						const { control: type } = get.info(event.name),
+							skill = "jlsgsy_wangduan";
+						event.targets = game.filterPlayer().sortBySeat(_status.currentPhase);
+						player.logSkill(skill, event.targets);
+						game.log(player, "选择的类别为", type);
+						player.chat(get.translation(type));
+						const { gainTempCards } = get.info(skill),
+							targets = event.targets.slice();
+						targets.remove(player);
+						let num = 0;
+						for (const target of targets) {
+							const hs = target.getDiscardableCards(target, "h", card => get.type2(card) != type);
+							if (hs.length) {
+								await target.discard(hs);
+								await gainTempCards(target, hs.length, type);
+								num++;
+							}
+						}
+						const hs = player.getDiscardableCards(player, "h", card => get.type2(card) != type);
+						if (hs.length) {
+							await player.discard(hs);
+							const next = gainTempCards(player, hs.length + num, type, skill);
+							await next;
+						}
+					},
+				};
+			},
+			prompt(result, player) {
+				let prompt = `令所有角色弃置手牌中的非${get.translation(result.control)}牌，然后获得等量该类别临时牌`,
+					prompt2 = `每有一名其他角色以此法弃置牌，你多获得一张临时牌。你以此法获得的临时牌不计入手牌上限且无次数限制`;
+				return `###${prompt}###${prompt2}`;
+			},
+		},
+		async gainTempCards(player, num, type, tag) {
+			const { createTempCard, typePBTY } = get.info("jlsg_lingze");
+			const list = typePBTY[type];
+			const cards = [];
+			while (num-- > 0) {
+				const [suit, number, name, nature = null] = list.randomRemove();
+				const card = createTempCard(name, suit, nature, number);
+				if (card) {
+					cards.push(card);
+				}
+			}
+			let next;
+			if (cards.length) {
+				next = player.gain({ cards, animate: "draw", log: true });
+				if (tag) {
+					next.gaintag.add(tag);
+				}
+			} else {
+				next = game.delayx();
+			}
+			return next;
+		},
+		subSkill: {
+			backup: {},
+		},
+		ai: {
+			order: 6,
+			result: {
+				player: 0.5,
+				target: -0.5,
+			},
+		},
+	},
 };
 
 export default skills;
