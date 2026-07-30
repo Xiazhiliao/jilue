@@ -3062,7 +3062,7 @@ const skills = {
 			player.logSkill("jlsgsy_moce", event.result.targets);
 			let evt = event.getParent(),
 				maps = game
-					.filterPlayer(current => current != player)
+					.filterPlayer(/*current => current != player*/)
 					.map(current => {
 						return [
 							current,
@@ -3083,15 +3083,13 @@ const skills = {
 			} else {
 				let map = maps.randomGet();
 				let card = map[1].randomGet();
-				event.result.card.cards = [card];
 				event.result.cards = [card];
+				event.result.card = get.autoViewAs({ name: "guohe", storage: { jlsgsy_moce: map[0] } }, [card]);
 			}
 		},
 		group: "jlsgsy_moce_draw",
 		subSkill: {
 			draw: {
-				sub: true,
-				sourceSkill: "jlsgsy_moce",
 				audio: false,
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
@@ -3099,7 +3097,10 @@ const skills = {
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					await player.draw(1);
+					const source = trigger.card.storage?.jlsgsy_moce;
+					if (source && source != player) {
+						await player.draw(1);
+					}
 				},
 			},
 		},
@@ -3288,7 +3289,7 @@ const skills = {
 							await target.discard(cards).set("discarder", target);
 						}
 					} else {
-						await target.damage(player, 1, "fire");
+						await target.damage(player, 2, "fire");
 					}
 				}
 			}
@@ -3298,7 +3299,7 @@ const skills = {
 	},
 	jlsgsy_jinmie: {
 		audio: "ext:极略/audio/skill:2",
-		usable: 1,
+		//usable: 1,
 		trigger: {
 			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
 		},
@@ -3314,7 +3315,7 @@ const skills = {
 				.sortBySeat(_status.currentPhase || player);
 		},
 		filter(event, player, triggername, target) {
-			return !target.countCards("h") && target.isDamaged() && target.hp > 0;
+			return !player.hasStorage("jlsgsy_jinmie_used", target) && !target.countCards("h") && target.isDamaged() && target.hp > 0;
 		},
 		prompt(event, player, triggername, target) {
 			return get.prompt("jlsgsy_jinmie", target);
@@ -3329,11 +3330,21 @@ const skills = {
 			return target;
 		},
 		async content(event, trigger, player) {
+			player.addTempSkill(`${event.name}_used`);
+			player.markAuto(`${event.name}_used`, event.targets);
 			const target = event.targets[0];
 			await target.damage(player, target.hp, "fire");
 		},
 		global: ["jlsgsy_jinmie_ai"],
 		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				intro: {
+					content: `本回合已对$发动过`,
+				},
+			},
 			ai: {
 				sub: true,
 				sourceSkill: "jlsgsy_jinmie",
