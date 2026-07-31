@@ -196,9 +196,9 @@ let jlsg_qs = {
 						let num = 0,
 							att = Math.abs(get.attitude(player, target)) || 1;
 						if (player.hp > target.hp) {
-							num += get.recoverEffect(target, player, player) / att;
+							num += get.recoverEffect(target, player, target) / att;
 						} else if (player.hp < target.hp && !target.hasSkillTag("nogain")) {
-							num += get.effect(target, { name: "draw" }, player, player) / att;
+							num += get.effect(target, { name: "draw" }, player, target) / att;
 						}
 						return num;
 					},
@@ -328,6 +328,10 @@ let jlsg_qs = {
 				},
 				result: {
 					target(player, target) {
+						let att = Math.abs(get.attitude(player, target)) || 1;
+						if (!target.hasSkill("jlsgqs_yuqingguzong_temp")) {
+							return get.effect(target, { name: "draw" }, player, target) / att;
+						}
 						if (target.hasSkillTag("nofire")) {
 							return 1;
 						}
@@ -396,8 +400,8 @@ let jlsg_qs = {
 				result: {
 					target(player, target) {
 						let att = Math.abs(get.attitude(player, target)) || 1,
-							shunshou = get.effect(target, { name: "shunshou_copy2" }, player, player),
-							sha = target.mayHaveSha(player, "use", null, "bool") && target.canUse("sha", player, false) ? get.effect(player, { name: "sha" }, target, player) : 0;
+							shunshou = get.effect(target, { name: "shunshou_copy2" }, player, target),
+							sha = target.mayHaveSha(player, "use", null, "bool") && target.canUse("sha", player, false) ? get.effect(player, { name: "sha" }, target, target) : 0;
 						if (sha != 0) {
 							return sha / att;
 						}
