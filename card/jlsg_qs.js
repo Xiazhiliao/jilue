@@ -328,27 +328,18 @@ let jlsg_qs = {
 				},
 				result: {
 					target(player, target) {
-						let att = Math.abs(get.attitude(player, target)) || 1;
+						const att = Math.abs(get.attitude(player, target)) || 1,
+							hsnum = player.countCards("hs", card => get.name(card) == "jlsgqs_yuqingguzong"),
+							nodamage = target.hasSkillTag("nofire") || target.hasSkillTag("nodamage") || target.hasSkillTag("notrick");
+						const draw = get.effect(target, { name: "draw" }, player, target) / att,
+							damage = !nodamage ? get.damageEffect(target, player, target, "fire") / att : 0;
 						if (!target.hasSkill("jlsgqs_yuqingguzong_temp")) {
-							return get.effect(target, { name: "draw" }, player, target) / att;
+							if (hsnum > 1 && (att < 0 || nodamage)) {
+								return draw / 2 + damage;
+							}
+							return draw;
 						}
-						if (target.hasSkillTag("nofire")) {
-							return 1;
-						}
-						if (player == target) {
-							return -2;
-						}
-						let nh = target.countCards("h");
-						if (nh > 2) {
-							return -0.5;
-						}
-						if (nh == 1) {
-							return -1;
-						}
-						if (nh == 1 && target.hp == 1) {
-							return -2;
-						}
-						return -0.8;
+						return damage;
 					},
 				},
 				tag: {
