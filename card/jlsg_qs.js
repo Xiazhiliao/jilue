@@ -175,32 +175,36 @@ let jlsg_qs = {
 					useful: [2, 1],
 					value: 1,
 				},
-				wuxie(target, card, player, current, state) {
-					if (get.attitude(current, player) >= 0 && state > 0) {
-						return false;
+				wuxie(target, card, player, viewer, state) {
+					let eff = get.effect(target, card, player, viewer);
+					if (eff * state > 0) {
+						return 0;
 					}
 				},
 				result: {
 					player(player, target) {
-						let num = 1;
-						if (player.hp > target.hp) {
-							num++;
-						} else if (player.hp < target.hp && player.isDamaged()) {
-							num += get.recoverEffect(player, player, player) / get.attitude(player, player);
+						let num = 0,
+							att = get.attitude(player, player);
+						if (player.hp > target.hp && !player.hasSkillTag("nogain")) {
+							num += get.effect(player, { name: "draw" }, player, player) / att;
+						} else if (player.hp < target.hp) {
+							num += get.recoverEffect(player, player, player) / att;
 						}
 						return num;
 					},
 					target(player, target) {
-						let num = 1;
+						let num = 0,
+							att = Math.abs(get.attitude(player, target)) || 1;
 						if (player.hp > target.hp) {
-							num++;
-						} else if (player.hp < target.hp && player.isDamaged()) {
-							num += get.recoverEffect(player, player, player) / get.attitude(player, player);
+							num += get.recoverEffect(target, player, player) / att;
+						} else if (player.hp < target.hp && !target.hasSkillTag("nogain")) {
+							num += get.effect(target, { name: "draw" }, player, player) / att;
 						}
 						return num;
 					},
 				},
 				tag: {
+					draw: 2,
 					recover: 1,
 				},
 			},
@@ -304,17 +308,17 @@ let jlsg_qs = {
 				}
 			},
 			ai: {
-				wuxie(target, card, player, viewer) {
-					if (get.attitude(viewer, target) > 0) {
-						if (target.hasSkillTag("nofire")) {
-							return 0;
-						}
-						if (target.hasSkillTag("nodamage")) {
-							return 0;
-						}
-						if (target.hasSkillTag("notrick")) {
-							return 0;
-						}
+				wuxie(target, card, player, viewer, state) {
+					let eff = get.effect(target, card, player, viewer);
+					if (eff * state > 0) {
+						return 0;
+					}
+					if (target.hasSkillTag("nofire")) {
+						return 0;
+					} else if (target.hasSkillTag("nodamage")) {
+						return 0;
+					} else if (target.hasSkillTag("notrick")) {
+						return 0;
 					}
 				},
 				basic: {
@@ -323,7 +327,7 @@ let jlsg_qs = {
 					useful: 1,
 				},
 				result: {
-					target: function (player, target) {
+					target(player, target) {
 						if (target.hasSkillTag("nofire")) {
 							return 1;
 						}
@@ -344,6 +348,7 @@ let jlsg_qs = {
 					},
 				},
 				tag: {
+					draw: 1,
 					damage: 1,
 					fireDamage: 1,
 					natureDamage: 1,
@@ -382,55 +387,21 @@ let jlsg_qs = {
 					order: 6,
 					useful: 3,
 				},
-				wuxie(target, card, player, viewer) {
-					if (target.hasSha() && get.attitude(target, player) < -2 && Math.random() < 0.5) {
-						return;
-					}
-					if (get.attitude(viewer, target) > 0 && get.effect(target, { name: "shunshou" }, player, viewer) > 0) {
+				wuxie(target, card, player, viewer, state) {
+					let eff = get.effect(target, card, player, viewer);
+					if (eff * state > 0) {
 						return 0;
 					}
 				},
 				result: {
 					target(player, target) {
-						let num = 0;
-						for (let i = 0; i < game.players.length; i++) {
-							if (game.players[i].ai.shown == 0) {
-								num++;
-							}
+						let att = Math.abs(get.attitude(player, target)) || 1,
+							shunshou = get.effect(target, { name: "shunshou_copy2" }, player, player),
+							sha = target.mayHaveSha(player, "use", null, "bool") && target.canUse("sha", player, false) ? get.effect(player, { name: "sha" }, target, player) : 0;
+						if (sha != 0) {
+							return sha / att;
 						}
-						if (num > 1) {
-							return 0;
-						}
-						let nh = target.countCards("h");
-						if (nh > 2) {
-							return -0.5;
-						}
-						if (nh == 1) {
-							return -2;
-						}
-						return -0.8;
-					},
-					player(player, target) {
-						let num = 0;
-						if (get.attitude(target, player) < -1) {
-							num--;
-						}
-						if (get.attitude(target, player) > 1) {
-							num++;
-						}
-						if (target.countCards("h") == 0) {
-							return 0;
-						}
-						if (target.countCards("h") == 1) {
-							return -0.5;
-						}
-						if (player.hp <= 1) {
-							return -2;
-						}
-						if (target.countCards("h", "sha") == 0 && Math.random() < 0.5) {
-							return 1;
-						}
-						return num - 1;
+						return shunshou / att;
 					},
 				},
 				tag: {
@@ -463,13 +434,12 @@ let jlsg_qs = {
 					useful: 4,
 					value: 10,
 				},
-				wuxie(target, card, player, viewer) {
-					if (get.attitude(viewer, target) < 0 && target.hp == 1) {
-						if (Math.random() < 0.7) {
-							return 1;
-						}
+				wuxie(target, card, player, viewer, state) {
+					let eff = get.effect(target, card, player, viewer);
+					if (eff * state > 0) {
 						return 0;
 					}
+					return 1;
 				},
 				result: {
 					target(player, target) {
