@@ -229,9 +229,9 @@ let jlsg_qs = {
 				}
 				return false;
 			},
-			effect() {
-				if (result.bool == false) {
-					player.addTempSkill("jlsgqs_shuiyanqijun_skill");
+			async effect(event, trigger, player, result) {
+				if (!result.bool) {
+					await player.modedDiscard({ cards: player.getCards("e") });
 				}
 			},
 			ai: {
@@ -242,20 +242,14 @@ let jlsg_qs = {
 				},
 				result: {
 					target(player, target) {
-						let eff = target.countCards("h") + 1;
-						if (target.hasJudge("bingliang") || target.hasJudge("caomu")) {
-							eff = Math.max(0, eff - 1.5);
-						}
-						if (target.hasJudge("lebu")) {
-							eff /= 4;
-						}
-						return -eff;
+						let eff = get.value(target.getDiscardableCards(target, "e"));
+						return -eff / 10;
 					},
 				},
 				tag: {
 					discard: 1,
 					loseCard: 1,
-					position: "h",
+					position: "e",
 				},
 			},
 		},
@@ -272,39 +266,12 @@ let jlsg_qs = {
 			modTarget: true,
 			async content(event, trigger, player) {
 				const target = event.target;
-				await target.draw();
-				if (target.countGainableCards(player, "h") < 2) {
-					await target.damage("fire");
-					return;
-				}
-				const { control } = await target
-					.chooseControl("获得你两张牌", "对你造成伤害")
-					.set("prompt", `请选择一项`)
-					.set("prompt2", `${get.translation(player)}对你使用【欲擒故纵】`)
-					.set("ai", function () {
-						const { player, target } = get.event().getParent();
-						if (get.attitude(target, player) > 5) {
-							return "获得你两张牌";
-						}
-						if (get.damageEffect(target, player, target, "fire") > 0) {
-							return "对你造成伤害";
-						}
-						if (target.countCards("h", "tao")) {
-							return "对你造成伤害";
-						}
-						if (target.countCards("h", "jiu") && target.hp == 1) {
-							return "对你造成伤害";
-						}
-						if (target.hp == 1) {
-							return "获得你两张牌";
-						}
-						return "对你造成伤害";
-					})
-					.forResult();
-				if (control == "获得你两张牌") {
-					await player.gainPlayerCard(target, "h", 2, true);
-				} else if (control == "对你造成伤害") {
-					await target.damage("fire");
+				if (target.hasSkill("jlsgqs_yuqingguzong_temp")) {
+					target.removeSkill("jlsgqs_yuqingguzong_temp");
+					await target.damage({ num: 2, nature: "fire" });
+				} else {
+					target.addSkill("jlsgqs_yuqingguzong_temp");
+					await target.draw({ num: 1 });
 				}
 			},
 			ai: {
@@ -313,12 +280,14 @@ let jlsg_qs = {
 					if (eff * state > 0) {
 						return 0;
 					}
-					if (target.hasSkillTag("nofire")) {
-						return 0;
-					} else if (target.hasSkillTag("nodamage")) {
-						return 0;
-					} else if (target.hasSkillTag("notrick")) {
-						return 0;
+					if (target.hasSkill("jlsgqs_yuqingguzong_temp")) {
+						if (target.hasSkillTag("nofire")) {
+							return 0;
+						} else if (target.hasSkillTag("nodamage")) {
+							return 0;
+						} else if (target.hasSkillTag("notrick")) {
+							return 0;
+						}
 					}
 				},
 				basic: {
@@ -575,8 +544,27 @@ let jlsg_qs = {
 		},
 	},
 	skill: {
+		jlsgqs_yuqingguzong_temp: {
+			charlotte: true,
+			mark: "true",
+			markimage2: true,
+			intro: {
+				nocount: true,
+				mark(dialog, storage, player) {
+					dialog.addText("下次受到【欲擒故纵】的效果改为受到两点火焰伤害");
+				},
+			},
+		},
 		jlsgqs_mei_temp: {
 			charlotte: true,
+			mark: "true",
+			markimage2: true,
+			intro: {
+				nocount: true,
+				mark(dialog, storage, player) {
+					dialog.addText("本回合受到【梅】的效果改为摸一张牌");
+				},
+			},
 		},
 		jlsgqs_kongmingdeng_skill: {
 			equipSkill: true,
@@ -1056,31 +1044,31 @@ let jlsg_qs = {
 	translate: {
 		jlsg_qs: "七杀包",
 		jlsgqs_kongmingdeng: "孔明灯",
-		jlsgqs_kongmingdeng_info: "任意角色处于濒死状态时，你可以将你装备区的【孔明灯】当【桃】使用；锁定技，当你从装备区中失去【孔明灯】时，回复1点体力",
+		jlsgqs_kongmingdeng_info: "任意角色处于濒死状态时，你可以将你装备区的【孔明灯】当【桃】使用；锁定技，当你从装备区中失去【孔明灯】时，回复1点体力。",
 		jlsgqs_muniu: "木牛流马",
-		jlsgqs_muniu_info: "出牌阶段限一次，你可以将一张手牌交给一名其他角色，然后摸一张牌；锁定技，当你从装备区中失去【木牛流马】时，须弃置一张基本牌或者失去1点体力",
+		jlsgqs_muniu_info: "出牌阶段限一次，你可以将一张手牌交给一名其他角色，然后摸一张牌；锁定技，当你从装备区中失去【木牛流马】时，须弃置一张基本牌或者失去1点体力。",
 		jlsgqs_taipingyaoshu: "太平要术",
-		jlsgqs_taipingyaoshu_info: "出牌阶段限一次，你可以令一名角色摸一张牌；锁定技，当【太平要术】置入你的装备区时，你须弃置一张红色手牌或者失去1点体力",
+		jlsgqs_taipingyaoshu_info: "出牌阶段限一次，你可以令一名角色摸一张牌；锁定技，当【太平要术】置入你的装备区时，你须弃置一张红色手牌或者失去1点体力。",
 		jlsgqs_dunjiatianshu: "遁甲天书",
-		jlsgqs_dunjiatianshu_info: "锁定技，若你的装备区没有坐骑牌，其他角色计算与你的距离时，始终+1，你计算与其他角色的距离时，始终-1；锁定技，若你的装备区有坐骑牌，你的手牌上限+1",
+		jlsgqs_dunjiatianshu_info: "锁定技，若你的装备区没有坐骑牌，其他角色计算与你的距离时，始终+1，你计算与其他角色的距离时，始终-1；锁定技，若你的装备区有坐骑牌，你的手牌上限+1。",
 		jlsgqs_qixingbaodao: "七星宝刀",
-		jlsgqs_qixingbaodao_info: "当你使用的【杀】被目标角色的【闪】响应后，你可以将装备区的【七星宝刀】交给该名角色，然后获得其装备区的一张牌",
+		jlsgqs_qixingbaodao_info: "当你使用的【杀】被目标角色的【闪】响应后，你可以将装备区的【七星宝刀】交给该名角色，然后获得其装备区的一张牌。",
 		jlsgqs_xiujian: "袖箭",
-		jlsgqs_xiujian_info: "准备阶段开始时，你可以弃置你装备区中的【袖箭】，然后对一名其他角色造成一点伤害；锁定技，当你从装备区失去【袖箭】时，你摸一张牌",
+		jlsgqs_xiujian_info: "准备阶段开始时，你可以弃置你装备区中的【袖箭】，然后对一名其他角色造成一点伤害；锁定技，当你从装备区失去【袖箭】时，你摸一张牌。",
 		jlsgqs_yuxi: "玉玺",
-		jlsgqs_yuxi_info: "锁定技，你的手牌上限+2，准备阶段开始时，你摸一张牌；一名角色使用【杀】对你造成伤害时，可获得你装备区中的【玉玺】",
+		jlsgqs_yuxi_info: "锁定技，你的手牌上限+2，准备阶段开始时，你摸一张牌；一名角色使用【杀】对你造成伤害时，可获得你装备区中的【玉玺】。",
 		jlsgqs_jinnangdai: "锦囊袋",
 		jlsgqs_jinnangdai_info: "锁定技，你的手牌上限+1；你失去装备区里的【锦囊袋】时，摸一张牌。",
 		jlsgqs_qingmeizhujiu: "青梅煮酒",
 		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名其他角色使用，你与目标角色中手牌数较少的角色摸两张牌，体力较少的角色回复1点体力。",
 		jlsgqs_shuiyanqijun: "水淹七军",
-		jlsgqs_shuiyanqijun_info: "出牌阶段，对你攻击范围内的一名其他角色使用。若判定结果不为方片，则该角色出牌阶段开始时须弃置一半数量的手牌（向上取整）",
+		jlsgqs_shuiyanqijun_info: "出牌阶段，对你攻击范围内的一名其他角色使用。若判定结果不为方片，则该角色若结果不为方片，其弃置装备区里的所有牌。",
 		jlsgqs_yuqingguzong: "欲擒故纵",
-		jlsgqs_yuqingguzong_info: "出牌阶段，对你攻击范围内的一名其他角色使用。你令该角色摸一张牌，然后其选择一项：令你获得其两张手牌，或受到1点火焰伤害",
+		jlsgqs_yuqingguzong_info: "出牌阶段，对一名其他角色使用。你令目标角色摸一张牌，然后令其下一次受到【欲擒故纵】的效果改为受到2点火焰伤害。",
 		jlsgqs_caochuanjiejian: "草船借箭",
 		jlsgqs_caochuanjiejian_info: "出牌阶段，对除你以外的所有角色使用。每名目标角色须依次选择一项：对你使用一张【杀】；或令你获得其一张牌。",
 		jlsgqs_wangmeizhike: "望梅止渴",
-		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1且已受伤，则回复2点体力；否则其摸两张牌",
+		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1且已受伤，则回复2点体力；否则其摸两张牌。",
 		jlsgqs_mei: "梅",
 		jlsgqs_mei_info: "出牌阶段，对一名角色使用。若目标角色的体力为1点，回复2点体力，否则摸三张牌，然后你令目标角色本回合再次受到的【梅】的效果时改为摸一张牌。一名其他角色濒死时，对其使用，令其回复1点体力。",
 	},
@@ -1192,10 +1180,19 @@ for (let cardName in jlsg_qs.card) {
 	}
 }
 for (let skill in jlsg_qs.skill) {
-	let info = skill.split("_");
-	let translate = info[0] + "_" + info[1];
+	let list = skill.split("_");
+	let translate = list[0] + "_" + list[1];
 	if (translate in jlsg_qs.translate) {
 		jlsg_qs.translate[skill] = jlsg_qs.translate[translate];
+	}
+	let info = jlsg_qs.skill[skill];
+	if (info.markimage2 && translate in jlsg_qs.card) {
+		let img = jlsg_qs.card[translate].image;
+		if (img.startsWith("ext:")) {
+			info.markimage2 = `${lib.assetURL}extension/${img.slice(4)}`;
+		} else {
+			info.markimage2 = jlsg_qs.card[translate].image;
+		}
 	}
 }
 export default jlsg_qs;

@@ -1,6 +1,156 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 let old_jlsg_qs = {
-	card: {},
+	card: {
+		jlsgqs_shuiyanqijun: {
+			audio: "ext:极略/audio/card",
+			fullskin: true,
+			type: "delay",
+			range: { attack: 1 },
+			filterTarget(card, player, target) {
+				return lib.filter.judge(card, player, target) && player != target;
+			},
+			judge(card) {
+				if (get.suit(card) == "diamond") {
+					return 2;
+				}
+				return -3;
+			},
+			judge2(result) {
+				if (result.bool == false) {
+					return true;
+				}
+				return false;
+			},
+			async effect(event, trigger, player, result) {
+				if (result.bool == false) {
+					player.addTempSkill("jlsgqs_shuiyanqijun_skill");
+				}
+			},
+			ai: {
+				basic: {
+					order: 1,
+					useful: 1,
+					value: 7.5,
+				},
+				result: {
+					target(player, target) {
+						let eff = target.countCards("h") + 1;
+						if (target.hasJudge("bingliang") || target.hasJudge("caomu")) {
+							eff = Math.max(0, eff - 1.5);
+						}
+						if (target.hasJudge("lebu")) {
+							eff /= 4;
+						}
+						return -eff;
+					},
+				},
+				tag: {
+					discard: 1,
+					loseCard: 1,
+					position: "h",
+				},
+			},
+		},
+		jlsgqs_yuqingguzong: {
+			audio: "ext:极略/audio/card",
+			fullskin: true,
+			type: "trick",
+			enable: true,
+			selectTarget: 1,
+			filterTarget(card, player, target) {
+				return target != player;
+			},
+			modTarget: true,
+			async content(event, trigger, player) {
+				const target = event.target;
+				await target.draw();
+				if (target.countGainableCards(player, "h") < 2) {
+					await target.damage("fire");
+					return;
+				}
+				const { control } = await target
+					.chooseControl("获得你两张牌", "对你造成伤害")
+					.set("prompt", `请选择一项`)
+					.set("prompt2", `${get.translation(player)}对你使用【欲擒故纵】`)
+					.set("ai", function () {
+						const { player, target } = get.event().getParent();
+						if (get.attitude(target, player) > 5) {
+							return "获得你两张牌";
+						}
+						if (get.damageEffect(target, player, target, "fire") > 0) {
+							return "对你造成伤害";
+						}
+						if (target.countCards("h", "tao")) {
+							return "对你造成伤害";
+						}
+						if (target.countCards("h", "jiu") && target.hp == 1) {
+							return "对你造成伤害";
+						}
+						if (target.hp == 1) {
+							return "获得你两张牌";
+						}
+						return "对你造成伤害";
+					})
+					.forResult();
+				if (control == "获得你两张牌") {
+					await player.gainPlayerCard(target, "h", 2, true);
+				} else if (control == "对你造成伤害") {
+					await target.damage("fire");
+				}
+			},
+			ai: {
+				wuxie(target, card, player, viewer, state) {
+					let eff = get.effect(target, card, player, viewer);
+					if (eff * state > 0) {
+						return 0;
+					}
+					if (target.hasSkillTag("nofire")) {
+						return 0;
+					} else if (target.hasSkillTag("nodamage")) {
+						return 0;
+					} else if (target.hasSkillTag("notrick")) {
+						return 0;
+					}
+				},
+				basic: {
+					order: 3,
+					value: 5.5,
+					useful: 1,
+				},
+				result: {
+					target(player, target) {
+						if (target.hasSkillTag("nofire")) {
+							return 0;
+						} else if (target.hasSkillTag("nodamage")) {
+							return 0;
+						} else if (target.hasSkillTag("notrick")) {
+							return 0;
+						}
+						if (player == target) {
+							return -2;
+						}
+						let nh = target.countCards("h");
+						if (nh > 2) {
+							return -0.5;
+						}
+						if (nh == 1) {
+							return -1;
+						}
+						if (nh == 1 && target.hp == 1) {
+							return -2;
+						}
+						return -0.8;
+					},
+				},
+				tag: {
+					draw: 1,
+					damage: 1,
+					fireDamage: 1,
+					natureDamage: 1,
+				},
+			},
+		},
+	},
 	skill: {
 		jlsgqs_mei: {
 			audio: "ext:极略/audio/card",
@@ -266,6 +416,8 @@ let old_jlsg_qs = {
 		jlsgqs_mei_info: "出牌阶段，对一名角色使用。令其摸两张牌；若其体力值为1且已受伤，则改为回复1点体力。一名其他角色濒死时，对其使用，令其回复1点体力；若其因此脱离濒死状态，其摸一张牌。",
 		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名有手牌的其他角色使用，该角色展示一张手牌，然后你可以弃置一张点数大于此牌的手牌并回复一点体力，或者弃置一张点数不大于此牌的手牌令其回复一点体力",
 		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1且已受伤，则回复1点体力；否则其摸两张牌",
+		jlsgqs_yuqingguzong_info: "出牌阶段，对你攻击范围内的一名其他角色使用。你令该角色摸一张牌，然后其选择一项：令你获得其两张手牌，或受到1点火焰伤害",
+		jlsgqs_shuiyanqijun_info: "出牌阶段，对你攻击范围内的一名其他角色使用。若判定结果不为方片，则该角色本回合下个出牌阶段开始时须弃置一半数量的手牌（向上取整）。",
 	},
 };
 export default old_jlsg_qs;
