@@ -3851,7 +3851,7 @@ const skills = {
 			threaten: 1.1,
 		},
 	},
-	jlsgsy_fenle: {
+	jlsgsy_lanle: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			global: "useCard",
@@ -3867,13 +3867,13 @@ const skills = {
 				await trigger.player.randomGain({ target: player, position: "h" }).set("animate", "giveAuto");
 			}
 		},
-		global: "jlsgsy_fenle_globalAI",
+		global: "jlsgsy_lanle_globalAI",
 		subSkill: {
 			globalAI: {
 				charlotte: true,
 				ai: {
 					player(card, player, target) {
-						if (!game.hasPlayer(current => current != player && current.hasSkill("jlsgsy_fenle"))) {
+						if (!game.hasPlayer(current => current != player && current.hasSkill("jlsgsy_lanle"))) {
 							return;
 						}
 						let vcard = get.autoViewAs(card);
