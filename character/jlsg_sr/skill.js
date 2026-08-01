@@ -5953,10 +5953,10 @@ const skills = {
 			return str + "。";
 		},
 		check(event, player) {
-			const gain = get.effect(event.player, { name: "draw" }, player, player) + 0.1,
+			const gain = get.effect(event.player, { name: "draw" }, player, player),
 				lose = get.effect(event.player, { name: "losehp" }, player, player);
 			if (gain > 0 && event.player.getHp() < 2) {
-				return lose * 1.5 + gain * 2 > 0;
+				return lose * 2 + gain * 1.5 > 0;
 			}
 			return lose + gain * 2 > 0;
 		},
@@ -6011,11 +6011,14 @@ const skills = {
 		},
 		intro: {
 			mark(dialog, storage, player, evt, skill) {
-				if (get.itemtype(storage) !== "players") {
-					storage = get.info(skill).getLastTargets(player, skill);
+				const map = get.info(skill).getLastMap(player, skill, evt);
+				if (map.recover?.length) {
+					dialog.addText(`回复体力的角色`);
+					dialog.add(map.recover);
 				}
-				if (storage.length) {
-					dialog.add(storage);
+				if (map.loseHp?.length) {
+					dialog.addText(`失去体力的角色`);
+					dialog.add(map.loseHp);
 				}
 			},
 		},
@@ -6027,39 +6030,63 @@ const skills = {
 		},
 		selectTarget: [2, 2],
 		filterTarget: lib.filter.all,
-		targetprompt: ["回复", "流失"],
+		targetprompt(target) {
+			const player = get.player(),
+				skill = "jlsg_miluo";
+			const map = get.info(skill).getLastMap(player, skill),
+				reverse = { recover: "loseHp", loseHp: "recover" },
+				type = ui.selected.targets?.length == 1 ? "recover" : "loseHp";
+			let str = type == "recover" ? "回复" : "流失";
+			if (map[reverse[type]]?.includes?.(target)) {
+				str = "大" + str;
+			}
+			return str;
+		},
+		complexTarget: true,
+		multitarget: true,
+		multiline: true,
 		async content(event, trigger, player) {
-			const type = event.num == 0 ? "recover" : "loseHp";
-			event[`${event.name}_type`] = type;
-			let targets = player.getStorage(event.name, []);
-			if (!targets) {
-				targets = get.info(event.name).getLastTargets(player, event.name);
+			const reverse = { recover: "loseHp", loseHp: "recover" },
+				evt = event.getParent();
+			const map = get.info(event.name).getLastMap(player, event.name, evt);
+			for (const index in event.targets) {
+				const target = event.targets[index];
+				let type = index == 0 ? "recover" : "loseHp",
+					num = 1;
+				if (map[reverse[type]]?.includes(target)) {
+					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+					const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.[event.name];
+					num = upgrade ? 3 : 2;
+				}
+				await target[type](num);
+				if (evt) {
+					evt[event.name] ??= { recover: [], loseHp: [] };
+					evt[event.name][type].push(target);
+				}
 			}
-			const lastTarget = targets[type == "recover" ? 0 : 1];
-			let num = 1;
-			if (event.target === lastTarget) {
-				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.[event.name];
-				num = upgrade ? 3 : 2;
-			}
-			await event.target[type](num);
+			player.markSkill(event.name);
 		},
-		async contentAfter(event, trigger, player) {
-			player.setStorage(event.skill, event.targets, true);
-		},
-		getLastTargets: function (player, skill) {
-			const historys = player.getAllHistory("useSkill", evt => evt.skill == skill && evt.event[`${skill}_type`] == type);
-			return historys.at(-1)?.targets || [];
+		getLastMap(player, skill, event) {
+			const history = player.getAllHistory("useSkill", evt => evt.skill == skill && evt.targets?.length && evt.event != evt);
+			return history.at(-1)?.event?.[skill] || { recover: [], loseHp: [] };
 		},
 		ai: {
 			order: 20,
 			result: {
 				player: 0,
 				target(player, target) {
-					if (ui.selected.targets?.length) {
-						return -1;
+					const map = get.info("jlsg_miluo").getLastMap(player, "jlsg_miluo"),
+						att = get.attitude(player, target),
+						reverse = { recover: "loseHp", loseHp: "recover" };
+					const effs = {
+						loseHp: get.effect(target, { name: "losehp" }, player, player) / att,
+						recover: get.recoverEffect(target, player, player) / att,
+					};
+					const type = !ui.selected.targets?.length ? "recover" : "loseHp";
+					if (map[reverse[type]]?.includes?.(target)) {
+						return effs[type] * 1.1 + Math.sign(att) / 100;
 					}
-					return target.isDamaged() ? 1 : 0;
+					return effs[type] + Math.sign(att) / 100;
 				},
 			},
 		},
@@ -6084,7 +6111,7 @@ const skills = {
 			player: "dying",
 		},
 		check: () => true,
-		async content(event, tirgger, player) {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			await player.recoverTo(player.maxHp);
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
