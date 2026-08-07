@@ -6119,7 +6119,7 @@ const skills = {
 			let num = upgrade ? 2 : 1;
 			const result = await player
 				.chooseButtonTarget({
-					createDialog: [`###${get.translation(event.name)}：请选择一个数字和一名角色###令其体力上限、体力、摸牌数、手牌上限均+${num}或-${num}`, [[`-${num}`, `+${num}`], "textbutton"]],
+					createDialog: [`###${get.translation(event.name)}：请选择一个数字和一名角色###令其体力、体力上限、摸牌数、手牌上限均+${num}或-${num}`, [[`-${num}`, `+${num}`], "textbutton"]],
 					complexSelect: true,
 					selectButton: [1, 1],
 					filterButton: lib.filter.all,
@@ -6160,22 +6160,20 @@ const skills = {
 				})
 				.forResult();
 			if (result?.bool && result.links?.length && result.targets?.length) {
-				await get.info(event.name).effectContent(result.targets[0], Number(result.links[0]));
+				const num = Number(result.links[0]);
+				if (num > 0) {
+					await player.recover(num);
+					await player.gainMaxHp(num);
+				} else {
+					await player.loseHp(-num);
+					await player.loseMaxHp(-num);
+				}
+				let storage = player.getStorage("jlsg_jueyan_buff", 0);
+				storage += num;
+				player.setStorage("jlsg_jueyan_buff", storage, true);
+				player.addSkill("jlsg_jueyan_buff");
+				await game.delayx();
 			}
-		},
-		async effectContent(player, num) {
-			if (num > 0) {
-				await player.gainMaxHp(num);
-				await player.recover(num);
-			} else {
-				await player.loseMaxHp(-num);
-				await player.loseHp(-num);
-			}
-			let storage = player.getStorage("jlsg_jueyan_buff", 0);
-			storage += num;
-			player.setStorage("jlsg_jueyan_buff", storage, true);
-			player.addSkill("jlsg_jueyan_buff");
-			return game.delayx();
 		},
 		subSkill: {
 			buff: {

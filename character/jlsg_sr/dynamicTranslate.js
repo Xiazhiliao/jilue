@@ -21,7 +21,7 @@ const dynamicTranslates = {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let upgrade = upgradeStorage["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage.other?.jlsg_jueyan;
 		if (upgrade || player?.index) {
-			return `限定技，当你进入濒死状态时，你可以回复体力至体力上限，然后令一名角色的体力上限、体力、摸牌数、手牌上限均+2或-2。`;
+			return `限定技，当你进入濒死状态时，你可以回复体力至体力上限，然后令一名角色的体力、体力上限、摸牌数、手牌上限均+2或-2。`;
 		}
 		return lib.translate["jlsg_jueyan_info"];
 	},
