@@ -2929,7 +2929,7 @@ const skills = {
 			if (!trigger) {
 				player.addTempSkill("jlsgsy_ejue_used", { player: "phaseUseAfter" });
 			}
-			const { draw } = await player.draw(2).forResult();
+			const { cards: draw } = await player.draw({ num: 2 }).forResult();
 			if (!draw?.length) {
 				return;
 			}
