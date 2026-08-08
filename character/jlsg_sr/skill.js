@@ -146,6 +146,35 @@ const skills = {
 		},
 		//属性突破列表
 		upgradeContent: {
+			jlsgsr_xuzhu: {
+				"初始手牌数+3": async function (event, trigger, player) {
+					player.when({ global: "gameDrawBegin" }).step(async function (event, trigger, player) {
+						const me = player,
+							numx = trigger.num;
+						trigger.num =
+							typeof numx == "function"
+								? function (player) {
+										if (player == me) {
+											return numx(player) + 3;
+										}
+										return numx(player);
+									}
+								: function (player) {
+										if (player == me) {
+											return numx + 3;
+										}
+										return numx;
+									};
+					});
+					event.info[0] = true;
+				},
+				"体力上限+1": async function (event, trigger, player) {
+					player.maxHp++;
+					player.hp++;
+					player.update();
+					event.info[1] = true;
+				},
+			},
 			jlsgsr_xiaoqiao: {
 				"初始手牌数+3": async function (event, trigger, player) {
 					player.when({ global: "gameDrawBegin" }).step(async function (event, trigger, player) {
@@ -1090,151 +1119,140 @@ const skills = {
 	//   }
 	// },
 	jlsg_aozhan: {
-		audio: "ext:极略/audio/skill:2",
 		srlose: true,
-		shaRelated: true,
-		marktext: "战",
-		intro: {
-			markcount: "expansion",
-			content: "expansion",
-		},
-		onremove(player, skill) {
-			const cards = player.getExpansions(skill);
-			if (cards.length) {
-				player.loseToDiscardpile(cards);
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
+			}
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_xuzhu"]?.[2] && !upgradeStorage?.other?.[skill]) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
 		},
-		trigger: {
-			player: "damageEnd",
-			source: "damageSource",
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.hasGaintag("jlsg_aozhan")) {
+					return Infinity;
+				}
+			},
+			ignoredHandcard(card, player) {
+				if (card.hasGaintag("jlsg_aozhan")) {
+					return true;
+				}
+			},
+			cardDiscardable(card, player, name) {
+				if (name == "phaseDiscard" && card.hasGaintag("jlsg_aozhan")) {
+					return false;
+				}
+			},
 		},
-		filter(event, player) {
-			if (event.num <= 0) {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			source: "damageSource",
+			global: "damageEnd",
+		},
+		filter(event, player, name) {
+			if (event.player <= 0) {
 				return false;
 			}
-			return event.card?.name == "sha" || event.card?.name == "juedou";
+			if (name == "damageEnd" && event.player != player) {
+				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+				const upgrade = upgradeStorage?.["jlsg_aozhan"]?.[2] || upgradeStorage?.other?.[event.name];
+				return upgrade;
+			}
+			return true;
 		},
-		frequent: true,
+		frequent: "check",
 		check() {
 			return true;
 		},
-		async content(event, trigger, player) {
-			const cards = get.cards(trigger.num);
-			const next = player.addToExpansion(cards, "gain2");
-			next.gaintag.add("jlsg_aozhan");
-			await next;
-		},
-		group: ["jlsg_aozhan_use"],
-		subSkill: {
-			use: {
-				audio: "jlsg_aozhan",
-				enable: "phaseUse",
-				usable: 1,
-				filter: function (event, player) {
-					return player.getExpansions("jlsg_aozhan").length;
-				},
-				async content(event, trigger, player) {
-					const result = await player
-						.chooseControl("收入手牌", "置入弃牌堆")
-						.set("dialog", ["战", player.getExpansions("jlsg_aozhan")])
-						.set("ai", function (event, player) {
-							let value = 0,
-								i;
-							const cards = player.getExpansions("jlsg_aozhan");
-							for (i = 0; i < cards.length; i++) {
-								value += get.value(cards[i]);
-								if (jlsg.isWeak(player) && get.tag(cards[i], "save")) {
-									value += get.value(cards[i]);
-								}
-							}
-							value /= player.getExpansions("jlsg_aozhan").length;
-							if (value > 4) {
-								return "收入手牌";
-							}
-							return "置入弃牌堆";
-						})
-						.forResult();
-					const cards = player.getExpansions("jlsg_aozhan");
-					if (result.control == "置入弃牌堆") {
-						await player.loseToDiscardpile(cards);
-						await player.draw(cards.length);
-					} else {
-						await player.gain(cards, "log", "gain2");
-					}
-				},
-				ai: {
-					order: 1,
-					result: {
-						player: function (player) {
-							if (player.getExpansions("jlsg_aozhan").length >= 2) {
-								return 1;
-							}
-							if (player.hp + player.countCards("h") <= 3) {
-								return 0.5;
-							}
-							return 0;
-						},
-					},
-				},
+		content: [
+			async (event, trigger, player) => {
+				return player.draw({ num: 1 });
 			},
-		},
-	},
-	jlsg_huxiao: {
-		audio: "ext:极略/audio/skill:true",
-		srlose: true,
-		shaRelated: true,
-		trigger: { source: "damageBegin1" },
-		filter: function (event, player) {
-			return !player.isTurnedOver() && player.isPhaseUsing(true) && event.card?.name == "sha";
-		},
-		check: function (event, player) {
-			if (!event.player) {
-				return -1;
-			}
-			if (get.attitude(player, event.player) > 0) {
-				return false;
-			}
-			if (event.player.hasSkillTag("filterDamage")) {
-				return false;
-			}
-			if (
-				event.player.hasSkillTag("filterDamage", null, {
-					player: player,
-					card: event.card,
-				})
-			) {
-				return -10;
-			}
-			const e2 = event.player.getVEquips("equip2");
-			if (e2) {
-				if (e2.some(card => card.name == "tengjia")) {
-					if (game.hasNature(event, "fire")) {
-						return 10;
+			async (event, trigger, player, result) => {
+				const { cards } = result || {};
+				if (cards?.length) {
+					const cardsx = cards.filter(card => get.is.damageCard(card));
+					if (cardsx.length) {
+						player.addGaintag(cardsx, event.name);
 					}
 				}
+			},
+		],
+	},
+	jlsg_huxiao: {
+		srlose: true,
+		init(player, skill) {
+			if (!_status.gameStarted) {
+				return;
 			}
-			if (event.player.hasSkill("kuangfeng2") && game.hasNature(event, "fire")) {
-				return 10;
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage?.["jlsgsr_xuzhu"]?.[2] && !upgradeStorage?.other?.[skill]) {
+				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
+				next.set("player", player);
+				next.set("skill", skill);
+				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
-			return get.damageEffect(event.player, player, player, get.nature(event));
+		},
+		audio: "ext:极略/audio/skill:true",
+		trigger: {
+			globale: "damageBegin1",
+		},
+		filter(event, player) {
+			if (!event.source) {
+				return false;
+			}
+			return ["sha", "juedou"].includes(event.card?.name) && player.hasDiscardableCards(player, "he", card => get.is.damageCard(card));
+		},
+		async cost(event, trigger, player) {
+			let translation = get.skillInfoTranslation(event.skill, player);
+			let index = translation.indexOf("1");
+			event.result = await player
+				.chooseToDiscard({
+					prompt: `${get.translation(event.skill)}：是否弃置一张伤害牌，令${get.translation(trigger.source)}对${get.translation(trigger.player)}造成的伤害+1？`,
+					prompt2: translation.slice(index + 2),
+					selectCard: [1, 1],
+					filterCard: card => get.is.damageCard(card),
+					ai(card) {
+						if (!get.event().dicardCheck) {
+							return 0;
+						}
+						return 8 - get.value(card);
+					},
+					dicardCheck: get.damageEffect(trigger.source, trigger.player, player, trigger.nature) * get.attitude(player, trigger.player) < 0,
+					chooseonly: true,
+				})
+				.forResult();
 		},
 		async content(event, trigger, player) {
+			await player.discard({ cards: event.cards });
 			trigger.num++;
-			await player.draw();
-			player
-				.when({ player: "useCardAfter" })
-				.filter(evt => evt.card == trigger.card)
-				.step(async function (event, trigger, player) {
-					const evt = trigger.getParent("phaseUse", true);
-					if (evt?.name == "phaseUse") {
-						evt.skipped = true;
-					}
-					const evtx = trigger.getParent("phase", true);
-					if (evtx?.name == "phase") {
-						evtx.finish();
-					}
+			game.log(player, `令伤害`, `#y+1`);
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			const upgrade = upgradeStorage?.["jlsg_huxiao"]?.[2] || upgradeStorage?.other?.[event.name];
+			const { result } = await player.chooseBool({
+				prompt: `${get.translation(event.name)}：是否翻${upgrade ? "" : "至背"}面，令此伤害再+1？`,
+				prompt2: `然后若你背面朝上，你摸两张牌`,
+				ai(event, player) {
+					return true;
+				},
+			});
+			if (result?.bool) {
+				if (upgrade) {
 					await player.turnOver();
-				});
+				} else {
+					await player.turnOver(true);
+				}
+				trigger.num++;
+				game.log(player, `令伤害`, `#y+1`);
+				if (player.isTurnedOver()) {
+					await player.draw({ num: 2 });
+				}
+			}
 		},
 	},
 	jlsg_guicai: {

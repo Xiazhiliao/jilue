@@ -1,5 +1,165 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export default {
+	jlsgsr_xuzhu: {
+		1: {
+			skill: {
+				jlsg_aozhan: {
+					audio: "ext:极略/audio/skill:2",
+					srlose: true,
+					shaRelated: true,
+					marktext: "战",
+					intro: {
+						markcount: "expansion",
+						content: "expansion",
+					},
+					onremove(player, skill) {
+						const cards = player.getExpansions(skill);
+						if (cards.length) {
+							player.loseToDiscardpile(cards);
+						}
+					},
+					trigger: {
+						player: "damageEnd",
+						source: "damageSource",
+					},
+					filter(event, player) {
+						if (event.num <= 0) {
+							return false;
+						}
+						return event.card?.name == "sha" || event.card?.name == "juedou";
+					},
+					frequent: true,
+					check() {
+						return true;
+					},
+					async content(event, trigger, player) {
+						const cards = get.cards(trigger.num);
+						const next = player.addToExpansion(cards, "gain2");
+						next.gaintag.add("jlsg_aozhan");
+						await next;
+					},
+					group: ["jlsg_aozhan_use"],
+					subSkill: {
+						use: {
+							audio: "jlsg_aozhan",
+							enable: "phaseUse",
+							usable: 1,
+							filter: function (event, player) {
+								return player.getExpansions("jlsg_aozhan").length;
+							},
+							async content(event, trigger, player) {
+								const result = await player
+									.chooseControl("收入手牌", "置入弃牌堆")
+									.set("dialog", ["战", player.getExpansions("jlsg_aozhan")])
+									.set("ai", function (event, player) {
+										let value = 0,
+											i;
+										const cards = player.getExpansions("jlsg_aozhan");
+										for (i = 0; i < cards.length; i++) {
+											value += get.value(cards[i]);
+											if (jlsg.isWeak(player) && get.tag(cards[i], "save")) {
+												value += get.value(cards[i]);
+											}
+										}
+										value /= player.getExpansions("jlsg_aozhan").length;
+										if (value > 4) {
+											return "收入手牌";
+										}
+										return "置入弃牌堆";
+									})
+									.forResult();
+								const cards = player.getExpansions("jlsg_aozhan");
+								if (result.control == "置入弃牌堆") {
+									await player.loseToDiscardpile(cards);
+									await player.draw(cards.length);
+								} else {
+									await player.gain(cards, "log", "gain2");
+								}
+							},
+							ai: {
+								order: 1,
+								result: {
+									player: function (player) {
+										if (player.getExpansions("jlsg_aozhan").length >= 2) {
+											return 1;
+										}
+										if (player.hp + player.countCards("h") <= 3) {
+											return 0.5;
+										}
+										return 0;
+									},
+								},
+							},
+						},
+					},
+				},
+				jlsg_huxiao: {
+					audio: "ext:极略/audio/skill:true",
+					srlose: true,
+					shaRelated: true,
+					trigger: { source: "damageBegin1" },
+					filter: function (event, player) {
+						return !player.isTurnedOver() && player.isPhaseUsing(true) && event.card?.name == "sha";
+					},
+					check: function (event, player) {
+						if (!event.player) {
+							return -1;
+						}
+						if (get.attitude(player, event.player) > 0) {
+							return false;
+						}
+						if (event.player.hasSkillTag("filterDamage")) {
+							return false;
+						}
+						if (
+							event.player.hasSkillTag("filterDamage", null, {
+								player: player,
+								card: event.card,
+							})
+						) {
+							return -10;
+						}
+						const e2 = event.player.getVEquips("equip2");
+						if (e2) {
+							if (e2.some(card => card.name == "tengjia")) {
+								if (game.hasNature(event, "fire")) {
+									return 10;
+								}
+							}
+						}
+						if (event.player.hasSkill("kuangfeng2") && game.hasNature(event, "fire")) {
+							return 10;
+						}
+						return get.damageEffect(event.player, player, player, get.nature(event));
+					},
+					async content(event, trigger, player) {
+						trigger.num++;
+						await player.draw();
+						player
+							.when({ player: "useCardAfter" })
+							.filter(evt => evt.card == trigger.card)
+							.step(async function (event, trigger, player) {
+								const evt = trigger.getParent("phaseUse", true);
+								if (evt?.name == "phaseUse") {
+									evt.skipped = true;
+								}
+								const evtx = trigger.getParent("phase", true);
+								if (evtx?.name == "phase") {
+									evtx.finish();
+								}
+								await player.turnOver();
+							});
+					},
+				},
+			},
+			translate: {
+				jlsg_aozhan: "鏖战",
+				jlsg_aozhan_info: "每当你因【杀】或【决斗】造成或受到1点伤害后，你可将牌堆顶的一张牌置于你的武将牌上，称为「战」。出牌阶段限一次，你可以选择一项：1、将所有「战」收入手牌。2、弃置所有「战」，然后摸等量的牌。",
+				jlsg_huxiao: "虎啸",
+				jlsg_huxiao_info: "出牌阶段，当你使用【杀】造成伤害时，若你的武将牌正面向上，你可以令此伤害+1并摸一张牌。若如此做，则此【杀】结算完毕后，将你的武将牌翻面并结束当前回合。",
+			},
+		},
+	},
 	jlsgsr_sunshangxiang: {
 		1: {
 			skill: {

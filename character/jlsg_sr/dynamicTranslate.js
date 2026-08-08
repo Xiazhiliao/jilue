@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
+	jlsg_aozhan(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let upgrade = upgradeStorage["jlsgsr_xuzhu"]?.[2] || upgradeStorage.other?.jlsg_piaoling;
+		if (upgrade || player?.index) {
+			return `当你造成伤害后，或当任意角色受到伤害后，你可以摸一张牌，你以此法获得的伤害牌无次数限制且不计入手牌上限。`;
+		}
+		return lib.translate["jlsg_aozhan_info"];
+	},
+	jlsg_huxiao(player) {
+		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+		let upgrade = upgradeStorage["jlsgsr_xuzhu"]?.[2] || upgradeStorage.other?.jlsg_piaoling;
+		if (upgrade || player?.index) {
+			return `当任意角色使用【杀】或【决斗】造成伤害时，你可以弃置一张伤害牌，令此伤害+1，然后你可以翻面，令此伤害+1，若你背面朝上，你摸两张牌。`;
+		}
+		return lib.translate["jlsg_huxiao_info"];
+	},
 	jlsg_piaoling(player) {
 		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 		let upgrade = upgradeStorage["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage.other?.jlsg_piaoling;

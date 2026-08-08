@@ -69,6 +69,29 @@ let block = {
 	},
 	oldCharacterReplace = {
 		sr: {
+			jlsgsr_xuzhu: {
+				name: "SR许褚",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				jlsg_upgrade: true,
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_xuzhu", item);
+					if (item == "false" || Number(item) > 1) {
+						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						upgradeList.add("jlsgsr_xuzhu");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_xuzhu")) {
+							let upgradeList = lib.config.extension_极略_upgradeList || [];
+							upgradeList.remove("jlsgsr_xuzhu");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
 			jlsgsr_sunshangxiang: {
 				name: "SR孙尚香",
 				init: "false",
@@ -328,7 +351,7 @@ let block = {
 		},
 		sk: {
 			jlsgsk_zuoci: {
-				name:"SK左慈",
+				name: "SK左慈",
 				intro: "开启后“千幻”会在展示武将牌前进行一次自由选将，将选择结果传入展示的武将牌（占用展示数量）",
 				init: false,
 			},
