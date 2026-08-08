@@ -1,6 +1,65 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 let old_jlsg_qs = {
 	card: {
+		jlsgqs_taipingyaoshu: {
+			fullskin: true,
+			type: "equip",
+			recastable: true,
+			subtype: "equip5",
+			enable: true,
+			skills: ["jlsgqs_taipingyaoshu_skill"],
+			onEquip: async function (event, trigger, player) {
+				const result = await player
+					.chooseToDiscard("h", function (card) {
+						if (get.color(card) != "red") {
+							return false;
+						}
+						return lib.filter.cardDiscardable.apply(this, arguments);
+					})
+					.set("ai", function (card) {
+						const player = get.player();
+						if (card.name == "tao") {
+							return -10;
+						}
+						if (card.name == "jiu" && player.hp == 1) {
+							return -10;
+						}
+						if (player.hp == 1) {
+							return 15 - get.value(card);
+						}
+						return 8 - get.value(card);
+					})
+					.set("prompt2", "太平要术：弃置一张红色手牌，否则失去1点体力")
+					.forResult();
+				if (!result?.bool) {
+					await player.loseHp();
+				}
+			},
+			ai: {
+				basic: {
+					equipValue(card, player) {
+						if (player.countCards("h", { color: "red" }) < 1) {
+							return 1;
+						}
+						return 6;
+					},
+				},
+			},
+		},
+		jlsgqs_jinnangdai: {
+			fullskin: true,
+			type: "equip",
+			subtype: "equip5",
+			skills: ["jlsgqs_jinnangdai_skill"],
+			recastable: true,
+			loseDelay: false,
+			onLose: async function (event, trigger, player) {
+				player.addTempSkill("jlsgqs_jinnangdai_skill_lose");
+			},
+			ai: {
+				basic: { equipValue: 4 },
+			},
+		},
 		jlsgqs_shuiyanqijun: {
 			audio: "ext:极略/audio/card",
 			fullskin: true,
@@ -152,6 +211,222 @@ let old_jlsg_qs = {
 		},
 	},
 	skill: {
+		jlsgqs_muniu_skill: {
+			equipSkill: true,
+			enable: "phaseUse",
+			usable: 1,
+			filter(event, player) {
+				return player.countCards("h") != 0;
+			},
+			filterCard: true,
+			filterTarget(card, player, target) {
+				return player != target;
+			},
+			prompt: "请选择一名角色交给其一张牌然后你摸一张牌",
+			check(card) {
+				const player = get.owner(card);
+				if (!ui.selected.cards.length && card.name == "du" && game.hasPlayer(p => get.attitude(player, p) < 0 && !p.hasSkillTag("nodu"))) {
+					return 20;
+				}
+				return 8 - get.value(card);
+			},
+			discard: false,
+			lose: false,
+			delay: false,
+			async content(event, trigger, player) {
+				await player.give(event.cards, event.target);
+				await player.draw(1);
+			},
+			ai: {
+				expose: 0.1,
+				order: 8,
+				result: {
+					target(player, target) {
+						if (target.hasSkillTag("nogain")) {
+							return 0;
+						}
+						if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
+							if (target.hasSkillTag("nodu")) {
+								return 0;
+							}
+							return -10;
+						}
+						if (target.hasJudge("lebu")) {
+							return 0;
+						}
+						let nh = target.countCards("h");
+						return Math.max(1, 5 - nh);
+					},
+				},
+			},
+		},
+		jlsgqs_muniu_skill_lose: {
+			equipSkill: true,
+			charlotte: true,
+			audio: false,
+			trigger: {
+				player: "loseAfter",
+				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+			},
+			getIndex(event, player) {
+				const evt = event.getl(player);
+				const lostCards = [];
+				evt.es.forEach(card => {
+					const VEquip = evt.vcard_map.get(card);
+					if (VEquip?.name === "jlsgqs_muniu") {
+						lostCards.add(VEquip);
+					}
+				});
+				return lostCards;
+			},
+			filter: (event, player, name, card) => {
+				if (!card || card.name != "jlsgqs_muniu") {
+					return false;
+				}
+				return true;
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				const result = await player
+					.chooseToDiscard("h", "木牛流马：请弃置一张基本牌，否则失去1点体力", function (card) {
+						if (get.type(card) != "basic") {
+							return false;
+						}
+						return lib.filter.cardDiscardable.apply(this, arguments);
+					})
+					.set("ai", card => {
+						const { check, player } = get.event();
+						if (check) {
+							return 0;
+						} else if (card.name == "tao") {
+							return -10;
+						} else if (player.hp == 1) {
+							if (card.name == "jiu") {
+								return -10;
+							}
+							return 15 - get.value(card);
+						}
+						return 8 - get.value(card);
+					})
+					.set(
+						"check",
+						(function () {
+							const loseEff = get.effect(player, { name: "losehp" }, player, player);
+							if (loseEff > 0) {
+								return true;
+							}
+							return false;
+						})()
+					)
+					.forResult();
+				if (!result.bool) {
+					await player.loseHp(1);
+				}
+			},
+			sub: true,
+			sourceSkill: "jlsgqs_muniu_skill",
+			priority: -25,
+		},
+		jlsgqs_kongmingdeng_skill_lose: {
+			equipSkill: true,
+			charlotte: true,
+			audio: false,
+			trigger: {
+				player: "loseAfter",
+				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+			},
+			filter: (event, player, name, card) => {
+				if (!card || card.name != "jlsgqs_kongmingdeng") {
+					return false;
+				}
+				return player.isDamaged();
+			},
+			getIndex(event, player) {
+				const evt = event.getl(player);
+				const lostCards = [];
+				evt.es.forEach(card => {
+					const VEquip = evt.vcard_map.get(card);
+					if (VEquip?.name === "jlsgqs_kongmingdeng") {
+						lostCards.add(VEquip);
+					}
+				});
+				return lostCards;
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				await player.recover(1);
+			},
+			sub: true,
+			sourceSkill: "jlsgqs_kongmingdeng_skill",
+			priority: -25,
+		},
+		jlsgqs_taipingyaoshu_skill: {
+			equipSkill: true,
+			enable: "phaseUse",
+			usable: 1,
+			filterTarget: true,
+			prompt: "请选择一名角色令其摸一张牌",
+			async content(event, trigger, player) {
+				await event.target.draw(1);
+			},
+			ai: {
+				expose: 0.1,
+				order: 9,
+				result: {
+					target(player, target) {
+						let att = get.attitude(player, target);
+						if (target.countCards("h") >= 4) {
+							return 0;
+						}
+						if (target.countCards("h") == 0 && att > 0) {
+							return 2;
+						}
+						let num = target.countCards("h");
+						if (att > 0) {
+							return att - num;
+						}
+					},
+				},
+			},
+		},
+		jlsgqs_jinnangdai_skill: {
+			equipSkill: true,
+			mod: {
+				maxHandcard(player, num) {
+					return num + player.countVCards("e",card=>card.name=="jlsgqs_jinnangdai");
+				},
+			},
+		},
+		jlsgqs_jinnangdai_skill_lose: {
+			equipSkill: true,
+			charlotte: true,
+			audio: false,
+			trigger: {
+				player: "loseAfter",
+				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+			},
+			filter(event, player, name, card) {
+				return card?.name == "jlsgqs_jinnangdai";
+			},
+			getIndex(event, player) {
+				const evt = event.getl(player);
+				const lostCards = [];
+				evt.es.forEach(card => {
+					const VEquip = evt.vcard_map.get(card);
+					if (VEquip?.name === "jlsgqs_jinnangdai") {
+						lostCards.add(VEquip);
+					}
+				});
+				return lostCards;
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				await player.draw(1);
+			},
+			sub: true,
+			sourceSkill: "jlsgqs_muniu_skill",
+			priority: -25,
+		},
 		jlsgqs_mei: {
 			audio: "ext:极略/audio/card",
 			fullskin: true,
@@ -413,6 +688,9 @@ let old_jlsg_qs = {
 		},
 	},
 	translate: {
+		jlsgqs_taipingyaoshu_info: "出牌阶段限一次，你可以令一名角色摸一张牌；锁定技，当【太平要术】置入你的装备区时，你须弃置一张红色手牌或者失去1点体力。",
+
+		jlsgqs_jinnangdai_info: "锁定技，你的手牌上限+1；你失去装备区里的【锦囊袋】时，摸一张牌。",
 		jlsgqs_mei_info: "出牌阶段，对一名角色使用。令其摸两张牌；若其体力值为1且已受伤，则改为回复1点体力。一名其他角色濒死时，对其使用，令其回复1点体力；若其因此脱离濒死状态，其摸一张牌。",
 		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名有手牌的其他角色使用，该角色展示一张手牌，然后你可以弃置一张点数大于此牌的手牌并回复一点体力，或者弃置一张点数不大于此牌的手牌令其回复一点体力",
 		jlsgqs_wangmeizhike_info: "出牌阶段，对所有角色使用。每名目标角色：若体力值为1且已受伤，则回复1点体力；否则其摸两张牌",

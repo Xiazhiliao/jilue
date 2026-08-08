@@ -9,8 +9,8 @@ let jlsg_qs = {
 			type: "equip",
 			subtype: "equip5",
 			skills: ["jlsgqs_kongmingdeng_skill"],
-			onLose: async function (event, trigger, player) {
-				player.addTempSkill("jlsgqs_kongmingdeng_skill_lose");
+			async onEquip(event, trgger, player) {
+				await player.recover({ num: 1, nocard: true });
 			},
 			ai: {
 				basic: {
@@ -24,9 +24,28 @@ let jlsg_qs = {
 			subtype: "equip5",
 			recastable: true,
 			skills: ["jlsgqs_muniu_skill"],
+			forceDie: true,
 			onLose: async function (event, trigger, player) {
-				player.addTempSkill("jlsgqs_muniu_skill_lose");
+				const { card } = event;
+				if (!player.countVCards("e", i => i.name === "jlsgqs_muniu")) {
+					player.unmarkSkill("jlsgqs_muniu_skill");
+				} else {
+					player.markSkill("jlsgqs_muniu_skill");
+				}
+				if (card?.storage?.["jlsgqs_muniu"]?.length) {
+					const cards = card?.storage?.["jlsgqs_muniu"].filter(card => get.position(card) == "c");
+					if (cards.length) {
+						player.logSkill("jlsgqs_muniu_skill");
+						game.log(player, `从牌堆底获得了${get.cnNumber(cards.length)}张牌`);
+						await player.gain({ cards, animate: "draw" });
+					}
+					delete card.storage["jlsgqs_muniu"];
+					player.markSkill("jlsgqs_muniu_skill");
+				}
 			},
+			clearLose: true,
+			equipDelay: false,
+			loseDelay: false,
 			ai: {
 				basic: {
 					equipValue(card, player) {
@@ -57,33 +76,6 @@ let jlsg_qs = {
 			subtype: "equip5",
 			enable: true,
 			skills: ["jlsgqs_taipingyaoshu_skill"],
-			onEquip: async function (event, trigger, player) {
-				const result = await player
-					.chooseToDiscard("h", function (card) {
-						if (get.color(card) != "red") {
-							return false;
-						}
-						return lib.filter.cardDiscardable.apply(this, arguments);
-					})
-					.set("ai", function (card) {
-						const player = get.player();
-						if (card.name == "tao") {
-							return -10;
-						}
-						if (card.name == "jiu" && player.hp == 1) {
-							return -10;
-						}
-						if (player.hp == 1) {
-							return 15 - get.value(card);
-						}
-						return 8 - get.value(card);
-					})
-					.set("prompt2", "太平要术：弃置一张红色手牌，否则失去1点体力")
-					.forResult();
-				if (!result?.bool) {
-					await player.loseHp();
-				}
-			},
 			ai: {
 				basic: {
 					equipValue(card, player) {
@@ -139,9 +131,6 @@ let jlsg_qs = {
 			skills: ["jlsgqs_jinnangdai_skill"],
 			recastable: true,
 			loseDelay: false,
-			onLose: async function (event, trigger, player) {
-				player.addTempSkill("jlsgqs_jinnangdai_skill_lose");
-			},
 			ai: {
 				basic: { equipValue: 4 },
 			},
@@ -589,154 +578,175 @@ let jlsg_qs = {
 				},
 			},
 		},
-		jlsgqs_kongmingdeng_skill_lose: {
-			equipSkill: true,
-			charlotte: true,
-			audio: false,
-			trigger: {
-				player: "loseAfter",
-				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-			},
-			filter: (event, player, name, card) => {
-				if (!card || card.name != "jlsgqs_kongmingdeng") {
-					return false;
-				}
-				return player.isDamaged();
-			},
-			getIndex(event, player) {
-				const evt = event.getl(player);
-				const lostCards = [];
-				evt.es.forEach(card => {
-					const VEquip = evt.vcard_map.get(card);
-					if (VEquip?.name === "jlsgqs_kongmingdeng") {
-						lostCards.add(VEquip);
-					}
-				});
-				return lostCards;
-			},
-			forced: true,
-			async content(event, trigger, player) {
-				await player.recover(1);
-			},
-			sub: true,
-			sourceSkill: "jlsgqs_kongmingdeng_skill",
-			priority: -25,
-		},
 		jlsgqs_muniu_skill: {
 			equipSkill: true,
-			enable: "phaseUse",
-			usable: 1,
-			filter(event, player) {
-				return player.countCards("h") != 0;
-			},
-			filterCard: true,
-			filterTarget(card, player, target) {
-				return player != target;
-			},
-			prompt: "请选择一名角色交给其一张牌然后你摸一张牌",
-			check(card) {
-				const player = get.owner(card);
-				if (!ui.selected.cards.length && card.name == "du" && game.hasPlayer(p => get.attitude(player, p) < 0 && !p.hasSkillTag("nodu"))) {
-					return 20;
-				}
-				return 8 - get.value(card);
-			},
-			discard: false,
-			lose: false,
-			delay: false,
-			async content(event, trigger, player) {
-				await player.give(event.cards, event.target);
-				await player.draw(1);
-			},
-			ai: {
-				expose: 0.1,
-				order: 8,
-				result: {
-					target(player, target) {
-						if (target.hasSkillTag("nogain")) {
-							return 0;
+			mark: true,
+			markimage2: true,
+			intro: {
+				content(storage, player) {
+					const munius = player.getVCards("e", card => card.name === "jlsgqs_muniu");
+					let cards = [];
+					for (const muniu of munius) {
+						if (muniu?.storage?.["jlsgqs_muniu"]?.length) {
+							cards.addArray(muniu.storage?.["jlsgqs_muniu"]);
 						}
-						if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
-							if (target.hasSkillTag("nodu")) {
-								return 0;
-							}
-							return -10;
+					}
+					if (!cards.length) {
+						return "共有零张牌";
+					}
+					if (player.isUnderControl(true)) {
+						return get.translation(cards);
+					}
+					return `共有${get.cnNumber(cards.length)}张牌`;
+				},
+				mark(dialog, storage, player) {
+					const munius = player.getVCards("e", card => card.name === "jlsgqs_muniu");
+					let cards = [];
+					for (const muniu of munius) {
+						if (muniu?.storage?.["jlsgqs_muniu"]?.length) {
+							cards.addArray(muniu.storage?.["jlsgqs_muniu"]);
 						}
-						if (target.hasJudge("lebu")) {
-							return 0;
+					}
+					if (!cards.length) {
+						return "共有零张牌";
+					}
+					if (player.isUnderControl(true)) {
+						dialog.addAuto(cards);
+						return;
+					}
+					return `共有${get.cnNumber(cards.length)}张牌`;
+				},
+				markcount(storage, player) {
+					const munius = player.getVCards("e", card => card.name === "jlsgqs_muniu");
+					let cards = [];
+					for (const muniu of munius) {
+						if (muniu?.storage?.["jlsgqs_muniu"]?.length) {
+							cards.addArray(muniu.storage?.["jlsgqs_muniu"]);
 						}
-						let nh = target.countCards("h");
-						return Math.max(1, 5 - nh);
-					},
+					}
+					return cards.length;
 				},
 			},
-		},
-		jlsgqs_muniu_skill_lose: {
-			equipSkill: true,
-			charlotte: true,
-			audio: false,
 			trigger: {
-				player: "loseAfter",
-				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				player: "drawAfter",
 			},
-			getIndex(event, player) {
-				const evt = event.getl(player);
-				const lostCards = [];
-				evt.es.forEach(card => {
-					const VEquip = evt.vcard_map.get(card);
-					if (VEquip?.name === "jlsgqs_muniu") {
-						lostCards.add(VEquip);
-					}
-				});
-				return lostCards;
-			},
-			filter: (event, player, name, card) => {
-				if (!card || card.name != "jlsgqs_muniu") {
+			filter(event, player) {
+				const vcards = player.getVCards("e", vcard => vcard.name == "jlsgqs_muniu");
+				if (!vcards.some(vcard => !player.hasStorage("jlsgqs_muniu_skill_use", vcard))) {
 					return false;
 				}
-				return true;
+				return event.result.cards?.length && player.hasCards("he", card => event.result.cards.includes(card));
 			},
-			forced: true,
-			async content(event, trigger, player) {
-				const result = await player
-					.chooseToDiscard("h", "木牛流马：请弃置一张基本牌，否则失去1点体力", function (card) {
-						if (get.type(card) != "basic") {
-							return false;
-						}
-						return lib.filter.cardDiscardable.apply(this, arguments);
+			async cost(event, trigger, player) {
+				let result = await player
+					.chooseCardTarget({
+						prompt: `木牛流马：是否将一张摸到的牌交给其他角色，或选择自己将之置于牌堆底？`,
+						prompt2: "当你失去装备区的【木牛流马】后，你从牌堆底获得以此法置于牌堆底的牌",
+						selectCard: [1, 1],
+						filterCard(card, player) {
+							return get.event().draw?.includes(card);
+						},
+						selectTarget: [1, 1],
+						ai1(card) {
+							return 8 - get.value(card);
+						},
+						ai2(target) {
+							const att = Math.max(-5, Math.min(5, get.attitude(get.player(), target)));
+							return (target.getUseValue(card) + 0.1) * att;
+						},
+						draw: trigger.result.cards,
 					})
-					.set("ai", card => {
-						const { check, player } = get.event();
-						if (check) {
-							return 0;
-						} else if (card.name == "tao") {
-							return -10;
-						} else if (player.hp == 1) {
-							if (card.name == "jiu") {
-								return -10;
-							}
-							return 15 - get.value(card);
-						}
-						return 8 - get.value(card);
-					})
-					.set(
-						"check",
-						(function () {
-							const loseEff = get.effect(player, { name: "losehp" }, player, player);
-							if (loseEff > 0) {
-								return true;
-							}
-							return false;
-						})()
-					)
 					.forResult();
-				if (!result.bool) {
-					await player.loseHp(1);
+				if (!result?.bool || !result.cards?.length || !result.targets?.length) {
+					return;
+				}
+				event.result = result;
+				const vcards = player
+					.getVCards("e", vcard => {
+						return vcard.name == "jlsgqs_muniu" && !player.hasStorage(`${event.skill}_use`, vcard);
+					})
+					.map(vcard => {
+						return [vcard.number || 0, get.translation(vcard.suit), vcard.name, null, undefined, vcard];
+					});
+				if (vcards.length == 1) {
+					result = { bool: true, links: [vcards[0][5]] };
+				} else {
+					result = await player
+						.chooseButton({
+							createDialog: ["请选择你要触发的【木牛流马】", [vcards, get.info(event.skill).$createButton]],
+							selectButton: [1, 1],
+							forced: true,
+						})
+						.forResult();
+				}
+				if (!result?.bool || !result.links?.length) {
+					return;
+				}
+				event.result.cost_data = { vcard: result.links[0] };
+			},
+			async content(event, trigger, player) {
+				const {
+					targets: [target],
+					cost_data: { vcard },
+				} = event;
+				player.addTempSkill(`${event.name}_use`);
+				player.markAuto(`${event.name}_use`, [vcard]);
+				if (target == player) {
+					game.log(player, "将", event.cards, "置于牌堆底");
+					await player.lose({
+						source: player,
+						cards: event.cards,
+						position: ui.cardPile,
+					});
+					if (!vcard || !event.cards.length) {
+						game.broadcastAll(cards => {
+							for (const card of cards) {
+								card.discard();
+							}
+						}, event.cards);
+						event.finish();
+						return;
+					}
+					game.broadcastAll(
+						(vcard, cards) => {
+							vcard.storage ??= {};
+							vcard.storage["jlsgqs_muniu"] ??= [];
+							vcard.storage["jlsgqs_muniu"].addArray(cards);
+						},
+						vcard,
+						event.cards
+					);
+					player.markSkill(event.name);
+					console.log(vcard);
+					await game.delayx();
+				} else {
+					await player.give(cards, target);
 				}
 			},
-			sub: true,
-			sourceSkill: "jlsgqs_muniu_skill",
-			priority: -25,
+			$createButton(item, type, position, noclick, node) {
+				const vcard = item[5];
+				node = ui.create.buttonPresets["vcard"](...arguments);
+				const num = vcard?.storage?.["jlsgqs_muniu"]?.length || 0;
+				node.node.gaintag.innerHTML = `${get.cnNumber(num)}牌`;
+				node._number = num;
+				node.link = vcard;
+				node._customintro = (uiintro, evt) => {
+					uiintro.add("木牛流马");
+					let str = "此牌下没有扣置牌";
+					if (node.link?.storage?.["jlsgqs_muniu"]?.length) {
+						str = "此牌下扣置了";
+					}
+					uiintro.add(`<div class="text" style="display:inline">${str}</div>`);
+					if (node.link?.storage?.["jlsgqs_muniu"]?.length) {
+						uiintro.addSmall(node.link?.storage?.["jlsgqs_muniu"]);
+					}
+					return node;
+				};
+				return node;
+			},
+			subSkill: {
+				use: { onremove: true },
+			},
 		},
 		jlsgqs_yuxi_skill: {
 			equipSkill: true,
@@ -802,28 +812,36 @@ let jlsg_qs = {
 		},
 		jlsgqs_taipingyaoshu_skill: {
 			equipSkill: true,
-			enable: "phaseUse",
-			usable: 1,
-			filterTarget: true,
-			prompt: "请选择一名角色令其摸一张牌",
+			trigger: {
+				player: "damageBegin4",
+			},
+			getIndex(event, player) {
+				return player.getVCards("e", card => card.name == "jlsgqs_taipingyaoshu");
+			},
+			filter(event, player, name, vcard) {
+				return game.hasNature(event) && !player.hasStorage("jlsgqs_taipingyaoshu_skill_use", vcard);
+			},
+			forced: true,
 			async content(event, trigger, player) {
-				await event.target.draw(1);
+				trigger.cancel();
+				player.addTempSkill(`${event.name}_use`);
+				player.markAuto(`${event.name}_use`, [event.indexedData]);
+			},
+			subSkill: {
+				use: { onremove: true },
 			},
 			ai: {
-				expose: 0.1,
-				order: 9,
-				result: {
-					target(player, target) {
-						let att = get.attitude(player, target);
-						if (target.countCards("h") >= 4) {
-							return 0;
-						}
-						if (target.countCards("h") == 0 && att > 0) {
-							return 2;
-						}
-						let num = target.countCards("h");
-						if (att > 0) {
-							return att - num;
+				nofire: true,
+				nothunder: true,
+				skillTagFilter(player, tag, arg) {
+					return !player.getState()?.["triggrSkill"]?.["jlsgqs_taipingyaoshu_skill"];
+				},
+				effect: {
+					target(card, player, target) {
+						if (!target.getState()?.["triggrSkill"]?.["jlsgqs_taipingyaoshu_skill"]) {
+							if (get.tag(card, "natureDamage")) {
+								return "zeroplayertarget";
+							}
 						}
 					},
 				},
@@ -987,46 +1005,29 @@ let jlsg_qs = {
 				await player.draw(1);
 			},
 			sub: true,
-			sourceSkill: "jlsgqs_muniu_skill",
+			sourceSkill: "jlsgqs_xiujian_skill",
 			priority: -25,
 		},
 		jlsgqs_jinnangdai_skill: {
 			equipSkill: true,
-			mod: {
-				maxHandcard(player, num) {
-					return num + 1;
-				},
-			},
-		},
-		jlsgqs_jinnangdai_skill_lose: {
-			equipSkill: true,
-			charlotte: true,
-			audio: false,
 			trigger: {
-				player: "loseAfter",
-				global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-			},
-			filter(event, player, name, card) {
-				return card?.name == "jlsgqs_jinnangdai";
+				global: "phaseEnd",
 			},
 			getIndex(event, player) {
-				const evt = event.getl(player);
-				const lostCards = [];
-				evt.es.forEach(card => {
-					const VEquip = evt.vcard_map.get(card);
-					if (VEquip?.name === "jlsgqs_jinnangdai") {
-						lostCards.add(VEquip);
-					}
-				});
-				return lostCards;
+				return player.getVCards("e", card => card.name == "jlsgqs_jinnangdai");
+			},
+			filter(event, player, name, vcard) {
+				return !player.hasCards("h", card => get.type2(card) == "trick") && !player.hasStorage("jlsgqs_jinnangdai_skill_use", vcard);
 			},
 			forced: true,
 			async content(event, trigger, player) {
-				await player.draw(1);
+				await player.draw({ num: 1, nodelay: true });
+				player.addTempSkill(`${event.name}_use`);
+				player.markAuto(`${event.name}_use`, [event.indexedData]);
 			},
-			sub: true,
-			sourceSkill: "jlsgqs_muniu_skill",
-			priority: -25,
+			subSkill: {
+				use: { onremove: true },
+			},
 		},
 		jlsgqs_shuiyanqijun_skill: {
 			cardSkill: true,
@@ -1044,11 +1045,11 @@ let jlsg_qs = {
 	translate: {
 		jlsg_qs: "七杀包",
 		jlsgqs_kongmingdeng: "孔明灯",
-		jlsgqs_kongmingdeng_info: "任意角色处于濒死状态时，你可以将你装备区的【孔明灯】当【桃】使用；锁定技，当你从装备区中失去【孔明灯】时，回复1点体力。",
+		jlsgqs_kongmingdeng_info: "锁定技，当此牌置入你的装备区后，你回复1点体力。任意角色处于濒死状态时，你可以将你装备区的【孔明灯】当【桃】使用。",
 		jlsgqs_muniu: "木牛流马",
-		jlsgqs_muniu_info: "出牌阶段限一次，你可以将一张手牌交给一名其他角色，然后摸一张牌；锁定技，当你从装备区中失去【木牛流马】时，须弃置一张基本牌或者失去1点体力。",
+		jlsgqs_muniu_info: "每回合限一次，当你摸牌后，你可以将一张牌交给其他角色或置于牌堆底，然后摸一张牌。锁定技，当你从装备区里失去此牌后，你获得所有以此法置于牌堆底的牌。",
 		jlsgqs_taipingyaoshu: "太平要术",
-		jlsgqs_taipingyaoshu_info: "出牌阶段限一次，你可以令一名角色摸一张牌；锁定技，当【太平要术】置入你的装备区时，你须弃置一张红色手牌或者失去1点体力。",
+		jlsgqs_taipingyaoshu_info: "锁定技，每回合限一次，防止你受到的属性伤害。",
 		jlsgqs_dunjiatianshu: "遁甲天书",
 		jlsgqs_dunjiatianshu_info: "锁定技，若你的装备区没有坐骑牌，其他角色计算与你的距离时，始终+1，你计算与其他角色的距离时，始终-1；锁定技，若你的装备区有坐骑牌，你的手牌上限+1。",
 		jlsgqs_qixingbaodao: "七星宝刀",
@@ -1058,7 +1059,7 @@ let jlsg_qs = {
 		jlsgqs_yuxi: "玉玺",
 		jlsgqs_yuxi_info: "锁定技，你的手牌上限+2，准备阶段开始时，你摸一张牌；一名角色使用【杀】对你造成伤害时，可获得你装备区中的【玉玺】。",
 		jlsgqs_jinnangdai: "锦囊袋",
-		jlsgqs_jinnangdai_info: "锁定技，你的手牌上限+1；你失去装备区里的【锦囊袋】时，摸一张牌。",
+		jlsgqs_jinnangdai_info: "锁定技，任意角色的回合结束时，若你没有锦囊牌，你从牌堆获得一张锦囊牌。",
 		jlsgqs_qingmeizhujiu: "青梅煮酒",
 		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名其他角色使用，你与目标角色中手牌数较少的角色摸两张牌，体力较少的角色回复1点体力。",
 		jlsgqs_shuiyanqijun: "水淹七军",
