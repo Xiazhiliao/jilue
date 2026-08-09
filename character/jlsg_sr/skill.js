@@ -2307,7 +2307,7 @@ const skills = {
 			let target = name === "damageEnd" ? event.source : event.player;
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.["jlsg_juelie"];
-			if (!upgrade && name === "damageSource") {
+			if (!upgrade && name === "damageEnd") {
 				return false;
 			}
 			return target.hasDiscardableCards(target, "h");
