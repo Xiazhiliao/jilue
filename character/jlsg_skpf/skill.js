@@ -4,12 +4,20 @@ import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 const skills = {
 	jlsg_fqym_tianxiang: {
 		audio: "ext:极略/audio/skill:2",
+		onChooseToUse(event) {
+			if (!game.online) {
+				event.set(
+					"jlsg_fqym_tianxiang_history",
+					event.player.getHistory("useCard", evt => evt.card.storage.jlsg_fqym_tianxiang).map(evt => evt.card.name)
+				);
+			}
+		},
 		enable: "phaseUse",
 		trigger: {
-			player: ["damageBegin"],
+			player: ["damageBegin2"],
 		},
 		filter(event, player) {
-			let used = player.getHistory("useCard", evt => evt.card.storage.fqym).map(evt => evt.card.name);
+			let used = event.jlsg_fqym_tianxiang_history || player.getHistory("useCard", evt => evt.card.storage.jlsg_fqym_tianxiang).map(evt => evt.card.name);
 			let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2])),
 				hand = player.getCards("he").filter(card => get.suit(card, player) == "heart");
 			return cards.length && hand.length;
@@ -22,7 +30,7 @@ const skills = {
 				})
 				.reduce((list, info) => {
 					if (!list.some(infox => infox[2] == info[2] && infox[3] == info[3])) {
-						list.push(["", "", info[2], info[3]]);
+						list.push(["heart", "", info[2], info[3]]);
 					}
 					return list;
 				}, []);
@@ -33,91 +41,108 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				let used = player.getHistory("useCard", evt => evt.card.storage.fqym).map(evt => evt.card.name);
-				let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2]) && player.hasUseTarget({ name: info[2], nature: info[3], storage: { fqym: true } })),
-					hand = player.getCards("he").filter(card => get.suit(card, player) == "heart");
-				return ui.create.dialog("选择一张红桃牌当作一张花色包含红桃的基本牌或普通锦囊牌使用", [hand, "card"], "<hr />", [cards, "vcard"]);
+				let used = event.jlsg_fqym_tianxiang_history;
+				let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2]));
+				return ui.create.dialog(`天香：选择要使用的红桃基本牌或普通锦囊牌`, [cards, "vcard"]);
 			},
-			filter(button) {
-				const link = button.link;
-				const player = get.player();
-				const num = ui.selected.buttons.length;
-				if (get.owner(link) == player) {
-					return !num;
-				} else {
-					return num > 0;
-				}
+			filter({ link: [_, __, name, nature] }, player) {
+				const vcard = get.autoViewAs({ name, nature, suit: "heart", storage: { jlsg_fqym_tianxiang: true } }, "unsure");
+				return player.hasUseTarget(vcard);
 			},
-			select: 2,
+			check({ link: [_, __, name, nature] }) {
+				const player = get.player(),
+					vcard = get.autoViewAs({ name, nature, suit: "heart", storage: { jlsg_fqym_tianxiang: true } }, "unsure");
+				return player.hasUseTarget(vcard);
+			},
 			backup(links, player) {
-				return {
-					selectCard: 0,
-					viewAs: {
-						name: links[1][2],
-						nature: links[1][3],
-						storage: {
-							cards: [links[0]],
-							fqym: true,
-						},
-					},
-					prompt(links, player) {
-						return `选择${get.translation(links[1][2])}`;
-					},
-					precontent(event, trigger, player) {
-						event.result.cards = event.result.card.storage.cards;
+				const backup = get.copy(get.info("jlsg_fqym_tianxiang_backup"));
+				backup.viewAs = {
+					name: links[0][2],
+					nature: links[0][3],
+					storage: {
+						jlsg_fqym_tianxiang: true,
 					},
 				};
+				return backup;
+			},
+			prompt(links, player) {
+				return `选择${get.translation(get.autoViewAs(links[0], "unsure"))}`;
 			},
 		},
 		async cost(event, trigger, player) {
-			let used = player.getHistory("useCard", evt => evt.card.storage.fqym).map(evt => evt.card.name);
-			let cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2])),
+			const used = player.getHistory("useCard", evt => evt.card.storage.jlsg_fqym_tianxiang).map(evt => evt.card.name);
+			const cards = (_status.txcards || get.info("jlsg_fqym_tianxiang").getCards(player)).filter(info => !used.includes(info[2])),
 				hand = player.getCards("he").filter(card => get.suit(card, player) == "heart");
-			if (!cards.length || !cards.length) {
-				event.result = {
-					bool: false,
-				};
+			if (!cards.length || !hand.length) {
+				return;
 			}
 			let result = await player
 				.chooseButton({
-					selectButton: 2,
-					createDialog: ["选择一张红桃牌当作一张花色包含红桃的基本牌或普通锦囊牌使用", [hand, "card"], "<hr />", [cards, "vcard"]],
-				})
-				.set("complexSelect", true)
-				.set("filterButton", button => {
-					const link = button.link;
-					const player = get.player();
-					const num = ui.selected.buttons.length;
-					if (get.owner(link) == player) {
-						return !num;
-					} else {
-						return num > 0;
-					}
+					createDialog: [`天香：选择要使用的红桃基本牌或普通锦囊牌`, [cards, "vcard"]],
+					filterButton: get.info(event.skill).chooseButton.filter,
+					ai: get.info(event.skill).chooseButton.check,
 				})
 				.forResult();
 			event.result = {
-				bool: result.bool,
+				bool: result?.bool,
 				cost_data: {
-					card: result.links?.[0],
-					vcard: result.links?.[1],
+					vcard: result.links?.[0],
 				},
 			};
 		},
+		popup: false,
 		async content(event, trigger, player) {
-			let { vcard, card } = event.cost_data;
-			let use = get.autoViewAs({ name: vcard[2], nature: vcard[3], fqym: true }, [card]);
-			await player.chooseUseTarget(use, [card], false);
+			const {
+				vcard: [_, __, name, nature],
+			} = event.cost_data;
+			const viewAs = { name, nature, jlsg_fqym_tianxiang: true };
+			game.broadcastAll(function (card) {
+				lib.skill.jlsg_fqym_tianxiang_backup.viewAs = card;
+			}, viewAs);
+			const next = player.chooseToUse({
+				openskilldialog: `###${get.prompt(event.name)}###将一张手牌当${get.translation(get.autoViewAs(viewAs))}使用`,
+				position: "he",
+				filterCard(card, player) {
+					return get.suit(card) == "heart";
+				},
+				norestore: true,
+				custom: {
+					add: {},
+					replace: { window: function () {} },
+				},
+				_backupevent: "jlsg_fqym_tianxiang_backup",
+			});
+			next.backup("jlsg_fqym_tianxiang_backup");
+			const result = await next.forResult();
+			if (!result.bool) {
+				return;
+			}
 			let { targets } = await player
 				.chooseTarget("将此伤害转移给一名其他角色")
 				.set("filterTarget", lib.filter.notMe)
 				.set("ai", target => {
-					let player = get.player();
-					return -get.attitude(player, target);
+					const event = get.event();
+					const player = event.player,
+						trigger = event.getTrigger();
+					return get.damageEffect(target, trigger.source, player, trigger.nature);
 				})
 				.forResult();
 			if (targets) {
 				trigger.player = targets[0];
 			}
+		},
+		subSkill: {
+			backup: {
+				audio: "jlsg_fqym_tianxiang",
+				position: "he",
+				selectCard: [1, 1],
+				filterCard(card) {
+					return get.suit(card) == "heart";
+				},
+				async precontent(event, trigger, player) {
+					event.getParent().addCount = false;
+				},
+			},
 		},
 	},
 	jlsg_fqym_hongyan: {
@@ -133,6 +158,11 @@ const skills = {
 					return true;
 				}
 			},
+			cardDiscardable(card, player, name) {
+				if (name == "phaseDiscard" && get.suit(card, player) == "heart") {
+					return false;
+				}
+			},
 		},
 		trigger: {
 			player: ["loseAfter"],
@@ -144,8 +174,8 @@ const skills = {
 			return cards.some(card => get.suit(card, player) == "heart");
 		},
 		async content(event, trigger, player) {
-			let bool = player.storage[event.name] ? 0 : 1;
-			player.setStorage(event.name, bool);
+			let bool = player.storage[event.name] ? false : true;
+			player.setStorage(event.name, bool, true);
 			if (bool) {
 				await player.draw(2);
 			} else {
@@ -154,7 +184,7 @@ const skills = {
 					.set("filterTarget", lib.filter.notMe)
 					.set("ai", target => {
 						let player = get.player();
-						return -get.attitude(player, target);
+						return get.effect(target, { name: "losehp" }, player, player);
 					})
 					.forResult();
 				if (targets) {
@@ -1002,7 +1032,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const targets = game.filterPlayer(cur => cur != player),
 				cards = [];
-			let position = ["h", "e", /*"j"*/];
+			let position = ["h", "e" /*"j"*/];
 			for (let target of targets) {
 				for (let i of position) {
 					let cardx = { shown: [], hide: [] };
