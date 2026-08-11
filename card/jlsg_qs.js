@@ -651,6 +651,10 @@ let jlsg_qs = {
 							return 8 - get.value(card);
 						},
 						ai2(target) {
+							const [card] = ui.selected.cards || [];
+							if (!card) {
+								return 0;
+							}
 							const att = Math.max(-5, Math.min(5, get.attitude(get.player(), target)));
 							return (target.getUseValue(card) + 0.1) * att;
 						},
