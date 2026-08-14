@@ -2234,7 +2234,7 @@ const skills = {
 			if (upgrade) {
 				await player.draw({ num: 3 });
 			}
-			if (!player.hasStorage(event.name, 3)) {
+			if (!player.getStorage(event.name, 0) < 3) {
 				let num = player.getStorage(event.name, 0);
 				player.setStorage(event.name, ++num, true);
 			}
