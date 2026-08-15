@@ -2088,22 +2088,24 @@ const skills = {
 				if (damage > hs) {
 					result = { bool: false };
 				} else {
-					result = await target.chooseToDiscard({
-						prompt2: "否则减一点体力上限",
-						position: "he",
-						selectCard: [hs, hs],
-						ai(card) {
-							const player = get.player();
-							if (player.maxHp == 1 && !player.storage.nohp) {
-								return 20 - get.value(c);
-							}
-							let v = 7 - _status.event.selectCard[0] - get.value(c);
-							if (player.isHealthy()) {
-								v += 3;
-							}
-							return v;
-						},
-					});
+					result = await target
+						.chooseToDiscard({
+							prompt2: "否则减一点体力上限",
+							position: "he",
+							selectCard: [hs, hs],
+							ai(card) {
+								const player = get.player();
+								if (player.maxHp == 1 && !player.storage.nohp) {
+									return 20 - get.value(card);
+								}
+								let v = 7 - _status.event.selectCard[0] - get.value(card);
+								if (player.isHealthy()) {
+									v += 3;
+								}
+								return v;
+							},
+						})
+						.forResult();
 				}
 				if (!result?.bool || !result.cards?.length) {
 					await target.loseMaxHp({ num: 1 });

@@ -1171,7 +1171,7 @@ const skills = {
 		},
 		content: [
 			async (event, trigger, player) => {
-				return player.draw({ num: 1 });
+				return player.draw({ num: 1 }).forResult();
 			},
 			async (event, trigger, player, result) => {
 				const { cards } = result || {};

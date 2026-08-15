@@ -20668,27 +20668,30 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("he", card => get.name(card, player) == "shan" && lib.filter.cardDiscardable(card, player)) && event.source && event.source != event.player;
+			return player.hasDiscardableCards(palyer,"he", card => get.name(card, player) == "shan") && event.source && event.source != event.player;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard({
-					prompt: "你可以弃置一张【闪】并令其回复1点体力，若目标角色的势力不为蜀、吴、群，你令其体力、体力上限、摸牌数中最小的一项属性+1。",
-					filterCard: (card, player) => get.name(card, player) == "shan" && lib.filter.cardDiscardable(card, player),
-					ai() {
-						const target = get.event().damageTarget;
-						const player = get.player();
-						return get.attitude(player, target);
+				.chooseToDiscard({
+					prompt: get.prompt(event.skill, trigger.player),
+					prompt2: "你可以弃置一张【闪】并令其回复1点体力，若目标角色的势力不为蜀、吴、群，你令其体力、体力上限、摸牌数中最小的一项属性+1。",
+					filterCard: (card, player) => get.name(card, player) == "shan" ,
+					ai(card) {
+						if(get.event().att<0){
+							return 0
+						}
+						return 7 - get.value(card);
 					},
+					chooseonly:true,
+					att: get.attitude(player, trigger.player),
 				})
-				.set("damageTarget", trigger.player)
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			const { cards } = event;
 			const target = trigger.player;
 			await player.discard(cards);
-			await target.recover();
+			await target.recover(1);
 			if (!["shu", "wu", "qun"].includes(target.group)) {
 				const note = target.getStorage("jlsg_junbing_effect");
 				const list = [note[2] + 2, target.hp, target.maxHp];
@@ -20903,11 +20906,11 @@ const skills = {
 	jlsg_dianhua: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
-			player: ["changeSkillsBefore"],
+			global: ["changeSkillsBefore"],
 		},
 		usable: 1,
 		filter(event, player) {
-			return event.addSkill;
+			return event.addSkill?.length;
 		},
 		async cost(event, trigger, player) {
 			const str = trigger.addSkill.map(sk => get.poptip(sk)).join("、");

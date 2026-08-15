@@ -4378,7 +4378,7 @@ const skills = {
 					})
 					.forResult();
 				if (!targets?.length) {
-					return
+					return;
 				}
 				if (targets[0] != player) {
 					player.line(result.targets[0], "green");
@@ -9833,7 +9833,7 @@ const skills = {
 						}
 					}
 					player.removeSkill(event.name);
-					player.unmarkAuto("jlsg_lunce", [skillName]);
+					player.unmarkAuto("jlsg_lunce", [event.name]);
 					let typeTranslation = { top: "上策", mid: "中策", bottom: "下策" }[type];
 					game.log(player, "完成了", source == player ? "自己" : source, "给予的", `#g计策(${typeTranslation})`);
 					await contentx(event, trigger, player);
@@ -10534,9 +10534,13 @@ const skills = {
 					if (player.hasSkill("jlsg_qifeng")) {
 						let storage = player.getStorage("jlsg_qifeng", [1, 0, 0]);
 						let info = trigger.name.split("_"),
-							list = ["mid", "bottom", "top"];
-						let type = info[info.length - 1];
-						let index = list.indexOf(type);
+							map = { mid: 0, bottom: 1, top: 2 };
+						let type = info.at(-1);
+						let index = map[type];
+						if (index == -1) {
+							console.warn(`论策完成触发时机节点异常，trigger.name:${trigger.name}`);
+							return;
+						}
 						game.log(player, "修改了", "#g【栖凤】");
 						storage[index]++;
 						player.setStorage("jlsg_qifeng", storage, true);
@@ -12929,7 +12933,7 @@ const skills = {
 		 * @param { Boolean | undefined } [isInPile] 该牌是否是牌堆内已有的牌，会覆盖除name以外的参数
 		 * @returns { Card | undefind } 若牌名存在，则返回Card，否则为undefind
 		 */
-		createTempCard:function(name, suit, nature, number, isInPile) {
+		createTempCard: function (name, suit, nature, number, isInPile) {
 			if (!(name in lib.card) && name !== null) {
 				return;
 			}
@@ -13601,7 +13605,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					const storage = player.getStorage(event.name, new Map())
+					const storage = player.getStorage(event.name, new Map());
 					storage.delete(trigger.player);
 					player.setStorage(event.name, storage, true);
 					if (!storage.keys().length) {
