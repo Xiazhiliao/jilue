@@ -20798,7 +20798,7 @@ const skills = {
 									const now = skillList.filter(sk => !target.hasSkill(sk, null, false, false));
 									const { links: skills } = await player
 										.chooseButton({
-											force: true,
+											forced: true,
 											createDialog: [`令${get.translation(target)}获得你储备技能中的一个技能`, [skillList.map(sk => [sk, `${get.translation(sk)}:${get.skillInfoTranslation(sk)}`]), "textbutton"]],
 										})
 										.forResult();
