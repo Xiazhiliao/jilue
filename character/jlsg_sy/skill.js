@@ -86,6 +86,9 @@ const skills = {
 					}
 					evt.finish();
 					evt._triggered = null;
+					if (!evt.result) {
+						evt.result = {};
+					}
 					evt = evt.getParent(1, true);
 				} else {
 					break;
@@ -1213,6 +1216,9 @@ const skills = {
 					}
 					evt.finish();
 					evt._triggered = null;
+					if (!evt.result) {
+						evt.result = {};
+					}
 					evt = evt.getParent(1, true);
 				} else {
 					break;
