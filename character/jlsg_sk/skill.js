@@ -84,7 +84,7 @@ const skills = {
 						return storage.some(([card]) => card.name == event.card.name);
 					}
 					const info = storage.find(([_, phaseUse]) => phaseUse === event);
-					return !player.hasHistory("useCard", evt => evt.getParent("phseUse") === event && evt.card.name === info[0].name);
+					return !player.hasHistory("useCard", evt => evt.getParent("phaseUse") === event && evt.card.name === info[0].name);
 				},
 				forced: true,
 				async content(event, trigger, player) {
@@ -116,7 +116,7 @@ const skills = {
 							if (current == player) {
 								continue;
 							}
-							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", [])) {
+							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", []).length) {
 								const colors = current.getStorage("jlsg_qianxi_global", []).map(info => get.color(info[0]));
 								if (colors.includes(get.color(card))) {
 									return false;
@@ -129,7 +129,20 @@ const skills = {
 							if (current == player) {
 								continue;
 							}
-							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", [])) {
+							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", []).length) {
+								const colors = current.getStorage("jlsg_qianxi_global", []).map(info => get.color(info[0]));
+								if (colors.includes(get.color(card))) {
+									return false;
+								}
+							}
+						}
+					},
+					cardRespondable(card, player) {
+						for (let current of game.players) {
+							if (current == player) {
+								continue;
+							}
+							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", []).length) {
 								const colors = current.getStorage("jlsg_qianxi_global", []).map(info => get.color(info[0]));
 								if (colors.includes(get.color(card))) {
 									return false;
