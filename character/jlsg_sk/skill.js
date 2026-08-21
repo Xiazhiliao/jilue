@@ -84,7 +84,7 @@ const skills = {
 						return storage.some(([card]) => card.name == event.card.name);
 					}
 					const info = storage.find(([_, phaseUse]) => phaseUse === event);
-					return !player.hasHistory("useCard", evt => evt.getParent("phseUse") === event && evt.card.name === info[0].name);
+					return !player.hasHistory("useCard", evt => evt.getParent("phaseUse") === event && evt.card.name === info[0].name);
 				},
 				forced: true,
 				async content(event, trigger, player) {
