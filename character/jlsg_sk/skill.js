@@ -4587,7 +4587,7 @@ const skills = {
 			show: {
 				audio: false,
 				trigger: { player: "phaseDrawEnd" },
-				filter(event) {
+				filter(event, player) {
 					return player.hasStorage("jlsg_zongqing") && event.cards && event.cards.length;
 				},
 				forced: true,
@@ -4856,7 +4856,7 @@ const skills = {
 			const cards = {},
 				types = ["basic", "trick", "equip"];
 			for (const type of types) {
-				cards[type](getTypeCards(player, type));
+				cards[type] = getTypeCards(player, type);
 			}
 			const max = Math.max(Object.values(cards).map(i => i.length));
 			let result;
@@ -5931,9 +5931,13 @@ const skills = {
 	},
 	jlsg_yongjue: {
 		audio: "ext:极略/audio/skill:2",
-		logAudio(event, player) {},
+		logAudio(event, player) {
+			const sex = player.hasSex("male") ? "m" : "f",
+				num = event.name == "damage" ? "1" : "2";
+			return [`ext:极略/audio/skill/jlsg_yongjue_${sex}${num}.mp3`];
+		},
 		trigger: { source: ["damageBegin1", "die"] },
-		filter(event) {
+		filter(event, player) {
 			if (event.name == "damage") {
 				return event.card && event.card.name == "sha" && event.notLink();
 			}
@@ -6608,7 +6612,7 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			if (_status.currentPhase == player || !_status.currentPhase.countCards("h")) {
+			if (_status.currentPhase == player || !_status.currentPhase?.countCards("h")) {
 				return false;
 			}
 			const evt = event.getl(player);
@@ -6633,7 +6637,7 @@ const skills = {
 						return;
 					}
 					if (card.name == "guohe" || card.name == "liuxinghuoyu") {
-						return 1 - 0.1 * _status.currentPhase?.countCards("h");
+						return 1 - 0.1 * (_status.currentPhase?.countCards("h") || 0);
 					}
 				},
 			},
@@ -6646,7 +6650,7 @@ const skills = {
 		},
 		getIndex(event, player) {
 			return game
-				.hasPlayer(current => {
+				.filterPlayer(current => {
 					if (current == player) {
 						return false;
 					}
@@ -15396,7 +15400,7 @@ const skills = {
 			effect: {
 				charlotte: true,
 				trigger: { player: "phaseDrawBegin2" },
-				filter(event) {
+				filter(event, player) {
 					return !event.numFixed && player.getStorage("jlsg_jingce", { draw: 0 }).draw > 0;
 				},
 				forced: true,
