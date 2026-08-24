@@ -116,7 +116,7 @@ const skills = {
 							if (current == player) {
 								continue;
 							}
-							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", [])) {
+							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", []).length) {
 								const colors = current.getStorage("jlsg_qianxi_global", []).map(info => get.color(info[0]));
 								if (colors.includes(get.color(card))) {
 									return false;
@@ -129,7 +129,20 @@ const skills = {
 							if (current == player) {
 								continue;
 							}
-							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", [])) {
+							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", []).length) {
+								const colors = current.getStorage("jlsg_qianxi_global", []).map(info => get.color(info[0]));
+								if (colors.includes(get.color(card))) {
+									return false;
+								}
+							}
+						}
+					},
+					cardRespondable(card, player) {
+						for (let current of game.players) {
+							if (current == player) {
+								continue;
+							}
+							if (current.hasSkill("jlsg_qianxi") && current.getStorage("jlsg_qianxi_global", []).length) {
 								const colors = current.getStorage("jlsg_qianxi_global", []).map(info => get.color(info[0]));
 								if (colors.includes(get.color(card))) {
 									return false;
