@@ -5746,7 +5746,7 @@ const skills = {
 		check(event, player) {
 			const cards = player.getCards("h"),
 				att = get.attitude(player, event.player);
-			for (const i = 0; i < cards.length; i++) {
+			for (let i = 0; i < cards.length; i++) {
 				if (cards[i].number > 11 && get.value(cards[i]) < 7) {
 					return att < 0;
 				}
@@ -7035,7 +7035,7 @@ const skills = {
 				} else if (!logged) {
 					player.logSkill(event.name);
 				}
-				let next = game.createEvent("jlsg_jiexin");
+				let next = game.createEvent("jlsg_tiance");
 				next.player = player;
 				next.targets = result.targets;
 				next.setContent(async (event, trigger, player) => {
@@ -8188,7 +8188,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
-					filterTarget: lib.filter.notMe(),
+					filterTarget: lib.filter.notMe,
 					ai(target) {
 						const player = get.player();
 						let eff = 0;
@@ -8210,8 +8210,6 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
-			var choice;
-
 			const result = await target
 				.chooseBool({
 					prompt: `###是否翻面？###否则${get.translation(player)}在此回合结束后进行一个额外的回合`,
@@ -9102,7 +9100,8 @@ const skills = {
 			return player.canCompare(target);
 		},
 		async content(event, trigger, player) {
-			const result = await player.chooseToCompare(event.target).forResult();
+			const target = event.target;
+			const result = await player.chooseToCompare(target).forResult();
 			if (result?.bool) {
 				if (!target.storage.nohp && target.getHp() > 0) {
 					player.addTempSkill("jlsg_quanxiang_block", ["phaseBeginStart", "phaseAfter", "phaseUseAfter"]);
