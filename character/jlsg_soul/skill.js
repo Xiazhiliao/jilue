@@ -4381,7 +4381,7 @@ const skills = {
 					return;
 				}
 				if (targets[0] != player) {
-					player.line(result.targets[0], "green");
+					player.line(targets[0], "green");
 				}
 				var cards = player.getCards("h");
 				await targets[0].gain(cards, player, "giveAuto");
