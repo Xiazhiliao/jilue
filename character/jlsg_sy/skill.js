@@ -626,7 +626,7 @@ const skills = {
 				}
 				await player.useCard({
 					card: { name: "sha", isCard: true },
-					target: trigger.player,
+					targets: [trigger.player],
 					addCount: false,
 				});
 			}
