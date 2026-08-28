@@ -20088,7 +20088,7 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			return player.hasDiscardableCards(palyer, "he", card => get.name(card, player) == "shan") && event.source && event.source != event.player;
+			return player.hasDiscardableCards(player, "he", card => get.name(card, player) == "shan") && event.source && event.source != event.player;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
