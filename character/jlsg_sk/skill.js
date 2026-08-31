@@ -10022,13 +10022,13 @@ const skills = {
 		},
 		delay: false,
 		async content(event, trigger, player) {
-			if (target.ai.shown > player.ai.shown) {
+			if (event.target.ai.shown > player.ai.shown) {
 				player.addExpose(0.2);
 			}
 			const result = await player
 				.choosePlayerCard({
-					prompt: `${get.translation(event.name)}：选择${get.translation(target)}一张牌置于武将牌上`,
-					target,
+					prompt: `${get.translation(event.name)}：选择${get.translation(event.target)}一张牌置于武将牌上`,
+					target: event.target,
 					position: "he",
 					forced: true,
 				})
@@ -10038,7 +10038,7 @@ const skills = {
 			}
 			await player.addToExpansion({
 				cards: result.cards,
-				source: target,
+				source: event.target,
 				animate: "giveAuto",
 				log: true,
 				gaintag: [event.name],
