@@ -788,12 +788,22 @@ const skills = {
 				},
 				async content(event, trigget, player) {
 					await player.give(event.cards, event.targets[0]);
-					target.setStorage("jlsg_muyi", [player, event.cards.length], true);
+					event.targets[0].setStorage("jlsg_muyi", [player, event.cards.length], true);
 				},
 			},
 		},
 	},
 	jlsg_diezhang: {
+		mod: {
+			aiOrder(player, card, num) {
+				if (typeof card == "object" && player.isPhaseUsing()) {
+					var evt = player.getLastUsed();
+					if (evt && evt.card && evt.card.number && evt.card.number === card.number) {
+						return num + 10;
+					}
+				}
+			},
+		},
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "useCard" },
 		filter(event, player) {
@@ -810,27 +820,6 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			await player.draw({ num: 1 });
-		},
-		ai: {
-			aiOrder(player, card, num) {
-				if (typeof card == "object" && player.isPhaseUsing()) {
-					var evt = player.getLastUsed();
-					if (evt && evt.card && evt.card.number && evt.card.number === card.number) {
-						return num + 10;
-					}
-				}
-			},
-			/*
-			effect: {
-			   	player(card, player, target) {
-			     	if (!player.storage.jlsg_diezhang) return;
-			     	var number = get.number(player.storage.jlsg_diezhang);
-			     	if (number < get.number(card)) {
-			       		return [1, 0.6];
-			     	}
-				},
-			}
-			*/
 		},
 	},
 	jlsg_xiongyi: {
