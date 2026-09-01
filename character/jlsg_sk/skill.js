@@ -20354,6 +20354,252 @@ const skills = {
 			trigger.addSkill = skills;
 		},
 	},
+	jlsg_shiming: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			global: ["gainAfter", "loseAsyncAfter"],
+		},
+		usable: 1,
+		filter(event, player) {
+			return game.hasPlayer(current => {
+				if (current == player) {
+					return false;
+				}
+				const cards = event.getg(current);
+				return cards?.length && cards.every(card => get.color(card, false) == "black");
+			});
+		},
+		async cost(event, trigger, player) {
+			const targets = game.filterPlayer(current => {
+				if (current == player) {
+					return false;
+				}
+				const cards = trigger.getg(current);
+				return cards?.length && cards.every(card => get.color(card, false) == "black");
+			});
+			let result;
+			if (targets.length > 1) {
+				result = await player
+					.chooseButtonTarget({
+						createDialog: [`###${get.translation(event.skill)}###选择一种牌的处理方式并选择一名获得牌的其他角色，然后令其对自己造成等同于获得牌数的伤害。`, [["自己获得", "置于牌堆顶"], "textbutton"]],
+						complexSelect: true,
+						selectButton: [1, 1],
+						filterButton: lib.filter.all,
+						filterTarget(_, player, target) {
+							return get.event().info?.some(info => info[0] == target);
+						},
+						processAI() {
+							const result = { bool: false },
+								{ player, info } = get.event();
+							if (info.some(info => info[1] < 0)) {
+								result.bool = true;
+								const infox = info.flatMap(info => (info[1] < 0 ? [[info[0], info[2]]] : [])).sort(([a, num1], [b, num2]) => num1 - num2);
+								result.targets = [infox[0][0]];
+								result.links = [get.event().getRand() < 0.5 ? "自己获得" : "置于牌堆顶"];
+							}
+							return result;
+						},
+						info: targets.map(target => {
+							return [target, get.attitude(player, target), trigger.getg(target)?.length];
+						}),
+					})
+					.forResult();
+				if (result?.bool) {
+					result.cost_data = { control: result.links[0] };
+				}
+			} else {
+				const [target] = targets;
+				result = await player
+					.chooseButton({
+						createDialog: [`###${get.translation(event.skill)}###选择一种牌的处理方式，然后令${get.translation(target)}对自己造成等同于获得牌数的伤害。`, [["自己获得", "置于牌堆顶"], "textbutton"]],
+						ai(button) {
+							const { att } = get.event();
+							if (att > 0) {
+								return 0;
+							}
+							return 1;
+						},
+						att: get.attitude(player, target),
+					})
+					.forResult();
+				if (result?.bool) {
+					result.targets = targets;
+					result.cost_data = { control: result.links[0] };
+				}
+			}
+			event.result = result;
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: { control: choice },
+			} = event;
+			const cards = trigger.getg(target);
+			const num = cards.length;
+			if (choice === "自己获得") {
+				await player.gain({ cards, source: target, animate: "giveAuto", log: true });
+			} else {
+				await target.lose({ cards, position: ui.cardPile, insert: true });
+				game.log(player, "将", cards, "置于牌堆顶");
+			}
+			if (target.isIn()) {
+				await target.damage({ num, source: target });
+			}
+		},
+	},
+	jlsg_xingbu: {
+		audio: "ext:极略/audio/skill:3",
+		trigger: {
+			player: "phaseZhunbeiBegin",
+		},
+		frequent: true,
+		async content(event, trigger, player) {
+			const cards = get.cards(3);
+			await game.cardsGotoOrdering(cards);
+			await player.showCards(cards, get.translation(player) + "发动【星卜】", true, false).set("clearArena", false);
+			let redCount = cards.reduce((count, card) => count + (get.color(card, false) === "red" ? 1 : 0), 0);
+			const result = await player
+				.chooseTarget({
+					prompt: `${get.translation(event.name)}：选择一名角色获得这些牌`,
+					prompt2: `其直到其下回合结束前：${
+						{
+							0: "无增益效果",
+							1: "摸牌数、手牌上限、攻击范围+1",
+							2: "摸牌数、手牌上限、攻击范围+2，使用【杀】无次数限制",
+							3: "摸牌数、手牌上限、攻击范围+3，使用【杀】无次数限制，【杀】造成伤害+1",
+						}[redCount]
+					}`,
+					ai(target) {
+						const { player, redCount, allBlack } = get.event();
+						const att = get.attitude(player, target);
+						if (att > 0 && redCount > 0) {
+							return att / (1 + target.countCards("h"));
+						}
+						if (allBlack && player.hasSkill("jlsg_shiming") && !player.countSkill("jlsg_shiming")) {
+							return get.damageEffect(target, target, player);
+						}
+						return 0;
+					},
+					redCount,
+					allBlack: cards.every(card => get.color(card, false) === "black"),
+				})
+				.forResult();
+			if (!result?.bool || !result.targets?.length) {
+				await game.cardsGotoPile(cards, "insert");
+				game.broadcastAll(() => ui.clear());
+				return;
+			}
+			const [target] = result.targets;
+			player.line(target);
+			await target.gain(cards, "gain2");
+			game.broadcastAll(() => ui.clear());
+			if (redCount == 0) {
+				game.log(target, "没有获得任何增益效果");
+				return;
+			}
+			target.markAuto("jlsg_xingbu_buff", [redCount]);
+			target.addTempSkill("jlsg_xingbu_buff", { player: "phaseEnd" });
+		},
+		subSkill: {
+			buff: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				marktext: "卜",
+				intro: {
+					nocount: true,
+					content(storage, player) {
+						storage ??= player.getStorage("jlsg_xingbu_buff");
+						if (!storage?.length) {
+							return "暂无增益";
+						}
+						const map = storage.reduce((map, num) => {
+							map[num] ??= 0;
+							map[num]++;
+							return map;
+						}, {});
+						let lines = [];
+						if (map[1] || map[2] || map[3]) {
+							lines.push(`摸牌数+${(map[1] || 0) + (map[2] || 0) * 2 + (map[3] || 0) * 3}`);
+							lines.push(`手牌上限+${(map[1] || 0) + (map[2] || 0) * 2 + (map[3] || 0) * 3}`);
+							lines.push(`攻击范围+${(map[1] || 0) + (map[2] || 0) * 2 + (map[3] || 0) * 3}`);
+						}
+						if (map[2] || map[3]) {
+							lines.push(`使用【杀】无次数限制`);
+						} else if (map[1]) {
+							lines.push(`使用【杀】的次数上限+${map[1]}`);
+						}
+						if (map[3]) {
+							lines.push(`使用【杀】造成的伤害+${map[3]}`);
+						}
+						return "生效：<br>" + lines.join("<br>");
+					},
+				},
+				mod: {
+					maxHandcard(player, num) {
+						const records = player.getStorage("jlsg_xingbu_buff");
+						if (!records?.length) {
+							return num;
+						}
+						const sum = records.reduce((sum, str) => sum + Number(str), 0);
+						return num + sum;
+					},
+					attackRange(player, num) {
+						const records = player.getStorage("jlsg_xingbu_buff");
+						if (!records?.length) {
+							return num;
+						}
+						const sum = records.reduce((sum, str) => sum + Number(str), 0);
+						return num + sum;
+					},
+					cardUsable(card, player, num) {
+						if (get.name(card, player) !== "sha") {
+							return num;
+						}
+						const records = player.getStorage("jlsg_xingbu_buff");
+						if (!records?.length) {
+							return num;
+						}
+						if (records.some(str => [2, 3].includes(Number(str)))) {
+							return Infinity;
+						}
+						const sum = records.reduce((sum, str) => sum + (Number(str) === 1 ? 1 : 0), 0);
+						return num + sum;
+					},
+				},
+				trigger: {
+					player: ["phaseDrawBegin2"],
+					source: ["damageBegin1"],
+				},
+				filter(event, player) {
+					const storage = player.getStorage("jlsg_xingbu_buff", []);
+					if (!storage?.length) {
+						return false;
+					}
+					if (event.name == "phaseDraw") {
+						return !event.numFixed;
+					}
+					return storage.some(str => Number(str) === 3);
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const storage = player.getStorage(event.name, []);
+					const map = storage.reduce((map, num) => {
+						map[num] ??= 0;
+						map[num]++;
+						return map;
+					}, {});
+					if (trigger.name == "phaseDraw") {
+						trigger.num += (map[1] || 0) + (map[2] || 0) * 2 + (map[3] || 0) * 3;
+					} else {
+						trigger.num += map[3] || 0;
+					}
+				},
+			},
+		},
+		ai: { threaten: 1.5 },
+	},
 };
 
 export default skills;
