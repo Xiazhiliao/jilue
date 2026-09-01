@@ -150,6 +150,7 @@ const characters = {
 	jlsgsk_liuzan: ["male", "wu", 4, ["jlsg_fenyin"], []],
 	jlsgsk_simalang: ["male", "wei", 3, ["jlsg_junbing", "jlsg_quji"], ["name:司马|朗"]],
 	jlsgsk_zhangqiying: ["female", "qun", 3, ["jlsg_falu", "jlsg_zhenyi", "jlsg_dianhua"], ["name:张|null"]],
+	jlsgsk_qiaozhou: ["male", "shu", 3, ["jlsg_shiming", "jlsg_xingbu"], ["name:谯|周"]],
 };
 
 export default characters;
