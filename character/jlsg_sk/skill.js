@@ -15347,7 +15347,9 @@ const skills = {
 			if (evt.name != "chooseToCompare") {
 				//使用|打出
 				if (!_status.emptyEvent) {
-					_status.emptyEvent = await game.createEvent("empty", false).setContent(function () {});
+					let next = game.createEvent("empty", false).setContent(function () {});
+					await next;
+					_status.emptyEvent = next;
 					game.broadcastAll(function (info) {
 						_status.emptyEvent = info;
 					}, _status.emptyEvent);
@@ -20681,7 +20683,7 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			return player.hasDiscardableCards(palyer, "he", card => get.name(card, player) == "shan") && event.source && event.source != event.player;
+			return player.hasDiscardableCards(player, "he", card => get.name(card, player) == "shan") && event.source && event.source != event.player;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
