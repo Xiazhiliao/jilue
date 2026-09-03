@@ -21044,15 +21044,26 @@ const skills = {
 	},
 	jlsg_xingbu: {
 		audio: "ext:极略/audio/skill:3",
+		logAudio(index) {
+			if (typeof index == "number") {
+				if (index > 0) {
+					return `ext:极略/audio/skill/jlsg_xingbu${4 - index}.mp3`;
+				}
+				return "ext:极略/audio/skill/jlsg_xingbu3.mp3";
+			}
+			return "ext:极略/audio/skill:3";
+		},
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
 		frequent: true,
+		popup: false,
 		async content(event, trigger, player) {
 			const cards = get.cards(3);
+			let redCount = cards.reduce((count, card) => count + (get.color(card, false) === "red" ? 1 : 0), 0);
+			player.logSkill(event.name, null, null, null, [redCount]);
 			await game.cardsGotoOrdering(cards);
 			await player.showCards(cards, get.translation(player) + "发动【星卜】", true, false).set("clearArena", false);
-			let redCount = cards.reduce((count, card) => count + (get.color(card, false) === "red" ? 1 : 0), 0);
 			const result = await player
 				.chooseTarget({
 					prompt: `${get.translation(event.name)}：选择一名角色获得这些牌`,
