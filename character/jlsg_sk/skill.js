@@ -21078,7 +21078,7 @@ const skills = {
 					ai(target) {
 						const { player, redCount, allBlack } = get.event();
 						const att = get.attitude(player, target);
-						if (att > 0 && redCount > 0) {
+						if (att > 0) {
 							return att / (1 + target.countCards("h"));
 						}
 						if (allBlack && player.hasSkill("jlsg_shiming") && !player.countSkill("jlsg_shiming")) {
