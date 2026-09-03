@@ -3084,9 +3084,9 @@ const skills = {
 		filterTarget: function (card, player, target) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 			const upgrade = upgradeStorage?.["jlsgsr_ganning"]?.[2] || upgradeStorage?.other?.["jlsg_jiexi"];
-			let bool = player.getStorage("jlsg_jiexi_used").length;
+			let bool = player.getStorage("jlsg_jiexi_used", []).length;
 			if (upgrade) {
-				bool = player.getStorage("jlsg_jiexi_used").includes(target);
+				bool = player.hasStorage("jlsg_jiexi_used", target);
 			}
 			return target != player && target.countCards("he") && !bool;
 		},
@@ -3159,9 +3159,6 @@ const skills = {
 		subSkill: {
 			used: {
 				charlotte: true,
-				init(player, skill) {
-					player.setStorage(skill, []);
-				},
 				onremove: true,
 				mark: true,
 				marktext: "劫",
