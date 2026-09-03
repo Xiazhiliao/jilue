@@ -756,62 +756,24 @@ let jlsg_qs = {
 			equipSkill: true,
 			mod: {
 				maxHandcard(player, num) {
-					return num + 2;
+					return num + 1;
+				},
+				attackRange(player, num) {
+					return num + 1;
+				},
+				cardUsable(card, player, num) {
+					if (card.name == "sha") {
+						return num + 1;
+					}
 				},
 			},
-			trigger: { player: "phaseBegin" },
+			trigger: { player: "phaseDrawBegin2" },
+			filter(event) {
+				return !event.numFixed;
+			},
 			forced: true,
 			async content(event, trigger, player) {
-				await player.draw(1);
-			},
-		},
-		jlsgqs_yuxi_skill_give: {
-			equipSkill: true,
-			trigger: { target: "shaHit" },
-			getIndex(event, player) {
-				return player.getVEquips("jlsgqs_yuxi");
-			},
-			filter(event, player, name, card) {
-				if (player == event.player) {
-					return false;
-				}
-				if (!event.player.isIn()) {
-					return false;
-				}
-				return card?.name == "jlsgqs_yuxi";
-			},
-			async cost(event, trigger, player) {
-				const vcard = event.indexedData;
-				event.result = await trigger.player
-					.chooseBool()
-					.set("createDialog", ["是否获得【玉玺】", vcard.cards.length ? vcard.cards : "虚拟牌"])
-					.set("ai", (event, player) => get.attitude(player, event.player) < 0)
-					.forResult();
-				if (event.result?.bool) {
-					event.result.cost_data = { vcard };
-				}
-			},
-			popup: false,
-			async content(event, trigger, player) {
-				const vcard = event.cost_data.vcard;
-				if (vcard.cards?.length) {
-					await trigger.player.gain(player, vcard.cards, "giveAuto", "log");
-				}
-				game.broadcastAll(
-					function (player, vcard) {
-						const cards = player.vcardsMap?.equips;
-						if (cards && cards.includes(vcard)) {
-							cards.remove(vcard);
-						}
-					},
-					player,
-					vcard
-				);
-				const cards = player.vcardsMap?.equips;
-				if (!cards?.filter(card => card.name == "jlsgqs_yuxi")?.length) {
-					player.removeEquipTrigger(vcard, true);
-				}
-				player.$handleEquipChange();
+				trigger.num++;
 			},
 		},
 		jlsgqs_taipingyaoshu_skill: {
@@ -855,103 +817,119 @@ let jlsg_qs = {
 			equipSkill: true,
 			mod: {
 				globalTo(from, to, distance) {
-					const e1 = to.getVEquips(3),
-						e2 = to.getVEquips(4);
-					if (!e1.length && !e2.length) {
-						return distance + 1;
-					}
+					const es = to.getVEquips("equip3_4");
+					let num = es.reduce((sum, card) => {
+						let info = get.info(card);
+						return num + (info?.distance?.globalTo || 0) * 2;
+					});
+					return distance + num;
 				},
 				globalFrom(from, to, distance) {
-					const e1 = from.getVEquips(3),
-						e2 = from.getVEquips(4);
-					if (!e1.length && !e2.length) {
-						return distance - 1;
-					}
+					const es = to.getVEquips("equip3_4");
+					let num = es.reduce((sum, card) => {
+						let info = get.info(card);
+						return num + (info?.distance?.globalFrom || 0) * 2;
+					});
+					return distance + num;
 				},
-				maxHandcard(player, num) {
-					const e1 = player.getVEquips(3),
-						e2 = player.getVEquips(4);
-					if (e1.length || e2.length) {
-						return num + 1;
+			},
+			trigger: {
+				player: "equipAfter",
+			},
+			filter(event, player) {
+				return event.card.name === "jlsgqs_dunjiatianshu" && (player.hasEmptySlot(3) || player.hasEmptySlot(4));
+			},
+			forced: true,
+			async content(event, trigger, player) {
+				let card = get.cardPile2(card => {
+					for (let type of ["equip3", "equip4"]) {
+						if (get.subtype(card, false) == type && player.hasEmptySlot(type)) {
+							return true;
+						}
 					}
-				},
+					return false;
+				});
+				if (card) {
+					await player.equip(card, true);
+				}
 			},
 		},
 		jlsgqs_qixingbaodao_skill: {
 			equipSkill: true,
-			trigger: { player: "shaMiss" },
-			getIndex(event, player) {
-				return player.getVEquips("jlsgqs_qixingbaodao");
+			trigger: {
+				source: "damageSource",
+				player: "shaMiss",
 			},
-			filter(event, player, name, card) {
-				if (card?.name != "jlsgqs_qixingbaodao") {
+			filter(event, player) {
+				if (!player.getVEquips("jlsgqs_qixingbaodao").length) {
 					return false;
 				}
-				return event.target?.countGainableCards(player, "e");
+				if (event.name === "damage") {
+					return event.player.hasGainableCards(player, "he");
+				}
+				return player.hasGainableCards(event.target, "e", card => card.name == "jlsgqs_qixingbaodao");
 			},
 			async cost(event, trigger, player) {
-				const vcard = event.indexedData;
-				event.result = await player
-					.chooseBool()
-					.set("createDialog", ["是否发动【七星宝刀】", vcard.cards.length ? vcard.cards : "虚拟牌"])
-					.set("ai", (event, player) => {
-						const { target } = get.event(),
-							{ indexedData: vcard } = event;
-						const es = target.getGainableCards(player, "e");
-						return es.some(card => {
-							if (vcard.cards?.length) {
-								return get.value(vcard.cards, player) <= get.value(card, player);
-							}
-							return true;
-						});
-					})
-					.set("target", trigger.target)
-					.forResult();
-				if (event.result?.bool) {
-					event.result.cost_data = { vcard };
+				const cards = player.getCards("e", card => card.name == "jlsgqs_qixingbaodao");
+				if (trigger.name === "damage") {
+					event.result = await player
+						.gainPlayerCard({
+							target: trigger.player,
+							position: "he",
+							selectButton: [1, cards.length],
+							chooseonly: true,
+						})
+						.forResult();
+				} else {
+					event.result = await trigger.target
+						.chooseButton({
+							createDialog: [`七星宝刀###是否获得${get.translation(trigger.player)}的任意件七星宝刀？`, cards],
+							selectButton: [1, cards.length],
+							ai(btton) {
+								const { check } = get.event();
+								if (check) {
+									return 1;
+								}
+								return 0;
+							},
+							check: get.attitude(trigger.target, player) <= 0,
+						})
+						.forResult();
+					if (event.result?.bool) {
+						event.result.cards = result.links;
+					}
 				}
 			},
 			async content(event, trigger, player) {
-				const vcard = event.cost_data.vcard;
-				if (vcard.cards?.length) {
-					await player.give(vcard.cards, trigger.target, true);
-				}
-				game.broadcastAll(
-					function (player, vcard) {
-						const cards = player.vcardsMap?.equips;
-						if (cards && cards.includes(vcard)) {
-							cards.remove(vcard);
-						}
-					},
-					player,
-					vcard
-				);
-				const cards = player.vcardsMap?.equips;
-				if (!cards?.filter(card => card.name == "jlsgqs_qixingbaodao")?.length) {
-					player.removeEquipTrigger(vcard, true);
-				}
-				player.$handleEquipChange();
-				if (trigger.target.countGainableCards(player, "e")) {
-					await player.gainPlayerCard("e", trigger.target, true);
+				if (trigger.name === "damage") {
+					await player.gain({ cards: event.cards });
+				} else {
+					await trigger.target.gain({
+						cards: event.cards,
+						source: player,
+						animate: "giveAuto",
+						log: true,
+					});
 				}
 			},
 		},
 		jlsgqs_xiujian_skill: {
 			equipSkill: true,
-			trigger: { player: "phaseBegin" },
+			trigger: { source: "damageBegin1" },
 			getIndex(event, player) {
 				return player.getVEquips("jlsgqs_xiujian");
 			},
 			filter(event, player, triggername, card) {
-				return card?.name == "jlsgqs_xiujian";
+				return event.num > 0 && card?.name == "jlsgqs_xiujian";
 			},
 			async cost(event, trigger, player) {
 				const vcard = event.indexedData;
 				event.result = await player
-					.chooseTarget((card, player, target) => player != target)
-					.set("createDialog", ["是否发动【袖箭】", vcard.cards.length ? vcard.cards : "虚拟牌"])
-					.set("ai", function (target) {
-						return get.damageEffect(target, get.player(), get.player());
+					.chooseBool({
+						createDialog: [`###是否发动【袖箭】###弃置袖箭并令${get.translation(trigger.player)}失去${trigger.num}点体力`, vcard.cards.length ? vcard.cards : "虚拟牌"],
+						ai(event, player) {
+							return get.effect(event.getTrigger().player, { name: "losehp" }, player, player) > 0;
+						},
 					})
 					.forResult();
 				if (event.result?.bool) {
@@ -959,7 +937,7 @@ let jlsg_qs = {
 				}
 			},
 			async content(event, trigger, player) {
-				const target = event.targets[0],
+				const target = trigger.player,
 					vcard = event.cost_data.vcard;
 				if (vcard.cards?.length) {
 					await player.discard(vcard.cards);
@@ -979,7 +957,7 @@ let jlsg_qs = {
 					player.removeEquipTrigger(vcard, true);
 				}
 				player.$handleEquipChange();
-				await target.damage(1, player);
+				await target.loseHp(1);
 			},
 		},
 		jlsgqs_xiujian_skill_lose: {
@@ -1055,13 +1033,13 @@ let jlsg_qs = {
 		jlsgqs_taipingyaoshu: "太平要术",
 		jlsgqs_taipingyaoshu_info: "锁定技，每回合限一次，防止你受到的属性伤害。",
 		jlsgqs_dunjiatianshu: "遁甲天书",
-		jlsgqs_dunjiatianshu_info: "锁定技，若你的装备区没有坐骑牌，其他角色计算与你的距离时，始终+1，你计算与其他角色的距离时，始终-1；锁定技，若你的装备区有坐骑牌，你的手牌上限+1。",
+		jlsgqs_dunjiatianshu_info: "锁定技，当【遁甲天书】置入你的装备区后，若你的有空置的坐骑栏，将牌堆里的一张坐骑牌置入对应位置。锁定技，你的坐骑牌的距离效果改为三倍。",
 		jlsgqs_qixingbaodao: "七星宝刀",
 		jlsgqs_qixingbaodao_info: "当你使用的【杀】被目标角色的【闪】响应后，你可以将装备区的【七星宝刀】交给该名角色，然后获得其装备区的一张牌。",
 		jlsgqs_xiujian: "袖箭",
-		jlsgqs_xiujian_info: "准备阶段开始时，你可以弃置你装备区中的【袖箭】，然后对一名其他角色造成一点伤害；锁定技，当你从装备区失去【袖箭】时，你摸一张牌。",
+		jlsgqs_xiujian_info: "当你使用【杀】对一名其他角色造成伤害时，你可以弃置此牌，然后令其失去等同于伤害值的体力。锁定技，当你从装备区失去【袖箭】时，你摸一张牌。",
 		jlsgqs_yuxi: "玉玺",
-		jlsgqs_yuxi_info: "锁定技，你的手牌上限+2，准备阶段开始时，你摸一张牌；一名角色使用【杀】对你造成伤害时，可获得你装备区中的【玉玺】。",
+		jlsgqs_yuxi_info: "锁定技，摸牌数+1，手牌上限+1，攻击范围+1，使用【杀】的次数上限+1。",
 		jlsgqs_jinnangdai: "锦囊袋",
 		jlsgqs_jinnangdai_info: "锁定技，任意角色的回合结束时，若你没有锦囊牌，你从牌堆获得一张锦囊牌。",
 		jlsgqs_qingmeizhujiu: "青梅煮酒",

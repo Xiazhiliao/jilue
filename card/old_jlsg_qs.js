@@ -211,6 +211,199 @@ let old_jlsg_qs = {
 		},
 	},
 	skill: {
+		jlsgqs_qixingbaodao_skill: {
+			equipSkill: true,
+			trigger: { player: "shaMiss" },
+			getIndex(event, player) {
+				return player.getVEquips("jlsgqs_qixingbaodao");
+			},
+			filter(event, player, name, card) {
+				if (card?.name != "jlsgqs_qixingbaodao") {
+					return false;
+				}
+				return event.target?.countGainableCards(player, "e");
+			},
+			async cost(event, trigger, player) {
+				const vcard = event.indexedData;
+				event.result = await player
+					.chooseBool()
+					.set("createDialog", ["是否发动【七星宝刀】", vcard.cards.length ? vcard.cards : "虚拟牌"])
+					.set("ai", (event, player) => {
+						const { target } = get.event(),
+							{ indexedData: vcard } = event;
+						const es = target.getGainableCards(player, "e");
+						return es.some(card => {
+							if (vcard.cards?.length) {
+								return get.value(vcard.cards, player) <= get.value(card, player);
+							}
+							return true;
+						});
+					})
+					.set("target", trigger.target)
+					.forResult();
+				if (event.result?.bool) {
+					event.result.cost_data = { vcard };
+				}
+			},
+			async content(event, trigger, player) {
+				const vcard = event.cost_data.vcard;
+				if (vcard.cards?.length) {
+					await player.give(vcard.cards, trigger.target, true);
+				}
+				game.broadcastAll(
+					function (player, vcard) {
+						const cards = player.vcardsMap?.equips;
+						if (cards && cards.includes(vcard)) {
+							cards.remove(vcard);
+						}
+					},
+					player,
+					vcard
+				);
+				const cards = player.vcardsMap?.equips;
+				if (!cards?.filter(card => card.name == "jlsgqs_qixingbaodao")?.length) {
+					player.removeEquipTrigger(vcard, true);
+				}
+				player.$handleEquipChange();
+				if (trigger.target.countGainableCards(player, "e")) {
+					await player.gainPlayerCard("e", trigger.target, true);
+				}
+			},
+		},
+		jlsgqs_xiujian_skill: {
+			equipSkill: true,
+			trigger: { player: "phaseBegin" },
+			getIndex(event, player) {
+				return player.getVEquips("jlsgqs_xiujian");
+			},
+			filter(event, player, triggername, card) {
+				return card?.name == "jlsgqs_xiujian";
+			},
+			async cost(event, trigger, player) {
+				const vcard = event.indexedData;
+				event.result = await player
+					.chooseTarget((card, player, target) => player != target)
+					.set("createDialog", ["是否发动【袖箭】", vcard.cards.length ? vcard.cards : "虚拟牌"])
+					.set("ai", function (target) {
+						return get.damageEffect(target, get.player(), get.player());
+					})
+					.forResult();
+				if (event.result?.bool) {
+					event.result.cost_data = { vcard };
+				}
+			},
+			async content(event, trigger, player) {
+				const target = event.targets[0],
+					vcard = event.cost_data.vcard;
+				if (vcard.cards?.length) {
+					await player.discard(vcard.cards);
+				}
+				game.broadcastAll(
+					function (player, vcard) {
+						const cards = player.vcardsMap?.equips;
+						if (cards && cards.includes(vcard)) {
+							cards.remove(vcard);
+						}
+					},
+					player,
+					vcard
+				);
+				const cards = player.vcardsMap?.equips;
+				if (!cards?.filter(card => card.name == "jlsgqs_xiujian")?.length) {
+					player.removeEquipTrigger(vcard, true);
+				}
+				player.$handleEquipChange();
+				await target.damage(1, player);
+			},
+		},
+		jlsgqs_yuxi_skill: {
+			equipSkill: true,
+			mod: {
+				maxHandcard(player, num) {
+					return num + 2;
+				},
+			},
+			trigger: { player: "phaseBegin" },
+			forced: true,
+			async content(event, trigger, player) {
+				await player.draw(1);
+			},
+		},
+		jlsgqs_yuxi_skill_give: {
+			equipSkill: true,
+			trigger: { target: "shaHit" },
+			getIndex(event, player) {
+				return player.getVEquips("jlsgqs_yuxi");
+			},
+			filter(event, player, name, card) {
+				if (player == event.player) {
+					return false;
+				}
+				if (!event.player.isIn()) {
+					return false;
+				}
+				return card?.name == "jlsgqs_yuxi";
+			},
+			async cost(event, trigger, player) {
+				const vcard = event.indexedData;
+				event.result = await trigger.player
+					.chooseBool()
+					.set("createDialog", ["是否获得【玉玺】", vcard.cards.length ? vcard.cards : "虚拟牌"])
+					.set("ai", (event, player) => get.attitude(player, event.player) < 0)
+					.forResult();
+				if (event.result?.bool) {
+					event.result.cost_data = { vcard };
+				}
+			},
+			popup: false,
+			async content(event, trigger, player) {
+				const vcard = event.cost_data.vcard;
+				if (vcard.cards?.length) {
+					await trigger.player.gain(player, vcard.cards, "giveAuto", "log");
+				}
+				game.broadcastAll(
+					function (player, vcard) {
+						const cards = player.vcardsMap?.equips;
+						if (cards && cards.includes(vcard)) {
+							cards.remove(vcard);
+						}
+					},
+					player,
+					vcard
+				);
+				const cards = player.vcardsMap?.equips;
+				if (!cards?.filter(card => card.name == "jlsgqs_yuxi")?.length) {
+					player.removeEquipTrigger(vcard, true);
+				}
+				player.$handleEquipChange();
+			},
+		},
+		jlsgqs_dunjiatianshu_skill: {
+			equipSkill: true,
+			mod: {
+				globalTo(from, to, distance) {
+					const e1 = to.getVEquips(3),
+						e2 = to.getVEquips(4);
+					if (!e1.length && !e2.length) {
+						return distance + 1;
+					}
+				},
+				globalFrom(from, to, distance) {
+					const e1 = from.getVEquips(3),
+						e2 = from.getVEquips(4);
+					if (!e1.length && !e2.length) {
+						return distance - 1;
+					}
+				},
+				maxHandcard(player, num) {
+					const e1 = player.getVEquips(3),
+						e2 = player.getVEquips(4);
+					if (e1.length || e2.length) {
+						return num + 1;
+					}
+				},
+			},
+		},
 		jlsgqs_muniu_skill: {
 			equipSkill: true,
 			enable: "phaseUse",
@@ -393,7 +586,7 @@ let old_jlsg_qs = {
 			equipSkill: true,
 			mod: {
 				maxHandcard(player, num) {
-					return num + player.countVCards("e",card=>card.name=="jlsgqs_jinnangdai");
+					return num + player.countVCards("e", card => card.name == "jlsgqs_jinnangdai");
 				},
 			},
 		},
@@ -688,8 +881,11 @@ let old_jlsg_qs = {
 		},
 	},
 	translate: {
+		jlsgqs_qixingbaodao_info: "当你使用的【杀】被目标角色的【闪】响应后，你可以将装备区的【七星宝刀】交给该名角色，然后获得其装备区的一张牌。",
+		jlsgqs_xiujian_info: "准备阶段开始时，你可以弃置你装备区中的【袖箭】，然后对一名其他角色造成一点伤害；锁定技，当你从装备区失去【袖箭】时，你摸一张牌。",
+		jlsgqs_yuxi_info: "锁定技，你的手牌上限+2，准备阶段开始时，你摸一张牌；一名角色使用【杀】对你造成伤害时，可获得你装备区中的【玉玺】。",
+		jlsgqs_dunjiatianshu_info: "锁定技，若你的装备区没有坐骑牌，其他角色计算与你的距离时，始终+1，你计算与其他角色的距离时，始终-1；锁定技，若你的装备区有坐骑牌，你的手牌上限+1。",
 		jlsgqs_taipingyaoshu_info: "出牌阶段限一次，你可以令一名角色摸一张牌；锁定技，当【太平要术】置入你的装备区时，你须弃置一张红色手牌或者失去1点体力。",
-
 		jlsgqs_jinnangdai_info: "锁定技，你的手牌上限+1；你失去装备区里的【锦囊袋】时，摸一张牌。",
 		jlsgqs_mei_info: "出牌阶段，对一名角色使用。令其摸两张牌；若其体力值为1且已受伤，则改为回复1点体力。一名其他角色濒死时，对其使用，令其回复1点体力；若其因此脱离濒死状态，其摸一张牌。",
 		jlsgqs_qingmeizhujiu_info: "出牌阶段对一名有手牌的其他角色使用，该角色展示一张手牌，然后你可以弃置一张点数大于此牌的手牌并回复一点体力，或者弃置一张点数不大于此牌的手牌令其回复一点体力",
