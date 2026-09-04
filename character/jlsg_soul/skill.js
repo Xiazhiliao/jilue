@@ -16374,21 +16374,24 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.removeCharge(5);
-			const cards = event.target.getCards("h");
-			const num = cards.length;
+			const cardPile = Array.from(ui.cardPile.childNodes);
+			const hs = event.target.getCards("h");
+			const num = hs.length;
 			game.log(event.target, "将", get.cnNumber(num), "张牌洗入牌堆");
 			event.target.$throw(num, 500);
 			await event.target.lose({
-				cards,
+				cards: hs,
 				position: ui.cardPile,
 				insert_index() {
 					return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childElementCount - 1)];
 				},
+				//洗入不触发失去牌时机
 				_triggered: null,
 			});
 			game.updateRoundNumber();
+			const diff = Array.from(ui.cardPile.childNodes).filter(card => !cardPile.includes(card));
 			let result = await player.draw({ num, gaintag: [event.name] }).forResult();
-			const discardCards = result?.cards?.filter(card => cards.includes(card));
+			const discardCards = result?.cards?.filter(card => diff.includes(card));
 			if (discardCards?.length) {
 				result = await player.modedDiscard({ cards: discardCards }).forResult();
 				if (result?.bool && result.cards?.length) {
