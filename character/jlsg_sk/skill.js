@@ -8443,7 +8443,7 @@ const skills = {
 			}
 		},
 		getPile(player, type) {
-			const list = get.inpileVCardList(([typex, _, name, neture]) => {
+			const list = get.inpileVCardList(([typex, _, name, nature]) => {
 				if (typex != type || nature || player.hasStorage("jlsg_taoluan_use", false)) {
 					return false;
 				}

@@ -8502,9 +8502,6 @@ const skills = {
 	},
 	jlsg_gucheng: {
 		audio: "ext:极略/audio/skill:2",
-		init(player) {
-			player.storage.jlsg_gucheng = [];
-		},
 		onremove: true,
 		mod: {
 			aiOrder(player, card, num) {
@@ -8572,7 +8569,7 @@ const skills = {
 				return false;
 			}
 			let card = { name: event.card.name, nature: get.nature(event.card) },
-				used = player.storage.jlsg_gucheng;
+				used = player.getStorage("jlsg_gucheng");
 			if (card.name != "sha") {
 				return !used.some(i => i.name == card.name);
 			}
@@ -8584,8 +8581,9 @@ const skills = {
 				trigger.getParent().excluded.add(player);
 			} else {
 				let card = { name: trigger.card.name, nature: get.nature(trigger.card) };
-				player.storage.jlsg_gucheng.add(card);
-				player.markSkill("jlsg_gucheng");
+				const storage = player.getStorage(event.name, []);
+				storage.add(card);
+				player.setStorage(event.name, storage, true);
 			}
 		},
 		ai: {
