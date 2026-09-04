@@ -16252,6 +16252,195 @@ const skills = {
 			},
 		},
 	},
+	jlsg_pinghe: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			player: "useCardToPlayered",
+			target: "useCardToTargeted",
+		},
+		filter(event, player) {
+			if (!event.targets?.length || event.player === event.target) {
+				return false;
+			} else if (event.name === "useCardToPlayered" && !event.isFirstTarget) {
+				return false;
+			}
+			return event.card.name === "sha" || get.type(event.card, null, false) === "trick";
+		},
+		async cost(event, trigger, player) {
+			let targets = [trigger.player, ...trigger.targets].unique();
+			const num = targets.reduce((num, target) => {
+				if (typeof num !== "number") {
+					num = num.countCards("h");
+				}
+				const hs = target.countCards("h");
+				return num > hs ? hs : num;
+			});
+			targets = targets.filter(target => target.countCards("h") === num).sortBySeat(_status.currentPhase);
+			if (!targets.length) {
+				return;
+			}
+			event.result = await player
+				.chooseBool({
+					prompt: get.prompt(event.skill),
+					prompt2: `你可以令此牌的使用者和目标中手牌最少的角色(${get.translation(targets)})摸三张牌，本回合其他角色获得的这些牌不能使用或打出，且于弃牌阶段不能弃置。`,
+					ai(event, player) {
+						const { targets } = get.event();
+						return targets.reduce((sum, target) => sum + get.effect(target, { name: "draw" }, player, player), 0) > 0;
+					},
+					targets,
+				})
+				.forResult();
+			if (event.result?.bool) {
+				event.result.targets = targets;
+			}
+		},
+		async content(event, trigger, player) {
+			for (const target of event.targets) {
+				await target.draw({
+					num: 3,
+					source: player,
+					gaintag: [event.name],
+				});
+				if (target !== player) {
+					target.addTempSkill("jlsg_pinghe_debuff");
+				}
+			}
+		},
+		subSkill: {
+			debuff: {
+				charlotte: true,
+				onremove(player) {
+					player.removeGaintag("jlsg_pinghe");
+				},
+				mod: {
+					cardEnabled(card, player) {
+						const cards = card.cards || [card];
+						if (cards.some(cardx => cardx.hasGaintag?.("jlsg_pinghe"))) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						const cards = card.cards || [card];
+						if (cards.some(cardx => cardx.hasGaintag?.("jlsg_pinghe"))) {
+							return false;
+						}
+					},
+					cardRespondable(card, player) {
+						const cards = card.cards || [card];
+						if (cards.some(cardx => cardx.hasGaintag?.("jlsg_pinghe"))) {
+							return false;
+						}
+					},
+					cardDiscardable(card, player, name) {
+						if (name == "phaseDiscard" && card.hasGaintag("jlsg_pinghe")) {
+							return false;
+						}
+					},
+				},
+			},
+		},
+		ai: {
+			effect: {
+				target_use(card, player, target) {
+					if (card.name !== "sha" && get.type(card, null, player) != "trick") {
+						return;
+					} else if (player.countCards("h") > target.countCards("h")) {
+						return [1, 3];
+					}
+				},
+			},
+		},
+	},
+	jlsg_fuhai: {
+		beginMarkCount: 2,
+		chargeSkill: 5,
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
+		},
+		mod: {
+			cardUsable(card) {
+				const cards = card.cards || [card];
+				if (card.name == "sha" && cards.some(cardx => cardx.hasGaintag?.("jlsg_fuhai"))) {
+					return Infinity;
+				}
+			},
+		},
+		audio: "ext:极略/audio/skill:2",
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.countCharge() >= 5 && game.hasPlayer(current => current != player && current.hasCards("h"));
+		},
+		filterTarget(_, player, target) {
+			return target != player && target.hasCards("h");
+		},
+		async content(event, trigger, player) {
+			player.removeCharge(5);
+			const cards = event.target.getCards("h");
+			const num = cards.length;
+			game.log(event.target, "将", get.cnNumber(num), "张牌洗入牌堆");
+			event.target.$throw(num, 500);
+			await event.target.lose({
+				cards,
+				position: ui.cardPile,
+				insert_index() {
+					return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childElementCount - 1)];
+				},
+				_triggered: null,
+			});
+			game.updateRoundNumber();
+			let result = await player.draw({ num, gaintag: [event.name] }).forResult();
+			const discardCards = result?.cards?.filter(card => cards.includes(card));
+			if (discardCards?.length) {
+				result = await player.modedDiscard({ cards: discardCards }).forResult();
+				if (result?.bool && result.cards?.length) {
+					await event.target.damage({ num: result.cards.length, source: player });
+				}
+			}
+		},
+		group: ["jlsg_fuhai_addCharge"],
+		subSkill: {
+			addCharge: {
+				audio: "jlsg_fuhai",
+				trigger: {
+					global: "drawAfter",
+				},
+				filter(event, player) {
+					if (event.player === player) {
+						return false;
+					}
+					return (event.source || event.getParent().player) === player;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					player.addCharge(1);
+				},
+				ai: {
+					effect: {
+						player(card, player, target) {
+							if (card.name == "draw" && player != target) {
+								if (player.hasSkill("jlsg_fuhai") && !player.isTempBanned("jlsg_fuhai")) {
+									if (player.isPhaseUsing() && get.attitude(player, target) < 0) {
+										return [1, 1, 1, -target.countCards("h") / 2];
+									}
+									return [1, player.countCharge(true) > 0 ? 1 : 0];
+								}
+							}
+						},
+					},
+				},
+			},
+		},
+		ai: {
+			order: 20,
+			result: {
+				player: 1,
+				target(player, target) {
+					return -target.countCards("h") / 10;
+				},
+			},
+		},
+	},
 };
 
 export default skills;
