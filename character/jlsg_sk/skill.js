@@ -3551,13 +3551,13 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.hasPlayer(curernt => {
+			return game.hasPlayer(current => {
 				return current != player && current.hasCards("h");
 			});
 		},
 		logTarget(event, player) {
 			return game
-				.filterPlayer(curernt => {
+				.filterPlayer(current => {
 					return current != player && current.hasCards("h");
 				})
 				.sortBySeat();
