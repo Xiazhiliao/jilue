@@ -4894,6 +4894,9 @@ const skills = {
 					ai(card) {
 						const { att, check } = get.event();
 						if (!check || get.color(card) == "none") {
+							if (!check && att < 0) {
+								return get.unuseful2(card);
+							}
 							return 0;
 						} else if (att > 0 && get.color(card) == "black") {
 							return 8 - get.value(card);
@@ -4910,9 +4913,9 @@ const skills = {
 							return false;
 						}
 						let num = trigger.num,
-							index = trigger.phaseList.findIndex(name => name.startsWith("phaseDraw"));
+							index = phase.phaseList.findIndex(name => name.startsWith("phaseDraw"));
 						if (index < num) {
-							index = trigger.phaseList.findIndex((name, i) => name.startsWith("phaseDraw") && i > num);
+							index = phase.phaseList.findIndex((name, i) => name.startsWith("phaseDraw") && i > num);
 						}
 						if (index == -1) {
 							return false;
@@ -4939,9 +4942,10 @@ const skills = {
 			} else if (get.color(event.cards[0]) == "black") {
 				insert = "phaseDiscard";
 			}
-			const index = phaseList.findIndex(name.startsWith(insert));
+			const index = phaseList.findIndex(name => name.startsWith(insert));
 			if (index == -1) {
 				game.log(trigger.player, "的摸牌阶段消失了");
+				phase.phaseList = phaseList;
 				return;
 			}
 			game.log(trigger.player, "的摸牌阶段改为", insert == "phaseUse" ? "出牌" : "弃牌", "阶段后执行");
