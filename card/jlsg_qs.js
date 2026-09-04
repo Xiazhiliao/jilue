@@ -820,16 +820,16 @@ let jlsg_qs = {
 					const es = to.getVEquips("equip3_4");
 					let num = es.reduce((sum, card) => {
 						let info = get.info(card);
-						return num + (info?.distance?.globalTo || 0) * 2;
-					});
+						return sum + (info?.distance?.globalTo || 0) * 2;
+					}, 0);
 					return distance + num;
 				},
 				globalFrom(from, to, distance) {
 					const es = to.getVEquips("equip3_4");
 					let num = es.reduce((sum, card) => {
 						let info = get.info(card);
-						return num + (info?.distance?.globalFrom || 0) * 2;
-					});
+						return sum + (info?.distance?.globalFrom || 0) * 2;
+					}, 0);
 					return distance + num;
 				},
 			},
