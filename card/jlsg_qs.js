@@ -146,16 +146,15 @@ let jlsg_qs = {
 			},
 			async content(event, trigger, player) {
 				const target = event.target;
-				if (player.hp > target.hp) {
-					await player.draw(2);
-					if (target.isDamaged()) {
-						await target.recover();
-					}
-				} else if (player.hp < target.hp) {
+				if (player.countCards("h") > target.countCards("h")) {
 					await target.draw(2);
-					if (player.isDamaged()) {
-						await player.recover();
-					}
+				} else if (player.countCards("h") < target.countCards("h")) {
+					await player.draw(2);
+				}
+				if (player.hp > target.hp && target.isDamaged()) {
+					await target.recover(1);
+				} else if (player.hp < target.hp && player.isDamaged()) {
+					await player.recover(1);
 				}
 			},
 			ai: {
