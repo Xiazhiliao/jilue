@@ -753,7 +753,7 @@ const skills = {
 		global: ["jlsg_muyi_global"],
 		subSkill: {
 			global: {
-				trigger: { global: "phaseBegin" },
+				trigger: { player: "phaseZhunbeiBegin" },
 				filter(event, player) {
 					return game.hasPlayer(current => {
 						if (current == player || !current.hasSkill("jlsg_muyi")) {
@@ -3583,11 +3583,10 @@ const skills = {
 							list: ["交给其一张手牌", "弃置两张牌并对其造成一点伤害"],
 							ai(event, player) {
 								const source = event.player;
-								const att = get.attitude(player, source);
-								const hs = player.getGainableCards(source, "h").sort((a, b) => get.value(a) - get.value(b)),
-									hes = player.getDiscardableCards(player, "he").sort((a, b) => get.value(a) - get.value(b)),
-									damage = get.damageEffect(source, player, player) / 10;
-								if (get.value(hs[0]) > get.value(hes.slice(0, 2)) + damage) {
+								const gain = get.effect(player, { name: "shunshou_copy", position: "h" }, source, player),
+									discard = get.effect(player, { name: "guohe_copy", position: "he" }, player, player),
+									damage = get.damageEffect(source, player, player);
+								if (gain > discard + damage) {
 									return 0;
 								}
 								return 1;
@@ -3595,31 +3594,31 @@ const skills = {
 						})
 						.forResult();
 				}
-			}
-			if (typeof result?.index === "number") {
-				if (result.index == 0) {
-					await target.chooseToGive({
-						target: player,
-						position: "h",
-						forced: true,
-					});
-				} else {
-					const { bool } = await target
-						.chooseToDiscard({
-							prompt2: `弃置两张牌并对${get.translation(player)}造成一点伤害`,
-							position: "he",
-							selectCard: [2, 2],
+				if (typeof result?.index === "number") {
+					if (result.index == 0) {
+						await target.chooseToGive({
+							target: player,
+							position: "h",
 							forced: true,
-						})
-						.forResult();
-					if (bool) {
-						if (target.ai.shown < player.ai.shown) {
-							target.addExpose(0.1);
-						}
-						await player.damage({
-							num: 1,
-							source: target,
 						});
+					} else {
+						const { bool } = await target
+							.chooseToDiscard({
+								prompt2: `弃置两张牌并对${get.translation(player)}造成一点伤害`,
+								position: "he",
+								selectCard: [2, 2],
+								forced: true,
+							})
+							.forResult();
+						if (bool) {
+							if (target.ai.shown < player.ai.shown) {
+								target.addExpose(0.1);
+							}
+							await player.damage({
+								num: 1,
+								source: target,
+							});
+						}
 					}
 				}
 			}
@@ -3687,7 +3686,7 @@ const skills = {
 				frequent(event, player) {
 					return event.name == "phasDraw" && get.effect(player, { name: "draw" }, player, player) > 0;
 				},
-				async cost(event, tirgger, player) {
+				async cost(event, trigger, player) {
 					if (trigger.name == "phaseDraw") {
 						event.result = await player
 							.chooseBool({
@@ -4852,7 +4851,7 @@ const skills = {
 			if (Object.values(cards).filter(i => i.length === max).length == 1) {
 				result = { control: Object.keys(cards).find(type => cards[type].length === max) };
 			} else {
-				result = await tirgger.source
+				result = await trigger.source
 					.chooseControl({
 						prompt: "请选择要全部弃置的手牌类别",
 						controls: Object.keys(cards).filter(type => cards[type].length === max),
@@ -7281,11 +7280,11 @@ const skills = {
 		async content(event, trigger, player) {
 			trigger.selectCard[1] = Infinity;
 			const { rewrite } = get.info(event.name);
-			rewrite(tirgger, player);
+			rewrite(trigger, player);
 		},
 		rewrite(trigger, player) {
 			if (player.getStorage("jlsg_shemi", 0) == trigger.selectCard[0]) {
-				const cards = player.getDiscardableCards(player, "h", card => lib.filter.cardDiscardable(card, player, trigger));
+				const cards = player.getCards(player, "h", card => lib.filter.cardDiscardable(card, player, trigger));
 				if (cards.length > trigger.selectCard[0]) {
 					const card = cards.map(c => [c, trigger.ai(c)]).sort((pair1, pair2) => pair1[1] - pair2[1])[0][1];
 					const originalAI = trigger.ai;

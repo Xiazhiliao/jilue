@@ -901,7 +901,7 @@ let jlsg_qs = {
 			},
 			async content(event, trigger, player) {
 				if (trigger.name === "damage") {
-					await player.gain({ cards: event.cards });
+					await player.gain({ cards: event.cards, source: trigger.player });
 				} else {
 					await trigger.target.gain({
 						cards: event.cards,
