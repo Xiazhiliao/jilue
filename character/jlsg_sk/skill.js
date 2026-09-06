@@ -4583,7 +4583,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const color = player.getStorage("jlsg_zongqing");
 					player.removeStorage("jlsg_zongqing", true);
-					if (!["red", "black", "none"].includes(suit)) {
+					if (!["red", "black", "none"].includes(color)) {
 						return;
 					}
 					await player.showCards(trigger.cards);
@@ -4626,11 +4626,11 @@ const skills = {
 				}
 				const result = await current
 					.chooseCard({
-						prompt: "是否将一张手牌置于牌堆顶？",
+						prompt: current === player ? `###${get.translation(event.name)}：是否将一张手牌置于牌堆顶？###否则你令${get.translation(trigger.player)}将一张手牌置于牌堆顶` : `将一张手牌置于牌堆顶`,
 						position: "h",
 						ai(card) {
-							const { player, att, trigger, pileTopResult, getJudgeResult } = get.event();
-							const result = getJudgeResult(card, player, trigger).judge - pileTopResult.judge;
+							const { player, att, tri, pileTopResult, getJudgeResult } = get.event();
+							const result = getJudgeResult(card, player, tri).judge - pileTopResult.judge;
 							if (att == 0 || result == 0) {
 								return 0;
 							}
@@ -4639,8 +4639,9 @@ const skills = {
 							}
 							return -result - get.value(card) / 2;
 						},
+						forced: current !== player,
 						att: get.attitude(current, trigger.player),
-						trigger,
+						tri: trigger,
 						pileTopResult: getJudgeResult(ui.cardPile.firstChild, current, trigger),
 						getJudgeResult,
 					})
