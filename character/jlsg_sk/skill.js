@@ -20445,10 +20445,20 @@ const skills = {
 		audio: "ext:极略/audio/skill:3",
 		logAudio(index) {
 			if (typeof index == "number") {
-				if (index > 0) {
-					return `ext:极略/audio/skill/jlsg_xingbu${4 - index}.mp3`;
+				let num;
+				switch (index) {
+					case 3:
+						num = 1;
+						break;
+					case 2:
+					case 1:
+						num = 2;
+						break;
+					default:
+						num = 3;
+						break;
 				}
-				return "ext:极略/audio/skill/jlsg_xingbu3.mp3";
+				return `ext:极略/audio/skill/jlsg_xingbu${String(num)}.mp3`;
 			}
 			return "ext:极略/audio/skill:3";
 		},
@@ -20503,7 +20513,13 @@ const skills = {
 				return;
 			}
 			target.markAuto("jlsg_xingbu_buff", [redCount]);
-			target.addTempSkill("jlsg_xingbu_buff", { player: "phaseEnd" });
+			target.addSkill("jlsg_xingbu_buff");
+			target
+				.when({ player: "phaseAfter" })
+				.filter(evt => evt != trigger.getParent())
+				.then(async (event, trigger, player) => {
+					target.removeSkill("jlsg_xingbu_buff");
+				});
 		},
 		subSkill: {
 			buff: {
