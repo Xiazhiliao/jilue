@@ -3200,7 +3200,6 @@ const skills = {
 			global: ["phaseZhunbeiBegin"],
 		},
 		init(player, skill) {
-			player.addSkill("jlsg_jiexi_used");
 			if (!_status.gameStarted) {
 				return;
 			}
