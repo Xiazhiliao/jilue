@@ -10430,7 +10430,8 @@ const skills = {
 		filter(event, player) {
 			return player.countDiscardableCards(player, "h") && game.hasPlayer(p => p != player && !player.getStorage("jlsg_pindi_target").includes(p));
 		},
-		filterCard: lib.filter.all,
+		position: "h",
+		filterCard: lib.filter.cardDiscardable,
 		check(card) {
 			var num = _status.event.player.isTurnedOver() ? 3 : 0;
 			return 6 + num - get.value(card);
@@ -10439,22 +10440,20 @@ const skills = {
 			return player != target && !player.getStorage("jlsg_pindi_target").includes(target);
 		},
 		async content(event, trigger, player) {
-			player.addTempSkill("jlsg_pindi_clear", ["phaseUseAfter", "phaseAfter"]);
+			player.addTempSkill("jlsg_pindi_clear", ["phaseUseAfter", "phaseBeginStart", "phaseAfter"]);
+			const target = event.target;
 			player.markAuto("jlsg_pindi_target", [target]);
 			const result = await target
 				.judge({
 					judge(card) {
-						let evt = _status.event.getParent("jlsg_pindi"),
+						const evt = _status.event.getParent("jlsg_pindi"),
 							suit = get.suit(card);
 						if (get.color(card) == "black") {
 							return get.sgn(get.attitude(evt.target, evt.player)) * 3;
+						} else if (suit == "heart") {
+							return get.sgn(get.attitude(evt.target, evt.player)) * -3;
 						}
-						switch (suit) {
-							case "heart":
-								return get.sgn(get.attitude(evt.target, evt.player)) * -3;
-							default:
-								return 0;
-						}
+						return 0;
 					},
 					judge2(result) {
 						if (result.color == "black") {
@@ -10465,7 +10464,7 @@ const skills = {
 				})
 				.forResult();
 			if (result.color == "black") {
-				const result = await player
+				const result2 = await player
 					.chooseControlList({
 						list: ["令" + get.translation(target) + "摸三张牌", "令" + get.translation(target) + "弃置三张牌"],
 						ai() {
@@ -10474,7 +10473,7 @@ const skills = {
 						choice: get.attitude(player, target) > 0 ? 0 : 1,
 					})
 					.forResult();
-				if (result.index == 0) {
+				if (result2.index == 0) {
 					await target.draw({ num: 3, source: player });
 				} else {
 					await target.chooseToDiscard({ position: "he", selectCard: [3, 3], forced: true });
