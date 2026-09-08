@@ -5123,13 +5123,14 @@ const skills = {
 								} else if (event.judgeResult.color == "black") {
 									await player.loseHp(1);
 									await player.gain({
-										cards: [event.gaincard],
+										cards: [event.getParent().gaincard],
 										animate: "gain2",
 									});
 								}
 							},
 							gaincard: card,
 						});
+						game.broadcastAll(() => ui.clear());
 					}
 				},
 			},
