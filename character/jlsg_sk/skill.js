@@ -4596,15 +4596,15 @@ const skills = {
 					}, []);
 					if (cards.length) {
 						await player.modedDiscard({ cards });
-						if (color != "red" && player.hasUseTarget("jiu")) {
+						if (cards.some(card => get.color(card) === "black") && player.hasUseTarget("jiu")) {
 							await player.chooseUseTarget({
 								card: { name: "jiu", isCard: true },
 								forced: true,
 							});
 						}
-						if (color != "black" && player.hasUseTarget("sha")) {
+						if (cards.some(card => get.color(card) === "red") && player.hasUseTarget("tao")) {
 							await player.chooseUseTarget({
-								card: { name: "sha", isCard: true },
+								card: { name: "tao", isCard: true },
 								forced: true,
 							});
 						}
@@ -19441,7 +19441,7 @@ const skills = {
 				player.line(target, "fire");
 				await target.damage(damage, player);
 				player.addTempSkill("jlsg_pozhu_count", ["phaseBeginStart", "phaseUseEnd", "phaseAfter"]);
-				player.setStorage("jlsg_pozhu_count", damage);
+				player.setStorage("jlsg_pozhu_count", damage, true);
 			} else {
 				target.viewHandcards(player);
 				await player.gainPlayerCard(target, "h", true, "visible");
