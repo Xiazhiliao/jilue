@@ -8665,7 +8665,7 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		async contentBefore(event, trigger, player) {
 			player.addTempSkill("jlsg_taoxi_giveback", ["phaseBeginStart", "phaseAfter", "phaseUseAfter"]);
-			player.setStorage(event.skill, new Map());
+			player.setStorage(event.skill, new Map(), true);
 		},
 		async content(event, trigger, player) {
 			if (event.target.hasGainableCards(player, "h")) {
@@ -8679,7 +8679,7 @@ const skills = {
 					.forResult();
 				if (result?.bool && result.cards?.length) {
 					const storage = player.getStorage(event.name, new Map());
-					storage.set(event.target, result.targets);
+					storage.set(event.target, result.cards);
 					player.setStorage(event.name, storage, true);
 				}
 			}
