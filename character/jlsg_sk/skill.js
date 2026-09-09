@@ -19648,7 +19648,7 @@ const skills = {
 				}, true)
 			) {
 				for (let current of game.players) {
-					target.clearMark(skill);
+					current.clearMark(skill);
 				}
 			}
 		},
