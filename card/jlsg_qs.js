@@ -152,9 +152,9 @@ let jlsg_qs = {
 					await player.draw(2);
 				}
 				if (player.hp > target.hp && target.isDamaged()) {
-					await target.recover(1);
+					await target.recover();
 				} else if (player.hp < target.hp && player.isDamaged()) {
-					await player.recover(1);
+					await player.recover();
 				}
 			},
 			ai: {
@@ -252,11 +252,12 @@ let jlsg_qs = {
 				return target != player;
 			},
 			modTarget: true,
+			baseDamage: 2,
 			async content(event, trigger, player) {
 				const target = event.target;
 				if (target.hasSkill("jlsgqs_yuqingguzong_temp")) {
 					target.removeSkill("jlsgqs_yuqingguzong_temp");
-					await target.damage({ num: 2, nature: "fire" });
+					await target.damage({ nature: "fire" });
 				} else {
 					target.addSkill("jlsgqs_yuqingguzong_temp");
 					await target.draw({ num: 1 });
@@ -372,10 +373,11 @@ let jlsg_qs = {
 			selectTarget: -1,
 			filterTarget: true,
 			modTarget: true,
+			baseDamage: 2,
 			async content(event, trigger, player) {
 				const target = event.target;
 				if (target.getHp() <= 1 && target.isDamaged()) {
-					await target.recover(2);
+					await target.recover();
 				} else {
 					await target.draw(2, "nodelay");
 				}
@@ -433,13 +435,19 @@ let jlsg_qs = {
 			filterTarget: true,
 			modTarget: true,
 			async content(event, trigger, player) {
+				if (typeof event.baseDamage !== "number") {
+					event.baseDamage = 1;
+				}
+				if (typeof event.extraDamage !== "number") {
+					event.extraDamage = 0;
+				}
 				const target = event.target;
 				if (target.hasSkill("jlsgqs_mei_temp")) {
 					await target.draw("nodelay");
 				} else if (target.isDying()) {
-					await target.recover(1);
+					await target.recover();
 				} else if (target.getHp() == 1 && target.isDamaged()) {
-					await target.recover(2);
+					await target.recover(event.baseDamage + event.extraDamage + 1);
 				} else {
 					await target.draw(3, "nodelay");
 					target.addTempSkill("jlsgqs_mei_temp");
