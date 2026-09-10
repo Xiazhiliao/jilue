@@ -1954,7 +1954,7 @@ const skills = {
 					prompt: get.prompt(event.skill),
 					prompt2: `选择一名角色令其摸4张牌并弃置${num}张牌，若其以此法弃置的牌花色各不相同，则视为该其对${get.translation(trigger.player)}使用一张【桃】`,
 					filterTarget(card, player, target) {
-						return targe != get.event().dying;
+						return target != get.event().dying;
 					},
 					ai(target) {
 						const { player, num, dying } = get.event();
@@ -3015,7 +3015,7 @@ const skills = {
 					position: "h",
 					selectCard: [1, Infinity],
 					filterCard(card, player, event) {
-						return lib.filtar.canBeGained(card, get.event().target, player, event);
+						return lib.filter.canBeGained(card, get.event().target, player, event);
 					},
 					ai(card) {
 						const { player, target, att } = get.event();
@@ -4988,7 +4988,7 @@ const skills = {
 			for (const target of event.targets) {
 				await target.loseHp(trigger.name == "recover" ? trigger.num : 1);
 				await target.chooseToUse({
-					filtarCard(card) {
+					filterCard(card) {
 						return get.name(card) == "sha";
 					},
 					filterTarget: player,
@@ -5627,7 +5627,7 @@ const skills = {
 				wuxie: "shan",
 			};
 			for (const name of map) {
-				if (event.filtarCard(get.autoViewAs({ name }, "unsure"), player, event) && player.hasCards("hs", { name: map[name] })) {
+				if (event.filterCard(get.autoViewAs({ name }, "unsure"), player, event) && player.hasCards("hs", { name: map[name] })) {
 					return true;
 				}
 			}
@@ -11427,8 +11427,8 @@ const skills = {
 			event.result = await player
 				.chooseTarget({
 					prompt: get.prompt2(event.skill),
-					filtarTarget(_, player, target) {
-						return targe != player && target.countMark("jlsg_canshi") > target.maxHp && !target.storage.jlsg_xianji;
+					filterTarget(_, player, target) {
+						return target != player && target.countMark("jlsg_canshi") > target.maxHp && !target.storage.jlsg_xianji;
 					},
 					ai(target) {
 						return target.getSkills(null, false, false).filter(i => !get.info(i)?.charlotte).length;
