@@ -8397,7 +8397,7 @@ const skills = {
 							.filter(([_, __, name]) => name != trigger.card.name);
 						return list.some(([_, __, name]) => {
 							const vcard = get.autoViewAs({ name, ...trigger.card }, trigger.card.cards);
-							const eff = targets.reduce((sum, target) => sum + get.effect(target, vcard, trigger.player, player), 0);
+							const eff = trigger.targets.reduce((sum, target) => sum + get.effect(target, vcard, trigger.player, player), 0);
 							return eff > originEff;
 						});
 					})(),
