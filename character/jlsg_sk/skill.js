@@ -3106,7 +3106,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			event.cards = get.cards(2);
+			const cards = get.cards(2);
 			await game.cardsGotoOrdering(cards);
 			await game.cardsGotoPile(cards, "insert");
 			const result = await player
