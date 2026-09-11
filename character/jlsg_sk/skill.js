@@ -4845,9 +4845,9 @@ const skills = {
 			const cards = {},
 				types = ["basic", "trick", "equip"];
 			for (const type of types) {
-				cards[type] = getTypeCards(player, type);
+				cards[type] = getTypeCards(trigger.source, type);
 			}
-			const max = Math.max(Object.values(cards).map(i => i.length));
+			const max = Math.max(...Object.values(cards).map(i => i.length));
 			let result;
 			if (Object.values(cards).filter(i => i.length === max).length == 1) {
 				result = { control: Object.keys(cards).find(type => cards[type].length === max) };
@@ -4857,17 +4857,17 @@ const skills = {
 						prompt: "请选择要全部弃置的手牌类别",
 						controls: Object.keys(cards).filter(type => cards[type].length === max),
 						ai(event, player) {
-							const { controls, getTypeCards } = get.event().controls;
+							const { controls, cards } = get.event();
 							let result = [];
 							for (const type of controls) {
-								let values = get.value(getTypeCards(player, type), player);
+								let values = get.value(cards[type], player);
 								if (!result[1] || values > result[1]) {
 									result = [type, values];
 								}
 							}
 							return result[0];
 						},
-						getTypeCards,
+						cards,
 					})
 					.forResult();
 			}
