@@ -7184,7 +7184,7 @@ const skills = {
 	},
 	jlsg_jianwu: {
 		mod: {
-			cardUsable(card) {
+			cardUsable(card, player) {
 				if (card.name == "sha") {
 					const history = player.getAllHistory("useCard").at(-1);
 					if (!history?.card || get.type(history.card) !== "basic") {
@@ -7193,7 +7193,7 @@ const skills = {
 					return Infinity;
 				}
 			},
-			targetInRange(card) {
+			targetInRange(card, player) {
 				if (card.name == "sha") {
 					const history = player.getAllHistory("useCard").at(-1);
 					if (!history?.card || get.type(history.card) !== "basic") {
