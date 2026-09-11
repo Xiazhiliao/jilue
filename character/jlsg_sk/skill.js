@@ -6047,7 +6047,7 @@ const skills = {
 					const shotter = game.filterPlayer(p => p != player);
 					let sha = 0;
 					for (const shot of shotter) {
-						if (player.inRangeOf(shot) && shot.mayHaveSha() && get.effect_use(player, { name: "sha" }, shot, plauer) > 0) {
+						if (player.inRangeOf(shot) && shot.mayHaveSha() && get.effect_use(player, { name: "sha" }, shot, player) > 0) {
 							sha++;
 						}
 					}
