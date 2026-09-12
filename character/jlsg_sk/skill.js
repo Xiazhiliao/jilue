@@ -4838,7 +4838,7 @@ const skills = {
 		},
 		logTarget: "source",
 		check(event, player) {
-			return get.attitude(event.source, { name: "guohe_copy2", position: "h" }, event.player, player) > 0;
+			return get.effect(event.source, { name: "guohe_copy2", position: "h" }, event.player, player) > 0;
 		},
 		async content(event, trigger, player) {
 			await trigger.source.showHandcards();
