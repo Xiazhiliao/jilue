@@ -1658,7 +1658,7 @@ const skills = {
 				player(card, player, target) {
 					if (player.hasSkillTag("jueqing", false, target)) {
 						return;
-					} else if (get.isDamaged(card) && get.tag(card, "fireDamage")) {
+					} else if (get.is.damageCard(card) && get.tag(card, "fireDamage")) {
 						return [1, 1];
 					}
 				},
