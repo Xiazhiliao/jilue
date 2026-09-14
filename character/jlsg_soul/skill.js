@@ -8448,7 +8448,7 @@ const skills = {
 				if (!["basic", "trick"].includes(get.type(card))) {
 					return;
 				}
-				let used = player.storage.jlsg_gucheng;
+				let used = player.getStorage("jlsg_gucheng", []);
 				if (used.some(i => i.name == card.name)) {
 					if (card.name == "sha") {
 						if (used.some(i => i.name == "sha" && i.nature == get.nature(card))) {
@@ -8479,7 +8479,7 @@ const skills = {
 		mark: true,
 		intro: {
 			content(_, player, skill) {
-				let used = player.storage.jlsg_gucheng;
+				let used = player.getStorage("jlsg_gucheng", []);
 				if (!used.length) {
 					return "";
 				}
@@ -8533,7 +8533,7 @@ const skills = {
 						return;
 					}
 					if (player != target && ["basic", "trick"].includes(get.type(card))) {
-						let used = target.storage.jlsg_gucheng;
+						let used = target.getStorage("jlsg_gucheng", []);
 						if ((card.name != "sha" && !used.some(i => i.name == card.name)) || (card.name == "sha" && !used.some(i => i.name == "sha" && i.nature == card.nature))) {
 							return "zeroplayertarget";
 						}
