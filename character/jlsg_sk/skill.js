@@ -3581,6 +3581,7 @@ const skills = {
 						.chooseControlList({
 							prompt: `${get.translation(player)}对你发动了“${get.translation(event.name)}”，请选择一项`,
 							list: ["交给其一张手牌", "弃置两张牌并对其造成一点伤害"],
+							forced: true,
 							ai(event, player) {
 								const source = event.player;
 								const gain = get.effect(player, { name: "shunshou_copy", position: "h" }, source, player),
@@ -6307,7 +6308,7 @@ const skills = {
 				})
 				.forResult();
 			event.result = {
-				bool: typeof result?.index === "number",
+				bool: typeof result?.index === "number" && result.control !== "cancel2",
 				cost_data: { index: result?.index },
 			};
 		},

@@ -1744,6 +1744,7 @@ const skills = {
 					.chooseControlList({
 						prompt: `###${get.translation(event.skill)}：选择一项###然后${get.translation(trigger.card)}不能被【无懈可击】响应`,
 						list: ["弃置一枚「暴」标记", "受到一点无来源伤害"],
+						forced: true,
 						ai(event, player) {
 							if (player.countMark("jlsg_kuangbao") > 6) {
 								return 0;
@@ -4571,7 +4572,6 @@ const skills = {
 			}
 		},
 	},
-
 	jlsg_qinyin: {
 		audio: "ext:极略/audio/skill:2",
 		logAudio: index => (typeof index === "number" ? [`ext:极略/audio/skill/jlsg_qinyin${index}.mp4`] : "ext:极略/audio/skill:2"),
@@ -4638,7 +4638,7 @@ const skills = {
 				})
 				.forResult();
 			event.result = {
-				bool: typeof result?.index === "number",
+				bool: typeof result?.index === "number" && result.control !== "cancel2",
 				cost_data: result?.control,
 			};
 		},
@@ -4655,8 +4655,6 @@ const skills = {
 				await player.chooseToDiscard({ position: "he", selectCard: [2, 2], forced: true });
 				player.logSkill("jlsg_qinyin", null, null, null, [1]);
 				await game.doAsyncInOrder(players, async target => await target.recover(1));
-			} else {
-				return;
 			}
 			const usedYeyan = player.hasAllHistory("useSkill", e => lib.translate[e.skill] == "业炎");
 			if (!player.isIn() || !usedYeyan) {
