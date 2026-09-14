@@ -5158,7 +5158,7 @@ const skills = {
 			let storage = player.getStorage(event.name, []);
 			storage.unshift(suit);
 			if (storage.length > 4) {
-				storage = storage.slice(0.4);
+				storage = storage.slice(0, 4);
 			}
 			player.setStorage(event.name, storage, true);
 			storage = new Set(storage);
