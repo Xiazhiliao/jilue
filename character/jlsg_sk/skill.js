@@ -7419,7 +7419,7 @@ const skills = {
 					const targets = game.filterPlayer(current => current.hasSkill("jlsg_wengua"));
 					event.result = await player
 						.chooseCardTarget({
-							prompt: get.prompt(event.name),
+							prompt: get.prompt(event.skill),
 							prompt2: "选择一名角色，交给其一张牌",
 							position: "he",
 							ai1: get.unuseful3,
@@ -9199,7 +9199,7 @@ const skills = {
 			if (!player.canCompare(trigger.source)) {
 				return;
 			}
-			const reuslt = await player.chooseToCompare(trigger.source).forResult();
+			const result = await player.chooseToCompare(trigger.source).forResult();
 			if (result?.bool) {
 				trigger.cancel();
 			} else {
@@ -10566,7 +10566,7 @@ const skills = {
 					},
 					complexTarget: true,
 					ai(target) {
-						return Number(get.event().aiTarget.includes(target));
+						return Number(get.event().aiTargets.includes(target));
 					},
 					aiTargets,
 				})

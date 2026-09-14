@@ -5263,8 +5263,8 @@ const skills = {
 				damage: `受到${trigger.num}点伤害`,
 				loseHp: `失去${trigger.num}点体力`,
 				loseMaxHp: `减少${trigger.num}点体力上限`,
-				lose: `弃置${trigger.getl(player).cards2.length}张牌`,
-				loseAsync: `弃置${trigger.getl(player).cards2.length}张牌`,
+				lose: `弃置${trigger.getl?.(player)?.cards2?.length}张牌`,
+				loseAsync: `弃置${trigger.getl?.(player)?.cards2?.length}张牌`,
 			};
 			event.result = await player
 				.chooseTarget({
