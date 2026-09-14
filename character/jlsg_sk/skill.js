@@ -4734,7 +4734,7 @@ const skills = {
 		filter(event, player) {
 			const suits = player
 				.getCards("h")
-				.map(card => get.suit(suit))
+				.map(card => get.suit(card))
 				.unique();
 			return lib.suit.some(suit => !suits.includes(suit));
 		},
@@ -4745,7 +4745,7 @@ const skills = {
 			await player.showHandcards();
 			const suits = player
 				.getCards("h")
-				.map(card => get.suit(suit))
+				.map(card => get.suit(card))
 				.unique();
 			let num = lib.suit.filter(suit => !suits.includes(suit)).length;
 			if (num > 0) {
