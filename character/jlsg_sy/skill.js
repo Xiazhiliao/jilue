@@ -4098,7 +4098,15 @@ const skills = {
 			const list = typePBTY[type];
 			const cards = [];
 			while (num-- > 0) {
-				const [suit, number, name, nature = null] = list.randomRemove();
+				let suit, number, name, nature;
+				try {
+					[suit, number, name, nature = null] = list.randomRemove();
+				} catch (e) {
+					throw new Error(`请检查牌堆中是否存在${type}类型的卡牌`);
+				}
+				if (!name) {
+					return;
+				}
 				const card = createTempCard(name, suit, nature, number);
 				if (card) {
 					cards.push(card);
