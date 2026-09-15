@@ -4198,7 +4198,7 @@ const skills = {
 					continue;
 				}
 				for (let j = 0; j < skills2.length; j++) {
-					if (["jlsg_sanjue", "jlsg_xianshou"].includes(skills[k])) {
+					if (["jlsg_sanjue", "jlsg_xianshou"].includes(skills2[j])) {
 						continue;
 					}
 					if (skills.includes(skills2[j])) {

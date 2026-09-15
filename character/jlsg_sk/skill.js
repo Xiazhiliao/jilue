@@ -3702,7 +3702,7 @@ const skills = {
 					} else {
 						const cards = player
 							.getHistory("lose", evt => {
-								return evt.type == "discard" && evt.getParent("phaseDiscard") === event && evt.cards.filterInD("od").length > 0;
+								return evt.type == "discard" && evt.getParent("phaseDiscard") === trigger && evt.cards.filterInD("od").length > 0;
 							})
 							.reduce((cards, evt) => {
 								const cardsx = evt.cards.filterInD("od");
