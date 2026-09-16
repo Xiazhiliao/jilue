@@ -9646,10 +9646,10 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
 		async content(event, trigger, player) {
-			const keys = ["lose", "changeHp", "sourceDamage"],
+			const keys = ["lose", "recover", "sourceDamage"],
 				map = {
 					lose: "摸四张牌",
-					changeHp: "失去1点体力",
+					recover: "失去1点体力",
 					sourceDamage: "减一点体力上限",
 				};
 			for (const key of keys) {
@@ -9673,7 +9673,7 @@ const skills = {
 					}
 					if (key == "lose") {
 						await target.draw({ num: 4 });
-					} else if (key == "changeHp") {
+					} else if (key == "recover") {
 						await target.loseHp(1);
 					} else {
 						await target.loseMaxHp(1);
