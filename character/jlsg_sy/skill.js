@@ -560,7 +560,7 @@ const skills = {
 			player: "damageEnd",
 		},
 		frequent: true,
-		async content(event, trogger, player) {
+		async content(event, trigger, player) {
 			await player.draw({ num: 1 });
 			if (!player.hasSkill("jlsgsy_bolue", null, false, false)) {
 				return;
