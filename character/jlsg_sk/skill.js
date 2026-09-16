@@ -1979,8 +1979,7 @@ const skills = {
 							att1 = att2 = 0;
 							if (target.countCards("he") == 0) {
 								att3 = 0;
-							}
-							if (target.countCards("he") <= 1) {
+							} else if (target.countCards("he") <= 1) {
 								att3 = -att3;
 							}
 							att3 += 0.5 * Math.random();
@@ -2007,12 +2006,13 @@ const skills = {
 			const [target] = event.targets;
 			await target.draw(4);
 			const num = player.getAllHistory("useSkill", evt => evt.skill == event.name).length - 1;
+			let achieve = num == 0;
 			if (num != 0 && target.hasDiscardableCards(target, "he")) {
 				const result = await target
 					.chooseToDiscard({
 						prompt2: `若弃置的牌花色各不相同，你视为对${get.translation(trigger.player)}使用一张【桃】`,
 						position: "he",
-						selectCard: [4, 4],
+						selectCard: num,
 						ai(card) {
 							const { num, att, hastao } = get.event(),
 								suit = get.suit(card),
@@ -2037,13 +2037,16 @@ const skills = {
 					.forResult();
 				if (result?.bool && result.cards?.length) {
 					let suits = result.cards.map(card => get.suit(card)).unique();
-					if (suits.length == result.cards.length && target.canUse("tao", trigger.player, false)) {
-						await target.useCard({
-							card: { name: "tao", isCard: true },
-							targets: [trigger.player],
-						});
+					if (suits.length == result.cards.length) {
+						achieve = true;
 					}
 				}
+			}
+			if (achieve && target.canUse("tao", trigger.player, false)) {
+				await target.useCard({
+					card: { name: "tao", isCard: true },
+					targets: [trigger.player],
+				});
 			}
 		},
 		ai: {

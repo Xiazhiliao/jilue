@@ -659,7 +659,7 @@ const skills = {
 				.chooseButtonTarget({
 					createDialog: [get.prompt2(event.skill), player.getExpansions("jlsg_qixing")],
 					selectButton: 1,
-					filterTarget: true,
+					filterButton: lib.filter.all,
 					ai1(button) {
 						const player = get.player();
 						if (
@@ -674,13 +674,15 @@ const skills = {
 						}
 						return 0;
 					},
+					selectTarget: 1,
+					filterTarget: lib.filter.all,
 					ai2(target) {
-						return -get.attitude(get.player(), target);
+						return -get.attitude(get.player(), target) * Number(!target.hasSkillTag("nofire"));
 					},
 				})
 				.forResult();
 			event.result = {
-				bool: bool,
+				bool: bool && targets?.length && cost_data?.length,
 				targets: targets?.sortBySeat(),
 				cost_data: cost_data,
 			};
@@ -838,7 +840,7 @@ const skills = {
 				.set("allUse", player.getExpansions("jlsg_qixing").length >= game.countPlayer(current => get.attitude(player, current) > 4) * 2)
 				.forResult();
 			event.result = {
-				bool: bool,
+				bool: bool && targets?.length && cost_data?.length,
 				targets: targets?.sortBySeat(),
 				cost_data: cost_data,
 			};

@@ -4095,18 +4095,13 @@ const skills = {
 		},
 		async gainTempCards(player, num, type, tag) {
 			const { createTempCard, typePBTY } = get.info("jlsg_lingze");
-			const list = typePBTY[type];
+			let list = typePBTY[type].slice();
 			const cards = [];
 			while (num-- > 0) {
-				let suit, number, name, nature;
-				try {
-					[suit, number, name, nature = null] = list.randomRemove();
-				} catch (e) {
-					throw new Error(`请检查牌堆中是否存在${type}类型的卡牌`);
+				if (!list.length) {
+					list = typePBTY[type].slice();
 				}
-				if (!name) {
-					return;
-				}
+				const [suit, number, name, nature = null] = list.randomRemove();
 				const card = createTempCard(name, suit, nature, number);
 				if (card) {
 					cards.push(card);
