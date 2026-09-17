@@ -3049,7 +3049,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.give(event.cards, trigger.player);
-			let num = Math.min(trigger.countGainableCards(player, "h"), trigger.player.countCards("h") - trigger.player.getHp());
+			let num = Math.min(trigger.player.countGainableCards(player, "h"), trigger.player.countCards("h") - trigger.player.getHp());
 			if (num > 0) {
 				await trigger.player.chooseToGive({
 					prompt: `交给${get.translation(player)}${get.cnNumber(num)}张手牌`,
