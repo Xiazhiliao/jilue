@@ -6936,7 +6936,7 @@ const skills = {
 					if (!action) {
 						return;
 					}
-					if (event.name == "phase") {
+					if (trigger.name == "phase") {
 						const phase = event.getParent("phase");
 						if (phase.player != player) {
 							return;
