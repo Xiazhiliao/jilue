@@ -1066,7 +1066,7 @@ const skills = {
 					} else {
 						characterList = Object.keys(lib.character).randomSort();
 					}
-					const storage = player.getStorage(event.name, {}),
+					const storage = player.getStorage("jlsg_yaozhi", {}),
 						list = {};
 					let packList = ["jlsg_sr", "jlsg_sk", "jlsg_soul"];
 					for (let name of characterList) {
@@ -1177,7 +1177,7 @@ const skills = {
 						storage[flashName] = [];
 					}
 					storage[flashName].add(control);
-					player.setStorage(event.name, storage);
+					player.setStorage("jlsg_yaozhi", storage);
 					let expire = "damageAfter";
 					if (event.triggername == "phaseJieshuBegin") {
 						expire = "phaseJieshuEnd";
