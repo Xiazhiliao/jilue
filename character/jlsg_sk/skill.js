@@ -7571,7 +7571,7 @@ const skills = {
 			if (phaseUse.name != "phaseUse" || phaseUse.player != event.player) {
 				return false;
 			}
-			const historys = event.player.getHistory("useCard", e => e.getParent("phaseUse") == evt);
+			const historys = event.player.getHistory("useCard", e => e.getParent("phaseUse") == phaseUse);
 			return (historys[0] == event && get.type(event.card) == "trick") || (historys[1] == event && get.type(event.card) == "basic");
 		},
 		async cost(event, trigger, player) {
