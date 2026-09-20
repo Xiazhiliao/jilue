@@ -1757,7 +1757,7 @@ const skills = {
 						},
 					})
 					.forResult();
-				if (typeof result?.index === number) {
+				if (typeof result?.index === "number") {
 					result.bool = true;
 					result.cost_data = result.index;
 				}
@@ -4733,7 +4733,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			let cnt = event.cards.filter(c => get.color(c, player) == "red").length + 1;
-			if (cnt * targets.length >= 5) {
+			if (cnt * event.targets.length >= 5) {
 				await player.loseHp(3);
 			}
 			await game.doAsyncInOrder(event.targets, async target => await target.damage({ num: cnt, nature: "fire" }));

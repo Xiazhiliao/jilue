@@ -143,7 +143,7 @@ const skills = {
 				const useCard = event.getParent(2);
 				if (useCard.name !== "useCard") {
 					return false;
-				} else if (getr.number(event.card) % 2 !== 1) {
+				} else if (get.number(event.card) % 2 !== 1) {
 					return false;
 				} else if (useCard.player !== player) {
 					return event.card.name === "juedou";
@@ -154,7 +154,7 @@ const skills = {
 		},
 		logTarget(event, player) {
 			if (event.name !== "damage" && event.card.name === "juedou") {
-				return player === trigger.player ? trigger.target : trigger.player;
+				return player === event.player ? event.target : event.player;
 			}
 			return null;
 		},
