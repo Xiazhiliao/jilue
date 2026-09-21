@@ -5391,7 +5391,7 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					player.addExpose(0.4);
-					await player.useSkill("jlsg_zhonghun", result.targets);
+					await player.useSkill("jlsg_zhonghun", event.targets);
 				},
 			},
 			effect: {
