@@ -9646,15 +9646,20 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
 		async content(event, trigger, player) {
-			const keys = ["lose", "recover", "sourceDamage"],
+			const keys = ["lose", "changeHp", "sourceDamage"],
 				map = {
 					lose: "摸四张牌",
-					recover: "失去1点体力",
+					changeHp: "失去1点体力",
 					sourceDamage: "减一点体力上限",
+				},
+				filter = {
+					lose: evt => evt.type === "discard",
+					changeHp: evt => evt.getParent().name === "recover" && evt.player === player,
+					sourceDamage: lib.filter.all,
 				};
 			for (const key of keys) {
 				let result;
-				if (!player.hasHistory(key)) {
+				if (key !== "changeHp" ? !player.hasHistory(key, filter[key]) : !game.hasGlobalHistory(key, filter[key])) {
 					result = { bool: true, targets: [player] };
 				} else {
 					result = await player
@@ -9673,7 +9678,7 @@ const skills = {
 					}
 					if (key == "lose") {
 						await target.draw({ num: 4 });
-					} else if (key == "recover") {
+					} else if (key == "changeHp") {
 						await target.loseHp(1);
 					} else {
 						await target.loseMaxHp(1);
