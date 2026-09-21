@@ -173,7 +173,6 @@ const skills = {
 						map[id].shanRequired = 2;
 					}
 				}
-				return;
 			} else {
 				const id = event.targets?.[0]?.["playerid"];
 				const idt = trigger.target.playerid;
