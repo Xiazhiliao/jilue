@@ -1853,6 +1853,11 @@ const skills = {
 			}
 			await player.turnOver();
 		},
+		subSkill: {
+			ban: {
+				charlotte: true,
+			},
+		},
 		ai: {
 			order: 9,
 			result: {
