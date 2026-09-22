@@ -1783,15 +1783,16 @@ const skills = {
 		derivation: ["wushuang", "jlsgsy_shenji"],
 		audio: "ext:极略/audio/skill:1",
 		trigger: {
-			player: ["jlsg_kuangbao1After", "jlsg_kuangbaoAfter", "jlsg_wumouAfter", "jlsg_shenfenAfter"],
+			player: ["addMark", "removeMark"],
 		},
 		filter(event, player) {
+			if (event.markName !== "jlsg_kuangbao") {
+				return false;
+			}
 			if (player.countMark("jlsg_kuangbao") > 3) {
 				return !player.hasSkill("wushuang") || !player.hasSkill("jlsgsy_shenji");
-			} else if (player.countMark("jlsg_kuangbao") < 4) {
-				player.additionalSkills["jlsg_wuqian"] && player.additionalSkills["jlsg_wuqian"].length;
 			}
-			return false;
+			return player.additionalSkills["jlsg_wuqian"] && player.additionalSkills["jlsg_wuqian"].length;
 		},
 		forced: true,
 		async content(event, trigger, player) {
