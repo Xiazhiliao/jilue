@@ -4724,6 +4724,7 @@ const skills = {
 		selectTarget() {
 			return [1, 1 + ui.selected.cards.filter(c => get.color(c) == "black").length];
 		},
+		filterTarget: lib.filter.all,
 		animationColor: "metal",
 		skillAnimation: "legend",
 		multitarget: true,
