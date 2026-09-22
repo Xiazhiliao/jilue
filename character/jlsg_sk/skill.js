@@ -2961,7 +2961,7 @@ const skills = {
 			if (num > 2) {
 				return true;
 			}
-			return fasle;
+			return false;
 		},
 		async content(event, trigger, player) {
 			const num = game.filterPlayer(p => p != player && player.inRangeOf(p)).length;
