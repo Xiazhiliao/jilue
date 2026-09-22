@@ -1943,12 +1943,14 @@ const skills = {
 				target = event.target;
 			storage.shown.add(event.cards[0]);
 			storage.targets.add(target);
+			const choice = storage.choice;
+			delete storage.choice;
 			player.setStorage(event.name, storage, true);
 			let result;
-			if (target.countCards("he", c => get.number(c, target) > get.number(cards[0]))) {
+			if (target.countCards("he", c => get.number(c, target) > get.number(event.cards[0]))) {
 				const next = target
 					.chooseToDiscard(c => get.number(c) > _status.event.number)
-					.set("number", get.number(cards[0]))
+					.set("number", get.number(event.cards[0]))
 					.set("recover", player.isDamaged());
 				if (get.attitude(target, player) < 0) {
 					next.set("ai", c => {
@@ -1965,9 +1967,7 @@ const skills = {
 			} else {
 				result = { bool: false };
 			}
-			if (result.bool) {
-				delete storage.choice;
-				player.setStorage(event.name, storage, true);
+			if (result?.bool) {
 				return;
 			}
 			const list = get.inpileVCardList(v => {
@@ -1984,10 +1984,8 @@ const skills = {
 						return button.link[2] === _status.event.choice[0] && (button.link[3] || true) === (_status.event.choice?.[1] || true);
 					},
 				})
-				.set("choice", storage.choice || [])
+				.set("choice", choice || [])
 				.forResult();
-			delete storage.choice;
-			player.setStorage(event.name, storage, true);
 			if (!result?.bool || !result.links?.length) {
 				return;
 			}
