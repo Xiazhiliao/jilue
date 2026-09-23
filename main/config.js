@@ -408,14 +408,6 @@ let block = {
 					1: "一代",
 				},
 			},
-			jlsgsk_zhaoyan: {
-				name: "SK赵嫣",
-				init: "false",
-				item: {
-					false: "最新",
-					xiaoas: "谷歌",
-				},
-			},
 			jlsgsk_lvlingqi: {
 				name: "SK吕玲绮",
 				init: "false",
@@ -540,14 +532,6 @@ let block = {
 			},
 			jlsgsoul_guojia: {
 				name: "SK神郭嘉",
-				init: "false",
-				item: {
-					false: "最新",
-					1: "一代",
-				},
-			},
-			jlsgsoul_zhugeliang: {
-				name: "SK神诸葛亮",
 				init: "false",
 				item: {
 					false: "最新",

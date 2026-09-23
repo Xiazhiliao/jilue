@@ -8,7 +8,7 @@ export default {
 					enable: "phaseUse",
 					usable: 1,
 					unique: true,
-					filterTarget: function (card, player, target) {
+					filterTarget(card, player, target) {
 						if (player == target || !target.countCards("h")) {
 							return false;
 						}
@@ -18,95 +18,105 @@ export default {
 							return !target.hasSkillTag("noCompareSource");
 						}
 					},
-					filter: function (event, player) {
+					filter(event, player) {
 						return game.countPlayer(p => p != player && p.countCards("h")) >= 2;
 					},
-					multitarget: true,
-					targetprompt: ["发起拼点", "被拼点"],
-					selectTarget: 2,
 					prompt: "选择两名拼点目标",
-					content: function () {
-						"step 0"
-						targets[0].line(targets[1], "green");
-						targets[0].chooseToCompare(targets[1]);
-						"step 1"
-						if (result.bool) {
-							targets[0].useCard({ name: "juedou" }, targets[1]);
-							if (targets[1].isAlive()) {
-								player.discardPlayerCard(targets[1], "he", 2, true);
+					selectTarget: 2,
+					targetprompt: ["发起拼点", "被拼点"],
+					multitarget: true,
+					async content(event, trigger, player) {
+						const [target1, target2] = event.targets;
+						target1.line(target2, "green");
+						const result = await target1.chooseToCompare(target2).forResult();
+						const winner = result?.winner;
+						const losers = event.targets.filter(target => target !== winner);
+						if (winner?.isIn()) {
+							const targets = losers.filter(target => winner.canUse("juedou", target));
+							if (targets.length) {
+								await winner.useCard({
+									card: { name: "juedou", isCard: true },
+									targets,
+								});
 							}
-						} else {
-							targets[1].useCard({ name: "juedou" }, targets[0]);
-							if (targets[0].isAlive()) {
-								player.discardPlayerCard(targets[0], "he", 2, true);
+						}
+						while (losers.length) {
+							const target = losers.shift();
+							if (target.hasDiscardableCards(player, "he")) {
+								await player.discardPlayerCard({
+									target,
+									position: "he",
+									selectButton: 2,
+									forced: true,
+								});
 							}
 						}
 					},
 					ai: {
 						order: 8,
 						result: {
-							target: function (player, target) {
+							target(player, target) {
 								if (game.players.length <= 2) {
 									return 0;
-								}
-								if (target.countCards("he") < 1) {
+								} else if (!target.hasDiscardableCards(player, "he")) {
 									return 0;
 								}
-								var att = get.attitude(player, target);
+								const att = get.attitude(player, target);
 								if (att < 0) {
-									return -target.countCards("he");
+									return -target.countDiscardableCards(player, "he");
 								}
 							},
 						},
 					},
 				},
 				jlsgsy_huoxin: {
-					audio: "ext:极略/audio/skill:1", // audio: ['huoxin'],
-					trigger: { source: "damageSource", player: "damageEnd" },
 					unique: true,
-					filter: function (event, player, name) {
+					audio: "ext:极略/audio/skill:1", // audio: ['huoxin'],
+					trigger: {
+						source: "damageSource",
+						player: "damageEnd",
+					},
+					filter(event, player, name) {
 						if (name == "damageSource") {
 							return event.player && event.player != player && event.player.isAlive();
 						} else {
 							return event.source && event.source != player;
 						}
 					},
-					check: function (event, player) {
-						var target = event.player == player ? event.source : event.player;
-						var att = get.attitude(player, target);
+					check(event, player) {
+						const target = event.player == player ? event.source : event.player;
+						const att = get.attitude(player, target);
 						return att < 0 || (att < 1 && target.countGainableCards(player, "e"));
 					},
-					logTarget: function (event, player) {
+					logTarget(event, player) {
 						if (event.player == player) {
 							return event.source;
 						}
 						return event.player;
 					},
-					content: function () {
-						"step 0"
-						event.target = trigger.player == player ? trigger.source : trigger.player;
-						if (!event.target.countCards("e")) {
-							event.target.loseHp();
-							event.finish();
-							return;
-						}
-						event.target.chooseCard(`交给${get.translation(player)}一张装备区内的牌或者失去一点体力`, "e", function (card) {
-							return get.type(card) == "equip";
-						}).ai = function (card, cards2) {
-							if (event.target.hp == event.target.maxHp) {
-								return 6 - get.value(card);
-							} else if (event.target.hp == 1) {
-								return 12 - get.value(card);
-							} else {
-								return 7 - get.value(card);
-							}
-						};
-						"step 1"
-						if (result.bool) {
-							player.gain(result.cards[0], event.target);
-							event.target.$give(result.cards[0], player);
+					async content(event, trigger, player) {
+						const [target] = event.targets;
+						let result;
+						if (!target.hasGainableCards(player, "e")) {
+							result = { bool: false };
 						} else {
-							event.target.loseHp();
+							result = await target
+								.chooseToGive({
+									target: player,
+									position: "e",
+									ai(card) {
+										const { check, player } = get.event();
+										if (check) {
+											return 0;
+										}
+										return get.unuseful2(card);
+									},
+									check: get.effect(target, { name: "losehp" }, player, player) >= 0,
+								})
+								.forResult();
+						}
+						if (!result?.bool) {
+							await target.loseHp(1);
 						}
 					},
 					ai: {
@@ -125,9 +135,11 @@ export default {
 			skill: {
 				jlsgsy_shiao: {
 					audio: ["ext:极略/audio/skill/jlsgsy_shiao2.mp3", "ext:极略/audio/skill:true"],
-					trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
+					trigger: {
+						player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
+					},
 					direct: true,
-					filter: function (event, player) {
+					filter(event, player) {
 						return game.hasPlayer(function (current) {
 							if (!player.canUse(get.autoViewAs({ name: "sha" }, []), current, false)) {
 								return false;
