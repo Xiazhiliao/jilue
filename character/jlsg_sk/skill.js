@@ -5287,7 +5287,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await event.target.judge({
 				judge(card) {
-					if (target.isDamaged() && get.suit(card) == "heart") {
+					if (get.player().isDamaged() && get.suit(card) == "heart") {
 						return 2;
 					}
 					return 1;
