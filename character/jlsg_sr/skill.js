@@ -445,7 +445,7 @@ const skills = {
 		filter(event, player) {
 			return event.num > 0 && !event.numFixed;
 		},
-		check: function (event) {
+		check(event) {
 			return event.num <= 3;
 		},
 		async content(event, trigger, player) {
@@ -518,7 +518,7 @@ const skills = {
 			content: "expansion",
 			markcount: "expansion",
 		},
-		onremove: function (player, skill) {
+		onremove(player, skill) {
 			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
@@ -528,7 +528,7 @@ const skills = {
 		filter(event) {
 			return event.num > 0 && !event.numFixed;
 		},
-		check: function (event, player) {
+		check(event, player) {
 			if (Math.min(3, player.hp) < player.countCards("h") && player.skipList.includes("phaseUse") && !player.skipList.includes("phaseDiscard")) {
 				return true;
 			}
@@ -562,7 +562,7 @@ const skills = {
 				sourceSkill: "jlsg_yansha",
 				audio: "ext:极略/audio/skill/jlsg_yansha2.mp3",
 				trigger: { global: "shaBegin" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.player != player && player.countExpansions("jlsg_yansha") > 0 && event.player.countCards("he") > 0;
 				},
 				logTarget: "player",
@@ -570,7 +570,7 @@ const skills = {
 					return get.prompt("jlsg_yansha", event.player);
 				},
 				prompt2: "一名其他角色使用【杀】选择目标后，你可以将一张「掩」置入弃牌堆，然后获得其两张牌。",
-				check: function (event, player) {
+				check(event, player) {
 					if (event.player.countCards("he") > 1 && get.attitude(player, event.player) < 0) {
 						return 2;
 					}
@@ -609,14 +609,14 @@ const skills = {
 		srlose: true,
 		enable: "phaseUse",
 		usable: 1,
-		filterCard: function (card) {
+		filterCard(card) {
 			return get.color(card) == "black";
 		},
 		position: "he",
-		filter: function (event, player) {
+		filter(event, player) {
 			return player.countDiscardableCards(player, "he", card => get.color(card) == "black") > 0 && !player.isLinked();
 		},
-		check: function (card) {
+		check(card) {
 			return 8 - get.value(card);
 		},
 		prompt: "横置并弃置一张黑色牌，令一名角色选择一项：回复一点体力或摸两张牌",
@@ -655,7 +655,7 @@ const skills = {
 			expose: 0.2,
 			order: 9,
 			result: {
-				player: function (player) {
+				player(player) {
 					if (player.countCards("h") > player.hp) {
 						return 1;
 					}
@@ -664,7 +664,7 @@ const skills = {
 					}
 					return -1;
 				},
-				target: function (player, target) {
+				target(player, target) {
 					return 2;
 				},
 			},
@@ -674,7 +674,7 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		trigger: { global: "phaseZhunbeiBegin" },
-		filter: function (event, player) {
+		filter(event, player) {
 			if (!player.isLinked()) {
 				return false;
 			}
@@ -719,7 +719,7 @@ const skills = {
 		},
 		ai: {
 			effect: {
-				target: function (card) {
+				target(card) {
 					if (card.name == "tiesuo") {
 						return 0.5;
 					}
@@ -779,13 +779,13 @@ const skills = {
 	//   trigger: {
 	//     global: "phaseEnd",
 	//   },
-	//   filter: function (event, player) {
+	//   filter(event, player) {
 	//     return player.countCards('e') > 0 && event.player != player && player.isLinked();
 	//   },
-	//   check: function (event, player) {
+	//   check(event, player) {
 	//     return get.attitude(player, event.player) > 0;
 	//   },
-	//   content: function () {
+	//   content() {
 	//     'step 0'
 	//     player.chooseCard('e', 1, true).set('ai', function (card) {
 	//       var sub = get.subtype(card);
@@ -805,16 +805,16 @@ const skills = {
 	//   trigger: {
 	//     global: "phaseBegin",
 	//   },
-	//   filter: function (event, player) {
+	//   filter(event, player) {
 	//     var card = ui.selected.cards[0];
 	//     if (!card) return false;
 	//     if (get.position(card) == 'e' && !target.isEmpty(get.subtype(card))) return false;
 	//     return event.player != player && event.player.countCards('ej') > 0 && !player.isLinked();
 	//   },
-	//   check: function (event, player) {
+	//   check(event, player) {
 	//     return get.attitude(player, event.player) > 0;
 	//   },
-	//   content: function () {
+	//   content() {
 	//     "step 0"
 	//     var List = [];
 	//     List.push(trigger.player.getCards('ej'));
@@ -848,19 +848,19 @@ const skills = {
 	//   srlose: true,
 	//   enable: 'phaseUse',
 	//   usable: 1,
-	//   filterCard: function (card) {
+	//   filterCard(card) {
 	//     return get.color(card) == 'black';
 	//   },
 	//   position: 'he',
-	//   filter: function (event, player) {
+	//   filter(event, player) {
 	//     return player.countCards('he', { color: 'black' }) > 0 && !player.isLinked();
 	//   },
-	//   check: function (card) {
+	//   check(card) {
 	//     return 8 - get.value(card)
 	//   },
 	//   prompt: '弃置一张黑色牌，令一名角色选择一项：恢复1点体力或摸两张牌',
 	//   filterTarget: true,
-	//   content: function () {
+	//   content() {
 	//     player.link();
 	//     target.chooseDrawRecover(2, true);
 	//   },
@@ -868,13 +868,13 @@ const skills = {
 	//     expose: 0.2,
 	//     order: 9,
 	//     result: {
-	//       player: function (player) {
+	//       player(player) {
 	//         if (player.countCards('h', function (card) {
 	//           return get.color(card) == 'black';
 	//         }) > player.hp) return 1;
 	//         return -1;
 	//       },
-	//       target: function (player, target) {
+	//       target(player, target) {
 	//         var result = 2;
 	//         if (target.isTurnedOver()) result += 3;
 	//         if (target.hp == 1) result += 3;
@@ -888,7 +888,7 @@ const skills = {
 	//   srlose: true,
 	//   trigger: { global: "gameDrawEnd" },
 	//   forced: true,
-	//   content: function () {
+	//   content() {
 	//     if (player.hasSkill('jlsg_liuyun')) {
 	//       player.addSkill('jlsg_qingcheng_yin');
 	//       player.removeSkill('jlsg_qingcheng_zhu');
@@ -905,26 +905,26 @@ const skills = {
 	// jlsg_qingcheng_yang1: {
 	//   audio: "ext:极略/audio/skill:true",
 	//   enable: ['chooseToUse', 'chooseToRespond'],
-	//   filterCard: function () {
+	//   filterCard() {
 	//     return false;
 	//   },
 	//   selectCard: -1,
 	//   viewAs: { name: 'sha' },
-	//   viewAsFilter: function (player) {
+	//   viewAsFilter(player) {
 	//     return !player.isLinked();
 	//   },
 	//   prompt: '横置你的武将牌，视为打出一张【杀】',
-	//   check: function () {
+	//   check() {
 	//     return 1
 	//   },
-	//   onuse: function (result, player) {
+	//   onuse(result, player) {
 	//     if (!player.isLinked()) player.link();
 	//   },
-	//   onrespond: function (result, player) {
+	//   onrespond(result, player) {
 	//     if (!player.isLinked()) player.link();
 	//   },
 	//   ai: {
-	//     skillTagFilter: function (player) {
+	//     skillTagFilter(player) {
 	//       return !player.isLinked();
 	//     },
 	//     respondSha: true,
@@ -932,13 +932,13 @@ const skills = {
 	//       useful: [5, 1],
 	//       value: [5, 1],
 	//     },
-	//     order: function () {
+	//     order() {
 	//       if (_status.event.player.hasSkillTag('presha', true, null, true)) return 10;
 	//       return 3;
 	//     },
 
 	//     result: {
-	//       target: function (player, target) {
+	//       target(player, target) {
 	//         if (player.hasSkill('jiu') && !target.getEquip('baiyin')) {
 	//           if (get.attitude(player, target) > 0) {
 	//             return -6;
@@ -952,20 +952,20 @@ const skills = {
 	//     tag: {
 	//       respond: 1,
 	//       respondShan: 1,
-	//       damage: function (card) {
+	//       damage(card) {
 	//         if (card.nature == 'poison') return;
 	//         return 1;
 	//       },
-	//       natureDamage: function (card) {
+	//       natureDamage(card) {
 	//         if (card.nature) return 1;
 	//       },
-	//       fireDamage: function (card, nature) {
+	//       fireDamage(card, nature) {
 	//         if (card.nature == 'fire') return 1;
 	//       },
-	//       thunderDamage: function (card, nature) {
+	//       thunderDamage(card, nature) {
 	//         if (card.nature == 'thunder') return 1;
 	//       },
-	//       poisonDamage: function (card, nature) {
+	//       poisonDamage(card, nature) {
 	//         if (card.nature == 'poison') return 1;
 	//       },
 	//     },
@@ -976,26 +976,26 @@ const skills = {
 	// jlsg_qingcheng_yang2: {
 	//   audio: "ext:极略/audio/skill:true",
 	//   enable: ["chooseToUse", "chooseToRespond"],
-	//   filterCard: function () {
+	//   filterCard() {
 	//     return false;
 	//   },
 	//   selectCard: -1,
 	//   viewAs: { name: 'shan' },
-	//   viewAsFilter: function (player) {
+	//   viewAsFilter(player) {
 	//     return player.isLinked();
 	//   },
 	//   prompt: '重置你的武将牌，视为打出一张【闪】',
-	//   check: function () {
+	//   check() {
 	//     return 1
 	//   },
-	//   onuse: function (result, player) {
+	//   onuse(result, player) {
 	//     if (player.isLinked()) player.link();
 	//   },
-	//   onrespond: function (result, player) {
+	//   onrespond(result, player) {
 	//     if (player.isLinked()) player.link();
 	//   },
 	//   ai: {
-	//     skillTagFilter: function (player) {
+	//     skillTagFilter(player) {
 	//       return player.isLinked();
 	//     },
 	//     respondShan: true,
@@ -1012,26 +1012,26 @@ const skills = {
 	// jlsg_qingcheng_yin1: {
 	//   audio: "ext:极略/audio/skill:true",
 	//   enable: ['chooseToUse', 'chooseToRespond'],
-	//   filterCard: function () {
+	//   filterCard() {
 	//     return false;
 	//   },
 	//   selectCard: -1,
 	//   viewAs: { name: 'sha' },
-	//   viewAsFilter: function (player) {
+	//   viewAsFilter(player) {
 	//     return player.isLinked();
 	//   },
 	//   prompt: '重置你的武将牌，视为打出一张【杀】',
-	//   check: function () {
+	//   check() {
 	//     return 1
 	//   },
-	//   onuse: function (result, player) {
+	//   onuse(result, player) {
 	//     if (player.isLinked()) player.link();
 	//   },
-	//   onrespond: function (result, player) {
+	//   onrespond(result, player) {
 	//     if (player.isLinked()) player.link();
 	//   },
 	//   ai: {
-	//     skillTagFilter: function (player) {
+	//     skillTagFilter(player) {
 	//       return !player.isLinked();
 	//     },
 	//     respondSha: true,
@@ -1039,13 +1039,13 @@ const skills = {
 	//       useful: [5, 1],
 	//       value: [5, 1],
 	//     },
-	//     order: function () {
+	//     order() {
 	//       if (_status.event.player.hasSkillTag('presha', true, null, true)) return 10;
 	//       return 3;
 	//     },
 
 	//     result: {
-	//       target: function (player, target) {
+	//       target(player, target) {
 	//         if (player.hasSkill('jiu') && !target.getEquip('baiyin')) {
 	//           if (get.attitude(player, target) > 0) {
 	//             return -6;
@@ -1059,20 +1059,20 @@ const skills = {
 	//     tag: {
 	//       respond: 1,
 	//       respondShan: 1,
-	//       damage: function (card) {
+	//       damage(card) {
 	//         if (card.nature == 'poison') return;
 	//         return 1;
 	//       },
-	//       natureDamage: function (card) {
+	//       natureDamage(card) {
 	//         if (card.nature) return 1;
 	//       },
-	//       fireDamage: function (card, nature) {
+	//       fireDamage(card, nature) {
 	//         if (card.nature == 'fire') return 1;
 	//       },
-	//       thunderDamage: function (card, nature) {
+	//       thunderDamage(card, nature) {
 	//         if (card.nature == 'thunder') return 1;
 	//       },
-	//       poisonDamage: function (card, nature) {
+	//       poisonDamage(card, nature) {
 	//         if (card.nature == 'poison') return 1;
 	//       },
 	//     },
@@ -1083,26 +1083,26 @@ const skills = {
 	// jlsg_qingcheng_yin2: {
 	//   audio: "ext:极略/audio/skill:true",
 	//   enable: ["chooseToUse", "chooseToRespond"],
-	//   filterCard: function () {
+	//   filterCard() {
 	//     return false;
 	//   },
 	//   selectCard: -1,
 	//   viewAs: { name: 'shan' },
-	//   viewAsFilter: function (player) {
+	//   viewAsFilter(player) {
 	//     return !player.isLinked();
 	//   },
 	//   prompt: '横置你的武将牌，视为打出一张【闪】',
-	//   check: function () {
+	//   check() {
 	//     return 1
 	//   },
-	//   onuse: function (result, player) {
+	//   onuse(result, player) {
 	//     if (!player.isLinked()) player.link();
 	//   },
-	//   onrespond: function (result, player) {
+	//   onrespond(result, player) {
 	//     if (!player.isLinked()) player.link();
 	//   },
 	//   ai: {
-	//     skillTagFilter: function (player) {
+	//     skillTagFilter(player) {
 	//       return player.isLinked();
 	//     },
 	//     respondShan: true,
@@ -1595,7 +1595,7 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		trigger: { player: "phaseZhunbeiBegin" },
-		filter: function (event, player) {
+		filter(event, player) {
 			return player.countDiscardableCards(player, "h");
 		},
 		async cost(event, trigger, player) {
@@ -1862,7 +1862,7 @@ const skills = {
 				return current != player && current.countGainableCards(player, "h");
 			});
 		},
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			return target.countGainableCards(player, "h") && player != target;
 		},
 		async content(event, trigger, player) {
@@ -1876,10 +1876,10 @@ const skills = {
 			order: 2,
 			threaten: 2,
 			result: {
-				player: function (card, player, target) {
+				player(card, player, target) {
 					return 1;
 				},
-				target: function (player, target) {
+				target(player, target) {
 					if (target.countCards("h") > target.hp && target.isDamaged()) {
 						return 4;
 					}
@@ -1895,11 +1895,11 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		trigger: { global: "dying" },
-		filter: function (event, player) {
+		filter(event, player) {
 			return event.player.hp <= 0 && event.player.countDiscardableCards(player, "h");
 		},
 		logTarget: "player",
-		check: function (event, player) {
+		check(event, player) {
 			let att = get.attitude(player, event.player);
 			let num = event.player.countDiscardableCards(player, "h");
 			if (att > 0 && event.player.hasSkillTag("nosave")) {
@@ -1970,7 +1970,7 @@ const skills = {
 				return current.countCards("h");
 			});
 		},
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			if (!target.hasSex("male") || target == player) {
 				return false;
 			}
@@ -2015,7 +2015,7 @@ const skills = {
 			order: 9,
 			result: {
 				player: 1,
-				target: function (target, player) {
+				target(target, player) {
 					return get.effect(target, get.autoViewAs({ name: "lebu" }, "unsure"), target, target);
 				},
 			},
@@ -2472,7 +2472,7 @@ const skills = {
 			const cards = lib.skill.jlsg_wanrou.getCheck(event, player);
 			return cards;
 		},
-		filter: function (event, player, name, card) {
+		filter(event, player, name, card) {
 			return card;
 		},
 		async cost(event, trigger, player) {
@@ -2555,7 +2555,7 @@ const skills = {
 			damage: {
 				audio: "jlsg_zhouyan",
 				trigger: { source: "damageSource" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.card?.name == "huogong";
 				},
 				prompt(event, player) {
@@ -2575,7 +2575,7 @@ const skills = {
 			fireattack: true,
 			result: {
 				player: 0,
-				target: function (player, target) {
+				target(player, target) {
 					if (player == target) {
 						return 1;
 					}
@@ -2604,10 +2604,10 @@ const skills = {
 		filterCard(card, player, event) {
 			return true;
 		},
-		filterTarget: function (card, target, player) {
+		filterTarget(card, target, player) {
 			return player != target;
 		},
-		check: function (card) {
+		check(card) {
 			const player = get.player();
 			if (player.countCards("h", "sha") > player.getCardUsable("sha", true) || (player.countCards("h", "sha") && !player.getUseValue("sha"))) {
 				if (card.name == "sha") {
@@ -2677,7 +2677,7 @@ const skills = {
 			fireattack: true,
 			result: {
 				player: 0.5,
-				target: function (target, player) {
+				target(target, player) {
 					if (!ui.selected.cards.length) {
 						return 0;
 					}
@@ -2913,7 +2913,7 @@ const skills = {
 			order: 1,
 			result: {
 				player: 0,
-				target: function (player, target) {
+				target(player, target) {
 					let eff = get.damageEffect(target, player);
 					if (eff >= 0) {
 						return 1 + eff;
@@ -3050,7 +3050,7 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(curr => get.info("jlsg_jiexi").filterTarget(null, player, curr));
 		},
-		filterTarget: function (card, player, target) {
+		filterTarget(card, player, target) {
 			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
 			const upgrade = upgradeStorage?.["jlsgsr_ganning"]?.[2] || upgradeStorage?.other?.["jlsg_jiexi"];
 			let bool = player.getStorage("jlsg_jiexi_used", []).length;
@@ -3256,7 +3256,7 @@ const skills = {
 		},
 		srlose: true,
 		audio: "ext:极略/audio/skill:1",
-		filter: function (event, player) {
+		filter(event, player) {
 			if (event.player == player) {
 				return false;
 			}
@@ -3296,7 +3296,7 @@ const skills = {
 			await game.delayx();
 		},
 		mod: {
-			targetEnabled: function (card, player, target, now) {
+			targetEnabled(card, player, target, now) {
 				if (target.isTurnedOver()) {
 					if (card.name == "juedou" || card.name == "guohe") {
 						return false;
@@ -3938,7 +3938,7 @@ const skills = {
 			}
 			return event.getd().filterInD("d");
 		},
-		filter: function (event, player, name, card) {
+		filter(event, player, name, card) {
 			if (!player.countCards("he", card => card.name != "shan")) {
 				return false;
 			}
@@ -4050,7 +4050,7 @@ const skills = {
 	//     audio: "ext:极略/audio/skill:1",
 	//     srlose: true,
 	//     trigger: { player: 'phaseDrawBefore' },
-	//     content: function () {
+	//     content() {
 	//       "step 0"
 	//       trigger.cancel();
 	//       "step 1"
@@ -4192,7 +4192,7 @@ const skills = {
 				onremove: true,
 				mark: true,
 				intro: {
-					content: function (storage, player) {
+					content(storage, player) {
 						return "出杀次数+" + storage + ",攻击距离为" + storage;
 					},
 				},
@@ -4868,7 +4868,7 @@ const skills = {
 		},
 		mark: true,
 		intro: {
-			content: function (storage, player) {
+			content(storage, player) {
 				let bool = player.getStorage("jlsg_weiwo", false) ? player.countCards("h") : !player.countCards("h");
 				var str = "";
 				if (!bool) {
@@ -5006,7 +5006,7 @@ const skills = {
 			order: 6,
 			fireattack: true,
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					if (ui.selected.targets.length == 0) {
 						return 3;
 					} else {
@@ -5123,17 +5123,17 @@ const skills = {
 				enable: "phaseUse",
 				usable: 1,
 				viewAs: { name: "jiedao" },
-				viewAsFilter: function (player) {
+				viewAsFilter(player) {
 					if (!player.countCards("hs", { suit: "club" })) {
 						return false;
 					}
 				},
 				prompt: "将一张♣︎手牌当借刀杀人使用",
 				position: "hs",
-				filterCard: function (card, player) {
+				filterCard(card, player) {
 					return get.suit(card) == "club";
 				},
-				check: function (card) {
+				check(card) {
 					return 6 - get.value(card);
 				},
 			},
@@ -5147,17 +5147,17 @@ const skills = {
 				enable: "phaseUse",
 				usable: 1,
 				viewAs: { name: "juedou" },
-				viewAsFilter: function (player) {
+				viewAsFilter(player) {
 					if (!player.countCards("hs", { suit: "spade" })) {
 						return false;
 					}
 				},
 				prompt: "将一张♠︎手牌当决斗使用",
 				position: "hs",
-				filterCard: function (card, player) {
+				filterCard(card, player) {
 					return get.suit(card) == "spade";
 				},
-				check: function (card) {
+				check(card) {
 					return 6 - get.value(card);
 				},
 				ai: {
@@ -5280,12 +5280,12 @@ const skills = {
 					player.removeGaintag("jlsg_rende");
 				},
 				mod: {
-					cardUsable: function (card, player, num) {
+					cardUsable(card, player, num) {
 						if (card?.cards?.some(i => i.hasGaintag("jlsg_rende"))) {
 							return Infinity;
 						}
 					},
-					targetInRange: function (card, player, target, now) {
+					targetInRange(card, player, target, now) {
 						if (card?.cards?.some(i => i.hasGaintag("jlsg_rende"))) {
 							return true;
 						}

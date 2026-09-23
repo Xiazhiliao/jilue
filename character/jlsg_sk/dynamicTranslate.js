@@ -31,7 +31,7 @@ const dynamicTranslates = {
 				return lib.translate["jlsg_guolun_info"];
 		}
 	},
-	jlsg_guanxu: function (player) {
+	jlsg_guanxu(player) {
 		if (!("jlsg_guanxu" in player.storage) || typeof player.storage.jlsg_guanxu != "number") {
 			return "任意角色的回合开始时，你可以观看其手牌，然后你可以。。。";
 		}

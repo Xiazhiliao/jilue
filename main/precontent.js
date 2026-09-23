@@ -654,7 +654,7 @@ export async function precontent(config, originalPack) {
 			}
 		},
 		helpStr: {
-			mainStr: function (html) {
+			mainStr(html) {
 				if (html.hth_more == undefined) {
 					let str = "";
 					if (lib.skill?._jlsg_zhuBuff?.list) {
@@ -693,7 +693,7 @@ export async function precontent(config, originalPack) {
 					html.innerHTML = '<div class="hth_menu" onclick="jlsg.helpStr.mainStr(this)">▶帮助内容</div>';
 				}
 			},
-			skillStr: function (html, skill) {
+			skillStr(html, skill) {
 				if (html.innerHTML[0] == "▶") {
 					html.innerHTML = "▼" + get.translation(skill) + '<br><b style="color: white;font-weight: normal">' + get.translation(skill + "_info") + "</b>";
 				} else {

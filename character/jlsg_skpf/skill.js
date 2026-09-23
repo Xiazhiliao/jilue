@@ -108,7 +108,7 @@ const skills = {
 				norestore: true,
 				custom: {
 					add: {},
-					replace: { window: function () {} },
+					replace: { window() {} },
 				},
 				_backupevent: "jlsg_fqym_tianxiang_backup",
 			});
@@ -675,7 +675,7 @@ const skills = {
 			let vcard = get.autoViewAs({ name: "sha", isCard: true, storage: { jlsg_spwq_wushuang: true }, cards: [] }, []);
 			return event.filterCard(vcard, player, event);
 		},
-		viewAsFilter: function (player) {
+		viewAsFilter(player) {
 			if (!player.countCards("h") || player.countCards("h") != player.countDiscardableCards(player, "h")) {
 				return false;
 			}
@@ -796,7 +796,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				charlotte: true,
-				onremove: function (player) {
+				onremove(player) {
 					let cards = player.getExpansions("jlsg_spwq_wushuang");
 					if (cards.length) {
 						player.gain(cards, "draw");
@@ -806,7 +806,7 @@ const skills = {
 				mark: true,
 				intro: {
 					markcount: "expansion",
-					mark: function (dialog, storage, player) {
+					mark(dialog, storage, player) {
 						var cards = player.getExpansions("jlsg_spwq_wushuang");
 						if (player.isUnderControl() || player == game.me) {
 							dialog.addAuto(cards);
@@ -819,14 +819,14 @@ const skills = {
 		},
 		ai: {
 			respondSha: true,
-			skillTagFilter: function (player) {
+			skillTagFilter(player) {
 				return !!lib.skill.jlsg_spwq_wushuang.viewAsFilter(player);
 			},
-			order: function (item, player) {
+			order(item, player) {
 				return get.order({ name: "sha" }, player) - 0.1;
 			},
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					if (!target) {
 						return;
 					}
@@ -854,28 +854,28 @@ const skills = {
 			tag: {
 				respond: 1,
 				respondShan: 1,
-				damage: function (card) {
+				damage(card) {
 					if (game.hasNature(card, "poison")) {
 						return;
 					}
 					return 2;
 				},
-				natureDamage: function (card) {
+				natureDamage(card) {
 					if (game.hasNature(card, "linked")) {
 						return 2;
 					}
 				},
-				fireDamage: function (card, nature) {
+				fireDamage(card, nature) {
 					if (game.hasNature(card, "fire")) {
 						return 2;
 					}
 				},
-				thunderDamage: function (card, nature) {
+				thunderDamage(card, nature) {
 					if (game.hasNature(card, "thunder")) {
 						return 2;
 					}
 				},
-				poisonDamage: function (card, nature) {
+				poisonDamage(card, nature) {
 					if (game.hasNature(card, "poison")) {
 						return 2;
 					}
@@ -995,7 +995,7 @@ const skills = {
 			order: 8,
 			preSha: true,
 			respondSha: true,
-			skillTagFilter: function (player, tag, arg) {
+			skillTagFilter(player, tag, arg) {
 				if (!player.countCards("h")) {
 					return false;
 				}
@@ -1005,7 +1005,7 @@ const skills = {
 				return true;
 			},
 			result: {
-				target: function (player, target) {
+				target(player, target) {
 					let card = get.autoViewAs({ name: "juedou", isCard: true, storage: { jlsg_smdq_lijian: true } }, []);
 					if (!ui.selected.targets.length) {
 						return Math.sign(get.attitude(player, target)) * (target.getUseValue(card) > 0 ? target.getUseValue(card) : -1);

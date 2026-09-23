@@ -656,7 +656,7 @@ let old_jlsg_qs = {
 					value: [8, 6.5],
 				},
 				result: {
-					target: function (player, target) {
+					target(player, target) {
 						if (target.hp == target.maxHp && target.hp == 1) {
 							return 0;
 						}
