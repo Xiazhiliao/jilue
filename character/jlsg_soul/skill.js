@@ -147,7 +147,13 @@ const skills = {
 		locked: true,
 	},
 	jlsg_huju: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:3",
+		logAudio(event, player) {
+			if (event?.player === player) {
+				return "ext:极略/audio/skill/jlsg_huju3.mp3";
+			}
+			return [1, 2].map(index => `ext:极略/audio/skill/jlsg_huju${index}.mp3`);
+		},
 		trigger: {
 			global: "phaseBegin",
 		},

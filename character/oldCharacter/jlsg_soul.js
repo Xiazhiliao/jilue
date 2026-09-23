@@ -1026,7 +1026,7 @@ export default {
 				jlsg_huju: {
 					locked: true,
 					audio: "ext:极略/audio/skill:3",
-					logAudio: index => (typeof index === "number" ? `ext:极略/audio/skill/jlsg_huju${index},mp3` : "ext:极略/audio/skill:3"),
+					logAudio: index => (typeof index === "number" ? `ext:极略/audio/skill/jlsg_huju${index}.mp3` : "ext:极略/audio/skill:3"),
 					trigger: {
 						global: "phaseBegin",
 					},
