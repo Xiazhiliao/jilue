@@ -2040,7 +2040,7 @@ export default {
 						order: 5,
 						result: {
 							player(player) {
-								return jlsg.getLoseHpEffect(player);
+								return get.effect(player, { name: "losehp" }, player, player);
 							},
 							target(player, target) {
 								if (get.attitude(player, target) > 0) {

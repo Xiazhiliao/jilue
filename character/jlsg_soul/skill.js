@@ -3158,7 +3158,7 @@ const skills = {
 				if (val > 0 && !event.type == "phase" && get.tag(event.getParent(), "damage") && event.getParent().name != "juedou" && !player.countCards("h", { name: button.link[2] }) && (!knowHead || get.type(ui.cardPile.firstChild, "trick") == get.type(button.link[2], "trick") || event.getParent().baseDamage > 1)) {
 					return val;
 				}
-				let loseHpEffect = lib.jlsg.getLoseHpEffect(player);
+				let loseHpEffect = get.effect(player, { name: "losehp" }, player, player);
 				if (!knowHead) {
 					loseHpEffect /= 2;
 				} else {

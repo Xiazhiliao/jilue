@@ -57,7 +57,7 @@ export default {
 										const cards = player.getExpansions("jlsg_aozhan");
 										for (i = 0; i < cards.length; i++) {
 											value += get.value(cards[i]);
-											if (jlsg.isWeak(player) && get.tag(cards[i], "save")) {
+											if (player.getHp() <= 2 && get.tag(cards[i], "save")) {
 												value += get.value(cards[i]);
 											}
 										}

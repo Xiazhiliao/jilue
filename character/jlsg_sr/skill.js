@@ -466,9 +466,6 @@ const skills = {
 							return get.type(button.link) == "basic";
 						})
 						.set("ai", function (button) {
-							if (jlsg.isWeak(get.player())) {
-								return button.link.name != "du" || button.link.name != "tao";
-							}
 							return 8 - get.value(button.link);
 						})
 						.forResult();
@@ -662,15 +659,12 @@ const skills = {
 					if (player.countCards("h") > player.hp) {
 						return 1;
 					}
-					if (jlsg.hasLoseHandcardEffective(player)) {
+					if (get.effect(player, { name: "guohe_copy" }, player, player) < 0) {
 						return 2;
 					}
 					return -1;
 				},
 				target: function (player, target) {
-					if (jlsg.isWeak(target)) {
-						return 5;
-					}
 					return 2;
 				},
 			},
@@ -1567,11 +1561,8 @@ const skills = {
 					const player = get.player();
 					let num = get.attitude(player, target);
 					if (num > 0) {
-						if (target.isDamaged() && target.hasSkills(jlsg.ai.skill.need_maxhp)) {
+						if (target.isDamaged() && target.hasSkillTag("maixie_hp")) {
 							return 5;
-						}
-						if (jlsg.isWeak(target)) {
-							return 3;
 						}
 						if (target.isDamaged()) {
 							return 2;
@@ -1886,32 +1877,14 @@ const skills = {
 			threaten: 2,
 			result: {
 				player: function (card, player, target) {
-					if (jlsg.needKongcheng(player, true)) {
-						return -1;
-					}
 					return 1;
 				},
 				target: function (player, target) {
-					if (jlsg.needKongcheng(target) && target.countCards("h") == 1) {
-						return 5;
-					}
 					if (target.countCards("h") > target.hp && target.isDamaged()) {
 						return 4;
 					}
-					if (jlsg.isWeak(target)) {
-						return 2;
-					}
 					if (target.isDamaged()) {
 						return 1;
-					}
-					if (!jlsg.hasLoseHandcardEffective(target) && target.isDamaged()) {
-						return 1;
-					}
-					if (target.hp == jlsg.getBestHp(target)) {
-						return -0.1;
-					}
-					if (!target.isDamaged() && jlsg.hasLoseHandcardEffective(target)) {
-						return -1;
 					}
 					return 0;
 				},
@@ -1963,11 +1936,7 @@ const skills = {
 			event.result = await player
 				.chooseToDiscard(get.prompt("jlsg_wuqin"), card => get.type(card) == "basic")
 				.set("ai", card => {
-					const player = get.player();
-					if (jlsg.needKongcheng(player) && player.countCards("h") == 1) {
-						return 10 - get.value(card);
-					}
-					return 5 - get.useful(card);
+					return get.unuseful2(card);
 				})
 				.set("chooseonly", true)
 				.forResult();

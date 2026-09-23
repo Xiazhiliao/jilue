@@ -6465,19 +6465,13 @@ const skills = {
 			let result = await player
 				.chooseToDiscard("你可以弃置一张牌，令" + get.translation(trigger.player) + "展示所有手牌并弃置与之花色相同的牌", "he")
 				.set("ai", function (card) {
-					const { player, target } = get.event();
-					if (jlsg.isFriend(player, target)) {
-						return false;
-					}
-					if (jlsg.isWeak(player)) {
-						return false;
-					}
-					if (jlsg.isWeak(target)) {
-						return 10 - get.value(card);
+					const { att } = get.event();
+					if (att > 0) {
+						return 0;
 					}
 					return 6 - get.value(card);
 				})
-				.set("target", trigger.player)
+				.set("att", get.attitude(player, trigger.player))
 				.forResult();
 			if (result.bool) {
 				const cards = trigger.player.getCards("h", { suit: get.suit(result.cards[0]) });
@@ -8016,7 +8010,7 @@ const skills = {
 			}
 			const result = await target
 				.chooseToDiscard("he", `弃置${get.cnNumber(cards.length)}张牌，或者失去1点体力`, [cards.length, cards.length])
-				.set("eff", (lib.jlsg.getLoseHpEffect(target) * 3) / cards.length)
+				.set("eff", (get.effect(target, { name: "losehp" }, target, target) * 3) / cards.length)
 				.set("ai", c => get.unuseful(c) - _status.event.eff)
 				.forResult();
 			if (!result.bool) {
@@ -14189,7 +14183,7 @@ const skills = {
 						.chooseTarget(`###${get.prompt("jlsg_qianchong")}###令一名角色失去2点体力或弃置其体力上限张牌`)
 						.set("ai", target => {
 							let player = _status.event.player;
-							let eff = 1.4 * jlsg.getLoseHpEffect(target) * (get.attitude(player, target) - 1);
+							let eff = 1.4 * get.effect(target,{name:"losehp"},target,target) * (get.attitude(player, target) - 1);
 							let eff2 = (get.attitude(player, target) - 1) * -Math.min(target.countCards("he"), target.maxHp);
 							return Math.max(eff, eff2);
 						})
@@ -14204,7 +14198,7 @@ const skills = {
 							index: 0,
 						};
 					} else {
-						let eff = 1.4 * jlsg.getLoseHpEffect(target) * (get.attitude(player, target) - 1);
+						let eff = 1.4 * get.effect(target,{name:"losehp"},target,target) * (get.attitude(player, target) - 1);
 						let eff2 = (get.attitude(player, target) - 1) * -Math.min(target.countCards("he"), target.maxHp);
 						let choice = eff > eff2 ? 0 : 1;
 						result2 = await player

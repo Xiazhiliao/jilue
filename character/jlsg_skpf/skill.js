@@ -585,7 +585,7 @@ const skills = {
 					let eff = 2.5 * get.effect(player, cardx, target, player);
 					let eff2 = 0;
 					if (get.suit(card) == "spade") {
-						eff2 = (jlsg.getLoseHpEffect(target) * get.attitude(player, target)) / 6;
+						eff2 = (get.effect(target, { name: "losehp" }, target, target) * get.attitude(player, target)) / 6;
 					}
 					return eff + eff2 - get.value(card);
 				})
