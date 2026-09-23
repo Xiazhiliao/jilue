@@ -1840,6 +1840,8 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		skillAnimation: true,
 		animationColor: "metal",
+		multitarget: true,
+		multiline: true,
 		async content(event, trigger, player) {
 			player.removeMark("jlsg_kuangbao", 6);
 			player.addTempSkill("jlsg_shenfen_ban");
