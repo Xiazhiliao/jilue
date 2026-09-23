@@ -2100,6 +2100,38 @@ export async function precontent(config, originalPack) {
 				};
 			},
 		},
+		changeSkillsHandle(player, addSkills, removeSkills, event) {
+			if (event.removeSkill.length) {
+				player.removeSkill(event.removeSkill);
+				game.log(
+					player,
+					"失去了技能",
+					...event.removeSkill
+						.filter(i => i in lib.translate)
+						.map(i => {
+							if (event.popup) {
+								player.popup(i);
+							}
+							return `#g【${get.translation(i)}】`;
+						})
+				);
+			}
+			if (event.addSkill.length) {
+				player.addSkill(event.addSkill);
+				game.log(
+					player,
+					"获得了技能",
+					...event.addSkill
+						.filter(i => i in lib.translate)
+						.map(i => {
+							if (event.popup) {
+								player.popup(i);
+							}
+							return `#g【${get.translation(i)}】`;
+						})
+				);
+			}
+		},
 	};
 	const keys = Object.keys(jlsg.debuffSkill.translate);
 	for (let item of keys) {
