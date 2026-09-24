@@ -1461,7 +1461,6 @@ const skills = {
 							hs.randomSort();
 							if (event.visible || target.isUnderControl(true) || player.hasSkillTag("viewHandcard", null, target, true)) {
 								event.dialog.add(hs);
-								directh = false;
 							} else {
 								let shown = hs.filter(card => get.is.shownCard(card));
 								if (shown.length) {
@@ -1477,7 +1476,6 @@ const skills = {
 									} else if (!event.dialog.noforcebutton) {
 										event.dialog.classList.add("forcebutton-auto");
 									}
-									directh = false;
 								} else {
 									event.dialog.add([hs, "blank"]);
 								}
@@ -1491,7 +1489,6 @@ const skills = {
 							title.style.margin = "0px";
 							title.style.padding = "0px";
 							event.dialog.add([es, "vcard"]);
-							directh = false;
 						}
 					} else if (event.position[i] == "j") {
 						let js = target.getVCards("j");
@@ -1524,7 +1521,6 @@ const skills = {
 							} else {
 								event.dialog.add([js, "vcard"]);
 							}
-							directh = false;
 						}
 					}
 				}

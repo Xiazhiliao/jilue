@@ -6024,6 +6024,7 @@ const skills = {
 	jlsg_pengri: {
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
+		usable: 1,
 		async content(event, trigger, player) {
 			await player.draw({ num: 2 });
 			event.targets = game
