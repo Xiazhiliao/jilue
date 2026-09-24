@@ -3163,7 +3163,7 @@ const skills = {
 						return 0;
 					},
 					firstJudge: trigger.player.getCards("j", card => {
-						const info = get.info(card, target);
+						const info = get.info(card, trigger.player);
 						return !info.noEffect && info.judge;
 					})[0],
 					target: trigger.player,
@@ -14183,7 +14183,7 @@ const skills = {
 						.chooseTarget(`###${get.prompt("jlsg_qianchong")}###令一名角色失去2点体力或弃置其体力上限张牌`)
 						.set("ai", target => {
 							let player = _status.event.player;
-							let eff = 1.4 * get.effect(target,{name:"losehp"},target,target) * (get.attitude(player, target) - 1);
+							let eff = 1.4 * get.effect(target, { name: "losehp" }, target, target) * (get.attitude(player, target) - 1);
 							let eff2 = (get.attitude(player, target) - 1) * -Math.min(target.countCards("he"), target.maxHp);
 							return Math.max(eff, eff2);
 						})
@@ -14198,7 +14198,7 @@ const skills = {
 							index: 0,
 						};
 					} else {
-						let eff = 1.4 * get.effect(target,{name:"losehp"},target,target) * (get.attitude(player, target) - 1);
+						let eff = 1.4 * get.effect(target, { name: "losehp" }, target, target) * (get.attitude(player, target) - 1);
 						let eff2 = (get.attitude(player, target) - 1) * -Math.min(target.countCards("he"), target.maxHp);
 						let choice = eff > eff2 ? 0 : 1;
 						result2 = await player
