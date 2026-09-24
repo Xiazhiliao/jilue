@@ -11319,10 +11319,11 @@ const skills = {
 						record.map(i => i.prompt)
 					)
 					.set("ai", () => {
-						if (_status.event.choice) {
-							return _status.event.choice;
+						const { choice, controls } = get.event();
+						if (typeof choice === "number") {
+							return choice;
 						}
-						return ["选项一", "选项二", "选项三"].randomGet();
+						return controls.randomGet();
 					})
 					.set(
 						"choice",
@@ -11333,7 +11334,8 @@ const skills = {
 								}
 								return i.ai(trigger.player);
 							});
-							return aiList.indexOf(Math.max(...aiList));
+							const index = aiList.indexOf(Math.max(...aiList));
+							return index > -1 && index < 3 ? index : 0;
 						})()
 					)
 					.forResult();

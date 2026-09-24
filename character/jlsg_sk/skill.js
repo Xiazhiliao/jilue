@@ -8763,7 +8763,7 @@ const skills = {
 					forced: true,
 					ai(card) {
 						const suit = get.suit(card);
-						if (get.event().suit.includes(suit)) {
+						if (get.event().suits.includes(suit)) {
 							return 4 - get.value(card);
 						}
 						return 8 - get.value(card);
