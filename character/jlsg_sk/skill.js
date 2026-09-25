@@ -1267,7 +1267,7 @@ const skills = {
 			if (target.isLinked()) {
 				await target.link();
 			}
-			if (event.target.isTurnedOver()) {
+			if (trigger.target.isTurnedOver()) {
 				await target.turnOver();
 			}
 		},
@@ -2632,7 +2632,7 @@ const skills = {
 				}
 			} else {
 				event.result = await player
-					.choosToDiscard({
+					.chooseToDiscard({
 						prompt: get.prompt(event.skill),
 						prompt2: `弃置一张牌，然后摸${player.getDamagedHp()}张牌`,
 						position: "he",
@@ -10594,7 +10594,7 @@ const skills = {
 					control: "装备区",
 				};
 			} else {
-				let choice = event.targets.event(target => aiTargets.includes(target)) ? aiRegion : null;
+				let choice = event.targets.some(target => aiTargets.includes(target)) ? aiRegion : null;
 				if (choice == "h") {
 					choice = "手牌区";
 				} else if (choice == "e") {
