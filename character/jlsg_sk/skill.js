@@ -3145,8 +3145,14 @@ const skills = {
 							return 0;
 						}
 						const info = get.info(firstJudge);
-						let result = info.judge(card);
-						result.judge = event.judge(event.result);
+						let result = {
+							card,
+							name: card.name,
+							number: get.number(card, target),
+							suit: get.suit(card, target),
+							color: get.color(card, target),
+						};
+						result.judge = info.judge(result);
 						if (result.judge > 0) {
 							result.bool = true;
 						} else if (result.judge < 0) {
@@ -3154,7 +3160,7 @@ const skills = {
 						} else {
 							result.bool = null;
 						}
-						game.checkMod(target, event.result, "judge", target);
+						game.checkMod(target, result, "judge", target);
 						if (att > 0 && result.bool) {
 							return get.unuseful3(card);
 						} else if (att < 0 && result.bool == false) {
