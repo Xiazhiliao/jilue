@@ -2814,41 +2814,24 @@ const skills = {
 			const suits = [],
 				cards = [];
 			while (suits.length < 3) {
+				const next = player.showCards(get.cards(1), undefined, true, false).set("clearArena", false);
+				await next;
 				const {
 					cards: [card],
-				} = await game.cardsGotoOrdering(get.cards(1));
-				/*game.broadcastAll(function (card) {
-							if (card.clone) {
-								card.clone.classList.add('thrownhighlight');
-								game.addVideo('highlightnode', player, get.cardInfo(card));
-							}
-							let node = trigger.player.$throwordered(card.copy(), true);
-							node.classList.add('thrownhighlight');
-							ui.arena.classList.add('thrownhighlight');
-						}, card);
-						await game.delayx();*/
-				await player.showCards(card);
+				} = next;
 				let suit = get.suit(card, false);
-				if (!suits.includes(suit)) {
-					suits.add(suit);
-				}
+				suits.add(suit);
 				if (suits.length <= 2) {
 					cards.add(card);
 				} else {
 					await game.cardsDiscard(card);
-					await game.delayx(2);
 				}
+				await game.delayx(2);
 			}
 			if (cards.length) {
-				await player.gain(cards, "gain2");
+				await player.gain({ cards, animate: "gain2" });
 			}
-			/*game.broadcastAll(function (card) {
-						ui.arena.classList.remove('thrownhighlight');
-						if (card?.clone) {
-							card.clone.hide();
-						}
-						ui.clear();
-					}, card);*/
+			game.broadcastAll(() => ui.clear());
 		},
 	},
 	jlsg_weibao: {
