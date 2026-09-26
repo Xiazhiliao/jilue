@@ -2630,21 +2630,33 @@ const skills = {
 			}
 			return 0;
 		},
-		lose: true,
 		discard: false,
+		loseTo: "ordering",
 		async content(event, trigger, player) {
 			const {
 				cards,
 				targets: [target],
 			} = event;
-			await game.cardsGotoOrdering(cards);
-			game.broadcastAll(function (player) {
-				const cardx = ui.create.card();
-				cardx.name = "诈降牌";
-				cardx.classList.add("infohidden");
-				cardx.classList.add("infoflip");
-				player.showCards(cardx, "诈降");
-			}, player);
+			game.broadcastAll(
+				(card, player) => {
+					let cardx = card.copy("thrown");
+					if (lib.config.cardback_style !== "default") {
+						cardx.style.transitionProperty = "none";
+						ui.refresh(cardx);
+						cardx.classList.add("infohidden");
+						ui.refresh(cardx);
+						cardx.style.transitionProperty = "";
+					} else {
+						cardx.classList.add("infohidden");
+					}
+					cardx.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
+					_status.jlsg_zhaxiangNode = cardx;
+					player.$throwordered2(_status.jlsg_zhaxiangNode);
+				},
+				cards[0],
+				player
+			);
+			await game.delay();
 			const result = await target
 				.chooseToGive(player, "交给" + get.translation(player) + "一张牌，或展示并获得诈降牌。")
 				.set("ai", card => {
@@ -2658,8 +2670,13 @@ const skills = {
 					return -effect - get.value(card, player) + (att / 5) * get.value(card, player) - 2;
 				})
 				.forResult();
+			game.broadcastAll(() => {
+				ui.create.cardSpinning(_status.jlsg_zhaxiangNode);
+				delete _status.jlsg_zhaxiangNode;
+			});
+			await game.delayx(3);
 			if (!result?.bool || !result?.cards?.length) {
-				await target.showCards(cards);
+				await target.showCards(cards).set("triggeronly", true);
 				await target.gain(cards, "gain2");
 				if (cards[0].name == "sha") {
 					const sha = get.autoViewAs({ name: "sha", nature: "fire" }, []);
@@ -2668,8 +2685,8 @@ const skills = {
 					}
 				}
 			} else {
-				await target.discard(cards);
-				target.$throw(cards, 1000);
+				await game.cardsDiscard(cards);
+				game.broadcastAll(() => ui.clear());
 			}
 		},
 		ai: {
