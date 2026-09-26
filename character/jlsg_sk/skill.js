@@ -1248,7 +1248,6 @@ const skills = {
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
 					ai(target) {
-						const player = get.player;
 						const att = get.attitude(get.player(), target);
 						let eff = 0;
 						if (target.isLinked()) {
@@ -9448,7 +9447,7 @@ const skills = {
 					prompt2,
 					selectTarget: [1, player.getHp()],
 				});
-			if (index == 0) {
+			if (result.index == 0) {
 				next.filterTarget = function (card, player, target) {
 					return target.hasDiscardableCards(target, "he");
 				};

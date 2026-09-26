@@ -495,7 +495,6 @@ const translates = {
 	jlsg_qiluan_info: "一名角色的回合结束时，你可以令其视为对你指定的另一名角色使用【杀】，然后你摸X张牌(X为所有角色于本回合内体力改变的次数)。",
 	jlsgsk_zhangyi: "SK张嶷",
 	jlsg_wurong: "怃戎",
-	jlsg_wurong2: "怃戎",
 	jlsg_wurong_info: "出牌阶段限一次，你可以展示其他角色的一张手牌，然后你可以弃置一张手牌。若这两张牌的类别:不同，你令其一个非锁定技于本回合内无效，并对其造成1点伤害;相同，你获得其展示的牌，并可以对其重复此流程。",
 	jlsgsk_caochun: "SK曹纯",
 	jlsg_shanjia: "缮甲",
