@@ -2363,7 +2363,6 @@ const skills = {
 		trigger: {
 			player: "phaseBegin",
 		},
-		direct: true,
 		filter(event, player) {
 			const { countShaUsable } = get.info("jlsgsy_longbian"),
 				draw = player.getStorage("jlsgsy_duzun_effect", [0, 0])[1];
