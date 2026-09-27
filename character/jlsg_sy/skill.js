@@ -47,16 +47,17 @@ const skills = {
 				const num = Math.min(player.maxHp, least);
 				player.hp = num;
 			}
-			let name1 = player.name1,
-				name2 = player.name2;
-			if (name1.startsWith("jlsgsy_") && !name1.endsWith("baonu")) {
-				game.log(player, "将", get.translation(name1), "变更为", get.translation(name1 + "baonu"));
-				player.reinit(name1, name1 + "baonu");
+			const newPairs = [player.name1];
+			if (player.name1.startsWith("jlsgsy_") && !player.name1.endsWith("baonu")) {
+				newPairs.splice(0, 1, player.name1 + "baonu");
 			}
-			if (name2 && name2.startsWith("jlsgsy_") && !name2.endsWith("baonu")) {
-				game.log(player, "将", get.translation(name2), "变更为", get.translation(name2 + "baonu"));
-				player.reinit(name2, name2 + "baonu");
+			if (player.name2) {
+				newPairs.push(player.name2);
+				if (player.name2.startsWith("jlsgsy_") && !player.name2.endsWith("baonu")) {
+					newPairs.splice(1, 1, player.name2 + "baonu");
+				}
 			}
+			await player.changeCharacter(newPairs);
 			//魔贾诩神秘bug,插眼等流年...
 			//if (player.maxHp < 3) {
 			//	player.maxHp = 3;
@@ -76,7 +77,7 @@ const skills = {
 					if (evt.name == "phase") {
 						evt.pushHandler("onPhase", (evtx, option) => {
 							evtx.step = 13;
-							evtx.num = evtx.phaseList.length;
+							evtx.num = evtx.phaseList?.length;
 							game.broadcastAll(function (player) {
 								player.classList.remove("glow_phase");
 								if (_status.currentPhase) {
@@ -1215,7 +1216,7 @@ const skills = {
 					if (evt.name == "phase") {
 						evt.pushHandler("onPhase", (evtx, option) => {
 							evtx.step = 13;
-							evtx.num = evtx.phaseList.length;
+							evtx.num = evtx.phaseList?.length;
 							game.broadcastAll(function (player) {
 								player.classList.remove("glow_phase");
 								if (_status.currentPhase) {
