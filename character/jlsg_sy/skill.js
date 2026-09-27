@@ -3987,7 +3987,7 @@ const skills = {
 							return;
 						}
 						let vcard = get.autoViewAs(card);
-						if (player.hasCards("h", cardx => !vcard.cards.includes(card))) {
+						if (player.hasCards("h", cardx => !vcard.cards.includes(cardx))) {
 							return [1, -0.3];
 						}
 					},
