@@ -5563,7 +5563,7 @@ const skills = {
 			const info = result.skills.unique();
 			let remove = storage.list.filter(skill => player.hasSkill(skill, null, false, false) && !info.includes(skill)),
 				add = info.filter(skill => !player.hasSkill(skill, null, false, false));
-			await player.changeSkills(add, remove);
+			await player.changeSkills(add, remove).set("$handle", lib.jlsg.changeSkillsHandle);
 			storage.list = info;
 			player.setStorage(event.name, storage);
 		},
@@ -9702,7 +9702,7 @@ const skills = {
 			player.awakenSkill("jlsg_fuzhi");
 			await player.gainMaxHp(1);
 			await player.recover(1);
-			await player.changeSkills(["jlsg_yaozhi", "jlsg_xingyun"], ["jlsg_zuilun"]);
+			await player.changeSkills(["jlsg_yaozhi", "jlsg_xingyun"], ["jlsg_zuilun"]).set("$handle", lib.jlsg.changeSkillsHandle);
 		},
 	},
 	jlsg_jiejun: {
@@ -11458,8 +11458,8 @@ const skills = {
 				await player.recover(targetSkills.length);
 			}
 			const playerSkills = player.getSkills(null, false, false).filter(i => !get.info(i)?.charlotte);
-			await player.changeSkills(targetSkills, skills);
-			await target.changeSkills(skills, targetSkills);
+			await player.changeSkills(targetSkills, skills).set("$handle", lib.jlsg.changeSkillsHandle);
+			await target.changeSkills(skills, targetSkills).set("$handle", lib.jlsg.changeSkillsHandle);
 		},
 	},
 	jlsg_hanyong: {
@@ -17458,7 +17458,7 @@ const skills = {
 							game.log("没有与“杀”有关的技能了");
 							return;
 						}
-						await player.changeSkills(shaRelatedList.randomGets(1), skills.randomGets(1));
+						await player.changeSkills(shaRelatedList.randomGets(1), skills.randomGets(1)).set("$handle", lib.jlsg.changeSkillsHandle);
 					},
 					positive(player, viewer) {
 						return Math.sign(player.getUseValue("sha")) * get.sgnAttitude(viewer, player);
@@ -18674,7 +18674,7 @@ const skills = {
 							game.log("没有与“杀”有关的技能了");
 							return;
 						}
-						await player.changeSkills(shaRelatedList.randomGets(1), skills.randomGets(1));
+						await player.changeSkills(shaRelatedList.randomGets(1), skills.randomGets(1)).set("$handle", lib.jlsg.changeSkillsHandle);
 					},
 				},
 				ai_effect(player, viewer) {

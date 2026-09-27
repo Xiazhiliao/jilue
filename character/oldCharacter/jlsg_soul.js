@@ -1300,10 +1300,12 @@ export default {
 					delay: false,
 					async content(event, trigger, player) {
 						const skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
-						await player.changeSkills(
-							[skill],
-							[player.storage.jlsg_yinyang_s].filter(i => i)
-						);
+						await player
+							.changeSkills(
+								[skill],
+								[player.storage.jlsg_yinyang_s].filter(i => i)
+							)
+							.set("$handle", lib.jlsg.changeSkillsHandle);
 						player.setStorage("jlsg_yinyang_s", skill);
 					},
 					getCurrentSkill(player) {
