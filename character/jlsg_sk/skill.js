@@ -2219,7 +2219,7 @@ const skills = {
 		filter(event, player) {
 			return player.hasDiscardableCards(player, "h");
 		},
-		async content(event, trigger, player) {
+		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCardTarget({
 					prompt: get.prompt(event.skill),
@@ -7292,7 +7292,7 @@ const skills = {
 			if (player.getStorage("jlsg_shemi", 0) == trigger.selectCard[0]) {
 				const cards = player.getCards(player, "h", card => lib.filter.cardDiscardable(card, player, trigger));
 				if (cards.length > trigger.selectCard[0]) {
-					const card = cards.map(c => [c, trigger.ai(c)]).sort((pair1, pair2) => pair1[1] - pair2[1])[0][1];
+					const card = cards.map(c => [c, trigger.ai(c)]).sort((pair1, pair2) => pair1[1] - pair2[1])[0][0];
 					const originalAI = trigger.ai;
 					trigger
 						.set("ai", card => {
