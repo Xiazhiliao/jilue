@@ -127,7 +127,6 @@ const skills = {
 	jlsgsy_baonulvbu: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "把你们全宰了！",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_wushuang: {
 		audio: "ext:极略/audio/skill:1",
@@ -357,7 +356,6 @@ const skills = {
 	jlsgsy_baonusunhao: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "当个好皇帝有什么意思!",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_mingzheng: {
 		audio: "ext:极略/audio/skill:1",
@@ -505,7 +503,6 @@ const skills = {
 	jlsgsy_baonusimayi: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "老夫没时间陪你们了!",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_biantian: {
 		audio: "ext:极略/audio/skill:1",
@@ -724,7 +721,6 @@ const skills = {
 	jlsgsy_baonudongzhuo: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "统统杀光",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_bujiao: {
 		marktext: "平",
@@ -959,12 +955,10 @@ const skills = {
 	jlsgsy_baonuzhangjiao: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "招神劾鬼, 统摄天地!",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_baonucaifuren: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "别想逃出我的手掌心!",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_dihui: {
 		audio: "ext:极略/audio/skill:2",
@@ -1199,7 +1193,6 @@ const skills = {
 	jlsgsy_baonuweiyan: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "老子岂能受你们摆布!",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_fangu: {
 		audio: "ext:极略/audio/skill:1",
@@ -1611,12 +1604,10 @@ const skills = {
 	jlsgsy_baonuzhangrang: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "灵帝, 都得叫我一声爹呢!",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_baonudiaochan: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "可惜、已经晚了！",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_meihuo: {
 		audio: "ext:极略/audio/skill:2",
@@ -1834,7 +1825,6 @@ const skills = {
 	jlsgsy_baonuyuanshao: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "都是蝼蚁！",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_mojian: {
 		audio: "ext:极略/audio/skill:2",
@@ -1910,7 +1900,6 @@ const skills = {
 	jlsgsy_baonusunluban: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "这般无礼！",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_quanqing: {
 		audio: "ext:极略/audio/skill:2",
@@ -2191,7 +2180,6 @@ const skills = {
 	jlsgsy_baonucaocao: {
 		inherit: "jlsgsy_baonu",
 		animationStr: "休叫天下人负我！",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_weiwu: {
 		audio: "ext:极略/audio/skill:2",
@@ -2465,7 +2453,6 @@ const skills = {
 	jlsgsy_baonuzoushi: {
 		animationStr: "既然如此，接下来的表演，将军可要看好了",
 		inherit: "jlsgsy_baonu",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_huoshi: {
 		audio: "ext:极略/audio/skill:2",
@@ -2609,7 +2596,6 @@ const skills = {
 	jlsgsy_baonumenghuo: {
 		animationStr: "非要逼我，现出真身！",
 		inherit: "jlsgsy_baonu",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_qiushou: {
 		audio: "ext:极略/audio/skill:2",
@@ -2941,7 +2927,6 @@ const skills = {
 	jlsgsy_baonuzhangchunhua: {
 		animationStr: "冥河不渡，永坠无间",
 		inherit: "jlsgsy_baonu",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_diaoling: {
 		audio: "ext:极略/audio/skill:2",
@@ -3139,7 +3124,6 @@ const skills = {
 	jlsgsy_baonuliru: {
 		animationStr: "仁义？天道？今日，唯有魔道！",
 		inherit: "jlsgsy_baonu",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_moce: {
 		audio: "ext:极略/audio/skill:2",
@@ -3478,7 +3462,6 @@ const skills = {
 	jlsgsy_baonuyuanshu: {
 		animationStr: "弑君之罪，当诛九族！",
 		inherit: "jlsgsy_baonu",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_wangzun: {
 		audio: "ext:极略/audio/skill:2",
@@ -3685,7 +3668,6 @@ const skills = {
 	jlsgsy_baonuhetaihou: {
 		animationStr: "汉家江山，本就是炼狱！",
 		inherit: "jlsgsy_baonu",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_shixin: {
 		audio: "ext:极略/audio/skill:2",
@@ -3786,7 +3768,6 @@ const skills = {
 	jlsgsy_baonujiaxu: {
 		animationStr: "死局已至，无力回天，为何还要挣扎？",
 		inherit: "jlsgsy_baonu",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_huiying: {
 		audio: "ext:极略/audio/skill:2",
@@ -3911,7 +3892,6 @@ const skills = {
 	jlsgsy_baonuliushan: {
 		animationStr: "打打杀杀多无趣，不如陪朕，醉生梦死。",
 		inherit: "jlsgsy_baonu",
-		mode: ["identity", "guozhan", "boss", "stone"],
 	},
 	jlsgsy_duoquan: {
 		audio: "ext:极略/audio/skill:2",

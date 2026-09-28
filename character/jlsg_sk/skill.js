@@ -5635,7 +5635,7 @@ const skills = {
 				shan: "wuxie",
 				wuxie: "shan",
 			};
-			for (const name of map) {
+			for (const name in map) {
 				if (event.filterCard(get.autoViewAs({ name }, "unsure"), player, event) && player.hasCards("hs", { name: map[name] })) {
 					return true;
 				}
