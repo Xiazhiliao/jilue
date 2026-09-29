@@ -1931,6 +1931,7 @@ const skills = {
 			storage.targets.add(target);
 			const choice = storage.choice;
 			delete storage.choice;
+			player.addTempSkill(event.name + "_used", ["phaseUseAfter", "phaseBeginStart", "phaseAfter"]);
 			player.setStorage(event.name, storage, true);
 			let result;
 			if (target.countCards("he", c => get.number(c, target) > get.number(event.cards[0]))) {
