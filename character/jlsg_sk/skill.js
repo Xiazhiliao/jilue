@@ -1708,14 +1708,13 @@ const skills = {
 						const { att } = get.event();
 						return att > 0 ? 0 : 6 - get.useful(card);
 					},
+					logSkill: [event.skill, [trigger.player]],
 					chooseonly: true,
 					att: get.attitude(player, trigger.player),
 				})
 				.forResult();
-			if (event.result?.bool) {
-				event.result.targets = [trigger.player];
-			}
 		},
+		popup: false,
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
 			await player.judge({
@@ -1729,12 +1728,14 @@ const skills = {
 					return !result.bool;
 				},
 				async callback(event, trigger, player) {
+					const { target } = event.getParent();
 					if (event.judgeResult.suit === "spade") {
-						player.addTempSkill("baiban");
+						target.addTempSkill("baiban");
 					} else if (event.judgeResult.suit === "club") {
-						await player.chooseToDiscard({ selectCard: [2, 2], forced: true });
+						await target.chooseToDiscard({ selectCard: [2, 2], forced: true });
 					}
 				},
+				target: trigger.player,
 			});
 		},
 		ai: {
