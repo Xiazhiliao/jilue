@@ -2189,13 +2189,13 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			await player.draw({ num: 2 });
-			if (!trigger.cards.length) {
+			if (!trigger.card) {
 				return;
 			}
-			let cards = trigger.cards.slice().filterInD("od");
+			let cards = trigger.cards?.slice()?.filterInD("od") || [];
 			const result = await player
 				.chooseBool({
-					prompt: `是否获得${get.translation(cards)}与弃牌堆的所有${get.translation({ name: trigger.card.name, nature: trigger.card.nature })}？`,
+					prompt: `是否获得${cards.length ? get.translation(cards) + "与" : ""}弃牌堆的所有${get.translation({ name: trigger.card.name, nature: trigger.card.nature })}？`,
 				})
 				.set("frequentSkill", "jlsgsy_weiwu")
 				.forResult();
