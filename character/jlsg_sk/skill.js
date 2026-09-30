@@ -7370,7 +7370,7 @@ const skills = {
 		trigger: { player: "damageBegin2" },
 		check(event, player) {
 			const damage = get.damageEffect(player, event.source ? event.source : player, player, event.nature),
-				draw = get.effect(player, { name: "dra" }, player, player);
+				draw = get.effect(player, { name: "draw" }, player, player);
 			if (damage < 0) {
 				const num = player.countCards("h");
 				if ((draw > 0 && num + 1 == player.getHp()) || num - 1 == player.getHp()) {
