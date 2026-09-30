@@ -4939,9 +4939,9 @@ const skills = {
 			await player.discard({ cards: event.cards });
 			const phase = trigger.getParent("phase");
 			const phaseList = phase.phaseList,
-				num = trigger.num,
+				num = phase.num,
 				phaseDraw = [];
-			while (phaseList.some(name => name.startsWith("phaseDraw"))) {
+			while (phaseList.some((name, i) => name.startsWith("phaseDraw") && i > num)) {
 				const name = phaseList.find((name, i) => name.startsWith("phaseDraw") && i > num);
 				phaseList.remove(name);
 				phaseDraw.push(name);
