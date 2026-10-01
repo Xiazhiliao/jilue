@@ -4324,10 +4324,11 @@ const skills = {
 				});
 				let numx = Math.min(get.rand(1, num), skills.length);
 				if (numx > 0) {
+					num -= numx;
 					let skills2 = skills.randomGets(numx);
 					map[name] = skills2;
 				}
-				if (Object.values(map).flat().length >= 2) {
+				if (Object.values(map).flat().length >= 2 || num <= 0) {
 					break;
 				}
 			}

@@ -10366,22 +10366,27 @@ const skills = {
 							const skills = get.character(name).skills.filter(s => {
 								if (["jlsg_sanjue", "jlsg_xianshou"].includes(s)) {
 									return false;
-								}
-								if (player.hasSkill(s, null, false, false)) {
+								} else if (player.hasSkill(s, null, false, false)) {
+									return false;
+								} else if (lib.filter.skillDisabled(s)) {
 									return false;
 								}
 								const info = get.info(s);
-								if (!info || info.unique || info.charlotte) {
+								if (info.charlotte) {
 									return false;
 								}
-								if (info.ai?.combo && !player.hasSkill(info.ai.combo, null, false, false)) {
-									return false;
-								} else if (info.zhuSkill && !player.isZhu2()) {
-									return false;
-								} else if (info.groupSkill && info.groupSkill != group) {
+								if (info.ai?.combo) {
+									const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
+									if (combo.every(skillx => player.hasSkill(skillx, null, false, false))) {
+										return false;
+									}
+								}
+								if (info.zhuSkill && !player.isZhu2()) {
 									return false;
 								}
-								return true;
+								if (info.groupSkill && info.groupSkill != player.group) {
+									return false;
+								}
 							});
 							if (!skills.length) {
 								continue;
@@ -16509,7 +16514,16 @@ const skills = {
 			if (event.triggername === "judge") {
 				const result = await player
 					.chooseButton({
-						createDialog: [`###${get.prompt(event.skill)}###失去一点体力，然后将判定牌替换为一张你指定花色点数的临时牌`, [Array.from({ length: 13 }, (v, i) => i + 1), "tdnodes"], [lib.suit.map(suit => get.translation(suit)), "tdnodes"]],
+						createDialog: [
+							`###${trigger.player}的判定牌${get.translation(trigger.player.judging[0])}即将生效，是否发动〖${get.translation(event.skill)}〗改判${trigger.skill ? `〖${get.translation(trigger.skill)}〗` : ""}？###失去一点体力，然后将判定牌替换为一张你指定花色点数的临时牌`,
+							[Array.from({ length: 13 }, (v, i) => i + 1), "tdnodes"],
+							[
+								lib.suit.map(suit => {
+									return get.translation(suit);
+								}),
+								"tdnodes",
+							],
+						],
 						selectButton: 2,
 						filterButton({ link }, player) {
 							if (!ui.selected.buttons.length) {
@@ -16814,17 +16828,23 @@ const skills = {
 									return false;
 								} else if (player.hasSkill(s, null, false, false)) {
 									return false;
-								} else if (lib.filter.skillDisabled(skill)) {
+								} else if (lib.filter.skillDisabled(s)) {
 									return false;
 								}
 								const info = get.info(s);
 								if (info.charlotte) {
 									return false;
-								} else if (info.ai?.combo && !player.hasSkill(info.ai.combo, null, false, false)) {
+								}
+								if (info.ai?.combo) {
+									const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
+									if (combo.every(skillx => player.hasSkill(skillx, null, false, false))) {
+										return false;
+									}
+								}
+								if (info.zhuSkill && !player.isZhu2()) {
 									return false;
-								} else if (info.zhuSkill && !player.isZhu2()) {
-									return false;
-								} else if (info.groupSkill && info.groupSkill != player.group) {
+								}
+								if (info.groupSkill && info.groupSkill != player.group) {
 									return false;
 								}
 								return true;
@@ -16949,7 +16969,7 @@ const skills = {
 						return lib.jlsg.debuffSkill.trigger;
 					},
 					filter(event, player) {
-						if (player.getStorage("jlsg_kuijie_tianmingCount", { 19: 0 }["19"]) >= 2) {
+						if (player.getStorage("jlsg_kuijie_tianmingCount", { 19: 0 })["19"] >= 2) {
 							return false;
 						}
 						return lib.jlsg.debuffSkill.filter.apply(this, arguments);
@@ -17411,7 +17431,7 @@ const skills = {
 						return trigger;
 					},
 					filter(event, player) {
-						if (player.getStorage("jlsg_kuijie_tianmingCount", { 49: 0 }["49"]) >= 1) {
+						if (player.getStorage("jlsg_kuijie_tianmingCount", { 49: 0 })["49"] >= 1) {
 							return false;
 						}
 						let key = lib.jlsg.debuffSkill.translate[event.name];
