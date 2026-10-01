@@ -5421,13 +5421,13 @@ const skills = {
 			let storage = player.getStorage(event.name, { list: [], num: 2 });
 			event.num = storage.num;
 			const extraCharacter = [];
-			if (game.getExtensionConfig("极略", "jlsgsk_zuoci")) {
+			if (game.getExtensionConfig("极略", "jlsgsk_zuoci") && !(_status.connectMode ? player.isAuto : _status.auto)) {
 				if (player.isUnderControl()) {
 					game.swapPlayerAuto(player);
 				}
 				const id = lib.status.videoId++,
 					filter = function (name) {
-						if (name.indexOf("zuoci") > -1 || name.indexOf("xushao") > -1 || name.startsWith("jlsgsoul_sp_")) {
+						if (name.indexOf("zuoci") > -1 || name.indexOf("xushao") > -1 || name.indexOf("jlsgsoul_sp_") > -1) {
 							return true;
 						}
 						return game.filterPlayer2().some(current => get.nameList(current).includes(name));
@@ -5462,7 +5462,7 @@ const skills = {
 				characterlist.unshift(name);
 			}
 			for (let name of characterlist) {
-				if (name.indexOf("zuoci") > -1 || name.indexOf("xushao") > -1 || name.startsWith("jlsgsoul_sp_")) {
+				if (name.indexOf("zuoci") > -1 || name.indexOf("xushao") > -1 || name.indexOf("jlsgsoul_sp_") > -1) {
 					continue;
 				}
 				let skills = (get.character(name)[3] || []).filter(skill => {
