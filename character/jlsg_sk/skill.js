@@ -3,6 +3,67 @@ import { CacheContext } from "../../../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	jlsg_duanfa: {
+		mod: {
+			targetInRange(card, player) {
+				let cards = card?.cards || [];
+				cards.add(card);
+				if (cards.some(i => i.hasGaintag?.("jlsg_duanfa"))) {
+					return true;
+				}
+			},
+		},
+		audio: "ext:极略/audio/skill:2",
+		enable: "phaseUse",
+		trigger: {
+			player: ["enterGame"],
+			global: ["phaseBefore"],
+		},
+		usable: 1,
+		filter(event, player) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		check() {
+			return get.effect(get.player(), { name: "draw" }, get.player(), get.player()) > 0;
+		},
+		async content(event, trigger, player) {
+			await player.draw({ num: 2 });
+			const hs = player.getDiscardableCards(player, "h", card => {
+				if (get.color(card, player) !== "black") {
+					return false;
+				}
+				return !card.classList.contains("jlsg_tempCard-glow") && !card.hasGaintag("eternal_zuoyou_manjuan");
+			});
+			if (!hs.length) {
+				return;
+			}
+			const next = player.discard({ cards: hs });
+			await next;
+			const history = player.getHistory("lose", evt => evt.getParent() === next)[0];
+			if (!history) {
+				return;
+			}
+			let num = history.cards2.length,
+				{ createTempCard } = get.info("jlsg_lingze"),
+				cards = [];
+			await player.draw({ num });
+			while (num-- > 0) {
+				let card = createTempCard("shunshou", undefined, undefined, undefined, true);
+				if (card) {
+					cards.push(card);
+				}
+			}
+			if (cards.length) {
+				await player.gain({ cards, animate: "draw2", log: true, gaintag: [event.name] });
+			}
+		},
+		ai: {
+			order: 3,
+			result: {
+				player: 1,
+			},
+		},
+	},
 	jlsg_qianxi: {
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",

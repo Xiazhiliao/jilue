@@ -1,6 +1,9 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const translates = {
+	jlsgsk_zhoufang: "SK周鲂",
+	jlsg_duanfa: "断发",
+	jlsg_duanfa_info: "游戏开始时，或出牌阶段限一次，你可以摸两张牌，然后弃置所有黑色非临时手牌并摸等量的牌，若如此做，你获得X张无距离限制的临时【顺手牵羊】（X为你本次发动此技能弃置的黑色牌数）。",
 	jlsgsk_madai: "SK马岱",
 	jlsg_qianxi: "潜袭",
 	jlsg_qianxi_info: "出牌阶段限一次，你可以摸两张牌并展示一张手牌，若如此做，本回合你获得以下效果：与你距离为1的角色不能使用或打出与此牌颜色相同的牌，你使用与此牌牌名相同的牌无次数限制且对距离为1的角色造成的伤害+1。本阶段若你未使用与此牌牌名相同的牌，你跳过本回合的弃牌阶段。",

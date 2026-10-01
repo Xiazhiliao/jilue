@@ -173,6 +173,12 @@ const translates = {
 	jlsgsy_lanle_info: "变身技，锁定技，当其他角色使用牌时，你随机获得其一张手牌，然后若其使用的牌为红桃，其随机获得你一张手牌。",
 	jlsgsy_wangduan: "妄断",
 	jlsgsy_wangduan_info: "变身技，出牌阶段限一次，你可以选择一种牌的类别，令所有角色弃置所有非此类别的手牌并获得等量的此类别的临时牌，每有一名其他角色以此法弃置牌，你多获得一张临时牌。你以此法获得的临时牌不计入手牌上限且无次数限制。",
+	jlsgsy_dongbai: "满溢之恨",
+	jlsgsy_dongbaibaonu: "满溢之恨",
+	jlsgsy_huachong: "华宠",
+	jlsgsy_huachong_info: "每回合各限一次，你可以将摸牌改为随机获得其他角色的牌，你可以将受到伤害改为随机偷取其他角色的体力。",
+	jlsgsy_youmo: "幼魔",
+	jlsgsy_youmo_info: "变身技，锁定技，回合开始时，你令你体力、体力上限、摸牌数、使用【杀】次数上限中最小的一项属性+2，然后随机获得两个魔势力技能。",
 };
 
 export default translates;

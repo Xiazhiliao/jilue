@@ -12,6 +12,7 @@ const characterTitle = {
 	jlsgsoul_sp_zhouyu: "谈笑挽天河",
 	jlsgsoul_zhurong: "绝祀之炎",
 	jlsgsoul_sunce: "浪起沧溟",
+	jlsgsoul_sp_guojia: "司天",
 };
 
 export default characterTitle;

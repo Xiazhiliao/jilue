@@ -316,6 +316,14 @@ const translates = {
 	jlsg_pinghe_append: `<span style="font-family: yuanli">自己使用多目标牌时，指定的第一个目标为自己则不触发技能</span>`,
 	jlsg_fuhai: "覆海",
 	jlsg_fuhai_info: "蓄力技(2/5)，当你令其他角色摸牌后，获得1点蓄力值。出牌阶段，你可消耗5点蓄力值将一名其他角色的手牌洗入牌堆，然后你摸等量的牌，本回合你以此法获得的【杀】无次数限制，若如此做，你弃置这些牌里本次洗入牌堆的牌，然后对其造成等同于弃牌数的伤害。",
+	jlsgsoul_sp_guojia: "SP神郭嘉",
+	jlsg_cantianjishenmu: "参天极神目",
+	jlsg_cantianjishenmu_skill: "参天极神目",
+	jlsg_cantianjishenmu_info: "当你成为其他角色使用的【杀】或非延时锦囊牌的目标后，你可以判定，若结果为红色，取消之。",
+	jlsg_chejian: "彻见",
+	jlsg_chejian_info: `锁定技，你视为装备着${get.poptip("jlsg_cantianjishenmu")}}当任意角色的判定牌生效后，你获得之。当任意角色的判定牌生效前，你可以失去1点体力，然后用一张花色点数由你决定的临时牌替换之。`,
+	jlsg_kuijie: "窥劫",
+	jlsg_kuijie_info: "锁定技，轮次开始时，你减1点体力上限并判定，然后根据判定结果，你可以令任意名角色揭示一项“天命”。",
 };
 
 const jlsg_qixian = skills.jlsg_qixian.effects,

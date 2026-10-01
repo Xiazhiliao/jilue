@@ -4103,6 +4103,368 @@ const skills = {
 			},
 		},
 	},
+	jlsgsy_baonudongbai: {
+		animationStr: "奴家做错了什么，为什么要死这么多人！",
+		inherit: "jlsgsy_baonu",
+	},
+	jlsgsy_huachong: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			player: ["drawBefore", "damageBegin3"],
+		},
+		usable: 1,
+		filter(event, player) {
+			return event.num > 0;
+		},
+		check(event, player) {
+			if (event.name === "draw") {
+				return (
+					game.countPlayer(current => {
+						if (current === player) {
+							return 0;
+						}
+						return current.countGainableCards(player, "he");
+					}) >= event.num && event.num >= 2
+				);
+			}
+			return player.isDamaged() || event.num > player.getHp();
+		},
+		async content(event, trigger, player) {
+			trigger.cancel();
+			let num = trigger.num,
+				timeout = 10;
+			if (trigger.name === "draw") {
+				const targets = game
+					.filterPlayer(current => {
+						if (current === player) {
+							return false;
+						}
+						return current.hasGainableCards(player, "he");
+					})
+					.sortBySeat();
+				const map = new Map();
+				loop: while (num > 0 && timeout-- > 0) {
+					for (const target of targets) {
+						if (num <= 0) {
+							break loop;
+						}
+						let cards = target.getGainableCards(player, "he").removeArray(map.get(target) || []);
+						if (!cards.length) {
+							continue;
+						}
+						let numx = Math.min(get.rand(0, num), cards.length);
+						if (numx > 0) {
+							num -= numx;
+							cards = cards.randomGets(numx);
+							let info = map.get(target) || [];
+							info.addArray(cards);
+							map.set(target, info);
+						}
+					}
+				}
+				const info = Array.from(map.entries());
+				const targetsx = info.map(i => i[0]);
+				game.log(player, "将摸", trigger.num, "张牌改为从", targetsx, "处获得牌");
+				player.line(targetsx);
+				await game
+					.loseAsync({
+						player,
+						cards: info.flatMap(i => i[1]),
+						gain_list: [[player, info.flatMap(i => i[1])]],
+						animate(event) {
+							const { player, info } = event;
+							for (const [target, cards] of info) {
+								target.$giveAuto(cards, player, true);
+							}
+							return 0;
+						},
+						info,
+					})
+					.setContent("gaincardMultiple");
+			} else {
+				const targets = game.filterPlayer(current => current != player && current.hp > 0).sortBySeat(),
+					map = new Map();
+				loop: while (num > 0 && timeout-- > 0) {
+					for (const target of targets) {
+						if (num <= 0) {
+							break loop;
+						}
+						let numx = Math.min(get.rand(0, num), target.hp - (map.get(target) || 0));
+						if (numx > 0) {
+							num -= numx;
+							let info = map.get(target) || 0;
+							info += numx;
+							map.set(target, info);
+						}
+					}
+				}
+				const info = Array.from(map.entries());
+				const targetsx = info.map(i => i[0]);
+				game.log(player, "将受到", trigger.num, "点伤害改为", targetsx, "失去体力");
+				player.line(targetsx);
+				await Promise.all([player.recover(trigger.num), ...info.map(([target, num]) => target.loseHp(num))]);
+			}
+		},
+	},
+	jlsgsy_youmo: {
+		locked: true,
+		mod: {
+			cardUsable(card, player, num) {
+				if (get.name(card, player) == "sha") {
+					return num + (player.storage?.jlsgsy_youmo?.sha || 0);
+				}
+			},
+		},
+		mark: true,
+		intro: {
+			mark(dialog, storage, player) {
+				storage ??= { draw: 0, sha: 0 };
+				let list = [2 + storage.draw, get.info("jlsgsy_longbian").countShaUsable(player)],
+					drawCheck = player.getAllHistory("gain", evt => {
+						return evt.getParent(2).name == "phaseDraw";
+					});
+				if (drawCheck.length) {
+					drawCheck = drawCheck[drawCheck.length - 1].cards.length;
+				}
+				if (list[0] < drawCheck) {
+					list[0] = drawCheck;
+				}
+				dialog.addText(`摸牌阶段摸牌数(${list[0]})`);
+				dialog.addText(`出杀次数(${list[1]})`);
+			},
+		},
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			player: "phaseBegin",
+		},
+		checkList(player) {
+			const storage = player.getStorage("jlsgsy_youmo", { draw: 0, sha: 0 });
+			const list = [player.hp, player.maxHp, 2 + storage.draw, get.info("jlsgsy_longbian").countShaUsable(player)];
+			let drawCheck = player.getAllHistory("gain", evt => {
+				return evt.getParent(2).name == "phaseDraw";
+			});
+			if (drawCheck.length) {
+				drawCheck = drawCheck[drawCheck.length - 1].cards.length;
+			}
+			if (list[2] < drawCheck) {
+				list[2] = drawCheck;
+			}
+			return list;
+		},
+		async cost(event, trigger, player) {
+			const checkList = get.info(event.skill).checkList(player);
+			const min = Math.min(...checkList);
+			if (checkList.filter(i => i === min).length !== 1) {
+				const map = {
+					0: `体力(${checkList[0]})`,
+					1: `体力上限(${checkList[1]})`,
+					2: `摸牌数(${checkList[2]})`,
+					3: `使用【杀】次数上限(${checkList[3]})`,
+				};
+				const list = checkList.map((v, i) => i);
+				const result = await player
+					.chooseButton({
+						createDialog: [`###幼魔###请选择一项最小数值+2，然后获得两个魔势力武将的技能`, [list.map(i => [i, map[i]]), "textbutton"]],
+						filterButton({ link }) {
+							return get.event().check.includes(link);
+						},
+						ai({ link }) {
+							return link + 1;
+						},
+						forced: true,
+					})
+					.set(
+						"check",
+						checkList.map((v, i) => (v === min ? i : null))
+					)
+					.forResult();
+				event.result = {
+					bool: result?.bool && result.links?.length,
+					cost_data: result?.links?.[0],
+				};
+			} else {
+				event.result = {
+					bool: true,
+					cost_data: checkList.findIndex(i => i === min),
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const index = Number(event.cost_data);
+			if (index === 0) {
+				await player.recover(2);
+			} else if (index === 1) {
+				await player.gainMaxHp(2);
+			} else {
+				const storage = player.getStorage(event.name, { draw: 0, sha: 0 });
+				storage[index === 2 ? "draw" : "sha"] += 2;
+				player.setStorage(event.name, storage, true);
+			}
+			if (!_status.characterlist) {
+				game.initCharacterList();
+			}
+			const allList = _status.characterlist.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]).randomSort(),
+				map = {};
+			let num = 2;
+			for (const name of allList) {
+				const skills = get.character(name).skills.filter(skill => {
+					if (lib.filter.skillDisabled(skill)) {
+						return false;
+					} else if (player.hasSkill(skill, null, false, false)) {
+						return false;
+					}
+					const info = get.info(skill);
+					if (info.charlotte) {
+						return false;
+					} else if (info.ai?.combo) {
+						const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
+						return combo.every(skillx => player.hasSkill(skillx, null, false, false));
+					}
+					return !skill.startsWith("jlsgsy_baonu");
+				});
+				let numx = Math.min(get.rand(1, num), skills.length);
+				if (numx > 0) {
+					let skills2 = skills.randomGets(numx);
+					map[name] = skills2;
+				}
+				if (Object.values(map).flat().length >= 2) {
+					break;
+				}
+			}
+			if (Object.values(map).flat().length >= 2) {
+				let add = Object.keys(map);
+				await get.info(event.name).changeCharacter(player, add);
+				await player.addSkills(Object.values(map).flat());
+			}
+		},
+		changeCharacter(player, add = [], remove = [], throwx) {
+			let next = game.createEvent("jlsgsy_youmo_changeCharacter");
+			next.player = player;
+			next.add = add;
+			next.remove = remove;
+			next.throwx = throwx;
+			next.setContent(async function (event, trigger, player) {
+				const add = event.add,
+					remove = event.remove;
+				if (remove.length) {
+					game.broadcastAll(
+						function (player, list) {
+							const cards = [];
+							for (let i = 0; i < list.length; i++) {
+								const cardname = "huashen_card_" + list[i];
+								if (!lib.card[cardname]) {
+									lib.card[cardname] = {
+										fullborder: true,
+										image: "character:" + list[i],
+									};
+									lib.translate[cardname] = get.rawName2(list[i]);
+								}
+								cards.push(game.createCard(cardname, "", ""));
+							}
+							player.$throw(cards, 1000, "nobroadcast");
+						},
+						player,
+						remove
+					);
+				}
+				if (add.length) {
+					if (event.throwx !== false) {
+						if (remove.length) {
+							await game.delay(1.5);
+						}
+					}
+					await new Promise((resolve, reject) => {
+						game.broadcastAll(
+							async function (player, list) {
+								let cards = [];
+								for (let i = 0; i < list.length; i++) {
+									let cardname = "huashen_card_" + list[i];
+									lib.card[cardname] = {
+										fullborder: true,
+										image: "character:" + list[i],
+									};
+									lib.translate[cardname] = get.slimNameHorizontal(list[i]);
+									cards.push(game.createCard(cardname, "", ""));
+								}
+								let nodes = [];
+								for (let card of cards) {
+									let i = cards.indexOf(card);
+									const left0 = -cards.length * 52 - (cards.length - 1) * 8,
+										left = left0 + i * 120;
+									let node1 = player.$throwxy2(card, "calc(50% - " + -left + "px)", "calc(50% - 52px)", "perspective(600px) rotateY(180deg)", true);
+									card.clone = node1;
+									nodes.push(node1);
+									if (lib.config.cardback_style != "default") {
+										node1.style.transitionProperty = "none";
+										ui.refresh(node1);
+										node1.classList.add("infohidden");
+										ui.refresh(node1);
+										node1.style.transitionProperty = "";
+									} else {
+										node1.classList.add("infohidden");
+									}
+									node1.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
+								}
+								let nodes_copy = nodes.slice();
+								const showNode = async function (node) {
+									const onEnd01 = async function () {
+										node.style.transition = "all ease-in 0.3s";
+										node.style.transform = "perspective(600px) rotateY(270deg) translateX(52px)";
+										let onEnd = async function () {
+											node.classList.remove("infohidden");
+											node.style.transition = "all 0s";
+											ui.refresh(node);
+											node.style.transform = "perspective(600px) rotateY(-90deg) translateX(52px)";
+											ui.refresh(node);
+											node.style.transition = "";
+											ui.refresh(node);
+											node.style.transform = "";
+										};
+										node.listenTransition(onEnd);
+									};
+									node.listenTransition(onEnd01);
+									if (nodes_copy.length) {
+										showNode(nodes_copy.shift());
+									} else {
+										await game.delay(3.5);
+										player.$gain2(cards);
+										try {
+											resolve(true);
+										} catch (e) {}
+									}
+								};
+								showNode(nodes_copy.shift());
+							},
+							player,
+							add
+						);
+					});
+				}
+				event.result = {
+					add: event.add,
+					remove: event.remove,
+				};
+			});
+			return next;
+		},
+		group: "jlsgsy_youmo_effect",
+		subSkill: {
+			effect: {
+				charlotte: true,
+				trigger: {
+					player: "phaseDrawBegin2",
+				},
+				filter(event, player) {
+					return !event.numFixed && player.getStorage("jlsgsy_youmo", { draw: 0 }).draw > 0;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num += player.getStorage("jlsgsy_youmo", { draw: 0 }).draw || 0;
+				},
+			},
+		},
+	},
 };
 
 export default skills;
