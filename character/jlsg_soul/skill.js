@@ -16482,6 +16482,9 @@ const skills = {
 			}
 			return event.card.name === "sha" || get.type(event.card) === "trick";
 		},
+		check(event, player) {
+			return get.effect(player, event.card, event.player, player) < 0;
+		},
 		async content(event, trigger, player) {
 			await player.judge({
 				skill: event.name,
@@ -16496,6 +16499,42 @@ const skills = {
 					}
 				},
 			});
+		},
+		ai: {
+			respondShan: true,
+			skillTagFilter(player, tag, arg) {
+				if (player.hasSkillTag("unequip2")) {
+					return false;
+				} else if (!arg || !arg.player) {
+					return true;
+				} else if (arg.player.hasSkillTag("unequip", false, { target: player })) {
+					return false;
+				}
+				return true;
+			},
+			effect: {
+				target(card, player, target, effect) {
+					if (target.hasSkillTag("unequip2")) {
+						return;
+					} else if (
+						player.hasSkillTag("unequip", false, {
+							name: card ? card.name : null,
+							target: target,
+							card: card,
+						}) ||
+						player.hasSkillTag("unequip_ai", false, {
+							name: card ? card.name : null,
+							target: target,
+							card: card,
+						})
+					) {
+						return;
+					}
+					if (["basic", "trick"].includes(get.type(card)) && get.attitude(target, player) < 0) {
+						return 0.5;
+					}
+				},
+			},
 		},
 	},
 	jlsg_chejian: {
@@ -16634,6 +16673,12 @@ const skills = {
 			}
 		},
 		group: "jlsg_cantianjishenmu_skill",
+		ai: {
+			rejudge: true,
+			tag: {
+				rejudge: 1,
+			},
+		},
 	},
 	jlsg_kuijie: {
 		audio: "ext:极略/audio/skill:2",
@@ -16657,15 +16702,15 @@ const skills = {
 			const { tianmingList, addTianming } = get.info(event.name);
 			const list = tianmingList[suit];
 			for (const num in list) {
+				const info = list[num];
+				let str = info.str.slice();
 				if (num !== "7" && num !== "8") {
-					const info = list[num],
-						expire = get.rand(1, 3);
+					let expire = get.rand(1, 3);
 					info.expire = expire;
-					let str = info.str;
 					str = `持续${get.cnNumber(expire)}轮，` + info.str;
-					info.str = str;
-					list[num] = info;
 				}
+				info.prompt = str;
+				list[num] = info;
 			}
 			const result = await player
 				.chooseButtonTarget({
@@ -16674,7 +16719,7 @@ const skills = {
 						[
 							Object.entries(list)
 								.randomGets(3)
-								.map(([num, info]) => [num, info.str]),
+								.map(([num, info]) => [num, info.prompt]),
 							"textbutton",
 						],
 					],
@@ -17003,6 +17048,9 @@ const skills = {
 					ai: {
 						effect: {
 							target(card, player, target) {
+								if (target.getStorage("jlsg_kuijie_tianmingCount", { 19: 0 })["19"] >= 2) {
+									return;
+								}
 								if (card.name == "tiesuo") {
 									return [0, 1, 0, 0];
 								} else if (get.tag(card, "loseCard") && player !== target) {
@@ -17494,6 +17542,8 @@ const skills = {
 							target(card, player, target) {
 								if (target === player) {
 									return;
+								} else if (target.getStorage("jlsg_kuijie_tianmingCount", { 49: 0 })["49"] >= 1) {
+									return;
 								}
 								if (card.name == "tiesuo") {
 									return [-1, 0, -1, 0];
@@ -17701,7 +17751,7 @@ const skills = {
 							...info,
 						};
 						lib.translate[skill] = "天命";
-						let str = info.str.replace("目标角色", "你");
+						let str = info.str.slice().replace("目标角色", "你");
 						lib.translate[skill + "_info"] = str;
 						lib.dynamicTranslate[skill] = player => {
 							const [expire, gameNum] = player.getStorage(skill, [1, 1]);
@@ -17720,6 +17770,9 @@ const skills = {
 		},
 		global: "jlsg_kuijie_tianming_round",
 		subSkill: {
+			tianming: {
+				charlotte: true,
+			},
 			tianmingCount: {
 				charlotte: true,
 				onremove: true,
