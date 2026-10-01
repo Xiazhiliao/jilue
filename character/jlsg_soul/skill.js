@@ -16962,8 +16962,8 @@ const skills = {
 								})
 								.forResult();
 							if (result?.bool && result.links?.length) {
-								const [type, num, name, nature] = result.links[0];
-								let list = typePBTY[type].slice().randomSort();
+								const [_, num, name, nature] = result.links[0];
+								let list = typePBTY[get.type2(name, false)].slice().randomSort();
 								const info = list.find(infox => infox[2] === name && infox[3] === nature);
 								if (info) {
 									const card = createTempCard(name, info[0], nature, info[1]);
