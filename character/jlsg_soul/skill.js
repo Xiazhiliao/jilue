@@ -16723,7 +16723,7 @@ const skills = {
 				1: {
 					str: "目标角色失去区域内红桃牌后回复1点体力",
 					ai_check(player, target) {
-						return get.recoverEffect(target, player, player) * target.countCards("he");
+						return get.recoverEffect(target, player, player) * target.countCards("hej");
 					},
 					trigger: {
 						player: "loseAfter",
@@ -17022,7 +17022,7 @@ const skills = {
 				1: {
 					str: "目标角色失去区域内方片牌后获得两张临时伤害牌",
 					ai_check(player, target) {
-						return get.effect(target, { name: "draw" }, player, player) * target.countCards("he");
+						return get.effect(target, { name: "draw" }, player, player) * target.countCards("hej");
 					},
 					trigger: {
 						player: "loseAfter",
@@ -17271,7 +17271,7 @@ const skills = {
 				1: {
 					str: "目标角色失去区域内黑桃牌后失去1点体力",
 					ai_check(player, target) {
-						return get.effect(target, { name: "losehp" }, player, player) * target.countCards("he");
+						return get.effect(target, { name: "losehp" }, player, player) * target.countCards("hej");
 					},
 					trigger: {
 						player: "loseAfter",
@@ -17308,7 +17308,7 @@ const skills = {
 				2: {
 					str: "目标角色的判定阶段进行一次【闪电】判定",
 					ai_check(player, target) {
-						return get.effect(target, { name: "shandian" }, player, player);
+						return get.effect(target, { name: "shandian" }, target, player);
 					},
 					trigger: {
 						player: "phaseZhunbeiBegin",
@@ -17320,7 +17320,7 @@ const skills = {
 				3: {
 					str: "目标角色受到的伤害改为减体力上限",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 5;
+						return -get.attitude(player, target) * 5;
 					},
 					trigger: {
 						player: "damageBegin3",
@@ -17342,7 +17342,7 @@ const skills = {
 				4: {
 					str: "目标角色受到的伤害翻倍",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 10;
+						return -get.attitude(player, target) * 10;
 					},
 					trigger: {
 						player: "damageBegin3",
@@ -17375,7 +17375,7 @@ const skills = {
 				6: {
 					str: "目标角色的每个阶段开始时视为对自己使用【杀】",
 					ai_check(player, target) {
-						return get.effect(target, { name: "sha", isCard: true }, player, player) * 5;
+						return get.effect(target, { name: "sha", isCard: true }, target, player) * 5;
 					},
 					trigger: {
 						player: "phaseAnyBegin",
@@ -17391,7 +17391,7 @@ const skills = {
 				7: {
 					str: "目标角色随机获得两项不同的其他玄戈天命",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 20;
+						return -get.attitude(player, target) * 20;
 					},
 					async content(event, trigger, player) {
 						const { addTianming } = get.info("jlsg_kuijie"),
@@ -17407,7 +17407,7 @@ const skills = {
 				8: {
 					str: "目标角色随机获得一项持续三轮次的玄戈天命",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 15;
+						return -get.attitude(player, target) * 15;
 					},
 					async content(event, trigger, player) {
 						const { addTianming } = get.info("jlsg_kuijie"),
@@ -17420,7 +17420,7 @@ const skills = {
 				9: {
 					str: "目标角色每轮首次对其他角色施加负面效果改为对自己施加",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 14;
+						return -get.attitude(player, target) * 14;
 					},
 					get trigger() {
 						let trigger = lib.jlsg.debuffSkill.trigger;
@@ -17514,7 +17514,7 @@ const skills = {
 				1: {
 					str: "目标角色失去区域内梅花牌后随机弃置两张牌",
 					ai_check(player, target) {
-						return get.effect(target, { name: "guohe_copy2" }, target, player) * target.countCards("he");
+						return get.effect(target, { name: "guohe_copy2" }, target, player) * target.countCards("hej");
 					},
 					trigger: {
 						player: "loseAfter",
@@ -17563,7 +17563,7 @@ const skills = {
 				3: {
 					str: "目标角色的摸牌改为摸一张牌",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 5;
+						return -get.attitude(player, target) * 5;
 					},
 					trigger: {
 						player: "drawBegin",
@@ -17587,7 +17587,7 @@ const skills = {
 				4: {
 					str: "目标角色的回合开始时随机失去一个技能",
 					ai_check(player, target) {
-						return get.attitude(player, target) * target.getSkills(null, false, false).length;
+						return -get.attitude(player, target) * target.getSkills(null, false, false).length;
 					},
 					trigger: {
 						player: "phaseBegin",
@@ -17603,7 +17603,7 @@ const skills = {
 				5: {
 					str: "目标角色的非锁定技无效",
 					ai_check(player, target) {
-						return get.attitude(player, target) * target.getSkills(null, false).filter(skill => get.is.locked(skill, target)).length;
+						return -get.attitude(player, target) * target.getSkills(null, false).filter(skill => get.is.locked(skill, target)).length;
 					},
 					init(player, skill) {
 						player.addAdditionalSkill(skill, "fengyin");
@@ -17615,7 +17615,7 @@ const skills = {
 				6: {
 					str: "目标角色轮次开始时摸两张牌并翻至背面",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 3;
+						return -get.attitude(player, target) * 3;
 					},
 					trigger: {
 						global: "roundStart",
@@ -17628,7 +17628,7 @@ const skills = {
 				7: {
 					str: "目标角色随机获得两项不同的其他苍枢天命",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 20;
+						return -get.attitude(player, target) * 20;
 					},
 					async content(event, trigger, player) {
 						const { addTianming } = get.info("jlsg_kuijie"),
@@ -17644,7 +17644,7 @@ const skills = {
 				8: {
 					str: "目标角色随机获得一项持续三轮次的苍枢天命",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 15;
+						return -get.attitude(player, target) * 15;
 					},
 					async content(event, trigger, player) {
 						const { addTianming } = get.info("jlsg_kuijie"),
@@ -17657,7 +17657,7 @@ const skills = {
 				9: {
 					str: "目标角色使用基本牌或非延时锦囊牌指定目标时，其自己也成为此牌的目标",
 					ai_check(player, target) {
-						return get.attitude(player, target) * 14;
+						return -get.attitude(player, target) * 14;
 					},
 					trigger: {
 						player: "useCardToPlayer",
