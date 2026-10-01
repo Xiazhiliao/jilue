@@ -3679,7 +3679,7 @@ const skills = {
 				locked: false,
 				mod: {
 					globalFrom(from, to, distance) {
-						if (get.event().isPhaseUsing(player)) {
+						if (get.event().isPhaseUsing(from)) {
 							return 1;
 						}
 					},
