@@ -10906,7 +10906,7 @@ const skills = {
 						forced: true,
 						att: get.attitude(player, target),
 						type,
-						val: get.value(cardx, player),
+						val: get.value(card, player),
 						damage: get.damageEffect(target, player, player),
 					})
 					.forResult();
