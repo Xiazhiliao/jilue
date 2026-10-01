@@ -1484,9 +1484,9 @@ const skills = {
 						!player.hasCards("hs", function (card) {
 							return card.name == "tao" || card.name == "jiu";
 						});
-					const js = [],
-						es = [];
-					let minNum1 = 0,
+					let js = [],
+						es = [],
+						minNum1 = 0,
 						minNum2 = 0;
 					game.countPlayer(function (current) {
 						if (get.attitude(player, current) > 0) {
