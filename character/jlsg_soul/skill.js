@@ -17458,7 +17458,7 @@ const skills = {
 						let key = lib.jlsg.debuffSkill.translate[trigger.name],
 							num;
 						const { str } = lib.jlsg.debuffSkill.getInfo(trigger, trigger.player, key);
-						game.log(player, "对", trigger.player, "施加的"`#y${str}`, "改为自己执行");
+						game.log(player, "对", trigger.player, "施加的", `#y${str}`, "改为自己执行");
 						if (trigger.name == "changeSkills") {
 							num = trigger.removeSkill.length;
 							trigger.removeSkill = [];
