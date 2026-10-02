@@ -44,7 +44,7 @@ const skills = {
 				return;
 			}
 			let num = history.cards2.length,
-				{ createTempCard } = get.info("jlsg_lingze"),
+				{ createTempCard } = lib.jlsg,
 				cards = [];
 			await player.draw({ num });
 			while (num-- > 0) {
@@ -16561,7 +16561,7 @@ const skills = {
 			let num = result.links.length + 1;
 			const cards = [];
 			while (num > 0) {
-				const card = lib.skill.jlsg_lingze.createTempCard(null, null, null, null, true);
+				const card = lib.jlsg.createTempCard(null, null, null, null, true);
 				if (card) {
 					cards.add(card);
 				}
@@ -16930,7 +16930,7 @@ const skills = {
 				cards = [];
 			for (let info of list) {
 				const [suit, number, name, nature = null] = info;
-				let card = lib.skill.jlsg_lingze.createTempCard(name, suit, nature, number);
+				let card = lib.jlsg.createTempCard(name, suit, nature, number);
 				if (card) {
 					cards.push(card);
 				}
@@ -17082,7 +17082,7 @@ const skills = {
 				if (cards.some(card => get.subtype(card) == get.subtype(name))) {
 					continue;
 				}
-				let card = lib.skill.jlsg_lingze.createTempCard(name, suit, nature, number);
+				let card = lib.jlsg.createTempCard(name, suit, nature, number);
 				if (card) {
 					cards.push(card);
 				}
@@ -17384,7 +17384,7 @@ const skills = {
 					content: async function (event, trigger, player) {
 						const cards = [];
 						for (let i = 0; i < event.num; i++) {
-							let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.concat([null]).randomGet());
+							let card = lib.jlsg.createTempCard("sha", null, lib.card.sha.nature.concat([null]).randomGet());
 							if (card) {
 								cards.add(card);
 							}
@@ -18395,7 +18395,7 @@ const skills = {
 						let num = event.indexedData.storage.jlsg_zhuren["2"]?.["2"],
 							cards = [];
 						while (num-- > 0) {
-							let card = lib.skill.jlsg_lingze.createTempCard("sha", null, lib.card.sha.nature.randomGet());
+							let card = lib.jlsg.createTempCard("sha", null, lib.card.sha.nature.randomGet());
 							if (card) {
 								cards.add(card);
 							}
@@ -18965,7 +18965,7 @@ const skills = {
 				num = trigger.getg(player).length;
 			}
 			while (num-- > 0) {
-				let card = lib.skill.jlsg_lingze.createTempCard(null, undefined, undefined, undefined, true);
+				let card = lib.jlsg.createTempCard(null, undefined, undefined, undefined, true);
 				if (card) {
 					cards.push(card);
 				}
@@ -19271,7 +19271,7 @@ const skills = {
 			const name = get.name(trigger.card),
 				number = get.number(trigger.card),
 				cards = [],
-				{ createTempCard } = get.info("jlsg_lingze"),
+				{ createTempCard } = lib.jlsg,
 				storage = player.getStorage(event.name, { increase: true, record: [] });
 			if (storage.record.length == 0) {
 				game.broadcastAll(

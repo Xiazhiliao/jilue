@@ -884,6 +884,60 @@ export async function precontent(config, originalPack) {
 				);
 			}
 		},
+		/**
+		 * 创造一张临时牌（进入弃牌堆后销毁）
+		 * @param { string | null } [name] 要创造的牌名，若为null则随机
+		 * @param { string | undefind } [suit] 此牌的花色
+		 * @param { string | null | undefind } [nature] 此牌为杀的情况下的元素，为null则无元素
+		 * @param { number | null } [number] 此牌的点数
+		 * @param { Boolean | undefined } [isInPile] 该牌是否是牌堆内已有的牌，会覆盖除name以外的参数
+		 * @returns { Card | undefind } 若牌名存在，则返回Card，否则为undefind
+		 */
+		createTempCard(name, suit, nature, number, isInPile) {
+			if (!(name in lib.card) && name !== null) {
+				return;
+			}
+			const list = lib.skill.jlsg_lingze.typePBTY;
+			if (name === null) {
+				const { PBTY } = list;
+				const numx = Math.random();
+				for (let type in PBTY) {
+					const [min, max] = PBTY[type];
+					if (numx >= min && numx < max) {
+						name = list[type].randomGet()?.[2];
+						break;
+					}
+				}
+				if (!name) {
+					name = lib.inpile.randomGet();
+				}
+			}
+			if (!isInPile) {
+				suit ??= lib.suit.randomGet();
+				if (name == "sha" && !nature && nature !== null && Math.random() < 0.5) {
+					nature = lib.card.sha.nature.randomGet();
+				}
+				number ??= [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].randomGet();
+			} else {
+				const type = get.type2(name, false);
+				const cardInfo = list[type].filter(i => i[2] == name).randomGet();
+				if (!cardInfo?.length) {
+					return;
+				}
+				suit = cardInfo[0];
+				nature = cardInfo[3] || null;
+				number = cardInfo[1];
+			}
+			let card = game.createCard(name, suit, number, nature);
+			if (card) {
+				game.broadcastAll(function (card) {
+					card.destroyed = "discardPile";
+					card.classList.add("jlsg_tempCard-glow");
+				}, card);
+				return card;
+			}
+			return;
+		},
 	};
 	const keys = Object.keys(jlsg.debuffSkill.translate);
 	for (let item of keys) {

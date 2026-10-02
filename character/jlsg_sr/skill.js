@@ -1836,7 +1836,8 @@ const skills = {
 							await player.gain(equip1, target, "giveAuto");
 						}
 					} else {
-						const { createTempCard, typePBTY } = get.info("jlsg_lingze");
+						const { createTempCard } = lib.jlsg;
+						const { typePBTY } = get.info("jlsg_lingze");
 						const name = typePBTY["equip"].filter(i => get.subtype(i[2]) == "equip1").randomGet()?.[2];
 						const card = createTempCard(name, null, null, null, true);
 						if (card && target.canEquip(card)) {
@@ -5948,7 +5949,8 @@ const skills = {
 			if (!trigger.player.isIn()) {
 				return;
 			}
-			const { createTempCard, typePBTY } = get.info("jlsg_lingze");
+			const { createTempCard } = lib.jlsg;
+			const { typePBTY } = get.info("jlsg_lingze");
 			const list = [];
 			for (const type in typePBTY) {
 				if (type == "PBTY") {

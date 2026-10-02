@@ -4068,7 +4068,8 @@ const skills = {
 			},
 		},
 		async gainTempCards(player, num, type, tag) {
-			const { createTempCard, typePBTY } = get.info("jlsg_lingze");
+			const { createTempCard } = lib.jlsg;
+			const { typePBTY } = get.info("jlsg_lingze");
 			let list = typePBTY[type].slice();
 			const cards = [];
 			while (num-- > 0) {

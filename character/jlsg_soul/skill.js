@@ -11367,7 +11367,8 @@ const skills = {
 			}
 		},
 		async cardListContent(event, trigger, player) {
-			const { createTempCard, typePBTY } = get.info("jlsg_lingze");
+			const { createTempCard } = lib.jlsg;
+			const { typePBTY } = get.info("jlsg_lingze");
 			let cards = [];
 			for (let cardName in event.cardList) {
 				let num = event.cardList[cardName];
@@ -11593,9 +11594,9 @@ const skills = {
 					{
 						str: "获得一张【火攻】、四张花色不同的随机牌",
 						content: async function (event, trigger, player) {
-							const cards = [lib.skill.jlsg_lingze.createTempCard("huogong")];
+							const cards = [lib.jlsg.createTempCard("huogong")];
 							for (let suit of lib.suit) {
-								let card = lib.skill.jlsg_lingze.createTempCard(null, suit);
+								let card = lib.jlsg.createTempCard(null, suit);
 								if (card) {
 									cards.add(card);
 								}
@@ -12346,7 +12347,7 @@ const skills = {
 								cardList = lib.inpile.filter(name => get.type(name) == "basic");
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12355,7 +12356,7 @@ const skills = {
 							cardList = lib.inpile.filter(name => get.type2(name) == "trick");
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12376,7 +12377,7 @@ const skills = {
 							let num = 6;
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12397,7 +12398,7 @@ const skills = {
 								cardList = lib.inpile.filter(name => get.type(name) == "basic");
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12406,7 +12407,7 @@ const skills = {
 							cardList = lib.inpile.filter(name => get.type2(name) == "equip");
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12427,7 +12428,7 @@ const skills = {
 							let num = 4;
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12476,7 +12477,7 @@ const skills = {
 								cardList = lib.inpile.filter(name => get.type(name) == "trick");
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12485,7 +12486,7 @@ const skills = {
 							cardList = lib.inpile.filter(name => get.type2(name) == "equip");
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12506,7 +12507,7 @@ const skills = {
 							let num = 5;
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12527,7 +12528,7 @@ const skills = {
 							let num = 5;
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12548,7 +12549,7 @@ const skills = {
 							let num = 5;
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet());
+								let card = lib.jlsg.createTempCard(cardList.randomGet());
 								if (card) {
 									cards.add(card);
 								}
@@ -12578,7 +12579,7 @@ const skills = {
 								let cardList = lib.inpile.filter(name => get.type2(name, player) == type);
 								while (num > 0) {
 									num--;
-									let card = lib.skill.jlsg_lingze.createTempCard(cardList.randomGet(), null, null, null, true);
+									let card = lib.jlsg.createTempCard(cardList.randomGet(), null, null, null, true);
 									if (card) {
 										list.add(card);
 									}
@@ -12949,60 +12950,6 @@ const skills = {
 			delete this.typeSkills;
 			this.typeSkills = list;
 			return list;
-		},
-		/**
-		 * 创造一张临时牌（进入弃牌堆后销毁）
-		 * @param { string | null } [name] 要创造的牌名，若为null则随机
-		 * @param { string | undefind } [suit] 此牌的花色
-		 * @param { string | null | undefind } [nature] 此牌为杀的情况下的元素，为null则无元素
-		 * @param { number | null } [number] 此牌的点数
-		 * @param { Boolean | undefined } [isInPile] 该牌是否是牌堆内已有的牌，会覆盖除name以外的参数
-		 * @returns { Card | undefind } 若牌名存在，则返回Card，否则为undefind
-		 */
-		createTempCard(name, suit, nature, number, isInPile) {
-			if (!(name in lib.card) && name !== null) {
-				return;
-			}
-			const list = lib.skill.jlsg_lingze.typePBTY;
-			if (name === null) {
-				const { PBTY } = list;
-				const numx = Math.random();
-				for (let type in PBTY) {
-					const [min, max] = PBTY[type];
-					if (numx >= min && numx < max) {
-						name = list[type].randomGet()?.[2];
-						break;
-					}
-				}
-				if (!name) {
-					name = lib.inpile.randomGet();
-				}
-			}
-			if (!isInPile) {
-				suit ??= lib.suit.randomGet();
-				if (name == "sha" && !nature && nature !== null && Math.random() < 0.5) {
-					nature = lib.card.sha.nature.randomGet();
-				}
-				number ??= [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].randomGet();
-			} else {
-				const type = get.type2(name, false);
-				const cardInfo = list[type].filter(i => i[2] == name).randomGet();
-				if (!cardInfo?.length) {
-					return;
-				}
-				suit = cardInfo[0];
-				nature = cardInfo[3] || null;
-				number = cardInfo[1];
-			}
-			let card = game.createCard(name, suit, number, nature);
-			if (card) {
-				game.broadcastAll(function (card) {
-					card.destroyed = "discardPile";
-					card.classList.add("jlsg_tempCard-glow");
-				}, card);
-				return card;
-			}
-			return;
 		},
 		get typePBTY() {
 			let sum = 0;
@@ -14004,7 +13951,7 @@ const skills = {
 							let num = event.key,
 								cards = [];
 							while (num > 0) {
-								const card = get.info("jlsg_lingze").createTempCard(null, null, null, null, true);
+								const card = lib.jlsg.createTempCard(null, null, null, null, true);
 								if (card) {
 									cards.add(card);
 								}
@@ -14094,7 +14041,7 @@ const skills = {
 								cards = [];
 							while (num > 0) {
 								num--;
-								let card = lib.skill.jlsg_lingze.createTempCard("sha", null, undefined, null, true);
+								let card = lib.jlsg.createTempCard("sha", null, undefined, null, true);
 								if (card) {
 									cards.add(card);
 								}
@@ -14191,7 +14138,7 @@ const skills = {
 							const cards = [];
 							while (cards.length < 2) {
 								let name = lib.inpile.filter(name => get.type2(name, false) != "equip" && !get.tag({ name }, "damage")).randomGet();
-								let card = get.info("jlsg_lingze").createTempCard(name, null, null, null, true);
+								let card = lib.jlsg.createTempCard(name, null, null, null, true);
 								if (card) {
 									cards.push(card);
 								}
@@ -14253,7 +14200,7 @@ const skills = {
 							const cards = [];
 							while (cards.length < 2) {
 								let name = lib.inpile.filter(name => get.type2(name, false) != "equip" && get.tag({ name }, "damage")).randomGet();
-								let card = get.info("jlsg_lingze").createTempCard(name, null, null, null, true);
+								let card = lib.jlsg.createTempCard(name, null, null, null, true);
 								if (card) {
 									cards.push(card);
 								}
@@ -15519,7 +15466,7 @@ const skills = {
 										}
 										cards.push(card);
 									} else {
-										cards.push(lib.skill.jlsg_lingze.createTempCard(card.name, card.suit, card.nature, card.number));
+										cards.push(lib.jlsg.createTempCard(card.name, card.suit, card.nature, card.number));
 									}
 								}
 								target.directgain(cards);
@@ -16594,7 +16541,7 @@ const skills = {
 								return [];
 							}
 							const numbers = Array.from({ length: 13 }, (v, i) => i + 1),
-								{ createTempCard } = get.info("jlsg_lingze");
+								{ createTempCard } = lib.jlsg;
 							let result = [];
 							for (const number of numbers) {
 								for (const suit of lib.suit) {
@@ -16656,7 +16603,7 @@ const skills = {
 						"♠︎": "spade",
 						"♣︎": "club",
 					};
-				const card = get.info("jlsg_lingze").createTempCard(null, map[suit], undefined, number);
+				const card = lib.jlsg.createTempCard(null, map[suit], undefined, number);
 				if (!card) {
 					return;
 				}
@@ -16951,7 +16898,8 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						let num = 2;
-						const { createTempCard, typePBTY } = get.info("jlsg_lingze");
+						const { createTempCard } = lib.jlsg;
+						const { typePBTY } = get.info("jlsg_lingze");
 						while (num-- > 0) {
 							const result = await player
 								.chooseButton({
@@ -17088,7 +17036,8 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						let num = 2;
-						const { createTempCard, typePBTY } = get.info("jlsg_lingze"),
+						const { createTempCard } = lib.jlsg;
+						const { typePBTY } = get.info("jlsg_lingze"),
 							cards = [];
 						while (num-- > 0) {
 							let name = lib.inpile.filter(name => get.is.damageCard({ name })).randomGet();

@@ -227,7 +227,7 @@ const skills = {
 					if (cards.some(card => get.subtype(card) == get.subtype(name))) {
 						continue;
 					}
-					let card = lib.skill.jlsg_lingze.createTempCard(name, suit, nature, number);
+					let card = lib.jlsg.createTempCard(name, suit, nature, number);
 					if (card) {
 						cards.push(card);
 					}
