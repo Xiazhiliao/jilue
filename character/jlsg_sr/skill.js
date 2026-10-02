@@ -512,7 +512,10 @@ const skills = {
 		},
 	},
 	jlsg_yansha: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:2",
+		logAudio(event, player) {
+			return [`ext:极略/audio/skill/jlsg_yansha${event.name == "phaseDraw" ? "1" : "2"}.mp3`];
+		},
 		srlose: true,
 		intro: {
 			content: "expansion",
@@ -558,9 +561,7 @@ const skills = {
 		group: ["jlsg_yansha_sha"],
 		subSkill: {
 			sha: {
-				sub: true,
-				sourceSkill: "jlsg_yansha",
-				audio: "ext:极略/audio/skill/jlsg_yansha2.mp3",
+				audio: "jlsg_yansha",
 				trigger: { global: "shaBegin" },
 				filter(event, player) {
 					return event.player != player && player.countExpansions("jlsg_yansha") > 0 && event.player.countCards("he") > 0;
@@ -769,349 +770,6 @@ const skills = {
 			},
 		},
 	},
-	//旧版技能
-	// jlsg_lingbo: {
-	//   audio: "ext:极略/audio/skill:1",
-	//   srlose: true,
-	//   group: ['jlsg_lingbo1', 'jlsg_lingbo2'],
-	// },
-	// jlsg_lingbo1: {
-	//   trigger: {
-	//     global: "phaseEnd",
-	//   },
-	//   filter(event, player) {
-	//     return player.countCards('e') > 0 && event.player != player && player.isLinked();
-	//   },
-	//   check(event, player) {
-	//     return get.attitude(player, event.player) > 0;
-	//   },
-	//   content() {
-	//     'step 0'
-	//     player.chooseCard('e', 1, true).set('ai', function (card) {
-	//       var sub = get.subtype(card);
-	//       if (_status.event.player.isEmpty(sub)) return -10;
-	//       return get.unuseful(card);
-	//     });
-	//     'step 1'
-	//     if (result.bool) {
-	//       trigger.player.equip(result.cards[0]);
-	//       player.$give(result.cards, trigger.player);
-	//     }
-	//     'step 2'
-	//     if (player.isLinked()) player.link();
-	//   },
-	// },
-	// jlsg_lingbo2: {
-	//   trigger: {
-	//     global: "phaseBegin",
-	//   },
-	//   filter(event, player) {
-	//     var card = ui.selected.cards[0];
-	//     if (!card) return false;
-	//     if (get.position(card) == 'e' && !target.isEmpty(get.subtype(card))) return false;
-	//     return event.player != player && event.player.countCards('ej') > 0 && !player.isLinked();
-	//   },
-	//   check(event, player) {
-	//     return get.attitude(player, event.player) > 0;
-	//   },
-	//   content() {
-	//     "step 0"
-	//     var List = [];
-	//     List.push(trigger.player.getCards('ej'));
-	//     player.chooseButton(List, 1, true).set('ai', function (button) {
-	//       //if(get.attitude(player,trigger.player)<=0){
-	//       //if(get.type(button.link)=='equip')  return 10;
-	//       //return 0;
-	//       //}
-	//       //else if(get.attitude(player,trigger.player)>=3){
-	//       //if(get.type(button.link)=='delay')  return 10;
-	//       //return 0;
-	//       //}
-	//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('lebu') && get.type(button.link) == 'equip') return get.suit(card) == 'heart';
-	//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('bingliang') && get.type(button.link) == 'equip') return get.suit(card) == 'club';
-	//       if (get.attitude(player, trigger.player) > 0 && trigger.player.hasJudge('shandian') && get.type(button.link) == 'equip') return (get.suit(card) != 'spade' || (card.number < 2 || card.number > 9));
-	//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('lebu') && get.type(button.link) == 'equip') return get.suit(card) != 'heart';
-	//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('bingliang') && get.type(button.link) == 'equip') return get.suit(card) != 'club';
-	//       if (get.attitude(player, trigger.player) < 0 && trigger.player.hasJudge('shandian') && get.type(button.link) == 'equip') return (get.suit(card) == 'spade' && card.number >= 2 && card.number <= 9);
-	//       return 0;
-	//     });
-	//     "step 1"
-	//     if (result.bool) {
-	//       ui.cardPile.insertBefore(result.links[0], ui.cardPile.firstChild);
-	//     }
-	//     "step 2"
-	//     if (!player.isLinked()) player.link();
-	//   },
-	// },
-	// jlsg_liuyun: {
-	//   audio: "ext:极略/audio/skill:2",
-	//   srlose: true,
-	//   enable: 'phaseUse',
-	//   usable: 1,
-	//   filterCard(card) {
-	//     return get.color(card) == 'black';
-	//   },
-	//   position: 'he',
-	//   filter(event, player) {
-	//     return player.countCards('he', { color: 'black' }) > 0 && !player.isLinked();
-	//   },
-	//   check(card) {
-	//     return 8 - get.value(card)
-	//   },
-	//   prompt: '弃置一张黑色牌，令一名角色选择一项：恢复1点体力或摸两张牌',
-	//   filterTarget: true,
-	//   content() {
-	//     player.link();
-	//     target.chooseDrawRecover(2, true);
-	//   },
-	//   ai: {
-	//     expose: 0.2,
-	//     order: 9,
-	//     result: {
-	//       player(player) {
-	//         if (player.countCards('h', function (card) {
-	//           return get.color(card) == 'black';
-	//         }) > player.hp) return 1;
-	//         return -1;
-	//       },
-	//       target(player, target) {
-	//         var result = 2;
-	//         if (target.isTurnedOver()) result += 3;
-	//         if (target.hp == 1) result += 3;
-	//         return result;
-	//       }
-	//     },
-	//     threaten: 1.5
-	//   }
-	// },
-	// jlsg_qingcheng_zhu: {
-	//   srlose: true,
-	//   trigger: { global: "gameDrawEnd" },
-	//   forced: true,
-	//   content() {
-	//     if (player.hasSkill('jlsg_liuyun')) {
-	//       player.addSkill('jlsg_qingcheng_yin');
-	//       player.removeSkill('jlsg_qingcheng_zhu');
-	//     } else {
-	//       player.addSkill('jlsg_qingcheng_yang');
-	//       player.removeSkill('jlsg_qingcheng_zhu');
-	//     }
-	//   },
-	// },
-	// jlsg_qingcheng_yang: {
-	//   audio: "ext:极略/audio/skill:1",
-	//   group: ['jlsg_qingcheng_yang1', 'jlsg_qingcheng_yang2'],
-	// },
-	// jlsg_qingcheng_yang1: {
-	//   audio: "ext:极略/audio/skill:true",
-	//   enable: ['chooseToUse', 'chooseToRespond'],
-	//   filterCard() {
-	//     return false;
-	//   },
-	//   selectCard: -1,
-	//   viewAs: { name: 'sha' },
-	//   viewAsFilter(player) {
-	//     return !player.isLinked();
-	//   },
-	//   prompt: '横置你的武将牌，视为打出一张【杀】',
-	//   check() {
-	//     return 1
-	//   },
-	//   onuse(result, player) {
-	//     if (!player.isLinked()) player.link();
-	//   },
-	//   onrespond(result, player) {
-	//     if (!player.isLinked()) player.link();
-	//   },
-	//   ai: {
-	//     skillTagFilter(player) {
-	//       return !player.isLinked();
-	//     },
-	//     respondSha: true,
-	//     basic: {
-	//       useful: [5, 1],
-	//       value: [5, 1],
-	//     },
-	//     order() {
-	//       if (_status.event.player.hasSkillTag('presha', true, null, true)) return 10;
-	//       return 3;
-	//     },
-
-	//     result: {
-	//       target(player, target) {
-	//         if (player.hasSkill('jiu') && !target.getEquip('baiyin')) {
-	//           if (get.attitude(player, target) > 0) {
-	//             return -6;
-	//           } else {
-	//             return -3;
-	//           }
-	//         }
-	//         return -1.5;
-	//       },
-	//     },
-	//     tag: {
-	//       respond: 1,
-	//       respondShan: 1,
-	//       damage(card) {
-	//         if (card.nature == 'poison') return;
-	//         return 1;
-	//       },
-	//       natureDamage(card) {
-	//         if (card.nature) return 1;
-	//       },
-	//       fireDamage(card, nature) {
-	//         if (card.nature == 'fire') return 1;
-	//       },
-	//       thunderDamage(card, nature) {
-	//         if (card.nature == 'thunder') return 1;
-	//       },
-	//       poisonDamage(card, nature) {
-	//         if (card.nature == 'poison') return 1;
-	//       },
-	//     },
-
-	//   },
-
-	// },
-	// jlsg_qingcheng_yang2: {
-	//   audio: "ext:极略/audio/skill:true",
-	//   enable: ["chooseToUse", "chooseToRespond"],
-	//   filterCard() {
-	//     return false;
-	//   },
-	//   selectCard: -1,
-	//   viewAs: { name: 'shan' },
-	//   viewAsFilter(player) {
-	//     return player.isLinked();
-	//   },
-	//   prompt: '重置你的武将牌，视为打出一张【闪】',
-	//   check() {
-	//     return 1
-	//   },
-	//   onuse(result, player) {
-	//     if (player.isLinked()) player.link();
-	//   },
-	//   onrespond(result, player) {
-	//     if (player.isLinked()) player.link();
-	//   },
-	//   ai: {
-	//     skillTagFilter(player) {
-	//       return player.isLinked();
-	//     },
-	//     respondShan: true,
-	//     basic: {
-	//       useful: [7, 2],
-	//       value: [7, 2],
-	//     },
-	//   }
-	// },
-	// jlsg_qingcheng_yin: {
-	//   audio: "ext:极略/audio/skill:1",
-	//   group: ['jlsg_qingcheng_yin1', 'jlsg_qingcheng_yin2'],
-	// },
-	// jlsg_qingcheng_yin1: {
-	//   audio: "ext:极略/audio/skill:true",
-	//   enable: ['chooseToUse', 'chooseToRespond'],
-	//   filterCard() {
-	//     return false;
-	//   },
-	//   selectCard: -1,
-	//   viewAs: { name: 'sha' },
-	//   viewAsFilter(player) {
-	//     return player.isLinked();
-	//   },
-	//   prompt: '重置你的武将牌，视为打出一张【杀】',
-	//   check() {
-	//     return 1
-	//   },
-	//   onuse(result, player) {
-	//     if (player.isLinked()) player.link();
-	//   },
-	//   onrespond(result, player) {
-	//     if (player.isLinked()) player.link();
-	//   },
-	//   ai: {
-	//     skillTagFilter(player) {
-	//       return !player.isLinked();
-	//     },
-	//     respondSha: true,
-	//     basic: {
-	//       useful: [5, 1],
-	//       value: [5, 1],
-	//     },
-	//     order() {
-	//       if (_status.event.player.hasSkillTag('presha', true, null, true)) return 10;
-	//       return 3;
-	//     },
-
-	//     result: {
-	//       target(player, target) {
-	//         if (player.hasSkill('jiu') && !target.getEquip('baiyin')) {
-	//           if (get.attitude(player, target) > 0) {
-	//             return -6;
-	//           } else {
-	//             return -3;
-	//           }
-	//         }
-	//         return -1.5;
-	//       },
-	//     },
-	//     tag: {
-	//       respond: 1,
-	//       respondShan: 1,
-	//       damage(card) {
-	//         if (card.nature == 'poison') return;
-	//         return 1;
-	//       },
-	//       natureDamage(card) {
-	//         if (card.nature) return 1;
-	//       },
-	//       fireDamage(card, nature) {
-	//         if (card.nature == 'fire') return 1;
-	//       },
-	//       thunderDamage(card, nature) {
-	//         if (card.nature == 'thunder') return 1;
-	//       },
-	//       poisonDamage(card, nature) {
-	//         if (card.nature == 'poison') return 1;
-	//       },
-	//     },
-
-	//   },
-
-	// },
-	// jlsg_qingcheng_yin2: {
-	//   audio: "ext:极略/audio/skill:true",
-	//   enable: ["chooseToUse", "chooseToRespond"],
-	//   filterCard() {
-	//     return false;
-	//   },
-	//   selectCard: -1,
-	//   viewAs: { name: 'shan' },
-	//   viewAsFilter(player) {
-	//     return !player.isLinked();
-	//   },
-	//   prompt: '横置你的武将牌，视为打出一张【闪】',
-	//   check() {
-	//     return 1
-	//   },
-	//   onuse(result, player) {
-	//     if (!player.isLinked()) player.link();
-	//   },
-	//   onrespond(result, player) {
-	//     if (!player.isLinked()) player.link();
-	//   },
-	//   ai: {
-	//     skillTagFilter(player) {
-	//       return player.isLinked();
-	//     },
-	//     respondShan: true,
-	//     basic: {
-	//       useful: [7, 2],
-	//       value: [7, 2],
-	//     },
-	//   }
-	// },
 	jlsg_aozhan: {
 		srlose: true,
 		init(player, skill) {
@@ -1192,7 +850,7 @@ const skills = {
 				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
 			}
 		},
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		trigger: {
 			globale: "damageBegin1",
 		},
@@ -1450,7 +1108,7 @@ const skills = {
 		},
 	},
 	jlsg_zhuizun: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		limited: true,
 		xiandingji: true,
@@ -1545,7 +1203,7 @@ const skills = {
 		},
 	},
 	jlsg_tianshang: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		trigger: { player: "die" },
 		forceDie: true,
@@ -1587,7 +1245,7 @@ const skills = {
 		},
 	},
 	jlsg_yiji: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		inherit: "yiji",
 	},
@@ -1648,7 +1306,7 @@ const skills = {
 		},
 	},
 	jlsg_jiwu: {
-		audio: ["ext:极略/audio/skill:true", "ext:极略/audio/skill/jlsg_jiwu_damage.mp3"],
+		audio: "ext:极略/audio/skill:2",
 		srlose: true,
 		init(player, skill) {
 			if (!_status.gameStarted) {
@@ -1719,7 +1377,7 @@ const skills = {
 		},
 	},
 	jlsg_sheji: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		init(player, skill) {
 			if (!_status.gameStarted) {
@@ -2173,7 +1831,7 @@ const skills = {
 			}
 		},
 		onremove: true,
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			if (
@@ -2599,7 +2257,7 @@ const skills = {
 		},
 	},
 	jlsg_zhaxiang: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		enable: "phaseUse",
 		filterCard(card, player, event) {
@@ -2736,7 +2394,6 @@ const skills = {
 		group: "jlsg_shixue_miss",
 		subSkill: {
 			miss: {
-				sourceSkill: "jlsg_shixue",
 				trigger: { player: "shaMiss" },
 				filter(event) {
 					return event.card.jlsg_shixue;
@@ -3251,64 +2908,6 @@ const skills = {
 			},
 		},
 	},
-	jlsg_huailing: {
-		trigger: {
-			global: "useCardToPlayered",
-		},
-		srlose: true,
-		audio: "ext:极略/audio/skill:1",
-		filter(event, player) {
-			if (event.player == player) {
-				return false;
-			}
-			if (event.getParent().triggeredTargets3.length > 1) {
-				return false;
-			}
-			if (get.type(event.card) != "trick") {
-				return false;
-			}
-			if (get.info(event.card).multitarget) {
-				return false;
-			}
-			if (event.targets.length < 2) {
-				return false;
-			}
-			if (!player.isTurnedOver()) {
-				return false;
-			}
-			return true;
-		},
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseTarget(get.prompt("jlsg_huailing"), `翻面并令${get.translation(trigger.card)}对一名角色无效`, function (card, player, target) {
-					const evt = _status.event.getTrigger().getParent();
-					return evt.targets.includes(target) && !evt.excluded.includes(target) && player != target;
-				})
-				.set("ai", target => {
-					const player = get.player(),
-						card = get.event().getTrigger().card;
-					return get.effect(target, card, player, player) < 0;
-				})
-				.forResult();
-		},
-		async content(event, trigger, player) {
-			await player.turnOver();
-			trigger.getParent().excluded.addArray(event.targets);
-			await game.delayx();
-		},
-		mod: {
-			targetEnabled(card, player, target, now) {
-				if (target.isTurnedOver()) {
-					if (card.name == "juedou" || card.name == "guohe") {
-						return false;
-					}
-				}
-			},
-		},
-		ai: {
-			threaten: 1.5,
-		},
-	},
 	jlsg_dailao: {
 		audio: "ext:极略/audio/skill:2",
 		srlose: true,
@@ -3602,8 +3201,6 @@ const skills = {
 		group: "jlsg_quanheng_effect",
 		subSkill: {
 			effect: {
-				sub: true,
-				sourceSkill: "jlsg_quanheng",
 				charlotte: true,
 				onremove: true,
 				marktext: "权",
@@ -3691,7 +3288,7 @@ const skills = {
 	},
 	jlsg_xionglve: {
 		srlose: true,
-		audio: "ext:极略/audio/skill:1",
+		audio: "ext:极略/audio/skill:2",
 		init(player, skill) {
 			if (!_status.gameStarted) {
 				return;
@@ -3809,7 +3406,6 @@ const skills = {
 					return player.hasUseTarget(card, true, false);
 				})
 				.reverse();
-			console.log(useCards);
 			if (!useCards.length) {
 				return;
 			}
@@ -3839,8 +3435,7 @@ const skills = {
 		subSkill: {
 			used: {},
 			effect: {
-				sub: true,
-				sourceSkill: "jlsg_xionglve",
+				audio:"jlsg_xionglve",
 				trigger: { player: "phaseEnd" },
 				filter(event, player) {
 					if (player.hasSkill("jlsg_xionglve_used")) {
@@ -4047,73 +3642,6 @@ const skills = {
 			expose: 0.2,
 		},
 	},
-	// jlsg_xujin: {
-	//     audio: "ext:极略/audio/skill:1",
-	//     srlose: true,
-	//     trigger: { player: 'phaseDrawBefore' },
-	//     content() {
-	//       "step 0"
-	//       trigger.cancel();
-	//       "step 1"
-	//       event.cards = get.cards(5);
-	//       if (event.isMine() == false) {
-	//         event.dialog = ui.create.dialog('蓄劲', event.cards);
-	//         game.delay(2);
-	//       }
-	//       if (event.cards.length > 0) {
-	//         var obj = {};
-	//         for (var i = 0; i < event.cards.length; i++) {
-	//           var suit = get.suit(event.cards[i]);
-	//           if (!obj[suit]) {
-	//             obj[suit] = 0;
-	//           }
-	//           obj[suit] = obj[suit] + 1;
-	//           if (event.cards[i].name == 'sha') obj[suit] = obj[suit] + 1;
-	//         }
-	//         var max = get.suit(event.cards.randomGet());
-	//         ;
-	//         for (var a in obj) {
-	//           if (obj[a] > obj[max]) max = a;
-	//         }
-	//         event.suit = max;
-	//       }
-	//       "step 2"
-	//       if (event.dialog) event.dialog.close();
-	//       var dialog = ui.create.dialog('蓄劲', event.cards);
-	//       player.chooseButton([1, 5], dialog, true).set("filterButton", function (button) {
-	//         if (ui.selected.buttons.length == 0) return true;
-	//         for (var i = 0; i < ui.selected.buttons.length; i++) {
-	//           if (get.suit(button.link) == get.suit(ui.selected.buttons[i].link)) return true;
-	//         }
-	//         return false;
-	//       }).set("ai", function (button) {
-	//         return get.suit(button.link) == event.suit;
-	//       });
-	//       "step 3"
-	//       player.storage.jlsg_xujin2 = result.buttons.length;
-	//       player.addTempSkill('jlsg_xujin2', 'phaseAfter');
-	//       event.cards2 = [];
-	//       for (var i = 0; i < result.buttons.length; i++) {
-	//         event.cards2.push(result.buttons[i].link);
-	//         cards.remove(result.buttons[i].link);
-	//       }
-	//       player.chooseTarget('选择获得卡牌的目标', true).ai = function (target) {
-	//         if (player == target) return 10;
-	//         return get.attitude(player, target);
-	//       }
-	//       "step 4"
-	//       if (event.cards2.length) {
-	//         result.targets[0].gain(event.cards2, 'gain');
-	//       }
-	//       for (var i = 0; i < cards.length; i++) {
-	//         ui.discardPile.appendChild(cards[i]);
-	//       }
-	//       game.delay(2);
-	//     },
-	//     ai: {
-	//       threaten: 1.2
-	//     }
-	//   },
 	jlsg_xujin: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
@@ -4470,7 +3998,7 @@ const skills = {
 		},
 	},
 	jlsg_shuixi: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:1",
 		init(player, skill) {
 			if (!_status.gameStarted) {
 				return;
@@ -5274,8 +4802,6 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				sub: true,
-				sourceSkill: "jlsg_rende",
 				charlotte: true,
 				onremove(player) {
 					player.removeGaintag("jlsg_rende");
@@ -5382,11 +4908,12 @@ const skills = {
 	},
 	jlsg_yongbing: {
 		unique: true,
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		zhuSkill: true,
 		global: "jlsg_yongbing2",
 	},
 	jlsg_yongbing2: {
+		sub: true,
 		sourceSkill: "jlsg_yongbing",
 		trigger: { source: "damageEnd" },
 		getIndex(event, player) {
@@ -5752,11 +5279,13 @@ const skills = {
 	},
 	jlsg_jianxiong: {
 		unique: true,
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		global: "jlsg_jianxiong2",
 		zhuSkill: true,
 	},
 	jlsg_jianxiong2: {
+		sub: true,
+		sourceSkill: "jlsg_jianxiong",
 		trigger: { player: "damageEnd" },
 		getIndex(event, player) {
 			return game.filterPlayer(current => {
