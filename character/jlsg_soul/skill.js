@@ -2962,13 +2962,14 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const type1 = get.type2(trigger.card);
-			const cards = [get.cardPile2(c => get.type2(c) != type1)];
+			const type0 = get.type2(trigger.card);
+			event.type0 = type0;
+			const cards = [get.cardPile2(c => get.type2(c) != type0)];
 			if (!cards[0]) {
 				return;
 			}
 			const type2 = get.type2(cards[0]);
-			let card2 = get.cardPile2(c => get.type2(c) != type1 && get.type2(c) != type2);
+			let card2 = get.cardPile2(c => get.type2(c) != type0 && get.type2(c) != type2);
 			if (card2) {
 				cards.push(card2);
 			}

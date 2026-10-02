@@ -36,6 +36,11 @@ const cards = {
 		derivation: "jlsgsoul_sp_guojia",
 		bingzhu: ["jlsgsoul_sp_guojia"],
 		skills: ["jlsg_cantianjishenmu_skill"],
+		ai: {
+			basic: {
+				equipValue: 10,
+			},
+		},
 	},
 };
 for (let cardName in cards) {
