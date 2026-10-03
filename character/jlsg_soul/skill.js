@@ -17122,7 +17122,7 @@ const skills = {
 						player: "useCard1",
 					},
 					filter(event, player) {
-						return event.card.nam === "sha";
+						return event.card.name === "sha";
 					},
 					async content(event, trigger, player) {
 						if (trigger.addCount !== false) {
