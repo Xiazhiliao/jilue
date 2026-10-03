@@ -651,7 +651,6 @@ const skills = {
 		trigger: {
 			player: "phaseZhunbeiBegin",
 		},
-		direct: true,
 		filter(event, player) {
 			return player.getExpansions("jlsg_qixing").length;
 		},
