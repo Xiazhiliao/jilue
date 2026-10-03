@@ -10227,8 +10227,8 @@ const skills = {
 						"unsure"
 					);
 				let eff = game
-					.filterPlayer(p => p != player && lib.filter.targetEnabled2(card, player, p))
-					.map(p => get.effect(p, card, player, player))
+					.filterPlayer(p => p != player && lib.filter.targetEnabled2(vcard, player, p))
+					.map(p => get.effect(p, vcard, player, player))
 					.filter(v => v > 0)
 					.reduce((a, b) => a + b, 0);
 				return eff;
