@@ -1,5 +1,5 @@
 const characters = {
-	jlsgsoul_caocao: ["male", "shen", 3, ["jlsg_guixin", "jlsg_feiying"], ["wei"]],
+	jlsgsoul_caocao: ["male", "shen", 3, ["jlsg_guixin", "jlsg_feiying"], ["wei","die:ext:极略/audio/die:2"]],
 	jlsgsoul_sunquan: ["male", "shen", 5, ["jlsg_huju"], ["wu"]],
 	jlsgsoul_jiaxu: ["male", "shen", 3, ["jlsg_yanmie", "jlsg_shunshi"], ["wei"]],
 	jlsgsoul_liubei: ["male", "shen", 4, ["jlsg_junwang", "jlsg_jizhao"], ["shu"]],
