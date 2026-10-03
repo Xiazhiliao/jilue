@@ -16426,6 +16426,18 @@ const skills = {
 			target: "useCardToTargeted",
 		},
 		filter(event, player) {
+			if (player.hasSkillTag("unequip2")) {
+				return false;
+			}
+			if (
+				event.player.hasSkillTag("unequip", false, {
+					name: event.card ? event.card.name : null,
+					target: player,
+					card: event.card,
+				})
+			) {
+				return false;
+			}
 			if (event.player === player || event.excluded.includes(player)) {
 				return false;
 			}
@@ -16450,17 +16462,6 @@ const skills = {
 			});
 		},
 		ai: {
-			respondShan: true,
-			skillTagFilter(player, tag, arg) {
-				if (player.hasSkillTag("unequip2")) {
-					return false;
-				} else if (!arg || !arg.player) {
-					return true;
-				} else if (arg.player.hasSkillTag("unequip", false, { target: player })) {
-					return false;
-				}
-				return true;
-			},
 			effect: {
 				target(card, player, target, effect) {
 					if (target.hasSkillTag("unequip2")) {
