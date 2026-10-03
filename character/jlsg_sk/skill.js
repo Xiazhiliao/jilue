@@ -5399,7 +5399,11 @@ const skills = {
 		init(player, skill) {
 			let map = player.getStorage(skill, { list: [], num: 2 });
 			if (get.config("double_character") === true || player.name2) {
-				player.changeCharacter(["jlsgsk_zuoci"]);
+				if (get.mode() !== "guozhan") {
+					player.changeCharacter(["jlsgsk_zuoci"]);
+				} else {
+					player.addSkill("jlsg_qianhuan_show");
+				}
 				map.num = 4;
 			}
 			player.setStorage(skill, map, true);
@@ -5410,6 +5414,7 @@ const skills = {
 			player: ["enterGame", "phaseBegin"],
 			global: "phaseBefore",
 		},
+		preHidden: true,
 		filter(event, player, name) {
 			if (event.name == "phase") {
 				return name == "phaseBegin" || game.phaseNumber == 0;
@@ -5620,14 +5625,32 @@ const skills = {
 			} else {
 				next = switchToAuto();
 			}
-			const result = await next;
+			let result = await next;
 			game.resume();
+			if (result === "ai") {
+				result = await switchToAuto();
+			}
 			const info = result.skills.unique();
 			let remove = storage.list.filter(skill => player.hasSkill(skill, null, false, false) && !info.includes(skill)),
 				add = info.filter(skill => !player.hasSkill(skill, null, false, false));
 			await player.changeSkills(add, remove).set("$handle", lib.jlsg.changeSkillsHandle);
 			storage.list = info;
 			player.setStorage(event.name, storage);
+		},
+		subSkill: {
+			show: {
+				trigger: {
+					player: "showCharacterEnd",
+				},
+				filter(event, player) {
+					return get.mode() === "guozhan" && player.name2;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					await player.changeCharacter(["jlsgsk_zuoci"]);
+					player.removeSkill(event.name);
+				},
+			},
 		},
 		ai: {
 			threaten: 2.5,
