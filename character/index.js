@@ -141,7 +141,12 @@ for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
 		//原画
 		pack.character[name][4].push(`img:${lib.assetURL}extension/极略/image/character/${name}.jpg`);
 		//阵亡语音
-		pack.character[name][4].add("die:ext:极略/audio/die:true");
+		if (pack.name === "jlsg_sy" && !name.endsWith("baonu")) {
+			//非暴怒武将调用暴怒阵亡语音
+			pack.character[name][4].add(`die:ext:极略/audio/die/${name}baonu.mp3`);
+		} else {
+			pack.character[name][4].add("die:ext:极略/audio/die:true");
+		}
 		//Character类化
 		pack.character[name] = get.convertedCharacter(pack.character[name]);
 		//前缀
