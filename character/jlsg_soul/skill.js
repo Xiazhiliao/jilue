@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	jlsg_guixin: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:1",
 		trigger: {
 			player: "damageEnd",
 		},
@@ -2030,7 +2030,7 @@ const skills = {
 		mod: {
 			maxHandcardBase: player => player.maxHp,
 		},
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:1",
 		trigger: {
 			global: "phaseBefore",
 			player: ["changeHpAfter", "enterGame"],
@@ -2759,7 +2759,7 @@ const skills = {
 		},
 	},
 	jlsg_shendao: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		trigger: {
 			global: "judge",
 		},
@@ -4077,7 +4077,7 @@ const skills = {
 		},
 	},
 	jlsg_zhenhun: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		enable: "phaseUse",
 		usable: 1,
 		selectTarget: -1,
@@ -4275,7 +4275,8 @@ const skills = {
 		},
 	},
 	jlsg_zhiji: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:3",
+		logAudio: index => (typeof index == "number" ? `ext:极略/audio/skill/jlsg_zhiji${index}.mp3` : "ext:极略/audio/skill:3"),
 		usable: 1,
 		enable: "phaseUse",
 		filter(event, player) {
@@ -4300,14 +4301,19 @@ const skills = {
 		check(card) {
 			return 9 - get.value(card);
 		},
+		log: false,
+		multitarget: true,
 		multiline: true,
 		async content(event, trigger, player) {
-			await event.target.damage(event.cards.length, player);
+			player.logSkill(event.name, event.targets, null, null, [get.rand(1, 2)]);
+			for (const target of event.targets) {
+				await target.damage(event.cards.length, player);
+			}
 		},
 		group: ["jlsg_zhiji_damage"],
 		subSkill: {
 			damage: {
-				audio: "ext:极略/audio/skill:true",
+				audio: "ext:极略/audio/skill/jlsg_zhiji3.mp3",
 				trigger: {
 					player: ["damageEnd", "phaseZhunbeiBegin"],
 				},
@@ -16420,7 +16426,7 @@ const skills = {
 	},
 	jlsg_cantianjishenmu_skill: {
 		equipSkill: true,
-		audio: true,
+		audio: false,
 		trigger: {
 			target: "useCardToTargeted",
 		},
