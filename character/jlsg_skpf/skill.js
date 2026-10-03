@@ -507,7 +507,7 @@ const skills = {
 					});
 				} else {
 					judgeEvent.set("callback", async (event, trigger, player) => {
-						event.getParent().orderingCards.remove(card);
+						event.getParent().orderingCards.remove(event.card);
 					});
 				}
 				let result = await judgeEvent.forResult();
