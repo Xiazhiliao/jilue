@@ -10820,8 +10820,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			target.addTempSkill("jlsg_zhendu_effect", "phaseAfter");
 			target.markAuto("jlsg_zhendu_effcet", [player]);
+			target.addTempSkill("jlsg_zhendu_effect", "phaseAfter");
 			if (target != player) {
 				await target.loseHp();
 			}
