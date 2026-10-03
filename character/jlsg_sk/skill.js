@@ -6893,7 +6893,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const [target] = event.targes;
+			const [target] = event.targets;
 			const result = await target.judge({
 				judge(card) {
 					if (get.suit(card) == "spade") {
