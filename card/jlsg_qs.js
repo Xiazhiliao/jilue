@@ -903,7 +903,7 @@ let jlsg_qs = {
 						})
 						.forResult();
 					if (event.result?.bool) {
-						event.result.cards = result.links;
+						event.result.cards = event.result.links;
 					}
 				}
 			},

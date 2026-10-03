@@ -4306,6 +4306,11 @@ const skills = {
 			}
 			const allList = _status.characterlist.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]).randomSort(),
 				map = {};
+			if (!allList.length) {
+				game.log("不存在三英武将");
+				player.chat("世上无魔？");
+				return;
+			}
 			let num = 2;
 			for (const name of allList) {
 				const skills = get.character(name).skills.filter(skill => {

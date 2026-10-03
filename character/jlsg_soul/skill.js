@@ -11221,7 +11221,8 @@ const skills = {
 			event.result = { bool: result?.bool, cards: result?.links, targets: [trigger.player] };
 		},
 		async content(event, trigger, player) {
-			const { cardListContent, processContent, getEffects, typeSkills, createTempCard, typePBTY } = get.info(event.name);
+			const { createTempCard } = lib.jlsg;
+			const { cardListContent, processContent, getEffects, typeSkills, typePBTY } = get.info(event.name);
 			game.log(player, "将", event.cards, "置于了牌堆顶");
 			trigger.player.$throw(event.cards, 1000);
 			await game.cardsGotoPile(event.cards, "insert");
