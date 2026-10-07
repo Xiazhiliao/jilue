@@ -480,7 +480,7 @@ export default {
 		1: {
 			skill: {
 				jlsg_wenjiu: {
-					audio: "ext:极略/audio/skill:1",
+					audio: "ext:极略/audio/skill/jlsg_wenjiu1.mp3",
 					srlose: true,
 					marktext: "酒",
 					intro: {
@@ -516,7 +516,7 @@ export default {
 					group: "jlsg_wenjiu_sha",
 					subSkill: {
 						sha: {
-							audio: "ext:极略/audio/skill/jlsg_wenjiu21.mp3",
+							audio: "ext:极略/audio/skill/jlsg_wenjiu2.mp3",
 							trigger: {
 								player: "shaBegin",
 							},
@@ -2692,7 +2692,7 @@ export default {
 					},
 				},
 				jlsg_sheji: {
-					audio: "ext:极略/audio/skill:true",
+					audio: "ext:极略/audio/skill:1",
 					srlose: true,
 					trigger: {
 						global: "damageSource",
@@ -2757,7 +2757,7 @@ export default {
 						sha: {
 							sub: true,
 							sourceSkill: "jlsg_sheji",
-							audio: "ext:极略/audio/skill/jlsg_sheji2.mp3",
+							audio: "jlsg_sheji",
 							enable: ["chooseToUse", "chooseToRespond"],
 							filterCard(card, player, event) {
 								return get.type(card) == "equip";

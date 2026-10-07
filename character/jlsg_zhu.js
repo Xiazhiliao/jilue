@@ -476,7 +476,7 @@ export default {
 		},
 		//奸雄
 		jlsg_zhugong_jianxiong: {
-			audio: "ext:极略/audio/skill/jlsg_jianxiong.mp3",
+			audio: "ext:极略/audio/skill/jlsg_jianxiong1.mp3",
 			unique: true,
 			zhuSkill: true,
 			trigger: { global: "damageEnd" },
