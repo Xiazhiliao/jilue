@@ -286,6 +286,7 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					player.addTempSkill("jlsg_guili_over");
+					player.removeSkill(event.name);
 				},
 			},
 			over: {
@@ -300,6 +301,7 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					await player.turnOver();
+					player.removeSkill(event.name);
 				},
 			},
 		},
@@ -1976,7 +1978,7 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
-			const { index } = event.cost_data;
+			const { index } = event.cost_data || {};
 			let crit = [false, false];
 			if (isFinite(index)) {
 				crit[index] = true;
@@ -3113,6 +3115,7 @@ const skills = {
 			let num = Math.min(trigger.player.countGainableCards(player, "h"), trigger.player.countCards("h") - trigger.player.getHp());
 			if (num > 0) {
 				await trigger.player.chooseToGive({
+					target: player,
 					prompt: `交给${get.translation(player)}${get.cnNumber(num)}张手牌`,
 					selectCard: [num, num],
 					ai(card) {
@@ -6383,7 +6386,7 @@ const skills = {
 			const result = await player
 				.chooseControl({
 					prompt: get.prompt(event.skill),
-					controls: ["手牌上限+1", "手牌上限-1", "cancle2"],
+					controls: ["手牌上限+1", "手牌上限-1", "cancel2"],
 					ai(event, player) {
 						const hs = player.countDiscardableCards(player, "h"),
 							num = player.needsToDiscard();
@@ -6424,8 +6427,6 @@ const skills = {
 				filter(event) {
 					return event.cards?.length > 0;
 				},
-				forced: true,
-				popup: false,
 				async cost(event, trigger, player) {
 					const num = trigger.cards.length,
 						targets = game.filterPlayer();
@@ -6894,16 +6895,18 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
-			const result = await target.judge({
-				judge(card) {
-					if (get.suit(card) == "spade") {
-						return 1;
-					}
-					return -0.5;
-				},
-				judge2: result => !result.bool,
-			});
-			if (!result.bool) {
+			const result = await target
+				.judge({
+					judge(card) {
+						if (get.suit(card) == "spade") {
+							return 1;
+						}
+						return -0.5;
+					},
+					judge2: result => !result.bool,
+				})
+				.forResult();
+			if (!result?.bool) {
 				const vcard = get.autoViewAs({ name: "juedou", isCard: true, storage: { nowuxie: true } }, []);
 				if (player.canUse(vcard, target)) {
 					await player.useCard({
@@ -9562,13 +9565,13 @@ const skills = {
 					return get.effect(target, { name: "draw" }, player, player) + eff;
 				};
 			}
-			event.result = next.forResult();
+			event.result = await next.forResult();
 			if (event.result?.bool) {
 				event.result.cost_data = { index: result.index };
 			}
 		},
 		async content(event, trigger, player) {
-			const { index } = event.cost_data;
+			const { index } = event.cost_data || {};
 			event.targets.sortBySeat(_status.currentPhase);
 			if (index == 0) {
 				const lose_list = [],
@@ -10820,7 +10823,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			target.markAuto("jlsg_zhendu_effcet", [player]);
+			target.markAuto("jlsg_zhendu_effect", [player]);
 			target.addTempSkill("jlsg_zhendu_effect", "phaseAfter");
 			if (target != player) {
 				await target.loseHp();
