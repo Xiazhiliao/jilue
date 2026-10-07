@@ -4,7 +4,7 @@ export default {
 		xiaoas: {
 			skill: {
 				jlsgsy_luansi: {
-					audio: "ext:极略/audio/skill:2", // audio: ['luansi', 2],
+					audio: "ext:极略/audio/skill:2",
 					enable: "phaseUse",
 					usable: 1,
 					unique: true,
@@ -71,7 +71,7 @@ export default {
 				},
 				jlsgsy_huoxin: {
 					unique: true,
-					audio: "ext:极略/audio/skill:1", // audio: ['huoxin'],
+					audio: "ext:极略/audio/skill:1",
 					trigger: {
 						source: "damageSource",
 						player: "damageEnd",
@@ -134,7 +134,7 @@ export default {
 		1: {
 			skill: {
 				jlsgsy_shiao: {
-					audio: ["ext:极略/audio/skill/jlsgsy_shiao2.mp3", "ext:极略/audio/skill:true"],
+					audio: "ext:极略/audio/skill:2",
 					trigger: {
 						player: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
 					},
