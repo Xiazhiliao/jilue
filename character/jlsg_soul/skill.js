@@ -2960,6 +2960,7 @@ const skills = {
 			});
 		},
 		forced: true,
+		popup: false,
 		async content(event, trigger, player) {
 			const type0 = get.type2(trigger.card);
 			event.type0 = type0;
@@ -2967,6 +2968,7 @@ const skills = {
 			if (!cards[0]) {
 				return;
 			}
+			player.logSkill(event.name);
 			const type2 = get.type2(cards[0]);
 			let card2 = get.cardPile2(c => get.type2(c) != type0 && get.type2(c) != type2);
 			if (card2) {
@@ -3232,7 +3234,7 @@ const skills = {
 				log: false,
 				async precontent(event, trigger, player) {
 					player.logSkill("jlsg_tianqi");
-					const type = get.info("jlsg_tianqi_backup").links[0];
+					const type = get.type2(get.info("jlsg_tianqi_backup").links[0]);
 					if (player.isPhaseUsing(true) && event.getParent().type == "phase") {
 						player.addTempSkill("jlsg_tianqi_used", "phaseUseAfter");
 						player.markAuto("jlsg_tianqi_used", type);
@@ -4156,7 +4158,6 @@ const skills = {
 		},
 	},
 	jlsg_yinshi: {
-		forced: true,
 		audio: "ext:极略/audio/skill:1",
 		trigger: {
 			player: "damageBegin4",
@@ -4164,6 +4165,7 @@ const skills = {
 		filter(event) {
 			return event.num > 0;
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			await player.draw({ num: trigger.num });
 			if (!game.hasNature(trigger, "thunder")) {
@@ -5331,7 +5333,8 @@ const skills = {
 				case "loseMaxHp":
 					await target.loseMaxHp(trigger.num);
 					break;
-				case "lose": {
+				case "lose":
+				case "loseAsync": {
 					let num = trigger.getl(player).cards2.length;
 					num = Math.min(num, target.countDiscardableCards(target, "he"));
 					if (num === 0) {
@@ -13615,8 +13618,11 @@ const skills = {
 		get trigger() {
 			return lib.jlsg.debuffSkill.trigger;
 		},
-		get filter() {
-			return lib.jlsg.debuffSkill.filter;
+		filter(event) {
+			if (event.name === "loseHp" && event.getParent().name === "jlsg_zhanhun") {
+				return false;
+			}
+			return lib.jlsg.debuffSkill.filter.apply(this, arguments);
 		},
 		forced: true,
 		async content(event, trigger, player) {
@@ -13654,7 +13660,7 @@ const skills = {
 				return;
 			}
 			let suits = cards.map(card => get.color(card)).sort(),
-				nature = null;
+				nature;
 			if (suits[0] == "black") {
 				if (suits[1] == "black") {
 					nature = "thunder";
