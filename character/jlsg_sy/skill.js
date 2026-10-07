@@ -3709,9 +3709,9 @@ const skills = {
 			next.gaintag.add("jlsgsy_xueyan");
 			let { cards } = await next.forResult();
 			if (cards?.length) {
-				trigger.player.markAuto("jlsgsy_xueyan", cards);
+				trigger.player.markAuto(event.name, cards);
 			}
-			if (trigger.cards.some(card => trigger.player.storage.jlsgsy_xueyan?.includes(card))) {
+			if (trigger.cards.some(card => trigger.player.hasStorage(event.name, card))) {
 				await trigger.player.loseHp();
 			}
 			if (get.color(trigger.card, false) == "red") {
@@ -3728,7 +3728,7 @@ const skills = {
 				popup: false,
 				async content(event, trigger, player) {
 					game.players.forEach(curr => {
-						curr.setStorage("jlsgsy_xueyan", []);
+						curr.removeStorage("jlsgsy_xueyan");
 						curr.removeGaintag("jlsgsy_xueyan");
 					});
 				},
@@ -3737,7 +3737,8 @@ const skills = {
 				ai: {
 					effect: {
 						player(card, player, target) {
-							if (player.storage.jlsgsy_xueyan?.includes(card)) {
+							const vcard = get.autoViewAs(card);
+							if (vcard.cards.some(cardx => player.hasStorage("jlsgsy_xueyan", cardx))) {
 								return [1, -2];
 							}
 						},
@@ -4301,16 +4302,17 @@ const skills = {
 				storage[index === 2 ? "draw" : "sha"] += 2;
 				player.setStorage(event.name, storage, true);
 			}
-			if (!_status.characterlist) {
-				game.initCharacterList();
+			let allList = [];
+			if (get.mode() !== "boss") {
+				if (!_status.characterlist) {
+					game.initCharacterList();
+				}
+				allList = _status.characterlist.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]).randomSort();
 			}
-			const allList = _status.characterlist.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]).randomSort(),
-				map = {};
 			if (!allList.length) {
-				game.log("不存在三英武将");
-				player.chat("世上无魔？");
-				return;
+				allList = Object.keys(lib.characterPack["jlsg_sy"]);
 			}
+			const map = {};
 			let num = 2;
 			for (const name of allList) {
 				const skills = get.character(name).skills.filter(skill => {
@@ -4338,10 +4340,14 @@ const skills = {
 					break;
 				}
 			}
-			if (Object.values(map).flat().length >= 2) {
+			if (Object.values(map).flat().length) {
 				let add = Object.keys(map);
 				await get.info(event.name).changeCharacter(player, add);
 				await player.addSkills(Object.values(map).flat());
+			} else {
+				game.log("已获取全部技能");
+				player.chat("世上无魔？");
+				return;
 			}
 		},
 		changeCharacter(player, add = [], remove = [], throwx) {
