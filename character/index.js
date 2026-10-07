@@ -113,7 +113,7 @@ if (lib.config?.extension_极略_syRefactor) {
 				continue;
 			} else {
 				lib.arenaReady.push(function () {
-					lib.characterTitle[name] = title;
+					lib.characterTitle[name] ??= title;
 					let translation = get.rawName(info);
 					lib.translate[name] = "SY" + (baonu ? "暴怒" : "") + translation;
 					lib.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
