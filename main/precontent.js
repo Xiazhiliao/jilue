@@ -884,6 +884,7 @@ export async function precontent(config, originalPack) {
 				);
 			}
 		},
+
 		/**
 		 * 创造一张临时牌（进入弃牌堆后销毁）
 		 * @param { string | null } [name] 要创造的牌名，若为null则随机
@@ -937,6 +938,108 @@ export async function precontent(config, originalPack) {
 				return card;
 			}
 			return;
+		},
+
+		/**
+		 * 一名角色获得多名角色的牌，可额外包含牌堆和弃牌堆的牌
+		 */
+		async gaincardToOne(event, trigger, player) {
+			if (!player) {
+				return;
+			}
+			event.type = "gain";
+			if (event.animate == "give") {
+				event.visible = true;
+			}
+			//把要获得的有主牌全送到处理区
+			const loseEvent = [];
+			for (const [target, loseCards] of event.lose_list) {
+				const next = target.lose({ cards: loseCards, position: ui.ordering });
+				next.type = "gain";
+				next.forceDie = true;
+				next.getlx = false;
+				loseEvent.push(next);
+			}
+			await Promise.all(loseEvent);
+
+			let delay;
+			//有主牌动画部分
+			const animate = event.animate;
+			switch (animate) {
+				case "give":
+				case "giveAuto": {
+					for (const pair of event.lose_list) {
+						if (get.itemtype(pair[1]) == "card") {
+							pair[1] = [pair[1]];
+						}
+						const shown = pair[1].slice(0);
+						const hidden = [];
+						if (event.animate == "giveAuto") {
+							const evt = event.getl(pair[0]);
+							for (const card of pair[1]) {
+								if (evt.cards2.includes(card)) {
+									shown.remove(card);
+									hidden.push(card);
+								}
+							}
+						}
+						if (shown.length > 0) {
+							pair[0].$give(shown, player);
+						}
+						if (hidden.length > 0) {
+							pair[0].$giveAuto(hidden, player);
+						}
+					}
+					delay = game.delay(0, get.delayx(500, 500));
+					break;
+				}
+				default: {
+					if (typeof animate === "function") {
+						const animateResult = animate(event);
+						if (typeof animateResult === "number") {
+							delay = game.delay(0, get.delayx(animateResult, animateResult));
+						} else {
+							animateResult.finally(() => void game.resume());
+							delay = game.pause();
+						}
+					}
+					break;
+				}
+			}
+			const { cards, otherCards } = event;
+
+			//无主牌动画部分
+			if (otherCards?.length) {
+				const cardPile = [],
+					discardPile = [];
+				for (const card of otherCards) {
+					const position = get.position(card);
+					if (position === "c") {
+						cardPile.push(card);
+					} else if (position === "d") {
+						discardPile.push(card);
+					}
+				}
+				if (cardPile.length) {
+					//若无主牌中有牌堆的牌，则需要进行牌堆更新
+					event.updatePile = true;
+					game.log(player, `从牌堆中获得了${get.cnNumber(cardPile.length)}张牌`);
+					player.$drawAuto(cardPile);
+				}
+				if (discardPile.length) {
+					game.log(player, `从弃牌堆中获得了`, discardPile);
+					player.$gain2(discardPile);
+				}
+			}
+
+			await delay;
+			//一次性获得所有牌
+			await player.gain({ cards, visible: event.visible, gaintag: event.gaintag || [] }).set("getlx", false);
+			await game.delayx();
+			//牌堆更新
+			if (event.updatePile) {
+				game.updateRoundNumber();
+			}
 		},
 	};
 	const keys = Object.keys(jlsg.debuffSkill.translate);

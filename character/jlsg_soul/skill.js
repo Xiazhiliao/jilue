@@ -7152,22 +7152,23 @@ const skills = {
 			return game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
 		},
 		async content(event, trigger, player) {
-			const cards = [];
+			const lose_list = [];
 			for (let target of event.targets) {
 				let gainableCards = target.getGainableCards(player, "h", card => get.suit(card) == "heart");
 				if (gainableCards.length) {
-					target.$give(gainableCards, player);
-					cards.addArray(gainableCards);
+					lose_list.puish([target, gainableCards]);
 				}
 			}
 			if (cards.length) {
 				await game
 					.loseAsync({
-						gain_list: [[player, cards]],
-						cards,
+						player,
+						cards: lose_list.flatMap(([target, cards]) => cards),
+						lose_list,
+						animate: "give",
 						visible: true,
 					})
-					.setContent("gaincardMultiple");
+					.setContent(lib.jlsg.gaincardToOne);
 			} else {
 				await game.delay();
 			}
@@ -8679,28 +8680,28 @@ const skills = {
 					player.markAuto("jlsg_yingshi", cards);
 				}
 			} else {
-				const cards = ["cardPile", "discardPile"]
-					.map(pos => Array.from(ui[pos].childNodes))
-					.flat()
-					.filter(c => player.hasStorage("jlsg_yingshi", c));
-				if (cards.length) {
-					await player.$gain2(cards);
-				}
+				const lose_list = [],
+					cards = [],
+					otherCards = ["cardPile", "discardPile"].flatMap(pos => Array.from(ui[pos].childNodes)).filter(c => player.hasStorage("jlsg_yingshi", c));
+				cards.addArray(otherCards);
 				for (let p of game.filterPlayer(p => p != player)) {
 					let pCards = p.getCards("hej", c => player.hasStorage("jlsg_yingshi", c));
 					if (pCards.length) {
-						p.$give(pCards, player);
+						lose_list.push([p, pCards]);
 						cards.addArray(pCards);
 					}
 				}
 				await game
 					.loseAsync({
-						gain_list: [[player, cards]],
-						cards: cards,
+						player,
+						lose_list,
+						cards,
+						otherCards,
+						animate: "give",
 						visible: true,
 						gaintag: ["jlsg_yingshi"],
 					})
-					.setContent("gaincardMultiple");
+					.setContent(lib.jlsg.gaincardToOne);
 				await game.delayx();
 			}
 		},
@@ -12615,27 +12616,24 @@ const skills = {
 								.forResult();
 							if (targets?.length) {
 								targets.sortBySeat(_status.currentPhase);
-								const list = [],
+								const lose_list = [],
 									position = "hej";
 								for (const target of targets) {
-									let cards = [];
 									for (let i of position) {
 										if (target.countGainableCards(player, i)) {
-											cards.add(target.getGainableCards(player, i).randomGet());
+											const card = target.getGainableCards(player, i).randomGet();
+											lose_list.push([targeet, [card]]);
 										}
-									}
-									if (cards.length) {
-										target.$give(cards, player);
-										list.addArray(cards);
 									}
 								}
 								await game
 									.loseAsync({
-										gain_list: [[player, list]],
-										cards: list[1],
+										player,
+										lose_list,
+										cards: lose_list.flatMap(([target, cards]) => cards),
 										animate: "giveAuto",
 									})
-									.setContent("gaincardMultiple");
+									.setContent(lib.jlsg.gaincardToOne);
 								await game.delayx();
 							}
 						},

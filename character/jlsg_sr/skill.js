@@ -1153,31 +1153,34 @@ const skills = {
 			}
 			const suit = result.suit,
 				targets = game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase),
-				cards = [];
+				cards = [],
+				otherCards = [],
+				lose_list = [];
 			player.line(targets);
 			for (let target of targets) {
 				let hs = target.getGainableCards(player, "h", card => get.suit(card) == suit);
 				if (hs.length) {
-					target.$giveAuto(hs, player, true);
+					lose_list.push([target, hs]);
 					cards.addArray(hs);
 				}
 			}
 			if (upgrade) {
 				let discardPile = _status.discarded.filter(card => get.suit(card) == suit && get.position(card) == "d");
 				if (discardPile.length) {
-					player.$gain2(discardPile, false);
-					game.log(player, "从弃牌堆中获得了", discardPile);
 					cards.addArray(discardPile);
+					otherCards.addArray(discardPile);
 				}
 			}
 			if (cards.length) {
 				await game
 					.loseAsync({
-						gain_list: [[player, cards]],
+						player,
 						cards,
-						animate: false,
+						lose_list,
+						otherCards,
+						animate: "giveAuto",
 					})
-					.setContent("gaincardMultiple");
+					.setContent(lib.jlsg.gaincardToOne);
 			}
 			player.insertPhase("jlsg_zhuizun");
 		},
@@ -3435,7 +3438,7 @@ const skills = {
 		subSkill: {
 			used: {},
 			effect: {
-				audio:"jlsg_xionglve",
+				audio: "jlsg_xionglve",
 				trigger: { player: "phaseEnd" },
 				filter(event, player) {
 					if (player.hasSkill("jlsg_xionglve_used")) {

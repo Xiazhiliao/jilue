@@ -1765,21 +1765,22 @@ const skills = {
 			return game.filterPlayer(current => current != player).sortBySeat(_status.currentPhase);
 		},
 		async content(event, trigger, player) {
-			const gainCards = [];
+			const lose_list = [];
 			for (let target of event.targets) {
 				let gainableCards = target.getGainableCards(player, "h");
 				if (gainableCards.length) {
-					target.$give(gainableCards, player);
-					gainCards.addArray(gainableCards);
+					lose_list.push([target, gainableCards]);
 				}
 			}
-			if (gainCards.length) {
+			if (lose_list.length) {
 				await game
 					.loseAsync({
-						gain_list: [[player, gainCards]],
-						animate: "gain",
+						player,
+						cards: lose_list.flatMap(([target, cards]) => cards),
+						lose_list,
+						animate: "giveAuto",
 					})
-					.setContent("gaincardMultiple");
+					.setContent(lib.jlsg.gaincardToOne);
 			} else {
 				await game.delay();
 			}
@@ -4146,25 +4147,18 @@ const skills = {
 						}
 					}
 				}
-				const info = Array.from(map.entries());
-				const targetsx = info.map(i => i[0]);
+				const lose_list = Array.from(map.entries());
+				const targetsx = lose_list.map(i => i[0]);
 				game.log(player, "将摸", trigger.num, "张牌改为从", targetsx, "处获得牌");
 				player.line(targetsx);
 				await game
 					.loseAsync({
 						player,
 						cards: info.flatMap(i => i[1]),
-						gain_list: [[player, info.flatMap(i => i[1])]],
-						animate(event) {
-							const { player, info } = event;
-							for (const [target, cards] of info) {
-								target.$giveAuto(cards, player, true);
-							}
-							return 0;
-						},
-						info,
+						lose_list,
+						animate: "giveAuto",
 					})
-					.setContent("gaincardMultiple");
+					.setContent(lib.jlsg.gaincardToOne);
 			} else {
 				const targets = game.filterPlayer(current => current != player && current.hp > 0).sortBySeat(),
 					map = new Map();

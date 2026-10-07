@@ -1031,38 +1031,31 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const targets = game.filterPlayer(cur => cur != player),
-				cards = [];
+				cards = [],
+				lose_list = [];
 			let position = ["h", "e" /*"j"*/];
 			for (let target of targets) {
+				let cardsx = [];
 				for (let i of position) {
-					let cardx = { shown: [], hide: [] };
 					if (target.countGainableCards(player, i)) {
 						let card = target.getGainableCards(player, i).randomGet();
-						if (i == "h") {
-							cardx.hide.add(card);
-						} else {
-							cardx.shown.add(card);
-						}
+						cardsx.add(card);
 						cards.add(card);
 					}
-					if (cardx.shown.length) {
-						target.$give(cardx.shown, player);
-					}
-					if (cardx.hide.length) {
-						target.$giveAuto(cardx.hide, player);
-					}
+				}
+				if (cardsx.length) {
+					lose_list.push([target, cardsx]);
 				}
 			}
+			const otherCards = [];
 			if (_status.pileTop) {
 				let card = Array.from(ui.cardPile.childNodes).randomGet();
-				game.log(player, "从牌堆中获得了一张牌");
-				player.$drawAuto([card], player);
+				otherCards.add(card);
 				cards.add(card);
 			}
 			if (Array.from(ui.discardPile.childNodes).length) {
 				let card = Array.from(ui.discardPile.childNodes).randomGet();
-				game.log(player, "从弃牌堆中获得了一张牌");
-				player.$drawAuto([card], player);
+				otherCards.add(card);
 				cards.add(card);
 			}
 			if (!cards.length) {
@@ -1070,11 +1063,13 @@ const skills = {
 			}
 			await game
 				.loseAsync({
-					gain_list: [[player, cards]],
-					cards: cards,
+					player,
+					cards,
+					lose_list,
+					otherCards,
+					animate: "giveAuto",
 				})
-				.setContent("gaincardMultiple");
-			await game.delayx();
+				.setContent(lib.jlsg.gaincardToOne);
 		},
 	},
 	jlsg_gygs_angyang: {

@@ -4524,15 +4524,21 @@ const skills = {
 		multiline: true,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const gain_list = [];
+			const lose_list = [];
 			for (const target of event.targets) {
 				const hs = target.getGainableCards(player, "h");
 				if (hs.length) {
-					gain_list.add([target, hs]);
-					target.$giveAuto(hs, player);
+					lose_list.add([target, hs]);
 				}
 			}
-			await game.loseAsync({ gain_list }).setContent("gaincardMultiple");
+			await game
+				.loseAsync({
+					player,
+					cards: lose_list.flatMap(([target, cards]) => cards),
+					lose_list,
+					animate: "giveAuto",
+				})
+				.setContent(lib.jlsg.gaincardToOne);
 			let targets = event.targets.slice(),
 				stop = [];
 			while (targets.length && player.hasCards("h") && player.isMaxHandcard()) {
@@ -5262,15 +5268,22 @@ const skills = {
 				})
 				.forResult();
 			if (result?.bool && result.links?.length) {
-				const gain_list = new Map();
+				const lose_list = new Map();
 				for (const link of result.links) {
 					const owner = get.owner(link);
 					let info = gain_list.get(owner) || [];
 					info.add(link);
-					gain_list.set(owner, info);
+					lose_list.set(owner, info);
 					owner.$giveAuto(link, target);
 				}
-				await game.loseAsync({ gain_list: Array.from(gain_list.entries()) }).setContent("gaincardMultiple");
+				await game
+					.loseAsync({
+						player: target,
+						cards: Array.from(lose_list.values()),
+						lose_list: Array.from(lose_list.entries()),
+						animate: "giveAuto",
+					})
+					.setContent(lib.jlsg.gaincardToOne);
 			}
 		},
 	},
@@ -8809,6 +8822,7 @@ const skills = {
 								cards,
 								gain_list,
 								animate: "giveAuto",
+								giver: player,
 							})
 							.setContent("gaincardMultiple");
 					}
