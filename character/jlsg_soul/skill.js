@@ -17606,10 +17606,13 @@ const skills = {
 						player: "phaseBegin",
 					},
 					filter(event, player) {
-						return player.getSkills(null, false, false).length;
+						return player.getSkills(null, false, false).filter(skill => !skill.startsWith("jlsg_kuijie_tianming_")).length;
 					},
 					async content(event, trigger, player) {
-						const skill = player.getSkills(null, false, false).randomGet();
+						const skill = player
+							.getSkills(null, false, false)
+							.filter(skill => !skill.startsWith("jlsg_kuijie_tianming_"))
+							.randomGet();
 						await player.removeSkills(skill);
 					},
 				},
