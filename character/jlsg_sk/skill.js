@@ -6912,7 +6912,7 @@ const skills = {
 					await player.useCard({
 						card: vcard,
 						cards: [],
-						target,
+						targets: [target],
 						nowuxie: true,
 					});
 				}
