@@ -1266,7 +1266,6 @@ const skills = {
 		},
 	},
 	jlsg_lffw_jiqiao: {
-		audio: "ext:极略/audio/skill:2",
 		mod: {
 			targetInRange(card, player, target, now) {
 				if (get.type2(card) == "trick") {
