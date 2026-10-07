@@ -1238,6 +1238,9 @@ const skills = {
 			global: ["gainAfter", "loseAsyncAfter"],
 		},
 		getIndex(event, player) {
+			if (event.name === "loseAsync" && event.type !== "gain") {
+				return [];
+			}
 			const losers = game
 					.filterPlayer(current => {
 						if (current === player) {
@@ -1261,11 +1264,11 @@ const skills = {
 		filter(event, player, name, [target, type]) {
 			let lose, gain;
 			if (type === "lose") {
-				lose = event.getl(target)?.cards2;
-				gain = event.getg(player);
-			} else if (type == "gian") {
-				lose = event.getl(player)?.cards2;
-				gain = event.getg(target);
+				lose = event.getl(target)?.cards2 || [];
+				gain = event.getg(player) || [];
+			} else if (type == "gain") {
+				lose = event.getl(player)?.cards2 || [];
+				gain = event.getg(target) || [];
 			}
 			return gain?.some(card => lose?.includes(card));
 		},
