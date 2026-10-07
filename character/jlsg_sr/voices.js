@@ -10,7 +10,7 @@ let skill = {
 		jlsg_huxiao1: "纳命来！",
 		jlsg_guicai1: "哼，我已等待多时。",
 		jlsg_langgu1: "不自量力。",
-		jlsg_zhuizun1: "我才是胜者，哈哈哈哈哈哈哈哈哈哈!",
+		jlsg_zhuizun1: "我才是胜者，哈哈哈哈哈哈哈哈哈哈！",
 		jlsg_tianshang1: "唉，只能等待奇迹。",
 		jlsg_yiji1: "速战速决吧",
 		jlsg_huiqu1: "且看你如何化解。",
