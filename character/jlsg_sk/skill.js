@@ -426,7 +426,7 @@ const skills = {
 		},
 	},
 	jlsg_wusheng: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		inherit: "wusheng",
 	},
 	jlsg_quanlue: {
@@ -610,7 +610,7 @@ const skills = {
 		},
 	},
 	jlsg_cangshu: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:1",
 		usable: 1,
 		trigger: { global: "useCard" },
 		filter(event, player) {
@@ -1031,7 +1031,7 @@ const skills = {
 		},
 	},
 	jlsg_yanxi: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:1",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		filter(event, player) {
 			return !player.countCards("e");
@@ -1137,7 +1137,7 @@ const skills = {
 		},
 	},
 	jlsg_wangsi: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:1",
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			return event.source && event.source != player && event.source.hasCards("h");
@@ -1299,7 +1299,7 @@ const skills = {
 		},
 	},
 	jlsg_kuangzheng: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:1",
 		trigger: { player: "phaseEnd" },
 		filter(event, player) {
 			return game.hasPlayer(function (current) {
@@ -1738,7 +1738,7 @@ const skills = {
 		},
 	},
 	jlsg_kuangfu: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:1",
 		trigger: { source: "damageEnd" },
 		filter(event) {
 			if (event._notrigger.includes(event.player)) {
@@ -2650,7 +2650,7 @@ const skills = {
 		},
 	},
 	jlsg_yinbing: {
-		audio: "ext:极略/audio/skill:1",
+		audio: "ext:极略/audio/skill:2",
 		trigger: { global: "useCardToTarget" },
 		filter(event, player) {
 			if (event.player == player || event.card.name != "sha") {
@@ -3033,7 +3033,7 @@ const skills = {
 		},
 	},
 	jlsg_yicong: {
-		audio: "yicong",
+		audio: false,
 		inherit: "yicong",
 	},
 	jlsg_muma: {
@@ -3190,7 +3190,7 @@ const skills = {
 		},
 	},
 	jlsg_xiemu: {
-		audio: "ext:极略/audio/skill:1",
+		audio: "ext:极略/audio/skill/jlsg_xiemu1.mp3",
 		trigger: { global: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return player.countCards("he");
@@ -3812,7 +3812,7 @@ const skills = {
 		},
 	},
 	jlsg_bozhan: {
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
 			if (event.card.name != "sha") {
@@ -3843,7 +3843,7 @@ const skills = {
 	},
 	jlsg_qingxi: {
 		shaRelated: true,
-		audio: "ext:极略/audio/skill:true",
+		audio: "ext:极略/audio/skill:1",
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			if (event.card.name != "sha") {
@@ -12173,7 +12173,6 @@ const skills = {
 		},
 	},
 	jlsg_tiandao: {
-		audio: "ext:极略/audio/skill:2",
 		marktext: "道",
 		mark: true,
 		intro: {
