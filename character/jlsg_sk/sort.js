@@ -10,6 +10,7 @@ const characterSort = {
 };
 
 const characterSortTranslate = {
+	jlsg_sk_config_character: "SK武将",
 	jlsg_sk: "SK武将",
 	jlsg_tiangang: "天罡包",
 	jlsg_disha: "地煞包",
