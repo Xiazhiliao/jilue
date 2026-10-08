@@ -155,12 +155,12 @@ let skill = {
 		jlsgsy_zhangjiaobaonu: "逆道者，必遭天谴而亡。",
 		jlsgsy_zhangrangbaonu: "小的怕是活不成了...陛下...保重...",
 		jlsgsy_zoushibaonu: "真不懂得怜香惜爱...",
-		jlsgsy_baonudongzhuo: "那酒池肉林，都是我的！",
-		jlsgsy_baonudiaochan: "修罗夜叉，共坠轮回！",
-		jlsgsy_baonuyuanshao: "我不甘心，我不甘心啊！！！",
-		jlsgsy_baonusunluban: "我可是公主，你竟敢...！",
-		jlsgsy_baonucaocao: "孤不嫌世，世却不容孤！",
-		jlsgsy_baonuliushan: "终究...还是乐不起来啊...",
+		jlsgsy_dongzhuobaonu: "那酒池肉林，都是我的！",
+		jlsgsy_diaochanbaonu: "修罗夜叉，共坠轮回！",
+		jlsgsy_yuanshaobaonu: "我不甘心，我不甘心啊！！！",
+		jlsgsy_sunlubanbaonu: "我可是公主，你竟敢...！",
+		jlsgsy_caocaobaonu: "孤不嫌世，世却不容孤！",
+		jlsgsy_liushanbaonu: "终究...还是乐不起来啊...",
 	};
 for (let i in skill) {
 	let ii = "#ext:极略/audio/skill/" + i;

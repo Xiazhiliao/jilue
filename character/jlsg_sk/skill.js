@@ -5704,10 +5704,10 @@ const skills = {
 		async content(event, trigger, player) {
 			let cards = [];
 			if (trigger.player == player && player != trigger.respondTo[0]) {
-				if (get.itemtype(evetriggernt.respondTo[1]) == "card") {
+				if (get.itemtype(trigger.respondTo[1]) == "card") {
 					cards.push(trigger.respondTo[1]);
 				} else if (trigger.respondTo[1].cards) {
-					cards.addArray(evetriggernt.respondTo[1].cards);
+					cards.addArray(trigger.respondTo[1].cards);
 				}
 			} else if (trigger.player != player && player == trigger.respondTo[0]) {
 				cards.addArray(trigger.cards);
