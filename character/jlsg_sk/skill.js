@@ -1908,10 +1908,10 @@ const skills = {
 	jlsg_zhuiji: {
 		intro: {
 			markcount(storage, player) {
-				return Object.keys(storage || new Map()).length;
+				return Array.from((storage || new Map()).keys()).length;
 			},
 			content(storage, player) {
-				const list = Object.entries(storage || new Map());
+				const list = Array.from((storage || new Map()).entries());
 				return "计算你与其他角色的距离<br>" + list.map(info => `${get.translation(info[0])}:-${info[1]}`).join("<br>");
 			},
 		},
