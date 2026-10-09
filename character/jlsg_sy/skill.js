@@ -4154,7 +4154,7 @@ const skills = {
 				await game
 					.loseAsync({
 						player,
-						cards: info.flatMap(i => i[1]),
+						cards: lose_list.flatMap(i => i[1]),
 						lose_list,
 						animate: "giveAuto",
 					})
