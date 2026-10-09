@@ -8956,7 +8956,7 @@ const skills = {
 				},
 				target(player, target) {
 					let result = get.effect(target, { name: "losehp" }, player, target) / get.attitude(target, target);
-					if (player.hasStorage("jlsg_zhixi", event.target)) {
+					if (player.hasStorage("jlsg_zhixi", target)) {
 						return result * 2;
 					}
 					return result;
