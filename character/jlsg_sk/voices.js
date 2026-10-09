@@ -639,6 +639,7 @@ let skill = {
 		jlsgsk_guanyu: "不能遵守承诺了吗？",
 		jlsgsk_machao: "西凉雄狮",
 		jlsgsk_taishici: "信义笃烈，此生无憾。",
+		jlsgsk_jiangwei: "鞠躬尽瘁，奈何大势已去...",
 	};
 for (let i in skill) {
 	let ii = "#ext:极略/audio/skill/" + i;

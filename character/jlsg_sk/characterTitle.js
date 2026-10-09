@@ -150,6 +150,7 @@ const characterTitle = {
 	jlsgsk_guanyu: "美髯公",
 	jlsgsk_machao: "何日能归故乡",
 	jlsgsk_taishici: "北海报恩",
+	jlsgsk_jiangwei: "幼麒",
 };
 
 export default characterTitle;
