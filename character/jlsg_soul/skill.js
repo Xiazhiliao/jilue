@@ -10397,6 +10397,7 @@ const skills = {
 								if (info.groupSkill && info.groupSkill != player.group) {
 									return false;
 								}
+								return true;
 							});
 							if (!skills.length) {
 								continue;
