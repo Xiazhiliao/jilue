@@ -3121,7 +3121,7 @@ const skills = {
 					ai(card) {
 						const { att } = get.event();
 						if (att > 1) {
-							if (ui.selected.cards.length == 0 && trigger.hp > player.hp) {
+							if (ui.selected.cards.length == 0 && trigger.player.hp > player.hp) {
 								return get.value(card);
 							}
 						}
