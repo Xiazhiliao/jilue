@@ -5,6 +5,7 @@ const characterTitle = {
 	jlsgsk_beimihu: "邪马台女王",
 	jlsgsk_bianfuren: "武宣皇后",
 	jlsgsk_buzhi: "宽弘儒雅",
+	jlsgsk_caiwenji: "金壁之才",
 	jlsgsk_caochong: "仁爱的神童",
 	jlsgsk_caochun: "虎豹骑首",
 	jlsgsk_caohua: "越鸟折凰",
@@ -124,6 +125,7 @@ const characterTitle = {
 	jlsgsk_zhangliang: "人公将军",
 	jlsgsk_zhanglu: "五斗天官",
 	jlsgsk_zhangning: "诡电魅娘",
+	jlsgsk_zhangqiying: "禳星祈福",
 	jlsgsk_zhangrang: "燎原之祸",
 	jlsgsk_zhangren: "索命神射",
 	jlsgsk_zhangxiu: "北地枪王",
@@ -145,6 +147,9 @@ const characterTitle = {
 	jlsgsk_zoushi: "祸水红颜",
 	jlsgsk_zumao: "血路先驱",
 	jlsgsk_zuoci: "遁形幻千",
+	jlsgsk_guanyu: "美髯公",
+	jlsgsk_machao: "何日能归故乡",
+	jlsgsk_taishici: "北海报恩",
 };
 
 export default characterTitle;

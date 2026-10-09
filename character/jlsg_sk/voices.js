@@ -494,6 +494,7 @@ let skill = {
 		jlsgsk_beimihu: "我会在黄泉路上等着你",
 		jlsgsk_bianfuren: "子桓，莫要再逼他们了",
 		jlsgsk_buzhi: "君子易交，小人难防啊..",
+		jlsgsk_caiwenji: "人生几何时，怀忧终年岁。",
 		jlsgsk_caochong: "好想再跟哥哥玩一会",
 		jlsgsk_caochun: "虎豹骑竟然也败了..",
 		jlsgsk_caohua: "忠魂已伴烽烟逝，孝义空随逝水潺‌",
@@ -613,6 +614,7 @@ let skill = {
 		jlsgsk_zhangliang: "黄天之道，吾已无颜相见..",
 		jlsgsk_zhanglu: "天之所恶，孰知其",
 		jlsgsk_zhangning: "苍天劫数将至，我已无处可逃",
+		jlsgsk_zhangqiying: "魂归太虚，道法长存。",
 		jlsgsk_zhangrang: "臣等死，陛下自爱..",
 		jlsgsk_zhangren: "忠臣不侍二主",
 		jlsgsk_zhangxiu: "有此一战，也算得偿夙愿",
@@ -634,6 +636,9 @@ let skill = {
 		jlsgsk_zoushi: "怨我，恨我，皆归烟尘..",
 		jlsgsk_zumao: "望主公平安无事，末将拜别",
 		jlsgsk_zuoci: "腾云跨风，飞升太虚",
+		jlsgsk_guanyu: "不能遵守承诺了吗？",
+		jlsgsk_machao: "西凉雄狮",
+		jlsgsk_taishici: "信义笃烈，此生无憾。",
 	};
 for (let i in skill) {
 	let ii = "#ext:极略/audio/skill/" + i;
