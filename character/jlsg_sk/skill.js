@@ -20006,7 +20006,7 @@ const skills = {
 				return !get.info(sk)?.charlotte;
 			});
 			let result = await trigger.player
-				.chooseButton([`交给${get.translation(player)}一个技能}`, [skills, "skill"]])
+				.chooseButton([`交给${get.translation(player)}一个技能`, [skills, "skill"]])
 				.set("forced", true)
 				.forResult();
 			player.addSkill(result.links[0]);

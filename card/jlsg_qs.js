@@ -731,7 +731,7 @@ let jlsg_qs = {
 					console.log(vcard);
 					await game.delayx();
 				} else {
-					await player.give(cards, target);
+					await player.give(event.cards, target);
 				}
 			},
 			$createButton(item, type, position, noclick, node) {
