@@ -109,6 +109,10 @@ if (lib.config?.extension_极略_syRefactor) {
 			jlsg_sy.character[name][2] = num2;
 		}
 		if (get.mode() != "boss") {
+			if (baonu) {
+				jlsg_sy.character[name][4] ??= [];
+				jlsg_sy.character[name][4] = jlsg_sy.character[name][4].slice(0, 1);
+			}
 			if (!title) {
 				continue;
 			} else {
