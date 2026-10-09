@@ -1,7 +1,9 @@
 // game.import(name: "极略"
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import { content } from "./main/content.js";
 import { precontent } from "./main/precontent.js";
+import { prepare } from "./main/prepare.js";
+import { content } from "./main/content.js";
+import { arenaReady } from "./main/arenaReady.js";
 import { config } from "./main/config.js";
 import { help } from "./main/help.js";
 import { basic } from "./main/basic.js";
@@ -41,8 +43,10 @@ export default async function () {
 		name: extensionInfo.name,
 		editable: false,
 		connect: true,
-		content: content,
-		precontent: precontent,
+		precontent,
+		prepare,
+		content,
+		arenaReady,
 		config: await basic.resolve(config),
 		help: await basic.resolve(help),
 		package: await basic.resolve(extensionDefaultPackage),
