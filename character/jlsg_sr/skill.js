@@ -852,7 +852,7 @@ const skills = {
 		},
 		audio: "ext:极略/audio/skill:1",
 		trigger: {
-			globale: "damageBegin1",
+			global: "damageBegin1",
 		},
 		filter(event, player) {
 			if (!event.source) {
@@ -870,12 +870,12 @@ const skills = {
 					selectCard: [1, 1],
 					filterCard: card => get.is.damageCard(card),
 					ai(card) {
-						if (!get.event().dicardCheck) {
+						if (!get.event().discardCheck) {
 							return 0;
 						}
 						return 8 - get.value(card);
 					},
-					dicardCheck: get.damageEffect(trigger.source, trigger.player, player, trigger.nature) * get.attitude(player, trigger.player) < 0,
+					discardCheck: get.damageEffect(trigger.source, trigger.player, player, trigger.nature) * get.attitude(player, trigger.player) < 0,
 					chooseonly: true,
 				})
 				.forResult();
