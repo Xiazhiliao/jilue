@@ -14456,17 +14456,14 @@ const skills = {
 		},
 	},
 	jlsg_yanjiao: {
-		audio: "ext:极略/audio/skill:2",
-		init(player, skill) {
-			player.setStorage(skill, Array.from({ length: 5 }), true);
-		},
 		onremove: true,
+		audio: "ext:极略/audio/skill:2",
 		onChooseToUse(event) {
 			if (game.online) {
 				return;
 			}
 			const player = event.player,
-				record = player.getStorage("jlsg_yanjiao", Array.from({ length: 4 })).slice(),
+				record = player.getStorage("jlsg_yanjiao", Array.from({ length: 5 })).slice(),
 				hs = player.getCards("h");
 			const numberList = {},
 				suitList = {};
@@ -14564,16 +14561,19 @@ const skills = {
 				target = event.target,
 				storage = player.getStorage("jlsg_yanjiao", Array.from({ length: 5 }));
 			storage[num - 1] = true;
+			if (!storage[5]) {
+				storage[5] = true;
+				player.when({ player: "phaseUseAfter", global: "phaseAfter" }).then(async (event, trigger, player) => {
+					player.setStorage("jlsg_yanjiao", Array.from({ length: 5 }), true);
+				});
+			}
 			player.setStorage("jlsg_yanjiao", storage, true);
-			player.when({ player: "phaseUseAfter", global: "phaseAfter" }).then(async (event, trigger, player) => {
-				player.setStorage("jlsg_yanjiao", Array.from({ length: 5 }), true);
-			});
 			await player.give(event.cards, target);
 			await player.draw(num);
 			if (player.hasMark("jlsg_xingshen")) {
 				let result = await player.chooseBool(`是否对${get.translation(target)}造成${num}点伤害？`, get.damageEffect(target, player, player) > 0).forResult();
 				if (result.bool) {
-					target.damage(num);
+					await target.damage(num);
 				}
 			}
 		},
@@ -14647,7 +14647,6 @@ const skills = {
 					return get.attitude(player, target) >= 0 ? 2 : -1;
 				},
 			},
-			combo: "jlsg_xingshen",
 		},
 	},
 	jlsg_xingshen: {
@@ -14668,9 +14667,13 @@ const skills = {
 			if (!player.hasMark("jlsg_xingshen")) {
 				await player.recover();
 				player.addMark("jlsg_xingshen");
-				player.when({ player: ["phaseEnd", "phaseAfter"] }).then(async (event, trigger, player) => {
-					player.removeMark("jlsg_xingshen");
-				});
+				const phase = trigger.getParent("phase");
+				player
+					.when({ player: ["phaseEnd", "phaseAfter"] })
+					.filter(evt => evt !== phase)
+					.then(async (event, trigger, player) => {
+						player.removeMark("jlsg_xingshen");
+					});
 			}
 		},
 		ai: {
@@ -16465,25 +16468,9 @@ const skills = {
 				return player.getUseValue(card);
 			},
 			backup(links, player) {
-				return {
-					filterCard: false,
-					selectCard: 0,
-					audio: "jlsg_jishe",
-					popname: true,
-					viewAs: get.autoViewAs({ name: links[0][2], isCard: true }, []),
-					async precontent(event, trigger, player) {
-						player.addTempSkill("jlsg_jishe_used", { player: "phaseUseAfter" });
-						player.addMark("jlsg_jishe_used", 1, false);
-						player
-							.when({ player: "useCardAfter" })
-							.filter(evt => evt.skill == "jlsg_jishe_backup")
-							.then(async (event, trigger, player) => {
-								if (player.countMark("jlsg_jishe_used") > player.maxHp) {
-									await player.loseMaxHp(1);
-								}
-							});
-					},
-				};
+				const backup = get.copy(get.info("jlsg_jishe_backup"));
+				backup.viewAs = get.autoViewAs({ name: links[0][2], isCard: true }, []);
+				return backup;
 			},
 			prompt(links, player) {
 				const card = get.autoViewAs({ name: links[0][2] }, []);
@@ -16491,7 +16478,24 @@ const skills = {
 			},
 		},
 		subSkill: {
-			backup: {},
+			backup: {
+				audio: "jlsg_jishe",
+				selectCard: 0,
+				filterCard: false,
+				popname: true,
+				async precontent(event, trigger, player) {
+					player.addTempSkill("jlsg_jishe_used", { player: "phaseUseAfter" });
+					player.addMark("jlsg_jishe_used", 1, false);
+					player
+						.when({ player: "useCardAfter" })
+						.filter(evt => evt.skill == "jlsg_jishe_backup")
+						.then(async (event, trigger, player) => {
+							if (player.countMark("jlsg_jishe_used") > player.maxHp) {
+								await player.loseMaxHp(1);
+							}
+						});
+				},
+			},
 			used: {
 				sub: true,
 				sourceSkill: "jlsg_jishe",
@@ -20630,13 +20634,15 @@ const skills = {
 				return;
 			}
 			target.markAuto("jlsg_xingbu_buff", [redCount]);
-			target.addSkill("jlsg_xingbu_buff");
-			target
-				.when({ player: "phaseAfter" })
-				.filter(evt => evt != trigger.getParent())
-				.then(async (event, trigger, player) => {
-					target.removeSkill("jlsg_xingbu_buff");
-				});
+			if (!target.hasSkill("jlsg_xingbu_buff")) {
+				target.addSkill("jlsg_xingbu_buff");
+				target
+					.when({ player: "phaseAfter" })
+					.filter(evt => evt != trigger.getParent())
+					.then(async (event, trigger, player) => {
+						target.removeSkill("jlsg_xingbu_buff");
+					});
+			}
 		},
 		subSkill: {
 			buff: {

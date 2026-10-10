@@ -947,14 +947,11 @@ const skills = {
 			const evt = event.getParent(2);
 			if (evt.type == "phase") {
 				player.addTempSkill("jlsg_smdq_lijian_used", "phaseUseAfter");
+				player.setStorage("jlsg_smdq_lijian_dying", event.targets, true);
+				player.addSkill("jlsg_smdq_lijian_dying");
 				let turn = event.targets[0],
 					other = event.targets[1];
 				const card = get.autoViewAs({ name: "juedou", isCard: true, storage: { jlsg_smdq_lijian: true } }, []);
-				player.setStorage("jlsg_smdq_lijian_dying", true);
-				player
-					.when({ global: "dying" })
-					.filter(evt => event.targets.includes(evt.player))
-					.then(async (event, trigger, player) => player.removeStorage("jlsg_smdq_lijian_dying"));
 				while (turn.isIn() && other.isIn()) {
 					const next = turn.useCard(other, card, "nowuxie");
 					await next;
@@ -965,14 +962,14 @@ const skills = {
 						turn.hasHistory("sourceDamage", evt => {
 							return evt.getParent("useCard") == next;
 						});
-					if (!source || !player.getStorage("jlsg_smdq_lijian_dying", false)) {
+					if (!source || !player.hasStorage("jlsg_smdq_lijian_dying")) {
 						break;
 					}
 					let storage = turn;
 					turn = other;
 					other = storage;
 				}
-				player.setStorage("jlsg_smdq_lijian_dying", undefined);
+				player.removeSkill("jlsg_smdq_lijian_dying");
 			} else {
 				const card = get.autoViewAs({ name: "sha", isCard: false }, event.cards);
 				delete evt.result.skill;
@@ -985,8 +982,20 @@ const skills = {
 		subSkill: {
 			used: {
 				charlotte: true,
-				sub: true,
-				sourceSkill: "jlsg_smdq_lijian",
+			},
+			dying: {
+				charlotte: true,
+				onremove: true,
+				trigger: {
+					global: "dying",
+				},
+				filter(event, player) {
+					return player.hasStorage("jlsg_smdq_lijian_used", event.player);
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+				},
 			},
 		},
 		ai: {
