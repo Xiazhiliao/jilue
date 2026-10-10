@@ -148,7 +148,7 @@ const skills = {
 		upgradeContent: {
 			jlsgsr_xuzhu: {
 				"初始手牌数+3": async function (event, trigger, player) {
-					player.when({ global: "gameDrawBegin" }).step(async function (event, trigger, player) {
+					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
 						const me = player,
 							numx = trigger.num;
 						trigger.num =
@@ -177,7 +177,7 @@ const skills = {
 			},
 			jlsgsr_xiaoqiao: {
 				"初始手牌数+3": async function (event, trigger, player) {
-					player.when({ global: "gameDrawBegin" }).step(async function (event, trigger, player) {
+					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
 						const me = player,
 							numx = trigger.num;
 						trigger.num =
@@ -244,7 +244,7 @@ const skills = {
 			},
 			jlsgsr_simayi: {
 				"初始手牌数+3": async function (event, trigger, player) {
-					player.when({ global: "gameDrawBegin" }).step(async function (event, trigger, player) {
+					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
 						const me = player,
 							numx = trigger.num;
 						trigger.num =
@@ -540,7 +540,7 @@ const skills = {
 		async content(event, trigger, player) {
 			trigger.num--;
 			const phase = trigger.getParent("phase");
-			player.when({ player: "phaseDiscardBegin" }).step(async function (event, trigger, player) {
+			player.when({ player: "phaseDiscardBegin" }).then(async (event, trigger, player) => {
 				if (phase != trigger.getParent("phase")) {
 					return;
 				}
@@ -2651,7 +2651,7 @@ const skills = {
 			player
 				.when({ global: "useCardAfter" })
 				.filter(evt => evt == next)
-				.step(async function (event, trigger, player) {
+				.then(async (event, trigger, player) => {
 					if (
 						game.hasPlayer2(current => {
 							return current.hasHistory("sourceDamage", evt => {
@@ -4851,7 +4851,7 @@ const skills = {
 			const upgrade = upgradeStorage?.other?.[event.name];
 			const target = event.targets[0];
 			if (!player.getStorage("jlsg_chouxi")?.length) {
-				player.when({ player: "phaseUseEnd" }).then(() => player.setStorage("jlsg_chouxi", []));
+				player.when({ player: "phaseUseEnd" }).then(async (event, trigger, player) => player.setStorage("jlsg_chouxi", []));
 			}
 			player.markAuto("jlsg_chouxi", [target]);
 			let num = upgrade ? 3 : 2;
@@ -5078,7 +5078,7 @@ const skills = {
 				trigger.target
 					.when({ global: "useCardAfter" })
 					.filter(evt => evt.card == trigger.card)
-					.step(async (event, trigger, player) => {
+					.then(async (event, trigger, player) => {
 						await player.recover(1);
 					});
 			}

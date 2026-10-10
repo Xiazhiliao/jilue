@@ -954,7 +954,7 @@ const skills = {
 				player
 					.when({ global: "dying" })
 					.filter(evt => event.targets.includes(evt.player))
-					.then(() => player.setStorage("jlsg_smdq_lijian_dying", undefined));
+					.then(async (event, trigger, player) => player.removeStorage("jlsg_smdq_lijian_dying"));
 				while (turn.isIn() && other.isIn()) {
 					const next = turn.useCard(other, card, "nowuxie");
 					await next;
@@ -1143,7 +1143,7 @@ const skills = {
 			player
 				.when({ global: "useCardAfter" })
 				.filter(evt => evt.card == trigger.card)
-				.step(async (event, trigger, player) => {
+				.then(async (event, trigger, player) => {
 					if (!target.countCards("h")) {
 						return;
 					}

@@ -13361,7 +13361,7 @@ const skills = {
 			player
 				.when({ player: "useCardAfter" })
 				.filter(evt => evt.card == trigger.card)
-				.step(async function (event, trigger, player) {
+				.then(async (event, trigger, player) => {
 					const num = player
 						.getHistory("sourceDamage", evt => {
 							return evt.card == trigger.card;

@@ -140,7 +140,7 @@ export default {
 						player
 							.when({ player: "useCardAfter" })
 							.filter(evt => evt.card == trigger.card)
-							.step(async function (event, trigger, player) {
+							.then(async (event, trigger, player) => {
 								const evt = trigger.getParent("phaseUse", true);
 								if (evt?.name == "phaseUse") {
 									evt.skipped = true;
@@ -337,7 +337,7 @@ export default {
 							await trigger.player.useCard(sha, player);
 						} else {
 							const source = player;
-							trigger.player.when({ player: "phaseAfter" }).step(async (event, trigger, player) => {
+							trigger.player.when({ player: "phaseAfter" }).then(async (event, trigger, player) => {
 								player.addTempSkill("jlsg_xianger2", "phaseAfter");
 								player.storage.jlsg_xianger2.add(source).sortBySeat();
 								player.markSkill("jlsg_xianger2");
@@ -542,7 +542,7 @@ export default {
 									player
 										.when({ player: ["shaMiss", "useCardAfter"] })
 										.filter(evt => evt.card == trigger.card)
-										.step(async (event, trigger, player) => {
+										.then(async (event, trigger, player) => {
 											if (trigger.name != "useCard") {
 												await player.draw(1);
 											}
@@ -1382,7 +1382,7 @@ export default {
 											}
 											return evt.card.cardid == id;
 										})
-										.step(async function (event, trigger, player) {
+										.then(async (event, trigger, player) => {
 											if (event.triggername != "useCardAfter") {
 												let num = trigger.cards?.length;
 												if (!num) {

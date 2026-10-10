@@ -12041,7 +12041,7 @@ const skills = {
 					ignoreMod: true,
 					async precontent(event, _, player) {
 						if (!player.hasStorage("jlsg_huomo")) {
-							player.when({ global: ["phaseAfter", "phaseBefore"] }).then(() => {
+							player.when({ global: ["phaseAfter", "phaseBefore"] }).then(async (event, trigger, player) => {
 								player.removeStorage("jlsg_huomo", true);
 							});
 						}
@@ -14450,9 +14450,8 @@ const skills = {
 			player
 				.when({ player: "phaseDiscardEnd" })
 				.filter(evt => evt == trigger)
-				.vars({ cnt: cards.length })
-				.then(() => {
-					player.draw(cnt);
+				.then(async (event, trigger, player) => {
+					await player.draw(cards.length);
 				});
 		},
 	},
@@ -14566,7 +14565,7 @@ const skills = {
 				storage = player.getStorage("jlsg_yanjiao", Array.from({ length: 5 }));
 			storage[num - 1] = true;
 			player.setStorage("jlsg_yanjiao", storage, true);
-			player.when({ player: "phaseUseAfter", global: "phaseAfter" }).then(() => {
+			player.when({ player: "phaseUseAfter", global: "phaseAfter" }).then(async (event, trigger, player) => {
 				player.setStorage("jlsg_yanjiao", Array.from({ length: 5 }), true);
 			});
 			await player.give(event.cards, target);
@@ -14669,7 +14668,7 @@ const skills = {
 			if (!player.hasMark("jlsg_xingshen")) {
 				await player.recover();
 				player.addMark("jlsg_xingshen");
-				player.when({ player: ["phaseEnd", "phaseAfter"] }).then(() => {
+				player.when({ player: ["phaseEnd", "phaseAfter"] }).then(async (event, trigger, player) => {
 					player.removeMark("jlsg_xingshen");
 				});
 			}
@@ -15055,10 +15054,11 @@ const skills = {
 				return evt.getParent().skill == "jlsg_xuhe";
 			});
 			if (!drawCheck) {
+				const drawNum = targets.length;
 				player
 					.when({ global: "useCardAfter" })
 					.filter(evt => evt == trigger)
-					.then(() => {
+					.then(async (event, trigger, player) => {
 						if (
 							!player.hasHistory("gain", evt => {
 								if (!evt.getParent() || evt.getParent().name != "draw") {
@@ -15067,21 +15067,23 @@ const skills = {
 								return evt.getParent().skill == "jlsg_xuhe";
 							})
 						) {
-							player
+							return player
 								.chooseBool(`虚猲：是否摸${drawNum}张牌？`)
 								.set("ai", (event, player) => {
 									return get.effect(player, { name: "draw" }, player, player) * get.event().drawNum;
 								})
-								.set("drawNum", drawNum);
+								.set("drawNum", drawNum)
+								.forResult();
+						} else {
+							event.finish();
 						}
 					})
-					.then(() => {
-						if (result.bool) {
+					.then(async (event, trigger, player, result) => {
+						if (result?.bool) {
 							player.logSkill("jlsg_xuhe");
-							player.draw(drawNum).set("skill", "jlsg_xuhe");
+							await player.draw(drawNum).set("skill", "jlsg_xuhe");
 						}
-					})
-					.vars({ drawNum: targets.length });
+					});
 			}
 		},
 		ai: {
@@ -16475,7 +16477,7 @@ const skills = {
 						player
 							.when({ player: "useCardAfter" })
 							.filter(evt => evt.skill == "jlsg_jishe_backup")
-							.step(async function (event, trigger, player) {
+							.then(async (event, trigger, player) => {
 								if (player.countMark("jlsg_jishe_used") > player.maxHp) {
 									await player.loseMaxHp(1);
 								}
@@ -18501,7 +18503,7 @@ const skills = {
 										}
 										return false;
 									})
-									.step(async function (event, trigger, player) {
+									.then(async (event, trigger, player) => {
 										let getl = trigger.getl(player),
 											num = 0;
 										for (const card of getl.es) {
@@ -18644,7 +18646,7 @@ const skills = {
 										}
 										return false;
 									})
-									.step(async function (event, trigger, player) {
+									.then(async (event, trigger, player) => {
 										const num = vcard.storage.jlsg_zhuren["3"]["1"];
 										await player.loseHp(num);
 										await player.loseMaxHp(num);
@@ -19204,7 +19206,7 @@ const skills = {
 					let index = trigger.parent.next.indexOf(trigger) + tarIndex;
 					trigger.parent.next.splice(index, 0, next);
 					if (tarIndex == targets.length && refinish) {
-						next.then(() => {
+						next.then((resolve, reject) => {
 							trigger.parent.finish();
 						});
 					}
@@ -19741,7 +19743,7 @@ const skills = {
 			player
 				.when({ global: "damageAfter" })
 				.filter(evt => evt == event && game.hasNature(evt, "jlsg_true"))
-				.step(async function (event, trigger, player) {
+				.then(async (event, trigger, player) => {
 					game.broadcastAll(function (target) {
 						if (_status.jlsg_trueDamage_restore?.[target.playerid]) {
 							Object.assign(lib.hook, _status.jlsg_trueDamage_restore[target.playerid]);

@@ -1560,7 +1560,7 @@ const skills = {
 						clearTimeout(timeout);
 						resolve();
 					}, 500);
-				}).then(() => void ui.arena.classList.remove("choose-player-card"));
+				}).then((resolve, reject) => void ui.arena.classList.remove("choose-player-card"));
 			},
 		],
 		ai: {

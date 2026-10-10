@@ -456,7 +456,7 @@ export default {
 						for (let recruit of recruits) {
 							let next = recruit.die();
 							next._triggered = null;
-							next.then(() => {
+							next.then((resolve, reject) => {
 								lib.skill.jlsg_xinghan.removeRecruit(recruit);
 							});
 						}
