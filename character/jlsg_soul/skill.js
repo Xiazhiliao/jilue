@@ -3026,17 +3026,17 @@ const skills = {
 				},
 				mod: {
 					cardEnabled(card, player) {
-						if (player.getStorage("jlsg_gongxin2").includes(get.suit(card))) {
+						if (player.hasStorage("jlsg_gongxin_debuff", get.suit(card))) {
 							return false;
 						}
 					},
 					cardRespondable(card, player) {
-						if (player.getStorage("jlsg_gongxin2").includes(get.suit(card))) {
+						if (player.hasStorage("jlsg_gongxin_debuff", get.suit(card))) {
 							return false;
 						}
 					},
 					cardSavable(card, player) {
-						if (player.getStorage("jlsg_gongxin2").includes(get.suit(card))) {
+						if (player.hasStorage("jlsg_gongxin_debuff", get.suit(card))) {
 							return false;
 						}
 					},
