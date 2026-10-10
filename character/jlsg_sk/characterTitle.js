@@ -148,9 +148,11 @@ const characterTitle = {
 	jlsgsk_zumao: "血路先驱",
 	jlsgsk_zuoci: "遁形幻千",
 	jlsgsk_guanyu: "美髯公",
-	jlsgsk_machao: "何日能归故乡",
+	jlsgsk_machao: "西凉雄狮",
 	jlsgsk_taishici: "北海报恩",
 	jlsgsk_jiangwei: "幼麒",
+	jlsgsk_pangtong: "南州冠冕",
+	jlsgsk_mayunlu: "关山凤吟",
 };
 
 export default characterTitle;
