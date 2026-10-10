@@ -8527,7 +8527,7 @@ const skills = {
 						const { player: source, card, targets } = trigger;
 						const vcard = get.autoViewAs({ name, ...card }, card.cards);
 						const eff = targets.reduce((sum, target) => sum + get.effect(target, vcard, source, player), 0);
-						if (eff > originEff) {
+						if (eff > get.event().originEff) {
 							return eff;
 						}
 						return 0;
