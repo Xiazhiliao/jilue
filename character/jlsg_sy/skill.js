@@ -147,9 +147,12 @@ const skills = {
 				} else if (useCard.player !== player) {
 					return event.card.name === "juedou";
 				}
-				return true;
+			} else if (!["sha", "juedou"].includes(event.card.name)) {
+				return false;
+			} else if (event.card.name === "sha" && event.target === player) {
+				return false;
 			}
-			return ["sha", "juedou"].includes(event.card.name);
+			return true;
 		},
 		logTarget(event, player) {
 			if (event.name !== "damage" && event.card.name === "juedou") {
@@ -162,9 +165,9 @@ const skills = {
 			if (trigger.name === "damage") {
 				trigger.num = 3;
 			} else if (trigger.card.name === "sha") {
-				const id = trigger.target.playerid;
-				const map = trigger.getParent()?.customArgs;
-				if (id != null) {
+				const id = trigger.target.playerid,
+					map = trigger.getParent()?.customArgs;
+				if (id != null && map) {
 					map[id] ??= {};
 					if (typeof map[id].shanRequired == "number") {
 						map[id].shanRequired++;
@@ -173,13 +176,13 @@ const skills = {
 					}
 				}
 			} else {
-				const id = event.targets?.[0]?.["playerid"];
-				const idt = trigger.target.playerid;
-				const map = trigger.getParent()?.customArgs;
-				if (id != null && idt != null) {
+				const id = event.targets?.[0]?.["playerid"],
+					idt = trigger.target.playerid,
+					map = trigger.getParent()?.customArgs;
+				if (id != null && idt != null && map) {
 					map[idt] ??= {};
 					map[idt].shaReq ??= {};
-					if (!map[idt].shaReq[id]) {
+					if (typeof map[idt].shaReq[id] == "number") {
 						map[idt].shaReq[id] = 1;
 					}
 					map[idt].shaReq[id]++;
@@ -4283,11 +4286,12 @@ const skills = {
 				if (!_status.characterlist) {
 					game.initCharacterList();
 				}
-				allList = _status.characterlist.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]).randomSort();
+				allList = _status.characterlist.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]);
 			}
 			if (!allList.length) {
-				allList = Object.keys(lib.characterPack["jlsg_sy"]);
+				allList = Object.keys(lib.characterPack["jlsg_sy"]).filter(name => name.endsWith("baonu"));
 			}
+			allList.randomSort();
 			const map = {};
 			let num = 2;
 			for (const name of allList) {
