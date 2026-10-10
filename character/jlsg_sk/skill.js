@@ -4117,17 +4117,20 @@ const skills = {
 				locked: false,
 				mod: {
 					cardUsable(card, player) {
-						if (card.name == "sha" && card.hasGaintag?.("jlsg_jiwux_1")) {
+						const vcard = get.autoViewAs(card);
+						if (vcard.name == "sha" && vcard.cards.some(cardx => cardx.hasGaintag?.("jlsg_jiwux_1"))) {
 							return Infinity;
 						}
 					},
 					targetInRange(card, player) {
-						if (card.name == "sha" && card.hasGaintag?.("jlsg_jiwux_2")) {
+						const vcard = get.autoViewAs(card);
+						if (vcard.name == "sha" && vcard.cards.some(cardx => cardx.hasGaintag?.("jlsg_jiwux_2"))) {
 							return true;
 						}
 					},
 					selectTarget(card, player, range) {
-						if (card.name == "sha" && card.hasGaintag?.("jlsg_jiwux_2") && range[1] != -1) {
+						const vcard = get.autoViewAs(card);
+						if (vcard.name == "sha" && vcard.cards.some(cardx => cardx.hasGaintag?.("jlsg_jiwux_2")) && range[1] != -1) {
 							range[1]++;
 						}
 					},
@@ -4137,7 +4140,7 @@ const skills = {
 					if (event.card.name != "sha") {
 						return false;
 					}
-					for (let key of ["1", "2"]) {
+					for (let key of ["1", "3"]) {
 						if (
 							player.hasHistory("lose", evt => {
 								if ((evt.relatedEvent || evt.getParent()) !== event) {
@@ -4148,7 +4151,7 @@ const skills = {
 						) {
 							if (key == "1" && event.addCount !== false) {
 								return true;
-							} else if (key == "2") {
+							} else if (key == "3") {
 								return true;
 							}
 						}
@@ -4158,7 +4161,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					for (let key of ["1", "2"]) {
+					for (let key of ["1", "3"]) {
 						if (
 							player.hasHistory("lose", evt => {
 								if ((evt.relatedEvent || evt.getParent()) !== trigger) {
@@ -4174,7 +4177,7 @@ const skills = {
 								if (typeof stat[name] == "number") {
 									stat[name]--;
 								}
-							} else if (key == "2") {
+							} else if (key == "3") {
 								trigger.baseDamage++;
 							}
 						}
