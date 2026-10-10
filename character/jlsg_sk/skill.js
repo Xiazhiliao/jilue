@@ -12434,7 +12434,7 @@ const skills = {
 		onremove: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		getList(player) {
-			const configx = lib.config.extension_极略_jlsgsk_jiangwei;
+			const configx = game.getExtensionConfig("极略", "jlsgsk_jiangwei");
 			let list = {};
 			if (!_status.characterlist) {
 				game.initCharacterList();
@@ -12476,7 +12476,7 @@ const skills = {
 			return list;
 		},
 		async cost(event, trigger, player) {
-			let configx = lib.config.extension_极略_jlsgsk_jiangwei,
+			let configx = game.getExtensionConfig("极略", "jlsgsk_jiangwei"),
 				list = lib.skill.jlsg_caiyu.getList(player);
 			let str = "###才遇：是否减1点体力上限，随机获得一个诸葛亮";
 			if (["skills", "all"].includes(configx)) {
@@ -12505,7 +12505,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.loseMaxHp();
-			const configx = lib.config.extension_极略_jlsgsk_jiangwei,
+			const configx = game.getExtensionConfig("极略", "jlsgsk_jiangwei"),
 				info = event.cost_data;
 			const name = Object.keys(info).randomGet();
 			const skills = ["skills", "all"].includes(configx) ? info[name] : info[name]?.randomGets(1);
@@ -13775,7 +13775,7 @@ const skills = {
 					if (!result.bool) {
 						return;
 					}
-					if (lib.config.extension_极略_jlsgsk_wanniangongzhu === "false") {
+					if (game.getExtensionConfig("极略", "jlsgsk_wanniangongzhu") === "false") {
 						hpInfo = same[1][2];
 					}
 					let removeSkills = storage.get(same[0])[3];
@@ -14110,7 +14110,7 @@ const skills = {
 			} else if (name == "phaseAfter") {
 				return max >= num && (event.skill == "jlsg_xinghan_turn" || (num == 0 && !event.skill));
 			} else if (name == "changeSkillsEnd") {
-				if (lib.config.extension_极略_jlsgsk_wanniangongzhu === "false" && event.addSkill?.length) {
+				if (game.getExtensionConfig("极略", "jlsgsk_wanniangongzhu") === "false" && event.addSkill?.length) {
 					return true;
 				}
 				return event.removeSkill?.some(i => {
@@ -14178,7 +14178,7 @@ const skills = {
 						}
 					}
 				}
-				if ((lib.config.extension_极略_jlsgsk_wanniangongzhu === "false" || trigger.getParent().name == "changeCharacter") && trigger.addSkill?.length) {
+				if ((game.getExtensionConfig("极略", "jlsgsk_wanniangongzhu") === "false" || trigger.getParent().name == "changeCharacter") && trigger.addSkill?.length) {
 					let addSkill = trigger.addSkill;
 					if (trigger.getParent().name == "changeCharacter") {
 						const evt = trigger.getParent();

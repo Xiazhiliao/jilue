@@ -24,7 +24,7 @@ const skills = {
 		originUpgradeList: ["jlsgsr_xiaoqiao"],
 		async content(event, trigger, player) {
 			const nameList = get.nameList(player),
-				upgradeList = lib.config.extension_极略_upgradeList || [];
+				upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 			upgradeList.addArray(get.info(event.name).originUpgradeList);
 			for (const name of nameList) {
 				if (!name.startsWith("jlsgsr_")) {
@@ -36,7 +36,7 @@ const skills = {
 					}
 					let info = [false, false, false, false],
 						choiceList = [...Object.keys(lib.skill[event.name].upgradeContent[name]), "技能突破", "携带所有技能"];
-					if (!lib.config.extension_极略_srlose) {
+					if (!game.getExtensionConfig("极略", "srlose")) {
 						info = info.slice(0, -1);
 						choiceList = choiceList.slice(0, -1);
 					}
@@ -101,7 +101,7 @@ const skills = {
 					}
 				}
 				//原srlose部分
-				if (!lib.config.extension_极略_srlose || _status._jlsgsr_upgrade?.[player.playerid]?.[name]?.[3]) {
+				if (!game.getExtensionConfig("极略", "srlose") || _status._jlsgsr_upgrade?.[player.playerid]?.[name]?.[3]) {
 					continue;
 				}
 				const skills = lib.skill._jlsgsr_choice.createList(name);

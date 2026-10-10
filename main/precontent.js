@@ -56,7 +56,7 @@ export async function precontent(config, originalPack) {
 	};
 
 	//魔势力及前缀创建
-	if (lib.config?.extension_极略_syRefactor) {
+	if (game.getExtensionConfig("极略", "syRefactor")) {
 		game.addGroup("jlsgsy", "魔", "极略三英", { color: "#8B4A51" });
 		lib.namePrefix.set("极略SY", {
 			getSpan: () => {
@@ -86,7 +86,7 @@ export async function precontent(config, originalPack) {
 		});
 	}
 	//七杀包规则重构
-	if (lib.config?.extension_极略_qsRelic) {
+	if (game.getExtensionConfig("极略", "qsRelic")) {
 		lib.arenaReady.push(function () {
 			game.broadcastAll(function () {
 				const cardPacks = _status.connectMode ? lib.configOL.cardPack : lib.cardPack,
@@ -142,7 +142,7 @@ export async function precontent(config, originalPack) {
 	}
 
 	//失效技能时机创建
-	if (lib.config.extension_极略_jlsg_disableSkill) {
+	if (game.getExtensionConfig("极略", "jlsg_disableSkill")) {
 		lib.arenaReady.push(() => {
 			lib.disableSkill ??= {};
 			for (let item of ["tempBanSkill", "disableSkill", "addSkillBlocker"]) {
@@ -750,7 +750,7 @@ export async function precontent(config, originalPack) {
 				} else if (key == "removeSkill") {
 					next = player.removeSkills(player.getSkills(null, false, false).randomGets(1));
 				} else if (key == "disableSkill") {
-					if (!lib.config.extension_极略_jlsg_disableSkill && player.storage?.jlsg_qianyuan?.disableSkill === false) {
+					if (!game.getExtensionConfig("极略", "jlsg_disableSkill") && player.storage?.jlsg_qianyuan?.disableSkill === false) {
 						player.storage.jlsg_qianyuan.disableSkill = true;
 					} else {
 						next = player.tempBanSkill(

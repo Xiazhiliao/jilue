@@ -920,7 +920,7 @@ const skills = {
 			await player.draw(1);
 			let evt = event.getParent(2);
 			let characterList;
-			if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false") {
+			if (game.getExtensionConfig("极略", "jlsgsoul_sp_zhugeliang") == "false") {
 				if (!_status.characterlist) {
 					game.initCharacterList();
 				}
@@ -934,7 +934,7 @@ const skills = {
 			for (let name of characterList) {
 				if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 					continue;
-				} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false" && packList.every(pack => !(name in lib.characterPack[pack]))) {
+				} else if (game.getExtensionConfig("极略", "jlsgsoul_sp_zhugeliang") == "false" && packList.every(pack => !(name in lib.characterPack[pack]))) {
 					continue;
 				} else if (Object.keys(list).some(i => get.translation(i) == get.translation(name))) {
 					//防重名
@@ -1062,7 +1062,7 @@ const skills = {
 				async content(event, trigger, player) {
 					await player.draw();
 					let characterList;
-					if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false") {
+					if (game.getExtensionConfig("极略", "jlsgsoul_sp_zhugeliang") == "false") {
 						if (!_status.characterlist) {
 							game.initCharacterList();
 						}
@@ -1076,7 +1076,7 @@ const skills = {
 					for (let name of characterList) {
 						if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_")) {
 							continue;
-						} else if (lib.config.extension_极略_jlsgsoul_sp_zhugeliang == "false" && packList.every(pack => !(name in lib.characterPack[pack]))) {
+						} else if (game.getExtensionConfig("极略", "jlsgsoul_sp_zhugeliang") == "false" && packList.every(pack => !(name in lib.characterPack[pack]))) {
 							continue;
 						} else if (Object.keys(list).some(i => get.translation(i) == get.translation(name))) {
 							//防重名

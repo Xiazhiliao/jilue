@@ -41,7 +41,7 @@ for (let character in config) {
 	}
 }
 //导入jlsgZhu里的skill和translate
-if (lib.config?.extension_极略_jlsg_zhuBuff) {
+if (game.getExtensionConfig("极略", "jlsg_zhuBuff")) {
 	//清除原有主公技
 	for (let character in jlsg_sr.character) {
 		const skills = jlsg_sr.character[character][3];
@@ -72,7 +72,7 @@ if (lib.config?.extension_极略_jlsg_zhuBuff) {
 	}
 }
 //给突破的SR武将加上突破后描述
-let upgradeList = lib.config.extension_极略_upgradeList || [];
+let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 for (let character in jlsg_sr.character) {
 	if (!upgradeList.includes(character)) {
 		continue;
@@ -97,7 +97,7 @@ for (const name in jlsg_sy.character) {
 	jlsg_sy.characterTitle[name] ??= jlsg_sy.translate[name];
 }
 //三英武将重构
-if (lib.config?.extension_极略_syRefactor) {
+if (game.getExtensionConfig("极略", "syRefactor")) {
 	for (const name in jlsg_sy.character) {
 		if (!name.startsWith("jlsgsy_")) {
 			continue;
