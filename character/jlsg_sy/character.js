@@ -37,6 +37,10 @@ const characters = {
 	jlsgsy_hetaihoubaonu: ["female", "shen", 3, ["jlsgsy_shixin", "jlsgsy_xueyan", "jlsgsy_juesi"], ["qun", "hiddenboss", "bossallowed"]],
 	jlsgsy_jiaxu: ["male", "shen", 8, ["jlsgsy_baonujiaxu", "jlsgsy_huiying"], ["qun", "boss", "bossallowed"]],
 	jlsgsy_jiaxubaonu: ["male", "shen", 3, ["jlsgsy_huiying", "jlsgsy_lianpo", "jlsgsy_zhongzao"], ["qun", "hiddenboss", "bossallowed"]],
+	jlsgsy_liushan: ["male", "shen", 8, ["jlsgsy_baonuliushan", "jlsgsy_duoquan"], ["shu", "boss", "bossallowed"]],
+	jlsgsy_liushanbaonu: ["male", "shen", 3, ["jlsgsy_duoquan", "jlsgsy_lanle", "jlsgsy_wangduan"], ["shu", "hiddenboss", "bossallowed"]],
+	jlsgsy_dongbai: ["female", "shen", 8, ["jlsgsy_baonudongbai", "jlsgsy_huachong"], ["qun", "boss", "bossallowed"]],
+	jlsgsy_dongbaibaonu: ["female", "shen", 3, ["jlsgsy_huachong", "jlsgsy_youmo"], ["qun", "hiddenboss", "bossallowed"]],
 };
 
 export default characters;

@@ -283,28 +283,28 @@ export default {
 				tag: {
 					respond: 1,
 					respondShan: 1,
-					damage: function (card) {
+					damage(card) {
 						if (game.hasNature(card, "poison")) {
 							return;
 						}
 						return 1;
 					},
-					natureDamage: function (card) {
+					natureDamage(card) {
 						if (game.hasNature(card, "linked")) {
 							return 1;
 						}
 					},
-					fireDamage: function (card, nature) {
+					fireDamage(card, nature) {
 						if (game.hasNature(card, "fire")) {
 							return 1;
 						}
 					},
-					thunderDamage: function (card, nature) {
+					thunderDamage(card, nature) {
 						if (game.hasNature(card, "thunder")) {
 							return 1;
 						}
 					},
-					poisonDamage: function (card, nature) {
+					poisonDamage(card, nature) {
 						if (game.hasNature(card, "poison")) {
 							return 1;
 						}
@@ -476,7 +476,7 @@ export default {
 		},
 		//奸雄
 		jlsg_zhugong_jianxiong: {
-			audio: "ext:极略/audio/skill/jlsg_jianxiong.mp3",
+			audio: "ext:极略/audio/skill/jlsg_jianxiong1.mp3",
 			unique: true,
 			zhuSkill: true,
 			trigger: { global: "damageEnd" },

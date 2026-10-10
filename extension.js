@@ -1,7 +1,9 @@
 // game.import(name: "极略"
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-import { content } from "./main/content.js";
 import { precontent } from "./main/precontent.js";
+import { prepare } from "./main/prepare.js";
+import { content } from "./main/content.js";
+import { arenaReady } from "./main/arenaReady.js";
 import { config } from "./main/config.js";
 import { help } from "./main/help.js";
 import { basic } from "./main/basic.js";
@@ -16,7 +18,9 @@ Visit Repository</a><br>
 备用群：1058928074<br>
 <span onclick="if (jlsg) jlsg.openLink('https://keu1vrp2sz.feishu.cn/docx/CpsrdV4sDoazzUxzChMcqGjIneh')" 
 style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
-汇报bug点我</span><br>
+汇报bug点我（已无人受理）</span><br><span onclick="if (jlsg) jlsg.openLink('https://github.com/Xiazhiliao/jilue/issues')" 
+style="color: red; font-size: x-large;cursor: pointer;text-decoration: underline;">
+仓库issues反馈（可能受理）</span><br>
 
 <span style="font-size: large;">历史：</span><br>
 
@@ -38,8 +42,11 @@ export default async function () {
 	let extension = {
 		name: extensionInfo.name,
 		editable: false,
-		content: content,
-		precontent: precontent,
+		connect: true,
+		precontent,
+		prepare,
+		content,
+		arenaReady,
 		config: await basic.resolve(config),
 		help: await basic.resolve(help),
 		package: await basic.resolve(extensionDefaultPackage),

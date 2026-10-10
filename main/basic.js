@@ -12,7 +12,7 @@ export const basic = {
 	 * @param {*} obj
 	 * @returns
 	 */
-	resolve: function (obj) {
+	resolve(obj) {
 		if (typeof obj == "function") {
 			return Promise.resolve(obj());
 		} else {
