@@ -91,12 +91,18 @@ for (let character in jlsg_sr.character) {
 		}
 	}
 }
-//魔将调整
+//三英调整
+//三英武将称号补充
+for (const name in jlsg_sy.character) {
+	jlsg_sy.characterTitle[name] ??= jlsg_sy.translate[name];
+}
+//三英武将重构
 if (lib.config?.extension_极略_syRefactor) {
 	for (const name in jlsg_sy.character) {
 		if (!name.startsWith("jlsgsy_")) {
 			continue;
 		}
+		//调整国别
 		jlsg_sy.character[name][1] = "jlsgsy";
 		const title = jlsg_sy.translate[name],
 			baonu = name.endsWith("baonu") ? true : false;
@@ -109,6 +115,7 @@ if (lib.config?.extension_极略_syRefactor) {
 			jlsg_sy.character[name][2] = num2;
 		}
 		if (get.mode() != "boss") {
+			//删除魔将Boss标签，确保能被ai禁将影响
 			if (baonu) {
 				jlsg_sy.character[name][4] ??= [];
 				jlsg_sy.character[name][4] = jlsg_sy.character[name][4].slice(0, 1);
@@ -122,6 +129,7 @@ if (lib.config?.extension_极略_syRefactor) {
 					lib.translate[name] = "SY" + (baonu ? "暴怒" : "") + translation;
 					lib.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
 					lib.translate[name + "_prefix"] = baonu ? "极略SY暴怒" : "极略SY";
+					//魔孙皓调整
 					if (name == "jlsgsy_sunhaobaonu") {
 						if (lib.characterPack.jlsg_sy?.[name]) {
 							lib.characterPack.jlsg_sy[name][3].remove("jlsgsy_shisha");
@@ -137,6 +145,7 @@ if (lib.config?.extension_极略_syRefactor) {
 		}
 	}
 }
+
 const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
 for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
 	for (let name in pack.character) {
@@ -168,6 +177,7 @@ for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
 		}
 	}
 }
+
 export const characters = {
 	jlsg_sk,
 	jlsg_sr,
