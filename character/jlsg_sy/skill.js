@@ -4242,10 +4242,9 @@ const skills = {
 					2: `摸牌数(${checkList[2]})`,
 					3: `使用【杀】次数上限(${checkList[3]})`,
 				};
-				const list = checkList.map((v, i) => i);
 				const result = await player
 					.chooseButton({
-						createDialog: [`###幼魔###请选择一项最小数值+2，然后获得两个魔势力武将的技能`, [list.map(i => [i, map[i]]), "textbutton"]],
+						createDialog: [`###幼魔###请选择一项最小数值+2，然后获得两个魔势力武将的技能`, [checkList.map((v, i) => [i, map[i]]), "textbutton"]],
 						filterButton({ link }) {
 							return get.event().check.includes(link);
 						},
@@ -4271,7 +4270,14 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
-			const index = Number(event.cost_data);
+			const index = Number(event.cost_data),
+				numMap = {
+					0: `体力`,
+					1: `体力上限`,
+					2: `摸牌数`,
+					3: `使用【杀】次数上限`,
+				};
+			game.log(player, "令自己的", `#r${numMap[index]}`, "+2");
 			if (index === 0) {
 				await player.recover(2);
 			} else if (index === 1) {
@@ -4327,7 +4333,6 @@ const skills = {
 			} else {
 				game.log("已获取全部技能");
 				player.chat("世上无魔？");
-				return;
 			}
 		},
 		changeCharacter(player, add = [], remove = [], throwx) {
