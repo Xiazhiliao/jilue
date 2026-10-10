@@ -751,7 +751,7 @@ const skills = {
 				async content(event, trigger, player) {
 					if (game.hasNature(trigger)) {
 						if (game.hasNature(trigger, "fire")) {
-							trigger.num += player.countMark("jlsg_kuangfeng_2");
+							trigger.num += trigger.player.countMark("jlsg_kuangfeng_2");
 						}
 						if (game.hasNature(trigger, "thunder")) {
 							if (!player.hasSkill("jlsg_qixing")) {
