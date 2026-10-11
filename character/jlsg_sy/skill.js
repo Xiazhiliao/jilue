@@ -2284,8 +2284,8 @@ const skills = {
 				charlotte: true,
 				mod: {
 					cardUsable(card, player, num) {
-						if (card.name == "sha" && player.storage.jlsgsy_duzun_buff) {
-							return num + player.storage.jlsgsy_duzun_buff[0];
+						if (card.name == "sha" && player.storage.jlsgsy_duzun_effect) {
+							return num + player.storage.jlsgsy_duzun_effect[0];
 						}
 					},
 				},
