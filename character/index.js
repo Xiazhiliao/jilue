@@ -71,26 +71,6 @@ if (game.getExtensionConfig("极略", "jlsg_zhuBuff")) {
 		jlsg_sr.translate[i] = jlsgZhu.translate[i];
 	}
 }
-//给突破的SR武将加上突破后描述
-let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
-for (let character in jlsg_sr.character) {
-	if (!upgradeList.includes(character)) {
-		continue;
-	}
-	const skills = jlsg_sr.character[character][3];
-	for (let skill of skills) {
-		//如果原技能的derivation里的技能也有突破的话就显示不了了，不过等有的时候再改吧（
-		jlsg_sr.skill[skill].derivation ??= [];
-		if (typeof jlsg_sr.skill[skill].derivation == "string") {
-			jlsg_sr.skill[skill].derivation = [jlsg_sr.skill[skill].derivation];
-		}
-		if (jlsg_sr?.dynamicTranslate?.[skill]) {
-			jlsg_sr.skill[skill].derivation.add(skill + "_upgrade");
-			jlsg_sr.translate[skill + "_upgrade"] = jlsg_sr.translate[skill];
-			jlsg_sr.translate[skill + "_upgrade_info"] = "突破后效果：" + jlsg_sr.dynamicTranslate[skill]({ index: true });
-		}
-	}
-}
 //三英调整
 //三英武将称号补充
 for (const name in jlsg_sy.character) {
