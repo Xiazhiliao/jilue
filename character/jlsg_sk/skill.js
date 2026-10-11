@@ -326,7 +326,7 @@ const skills = {
 				return false;
 			}
 			for (let i of lib.inpile) {
-				if (get.type(i) != "basic" || i == "shan") {
+				if (get.type(i) != "basic") {
 					continue;
 				} else if (event.filterCard(get.autoViewAs({ name: i, isCard: true }, []), player, event)) {
 					return true;
@@ -390,9 +390,15 @@ const skills = {
 		subSkill: {
 			backup: {
 				position: "he",
+				selectCard() {
+					if (get.player().isPhaseUsing()) {
+						return [1, 1];
+					}
+					return [0, 0];
+				},
 				filterCard(card, player, event) {
 					if (player.isPhaseUsing()) {
-						lib.filter.cardDiscardable(card, player, event);
+						return lib.filter.cardDiscardable(card, player, event);
 					}
 					return false;
 				},
@@ -5755,9 +5761,26 @@ const skills = {
 				shan: "wuxie",
 				wuxie: "shan",
 			};
-			return map[get.name(cards[0], player)];
+			return { name: map[get.name(cards[0], player)] };
 		},
 		position: "hs",
+		filterCard(card, player, event) {
+			event = event || get.event();
+			const filter = event._backup.filterCard,
+				namex = get.name(card, player),
+				map = {
+					shan: "wuxie",
+					wuxie: "shan",
+				};
+			if (!(namex in map)) {
+				return false;
+			}
+			const name = map[namex];
+			if (name) {
+				return filter(get.autoViewAs({ name }, "unsure"), player, event);
+			}
+			return false;
+		},
 		check(card) {
 			return 8 - get.value(card);
 		},

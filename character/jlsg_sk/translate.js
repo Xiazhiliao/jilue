@@ -65,7 +65,6 @@ const translates = {
 	jlsg_yaoming_3_info: "你可以移动场上的一张牌",
 	jlsgsk_yujin: "SK于禁",
 	jlsg_zhengyi: "整毅",
-	jlsg_zhengyi_shan: "整毅",
 	jlsg_zhengyi_info: "你出牌阶段内，若你的手牌数等于你的体力值+1，你可以视为使用任意一张基本牌，然后弃一张牌；你的回合外，当你需要使用或打出一张基本牌时，若你的手牌数等于你的体力值-1，则你可以摸一张牌并视为使用或打出了此牌。",
 	jlsgsk_panfeng: "SK潘凤",
 	jlsg_kuangfu: "狂斧",

@@ -17684,8 +17684,8 @@ const skills = {
 						return ["basic", "trick"].includes(get.type(event.card));
 					},
 					async content(event, trigger, player) {
-						trigger.target.push(target);
-						trigger.getParent().targets.push(target);
+						trigger.targets.push(player);
+						trigger.getParent().targets.push(player);
 					},
 					ai: {
 						effect: {

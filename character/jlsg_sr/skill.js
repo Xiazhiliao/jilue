@@ -812,7 +812,7 @@ const skills = {
 			}
 			if (name == "damageEnd" && event.player != player) {
 				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const upgrade = upgradeStorage?.["jlsg_aozhan"]?.[2] || upgradeStorage?.other?.[event.name];
+				const upgrade = upgradeStorage?.["jlsgsr_xuzhu"]?.[2] || upgradeStorage?.other?.["jlsg_aozhan"];
 				return upgrade;
 			}
 			return true;
