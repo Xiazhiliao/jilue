@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	//SR武将规则
-	_jlsgsr_choice: {
+	_jlsgsr_upgrade: {
 		charlotte: true,
 		ruleSkill: true,
 		unique: true,
@@ -15,8 +15,10 @@ const skills = {
 			if (get.itemtype(player) != "player") {
 				return false;
 			}
-			const nameList = get.nameList(player);
-			return nameList.some(name => name.startsWith("jlsgsr_"));
+			const nameList = get.nameList(player),
+				upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
+			upgradeList.addArray(get.info("_jlsgsr_upgrade").originUpgradeList);
+			return nameList.some(name => name.startsWith("jlsgsr_") && upgradeList.includes(name));
 		},
 		forced: true,
 		popup: false,
@@ -24,8 +26,9 @@ const skills = {
 		originUpgradeList: ["jlsgsr_xiaoqiao"],
 		async content(event, trigger, player) {
 			const nameList = get.nameList(player),
-				upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
-			upgradeList.addArray(get.info(event.name).originUpgradeList);
+				upgradeList = game.getExtensionConfig("极略", "upgradeList") || [],
+				{ originUpgradeList, upgradeContent } = get.info(event.name);
+			upgradeList.addArray(originUpgradeList);
 			for (const name of nameList) {
 				if (!name.startsWith("jlsgsr_")) {
 					continue;
@@ -35,7 +38,7 @@ const skills = {
 						continue;
 					}
 					let info = [false, false, false, false],
-						choiceList = [...Object.keys(lib.skill[event.name].upgradeContent[name]), "技能突破", "携带所有技能"];
+						choiceList = [...Object.keys(upgradeContent[name]), "技能突破", "携带所有技能"];
 					if (!game.getExtensionConfig("极略", "srlose")) {
 						info = info.slice(0, -1);
 						choiceList = choiceList.slice(0, -1);
@@ -54,14 +57,14 @@ const skills = {
 						const choice = upgrade.links;
 						event.info = info;
 						if (choice.includes(0)) {
-							await lib.skill[event.name].upgradeContent[name][choiceList[0]](event, trigger, player);
+							await upgradeContent[name][choiceList[0]](event, trigger, player);
 						}
 						if (choice.includes(1)) {
-							await lib.skill[event.name].upgradeContent[name][choiceList[1]](event, trigger, player);
+							await upgradeContent[name][choiceList[1]](event, trigger, player);
 						}
 						if (choice.includes(2)) {
 							info[2] = true;
-							const skills = lib.skill._jlsgsr_choice.createList(name);
+							const skills = lib.skill._jlsgsr_upgrade.createList(name);
 							game.broadcastAll(
 								function (player, skills) {
 									for (let i of skills) {
@@ -104,7 +107,7 @@ const skills = {
 				if (!game.getExtensionConfig("极略", "srlose") || _status._jlsgsr_upgrade?.[player.playerid]?.[name]?.[3]) {
 					continue;
 				}
-				const skills = lib.skill._jlsgsr_choice.createList(name);
+				const skills = lib.skill._jlsgsr_upgrade.createList(name);
 				if (skills.length < 2) {
 					continue;
 				}
@@ -129,6 +132,29 @@ const skills = {
 				player.removeSkill(result.control);
 				player.update();
 			}
+		},
+		checkUpgrade(player, skill, createEvent = false) {
+			if (!_status.gameStarted) {
+				return null;
+			}
+			const upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
+			upgradeList.addArray(get.info("_jlsgsr_upgrade").originUpgradeList);
+			const character = upgradeList.find(name => get.character(name).skills.includes(skill));
+			if (!character) {
+				return null;
+			}
+			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
+			if (!upgradeStorage[character]?.[2] && !upgradeStorage.other?.[skill]) {
+				if (createEvent) {
+					const next = game.createEvent("_jlsgsr_upgrade_extraUpgrade", false, get.event());
+					next.set("player", player);
+					next.set("skill", skill);
+					next.setContent(lib.skill._jlsgsr_upgrade.extraUpgrade);
+					return next;
+				}
+				return false;
+			}
+			return true;
 		},
 		createList(name) {
 			const list = [];
@@ -335,13 +361,12 @@ const skills = {
 		async extraUpgrade(event, trigger, player) {
 			const { skill } = event,
 				upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage.other) {
-				upgradeStorage.other = {};
-			} else if (upgradeStorage.other[skill]) {
+			upgradeStorage.other ??= {};
+			if (upgradeStorage.other[skill]) {
 				return;
 			}
+			const { createList } = get.info("_jlsgsr_upgrade");
 			let name = Object.keys(upgradeStorage).find(name => {
-				const createList = lib.skill._jlsgsr_choice.createList;
 				return createList(name).includes(skill);
 			});
 			if (name) {
@@ -773,16 +798,8 @@ const skills = {
 	jlsg_aozhan: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xuzhu"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		mod: {
 			cardUsable(card, player, num) {
@@ -811,9 +828,8 @@ const skills = {
 				return false;
 			}
 			if (name == "damageEnd" && event.player != player) {
-				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const upgrade = upgradeStorage?.["jlsgsr_xuzhu"]?.[2] || upgradeStorage?.other?.["jlsg_aozhan"];
-				return upgrade;
+				const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+				return checkUpgrade(player, "jlsg_aozhan");
 			}
 			return true;
 		},
@@ -839,16 +855,8 @@ const skills = {
 	jlsg_huxiao: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xuzhu"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:1",
 		trigger: {
@@ -884,8 +892,8 @@ const skills = {
 			await player.discard({ cards: event.cards });
 			trigger.num++;
 			game.log(player, `令伤害`, `#y+1`);
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsg_huxiao"]?.[2] || upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			const { result } = await player.chooseBool({
 				prompt: `${get.translation(event.name)}：是否翻${upgrade ? "" : "至背"}面，令此伤害再+1？`,
 				prompt2: `然后若你背面朝上，你摸两张牌`,
@@ -911,16 +919,8 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		trigger: { global: "judge" },
 		check(event, player) {
@@ -991,8 +991,8 @@ const skills = {
 				trigger.orderingCards.addArray(cards);
 				game.log(trigger.player, "的判定牌改为", cards);
 				await game.delay(2);
-				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const upgrade = upgradeStorage?.["jlsgsr_simayi"]?.[2] || upgradeStorage?.other?.[event.name];
+				const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+				const upgrade = checkUpgrade(player, event.name);
 				await player.draw(upgrade ? 2 : 1);
 			}
 		},
@@ -1006,16 +1006,8 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && !upgradeStorage?.other?.skill) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		trigger: { global: "damageBegin1" },
 		filter(event, player) {
@@ -1034,8 +1026,8 @@ const skills = {
 			return null;
 		},
 		async content(event, trigger, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_simayi"]?.[2] || upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			if (upgrade) {
 				await player.draw();
 			}
@@ -1116,16 +1108,8 @@ const skills = {
 		animationStr: "追尊",
 		animationColor: "water",
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_simayi"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		mark: true,
 		intro: {
@@ -1144,8 +1128,8 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_simayi"]?.[2] || upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			await player.recoverTo(upgrade ? player.maxHp : 1);
 			const result = await player.judge(event.name).forResult();
 			if (!result || !result?.suit) {
@@ -1312,16 +1296,8 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_lvbu"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		mod: {
 			attackRangeBase(player) {
@@ -1359,8 +1335,8 @@ const skills = {
 		async content(event, trigger, player) {
 			if (trigger.name == "useCard") {
 				player.logSkill(event.name);
-				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.[event.name];
+				const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+				const upgrade = checkUpgrade(player, event.name);
 				if (trigger.jlsg_jiwu || (upgrade && player.getHistory("useCard").indexOf(trigger) == 0)) {
 					game.log(trigger.card, "不可响应");
 					trigger.directHit.addArray(game.players);
@@ -1383,21 +1359,13 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_lvbu"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		enable: "chooseToUse",
 		filter(event, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"],
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_sheji"),
 				hs = player.getCards("h"),
 				equip1 = player.getCards("e", card => get.subtype(card) == "equip1");
 			if (upgrade && hs.length) {
@@ -1420,15 +1388,15 @@ const skills = {
 		},
 		prompt(event) {
 			const player = event.player;
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_sheji");
 			return `将一张装备区内的武器牌${upgrade ? "或所有手牌" : ""}当作【杀】使用`;
 		},
 		position: "he",
 		selectCard() {
 			const player = get.player();
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_sheji");
 			if (upgrade) {
 				return [1, player.countCards("h")];
 			}
@@ -1438,8 +1406,8 @@ const skills = {
 			if (get.position(card) == "e") {
 				return get.subtype(card) == "equip1";
 			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_sheji");
 			return upgrade && get.position(card) == "h";
 		},
 		check(card) {
@@ -1454,8 +1422,8 @@ const skills = {
 				return true;
 			}
 			const player = get.player();
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_lvbu"]?.[2] || upgradeStorage?.other?.["jlsg_sheji"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_sheji");
 			return upgrade && ui.selected.cards.every(card => get.position(card) == "h") && ui.selected.cards.length == player.countCards("h");
 		},
 		group: "jlsg_sheji_buff",
@@ -1730,16 +1698,8 @@ const skills = {
 	jlsg_yinmeng: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:1",
 		enable: "phaseUse",
@@ -1784,8 +1744,9 @@ const skills = {
 			if (num > 0) {
 				await player.draw({ num });
 			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.[event.name]) {
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
+			if (upgrade) {
 				const { bool } = await player
 					.chooseBool({
 						prompt: get.prompt(event.name, target),
@@ -1822,16 +1783,8 @@ const skills = {
 	jlsg_xiwu: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		onremove: true,
 		audio: "ext:极略/audio/skill:1",
@@ -1845,8 +1798,8 @@ const skills = {
 			) {
 				return false;
 			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.["jlsg_xiwu"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "xiwu");
 			if (upgrade) {
 				return true;
 			}
@@ -1860,8 +1813,8 @@ const skills = {
 			return get.effect(player, { name: "draw" }, player, player) > 0;
 		},
 		async content(event, trigger, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			if (upgrade) {
 				await player.draw({ num: 3 });
 			}
@@ -1914,16 +1867,8 @@ const skills = {
 	jlsg_juelie: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:1",
 		trigger: {
@@ -1936,8 +1881,8 @@ const skills = {
 				return false;
 			}
 			let target = name === "damageEnd" ? event.source : event.player;
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.["jlsg_juelie"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_juelie");
 			if (!upgrade && name === "damageEnd") {
 				return false;
 			}
@@ -1976,8 +1921,8 @@ const skills = {
 					}
 				},
 				player(card, player, target) {
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage?.other?.["jlsg_juelie"];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_juelie");
 					if (!upgrade) {
 						return;
 					}
@@ -2695,16 +2640,8 @@ const skills = {
 	jlsg_jiexi: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_ganning"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:1",
 		enable: "phaseUse",
@@ -2712,8 +2649,8 @@ const skills = {
 			return game.hasPlayer(curr => get.info("jlsg_jiexi").filterTarget(null, player, curr));
 		},
 		filterTarget(card, player, target) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_ganning"]?.[2] || upgradeStorage?.other?.["jlsg_jiexi"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_jiexi");
 			let bool = player.getStorage("jlsg_jiexi_used", []).length;
 			if (upgrade) {
 				bool = player.hasStorage("jlsg_jiexi_used", target);
@@ -2830,16 +2767,8 @@ const skills = {
 			global: ["phaseZhunbeiBegin"],
 		},
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_ganning"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		filter(event, player) {
 			return event.skill != "jlsg_youxia";
@@ -2864,8 +2793,8 @@ const skills = {
 					return event.card?.jlsg_youxia;
 				},
 				async content(event, tigger, player) {
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.other?.["jlsg_youxia"];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_youxia");
 					if (upgrade) {
 						await player.draw();
 					}
@@ -3094,16 +3023,8 @@ const skills = {
 		srlose: true,
 		audio: "ext:极略/audio/skill:1",
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunquan"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		enable: "phaseUse",
 		hiddenCard(player, name) {
@@ -3231,8 +3152,8 @@ const skills = {
 					global: "phaseAfter",
 				},
 				filter(event, player, name) {
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.["jlsgsr_sunquan"]?.[2] || upgradeStorage?.other?.["jlsg_quanheng"];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_quanheng");
 					if (!upgrade) {
 						return false;
 					}
@@ -3293,16 +3214,8 @@ const skills = {
 		srlose: true,
 		audio: "ext:极略/audio/skill:2",
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_sunquan"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		mod: {
 			aiOrder(player, card, num) {
@@ -3395,8 +3308,8 @@ const skills = {
 			next.gaintag.add("jlsg_xionglve");
 			await next;
 			player.markSkill(event.name);
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_sunquan"]?.[2] || upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			if (!upgrade) {
 				return;
 			}
@@ -3882,16 +3795,8 @@ const skills = {
 			content: "expansion",
 		},
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_guanyu"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		check: () => true,
 		async content(event, trigger, player) {
@@ -3917,8 +3822,8 @@ const skills = {
 					return event.card?.name == "sha" && player.getExpansions("jlsg_wenjiu").length > 0;
 				},
 				async cost(event, trigger, player) {
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.other?.["jlsg_wenjiu"];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_wenjiu");
 					const num = upgrade ? [1, Infinity] : 1;
 					const str = upgrade ? "任意" : "一";
 					const cards = player.getExpansions("jlsg_wenjiu");
@@ -3943,8 +3848,8 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const { cards } = event.cost_data;
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.other?.["jlsg_wenjiu"];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_wenjiu");
 					if (upgrade) {
 						await player.gain({ cards: cards, animate: "gain2" });
 					} else {
@@ -3962,8 +3867,8 @@ const skills = {
 					return player.getExpansions("jlsg_wenjiu").length > 0;
 				},
 				async cost(event, trigger, player) {
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.other?.["jlsg_wenjiu"];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_wenjiu");
 					const num = upgrade ? [1, Infinity] : 1;
 					const str = upgrade ? "任意" : "一";
 					const cards = player.getExpansions("jlsg_wenjiu");
@@ -3988,8 +3893,8 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const { cards } = event.cost_data;
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.other?.["jlsg_wenjiu"];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_wenjiu");
 					if (upgrade) {
 						await player.gain({ cards: cards, animate: "gain2" });
 					} else {
@@ -4003,16 +3908,8 @@ const skills = {
 	jlsg_shuixi: {
 		audio: "ext:极略/audio/skill:1",
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_guanyu"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		trigger: {
 			global: ["phaseBegin"],
@@ -4022,8 +3919,8 @@ const skills = {
 			return player.countCards("h") > 0;
 		},
 		async cost(event, trigger, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.other?.["jlsg_shuixi"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.skill);
 			const str = upgrade ? "你可以展示一张手牌并选择一名其他角色，除非该角色弃置张相同花色的手牌，否则你令其失去1点体力" : "你可以展示一张手牌并选择一名其他角色，除非该角色弃置一张相同花色的手牌，否则你令其失去1点体力";
 			event.result = await player
 				.chooseCardTarget({
@@ -4038,8 +3935,8 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.other?.["jlsg_shuixi"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			const { cards, targets } = event;
 			await player.showCards(cards);
 			const card = cards[0];
@@ -4097,16 +3994,8 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		enable: "phaseUse",
 		usable: 1,
@@ -4133,8 +4022,8 @@ const skills = {
 					selectTarget: -1,
 					cards: links,
 					async content(event, trigger, player) {
-						const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-						const upgrade = upgradeStorage?.other?.["jlsg_sanfen"];
+						const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+						const upgrade = checkUpgrade(player, "jlsg_sanfen");
 						while (true) {
 							let bool,
 								cards = Array.from(ui.cardPile.childNodes).slice(0, 2);
@@ -4275,16 +4164,8 @@ const skills = {
 		enable: ["phaseUse"],
 		usable: 1,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		marktext: "星",
 		intro: {
@@ -4321,8 +4202,8 @@ const skills = {
 					cards: links,
 					async content(event, trigger, player) {
 						const { cards } = get.info(event.name);
-						const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-						const upgrade = upgradeStorage?.other?.["jlsg_guanxing"];
+						const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+						const upgrade = checkUpgrade(player, "jlsg_guanxing");
 						let next1 = player.gain(cards, "gain2"),
 							next2 = player.draw(cards.length);
 						if (upgrade) {
@@ -4387,16 +4268,8 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_zhugeliang"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		mark: true,
 		intro: {
@@ -4433,8 +4306,8 @@ const skills = {
 				audio: "jlsg_weiwo",
 				trigger: { global: ["phaseJieshuBegin"] },
 				filter(event, player) {
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.other?.["jlsg_weiwo"];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_weiwo");
 					return upgrade && !player.hasHistory("damage");
 				},
 				prompt: "是否交换【帷幄】中的“若你有手牌”和“若你没有手牌”",
@@ -4742,16 +4615,8 @@ const skills = {
 	jlsg_rende: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_liubei"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:1",
 		trigger: { global: "phaseJieshuBegin" },
@@ -4762,8 +4627,8 @@ const skills = {
 			return get.attitude(player, event.player) > 0;
 		},
 		async content(event, trigger, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			let num = upgrade ? 3 : 2;
 			await player.draw(num);
 			let result = await player
@@ -4827,16 +4692,8 @@ const skills = {
 	jlsg_chouxi: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_liubei"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
@@ -4847,8 +4704,8 @@ const skills = {
 			return player != target && !player.hasStorage("jlsg_chouxi", target) && target.countCards("h");
 		},
 		async content(event, trigger, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			const target = event.targets[0];
 			if (!player.getStorage("jlsg_chouxi")?.length) {
 				player.when({ player: "phaseUseEnd" }).then(async (event, trigger, player) => player.setStorage("jlsg_chouxi", []));
@@ -4954,16 +4811,8 @@ const skills = {
 		srlose: true,
 		audio: "ext:极略/audio/skill:1",
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_caocao"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		trigger: { global: "useCardToPlayer" },
 		filter(event, player) {
@@ -4975,9 +4824,8 @@ const skills = {
 			return event.player.countGainableCards(player, "h");
 		},
 		async cost(event, trigger, player) {
-			const skill = event.name.slice(0, -5);
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.other?.[skill];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.skill);
 			const storage = player.getStorage(
 				event.skill,
 				Array.from({ length: upgrade ? 4 : 3 }, () => true)
@@ -4994,7 +4842,7 @@ const skills = {
 					"check",
 					(function () {
 						const gainEff = get.effect(trigger.player, { name: "shunshou_copy2" }, player, player),
-							resultList = lib.skill.jlsg_zhaoxiang.getCheck(trigger, player, upgrade);
+							resultList = get.info("jlsg_zhaoxiang").getCheck(trigger, player, upgrade);
 						return resultList.some((v, i) => storage[i] && v + gainEff > 0);
 					})()
 				)
@@ -5101,16 +4949,8 @@ const skills = {
 	jlsg_zhishi: {
 		srlose: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_caocao"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:2",
 		trigger: { global: "damageEnd" },
@@ -5121,8 +4961,8 @@ const skills = {
 			return get.prompt("jlsg_zhishi", event.player);
 		},
 		prompt2(event, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.other?.["jlsg_zhishi"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_zhishi");
 			let num = upgrade ? "三" : "两";
 			return `令其从随机${num}个能在此时机发动的技能中选择一个并发动`;
 		},
@@ -5131,8 +4971,8 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			if (!_status.characterlist) {
 				game.initCharacterList();
 			}
@@ -5333,22 +5173,15 @@ const skills = {
 	},
 	jlsg_zhonghou: {
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
 		usable(skill, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && !upgradeStorage?.other?.[skill]) {
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, skill);
+			if (!upgrade) {
 				return 1;
 			}
 			return 2;
@@ -5383,16 +5216,8 @@ const skills = {
 	},
 	jlsg_ganglie: {
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
@@ -5411,8 +5236,8 @@ const skills = {
 			if (card) {
 				await target.useCard(card, player);
 			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_xiahoudun"]?.[2] || upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			if (!player.hasHistory("sourceDamage", evt => evt == next) || !card) {
 				if (upgrade) {
 					await player.recover();
@@ -5431,16 +5256,8 @@ const skills = {
 	jlsg_piaoling: {
 		locked: false,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		mod: {
 			ignoredHandcard(card, player) {
@@ -5460,8 +5277,8 @@ const skills = {
 		},
 		logTarget: "player",
 		prompt(event, player) {
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.["jlsg_piaoling"];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_piaoling");
 			let str = `${event.player == player ? "" : "令其"}失去一点体力并获得${upgrade ? "5" : "3"}张红桃临时牌`;
 			if (event.player == player) {
 				str += `，你以此法获得的牌不计入手牌上限`;
@@ -5492,8 +5309,8 @@ const skills = {
 				list.addArray(cardList.filter(([suit]) => suit == "heart"));
 			}
 			if (list.length) {
-				const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-				const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.[event.name];
+				const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+				const upgrade = checkUpgrade(player, event.name);
 				let num = upgrade ? 5 : 3;
 				event.cards = [];
 				while (num-- > 0) {
@@ -5515,16 +5332,8 @@ const skills = {
 	},
 	jlsg_miluo: {
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		intro: {
 			mark(dialog, storage, player, evt, skill) {
@@ -5571,8 +5380,8 @@ const skills = {
 				let type = index == 0 ? "recover" : "loseHp",
 					num = 1;
 				if (map[reverse[type]]?.includes(target)) {
-					const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-					const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.[event.name];
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, event.name);
 					num = upgrade ? 3 : 2;
 				}
 				await target[type](num);
@@ -5612,16 +5421,8 @@ const skills = {
 		xiandingji: true,
 		limited: true,
 		init(player, skill) {
-			if (!_status.gameStarted) {
-				return;
-			}
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			if (!upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] && !upgradeStorage?.other?.[skill]) {
-				const next = game.createEvent("_jlsgsr_choice_extraUpgrade", false, get.event());
-				next.set("player", player);
-				next.set("skill", skill);
-				next.setContent(lib.skill._jlsgsr_choice.extraUpgrade);
-			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
@@ -5631,8 +5432,8 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			await player.recoverTo(player.maxHp);
-			const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-			const upgrade = upgradeStorage?.["jlsgsr_xiaoqiao"]?.[2] || upgradeStorage?.other?.[event.name];
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
 			let num = upgrade ? 2 : 1;
 			const result = await player
 				.chooseButtonTarget({
