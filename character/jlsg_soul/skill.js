@@ -4775,7 +4775,7 @@ const skills = {
 					} else if (player.hasUnknown()) {
 						return 0;
 					}
-					return -get.damageEffect(target, player, player);
+					return get.damageEffect(target, player, player, "fire") / 10;
 				},
 			},
 		},

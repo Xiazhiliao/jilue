@@ -5395,7 +5395,7 @@ const skills = {
 			player.markSkill(event.name);
 		},
 		getLastMap(player, skill, event) {
-			const history = player.getAllHistory("useSkill", evt => evt.skill == skill && evt.targets?.length && evt.event != evt);
+			const history = player.getAllHistory("useSkill", evt => evt.skill == skill && evt.targets?.length && evt.event != event);
 			return history.at(-1)?.event?.[skill] || { recover: [], loseHp: [] };
 		},
 		ai: {
