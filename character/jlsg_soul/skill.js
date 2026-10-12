@@ -1266,7 +1266,7 @@ const skills = {
 			if (player.isOnline2()) {
 				player.send(
 					(cards, prompt, id) => {
-						const dialog = ui.create.dialog(prompt, [cards, lib.skill.jlsg_xingyun.$createButton]);
+						const dialog = ui.create.dialog(prompt, [cards, get.info(event.name).$createButton]);
 						dialog.videoId = id;
 					},
 					Object.entries(storage),
@@ -1274,7 +1274,7 @@ const skills = {
 					id
 				);
 			}
-			const dialog = ui.create.dialog(prompt, [Object.entries(storage), lib.skill.jlsg_xingyun.$createButton]);
+			const dialog = ui.create.dialog(prompt, [Object.entries(storage), get.info(event.name).$createButton]);
 			dialog.videoId = id;
 			if (!event.isMine()) {
 				dialog.style.display = "none";
@@ -1505,7 +1505,7 @@ const skills = {
 				return;
 			}
 			const storage = result.cards.map(card => get.suit(card, player)),
-				skillList = lib.skill.jlsg_tongtian.derivation,
+				skillList = get.info(event.name).derivation,
 				suits = ["spade", "heart", "club", "diamond"];
 			let skills = [];
 			for (let i in suits) {
@@ -2194,7 +2194,7 @@ const skills = {
 		getCheck(event) {
 			const player = event.player,
 				map = { sha: "diamond", shan: "club", tao: "heart", wuxie: "spade" };
-			event.valueList ??= lib.skill.jlsg_longhun.getValue(event);
+			event.valueList ??= get.info("jlsg_longhun").getValue(event);
 			let suit = null,
 				double = true,
 				max = 0;
@@ -2258,7 +2258,7 @@ const skills = {
 			const event = get.event(),
 				player = get.player(),
 				cards = ui.selected.cards?.slice();
-			event.getCheck ??= lib.skill.jlsg_longhun.getCheck(event);
+			event.getCheck ??= get.info("jlsg_longhun").getCheck(event);
 			const [suit, double] = event.getCheck;
 			if (!suit) {
 				return 0;
@@ -4128,7 +4128,7 @@ const skills = {
 				intro: {
 					content(storage, player, skill) {
 						var list = player.getSkills(null, false, false).filter(function (i) {
-							return lib.skill.jlsg_zhenhun_debuff.skillBlocker(i, player);
+							return get.info(skill).skillBlocker(i, player);
 						});
 						if (list.length) {
 							return "你不处于濒死时不能使用【桃】<br>失效技能：" + get.translation(list);
@@ -4951,7 +4951,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (!_status.jlsg_luocha_list || !_status.jlsg_luocha_list_hidden) {
-				lib.skill.jlsg_luocha.initList();
+				get.info("jlsg_luocha").initList();
 			}
 			let num = event.triggername == "dying" ? 1 : 3;
 			if (num == 1) {
@@ -5054,7 +5054,7 @@ const skills = {
 	jlsg_guiqu: {
 		mod: {
 			maxHandcard(player, num) {
-				return lib.skill.jlsg_guiqu.getSkills(player).length;
+				return get.info("jlsg_guiqu").getSkills(player).length;
 			},
 		},
 		audio: "ext:极略/audio/skill:2",
@@ -5063,10 +5063,10 @@ const skills = {
 			return player.getSkills(null, false, false).filter(s => lib.translate[s] && lib.translate[s + "_info"] && lib.skill[s] && !lib.skill[s].nopopup && !lib.skill[s].charlotte && !lib.skill[s].equipSkill);
 		},
 		filter(event, player) {
-			return player.isDying() && event.filterCard({ name: "tao" }, player, event) && lib.skill.jlsg_guiqu.getSkills(player).length > 1;
+			return player.isDying() && event.filterCard({ name: "tao" }, player, event) && get.info("jlsg_guiqu").getSkills(player).length > 1;
 		},
 		hiddenCard(player, name) {
-			return player.isDying() && name === "tao" && lib.skill.jlsg_guiqu.getSkills(player).length > 1;
+			return player.isDying() && name === "tao" && get.info("jlsg_guiqu").getSkills(player).length > 1;
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -5076,7 +5076,7 @@ const skills = {
 				table.style.margin = "0";
 				table.style.width = "100%";
 				table.style.position = "relative";
-				let skills = lib.skill.jlsg_guiqu.getSkills(player);
+				let skills = get.info("jlsg_guiqu").getSkills(player);
 				// skills = skills.remove('jlsg_guiqu');
 				for (let s of skills) {
 					let td = ui.create.div(".shadowed.reduce_radius.pointerdiv.tdnode");
@@ -5475,13 +5475,13 @@ const skills = {
 			player: ["showCharacterEnd", "changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
 		},
 		filter(event, player) {
-			let skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
+			let skill = get.info("jlsg_yinyang_s").getCurrentSkill(player);
 			return !player.hasStorage("jlsg_yinyang_s", skill);
 		},
 		forced: true,
 		delay: false,
 		async content(event, trigger, player) {
-			const skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
+			const skill = get.info(event.name).getCurrentSkill(player);
 			await player
 				.changeSkills(
 					[skill],
@@ -5933,7 +5933,8 @@ const skills = {
 		filterCard: lib.filter.cardDiscardable,
 		check(card) {
 			const player = _status.event.player;
-			let maxTarget = game.countPlayer(p => lib.skill.jlsg_yanlie.ai.result.target(player, p) * get.attitude(player, p) > 0);
+			const ai = get.info("jlsg_yanlie").ai.result.target;
+			let maxTarget = game.countPlayer(p => ai(player, p) * get.attitude(player, p) > 0);
 			if (maxTarget <= ui.selected.cards.length) {
 				return 0;
 			}
@@ -6973,17 +6974,18 @@ const skills = {
 			event.skillstop = true;
 			player.logSkill("jlsg_xingwu", trigger.player);
 			await player.discard(event.cards);
+			const { removeSkill, gainSkill } = get.info(event.name);
 			if (event.targets) {
 				trigger.player.line(event.targets[0]);
 				trigger.player.removeMark("jlsg_xingwu", 1);
-				lib.skill.jlsg_xingwu.removeSkill(trigger.player);
+				removeSkill(trigger.player);
 				game.broadcastAll((player, id) => player.storage.jlsg_xingwu_mark[id]--, player, trigger.player.playerid);
 				event.targets[0].addMark("jlsg_xingwu", 1);
-				await lib.skill.jlsg_xingwu.gainSkill(event.targets[0]);
+				await gainSkill(event.targets[0]);
 				game.broadcastAll((player, id) => player.storage.jlsg_xingwu_mark[id]++, player, event.targets[0].playerid);
 			} else {
 				trigger.player.addMark("jlsg_xingwu", 1);
-				await lib.skill.jlsg_xingwu.gainSkill(trigger.player);
+				await gainSkill(trigger.player);
 				game.broadcastAll((player, id) => player.storage.jlsg_xingwu_mark[id]++, player, trigger.player.playerid);
 			}
 			const result = await player.chooseBool(`是否令${get.translation(trigger.player)}重新获得【星舞】的技能？`, () => get.event().getRand() < 0.5).forResult();
@@ -6994,7 +6996,7 @@ const skills = {
 				}
 				await trigger.player.removeSkills(skills);
 				trigger.player.setStorage("jlsg_xingwu_skill", []);
-				await lib.skill.jlsg_xingwu.gainSkill(trigger.player, true, skills.length);
+				await gainSkill(trigger.player, true, skills.length);
 			}
 		},
 		get skills() {
@@ -7023,11 +7025,12 @@ const skills = {
 			}
 			let targetSkills = target.getSkills(null, false, false);
 			let skills = [];
-			for (let sex in lib.skill.jlsg_xingwu.skills) {
+			const info = get.info("jlsg_xingwu");
+			for (let sex in info.skills) {
 				if (sex === target.sex) {
 					continue;
 				}
-				skills.addArray(lib.skill.jlsg_xingwu.skills[sex].filter(s => !targetSkills.includes(s)));
+				skills.addArray(info.skills[sex].filter(s => !targetSkills.includes(s)));
 			}
 			skills.removeArray(game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), []));
 			skills = skills.filter(skill => {
@@ -7128,12 +7131,12 @@ const skills = {
 							continue;
 						} else if (target.countMark("jlsg_xingwu") > num) {
 							while (player.storage.jlsg_xingwu_mark[target.playerid] < target.countMark("jlsg_xingwu")) {
-								await lib.skill.jlsg_xingwu.gainSkill(target);
+								await get.info("jlsg_xingwu").gainSkill(target);
 								player.storage.jlsg_xingwu_mark[target.playerid]++;
 							}
 						} else {
 							while (player.storage.jlsg_xingwu_mark[target.playerid] > target.countMark("jlsg_xingwu")) {
-								await lib.skill.jlsg_xingwu.removeSkill(target);
+								await get.info("jlsg_xingwu").removeSkill(target);
 								player.storage.jlsg_xingwu_mark[target.playerid]--;
 							}
 						}
@@ -7417,7 +7420,7 @@ const skills = {
 					console.error("jlsg_tiangong description not found", choice);
 					return;
 			}
-			choices = Object.keys(lib.skill.jlsg_tiangong.targetFilters);
+			choices = Object.keys(get.info("jlsg_tiangong").targetFilters);
 			// safe guard
 			if (!game.hasPlayer(p => p.hasSex("male"))) {
 				choices.remove("所有男性角色");
@@ -7448,14 +7451,14 @@ const skills = {
 			}
 			choice = targetFilters[chooseTargetFilter.index];
 			skillInfo += choice;
-			skill.targetFilter = lib.skill.jlsg_tiangong.targetFilters[choice];
+			skill.targetFilter = get.info("jlsg_tiangong").targetFilters[choice];
 			if (!skill.targetFilter) {
 				console.error("jlsg_tiangong description not found", choice);
 				return;
 			}
-			choices = Object.keys(lib.skill.jlsg_tiangong.effects);
+			choices = Object.keys(get.info("jlsg_tiangong").effects);
 			if (skillInfo.includes("所有")) {
-				choices = choices.filter(c => !lib.skill.jlsg_tiangong.effects[c].multi);
+				choices = choices.filter(c => !get.info("jlsg_tiangong").effects[c].multi);
 			}
 			const effects = choices.randomGets(3);
 			const chooseEffect = await player
@@ -7467,7 +7470,7 @@ const skills = {
 			}
 			choice = effects[chooseEffect.index];
 			skillInfo += choice + "。";
-			const { content, positive, groupType = null } = lib.skill.jlsg_tiangong.effects[choice];
+			const { content, positive, groupType = null } = get.info("jlsg_tiangong").effects[choice];
 			if (!content) {
 				console.error("jlsg_tiangong description not found", content);
 				return;
@@ -7486,7 +7489,10 @@ const skills = {
 				);
 				return arr.unique();
 			}, []);
-			const translate = lib.skill.jlsg_tiangong.skillName.filter(i => !list.includes(i)).randomGet();
+			const translate = get
+				.info("jlsg_tiangong")
+				.skillName.filter(i => !list.includes(i))
+				.randomGet();
 			game.broadcastAll(
 				function (skill, name, translate, info) {
 					lib.skill[name] = skill;
@@ -7614,7 +7620,7 @@ const skills = {
 				},
 				"手牌上限+1": {
 					content: async function (event, trigger, player) {
-						await lib.skill.jlsg_tiangong_handcard.change(event.target);
+						await get.info("jlsg_tiangong_handcard").change(event.target);
 					},
 					positive(targets, player, viewer) {
 						let att = Math.sign(get.attitude(viewer, player));
@@ -7624,7 +7630,7 @@ const skills = {
 				},
 				"使用【杀】的次数上限+1": {
 					content: async function (event, trigger, player) {
-						await lib.skill.jlsg_tiangong_useSha.change(event.target);
+						await get.info("jlsg_tiangong_useSha").change(event.target);
 					},
 					positive(targets, player, viewer) {
 						let att = Math.sign(get.attitude(viewer, player));
@@ -7974,7 +7980,7 @@ const skills = {
 				},
 				"摸牌阶段摸牌数+1": {
 					content: async function (event, trigger, player) {
-						await lib.skill.jlsg_tiangong_draw.change(event.target);
+						await get.info("jlsg_tiangong_draw").change(event.target);
 					},
 					positive(targets, player, viewer) {
 						let att = Math.sign(get.attitude(viewer, player));
@@ -8122,14 +8128,14 @@ const skills = {
 					},
 				},
 			};
-			lib.skill.jlsgsy_bolue.initList();
+			get.info("jlsgsy_bolue").initList();
 			let groups = new Set(jlsg.characterList.map(c => get.character(c, 1)));
 			for (let g of groups) {
 				result[`随机获得一个${lib.translate[g]}势力技能`] = {
 					content: async function (event, trigger, player) {
 						let skills = event.target.getSkills(null, false, false);
 						if (!_status.jlsgsy_bolue_list) {
-							lib.skill.jlsgsy_bolue.initList();
+							get.info("jlsgsy_bolue").initList();
 						}
 						let skillsList = _status.jlsgsy_bolue_list[lib.skill[event.getParent().name]?.groupType];
 						skillsList.removeArray(game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), []));
@@ -8303,16 +8309,17 @@ const skills = {
 					return false;
 				}
 			}
-			return lib.skill.jlsg_linglong.validTargets(player, event.removeSkill).length;
+			return get.info("jlsg_linglong").validTargets(player, event.removeSkill).length;
 		},
 		async cost(event, trigger, player) {
-			const targets = lib.skill.jlsg_linglong.validTargets(player, trigger.removeSkill),
+			const { validTargets, validSkillsOthers } = get.info(event.skill);
+			const targets = validTargets(player, trigger.removeSkill),
 				list = {};
 			for (let target of targets) {
 				if (!list[target.playerid]) {
 					list[target.playerid] = {};
 				}
-				const skills = lib.skill.jlsg_linglong.validSkillsOthers(target);
+				const skills = validSkillsOthers(target);
 				for (let skill of skills) {
 					const { targetFilter, positive } = lib.skill[skill];
 					const targets1 = targetFilter(target);
@@ -8348,9 +8355,9 @@ const skills = {
 			} = event;
 			let skills, removeSkill;
 			if (target == player) {
-				skills = lib.skill.jlsg_linglong.validSkillsSelf(target, trigger.removeSkill);
+				skills = get.info("jlsg_linglong").validSkillsSelf(target, trigger.removeSkill);
 			} else {
-				skills = lib.skill.jlsg_linglong.validSkillsOthers(target);
+				skills = get.info("jlsg_linglong").validSkillsOthers(target);
 			}
 			if (skills.length == 1) {
 				removeSkill = skills;
@@ -8420,8 +8427,9 @@ const skills = {
 			return player.getSkills(null, false, false).filter(s => s.startsWith("jlsg_tiangong_jiguan_"));
 		},
 		validTargets(player, ignoreSkills) {
-			let result = game.filterPlayer(p => p != player && lib.skill.jlsg_linglong.validSkillsOthers(p).length);
-			let skills = lib.skill.jlsg_linglong.validSkillsSelf(player, ignoreSkills);
+			const { validSkillsOthers, validSkillsSelf } = get.info("jlsg_linglong");
+			let result = game.filterPlayer(p => p != player && validSkillsOthers(p).length);
+			let skills = validSkillsSelf(player, ignoreSkills);
 			if (skills.length) {
 				result.push(player);
 			}
@@ -8976,16 +8984,16 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		marktext: "隐",
 		intro: {
-			content(storage, player) {
-				var str = `共有${player.countMark("jlsg_shenyin")}个标记`;
+			content(storage, player, skill) {
+				var str = `共有${player.countMark(skill)}个标记`;
 				if (player == game.me || player.isUnderControl()) {
-					str += `<br>${lib.skill.jlsg_shenyin.getInfo(player)}`;
+					str += `<br>${get.info(skill).getInfo(player)}`;
 				}
 				return str;
 			},
 		},
-		onremove(player) {
-			if (player.hasMark("jlsg_shenyin")) {
+		onremove(player, skill) {
+			if (player.hasMark(skill)) {
 				player.useSkill("jlsg_shenyin_dying", false);
 			} else {
 				delete player.setStorage("jlsg_shenyin_record", undefined);
@@ -9014,14 +9022,14 @@ const skills = {
 			} else {
 				event.result = await player
 					.chooseBool(() => true)
-					.set("prompt2", lib.skill.jlsg_shenyin.getInfo(player))
+					.set("prompt2", get.info(event.skill).getInfo(player))
 					.set("prompt", "神隐：是否记录当前信息并获得一枚“神隐”标记？")
 					.forResult();
 			}
 		},
 		async content(event, trigger, player) {
 			if (event.triggername != "die") {
-				lib.skill.jlsg_shenyin.record(player);
+				get.info(event.name).record(player);
 			}
 			player.addMark("jlsg_shenyin", 1);
 			player.markSkill("jlsg_shenyin");
@@ -9093,7 +9101,7 @@ const skills = {
 				return resultStr;
 			};
 			const list1 = Object.entries(player.storage.jlsg_shenyin_record),
-				list2 = Object.entries(lib.skill.jlsg_shenyin.record(player, true));
+				list2 = Object.entries(get.info("jlsg_shenyin").record(player, true));
 			let str1 = `神隐记录:`,
 				str2 = `<br>当前信息:`;
 			for (let i = 0; i < list1.length; i++) {
@@ -9146,7 +9154,7 @@ const skills = {
 					const result = await player
 						.chooseBool(() => true)
 						.set("prompt", `神隐：是否弃置所有“神隐”标标记并恢复至记录状态，然后摸${get.translation(2 * num)}`)
-						.set("prompt2", lib.skill.jlsg_shenyin.getInfo(player, 1))
+						.set("prompt2", get.info("jlsg_shenyin").getInfo(player, 1))
 						.forResult();
 					if (!result?.bool) {
 						return;
@@ -9184,7 +9192,7 @@ const skills = {
 				var content = player.getExpansions("jlsg_chuyuan");
 				if (content && content.length) {
 					if (player == game.me || player.isUnderControl()) {
-						dialog.addAuto(lib.skill.jlsg_chuyuan.prompt2(null, player));
+						dialog.addAuto(get.info("jlsg_chuyuan").prompt2(null, player));
 						dialog.addAuto(content);
 					} else {
 						return "共有" + get.cnNumber(content.length) + "张储";
@@ -9195,7 +9203,7 @@ const skills = {
 				var content = player.getExpansions("jlsg_chuyuan");
 				if (content && content.length) {
 					if (player == game.me || player.isUnderControl()) {
-						return `${lib.skill.jlsg_chuyuan.prompt2(null, player)}<br>${get.translation(content)}`;
+						return `${get.info("jlsg_chuyuan").prompt2(null, player)}<br>${get.translation(content)}`;
 					}
 					return "共有" + get.cnNumber(content.length) + "张储";
 				}
@@ -9228,7 +9236,7 @@ const skills = {
 			if (!player.countCards("he", c => get.color(c, player) == color[0])) {
 				return;
 			} else {
-				let str = lib.skill.jlsg_chuyuan.prompt2(trigger, player);
+				let str = get.info("jlsg_chuyuan").prompt2(trigger, player);
 				const { bool, cards } = await player
 					.chooseCard("he", `###储元：请选择一张${color[1]}色牌置于武将牌上称为“储”###${str}`)
 					.set("color", color)
@@ -9312,7 +9320,7 @@ const skills = {
 			} else {
 				await player.addSkills(["jlsg_jiquan"]);
 			}
-			const characters = lib.skill.jlsg_dengji.getCharacters();
+			const characters = get.info("jlsg_dengji").getCharacters();
 			var skills = [];
 			for (const name of characters) {
 				if (!get.character(name)) {
@@ -9467,10 +9475,10 @@ const skills = {
 					filterTarget(card, player, target) {
 						return player != target;
 					},
-					ai1: lib.skill.rende.check,
+					ai1: get.info("rende").check,
 					async content(event, trigger, player) {
 						let target = event.target;
-						let links = lib.skill.jlsg_renzheng_backup.links;
+						let links = get.info(event.name).links;
 						if (links && links.length) {
 							for (let link of links) {
 								player.popup(link, "gray");
@@ -13575,7 +13583,7 @@ const skills = {
 									弃牌：${records.discard ? "是" : "否"}`;
 						if (player.hasStorage("skill_blocker", "jlsg_fengtian_effect")) {
 							const list = player.getSkills(null, false, false).filter(function (i) {
-								return lib.skill.jlsg_fengtian_effect.skillBlocker(i, player);
+								return get.info("jlsg_fengtian_effect").skillBlocker(i, player);
 							});
 							if (list.length) {
 								str += `<br>已失效技能：${get.translation(list)}`;
@@ -14797,7 +14805,7 @@ const skills = {
 		},
 		hasShaUsableChanged() {
 			if (!_status.playerShaUsableMap) {
-				lib.skill.jlsg_taotie.updateShaUsableMap();
+				get.info("jlsg_taotie").updateShaUsableMap();
 			}
 			const map = _status.playerShaUsableMap;
 			let list = {};
@@ -14810,7 +14818,7 @@ const skills = {
 					list[i.playerid] = map[i.playerid] - num;
 				}
 			}
-			lib.skill.jlsg_taotie.updateShaUsableMap();
+			get.info("jlsg_taotie").updateShaUsableMap();
 			return list;
 		},
 		init: (player, skill) => get.info(skill).updateShaUsableMap(),
@@ -14900,7 +14908,7 @@ const skills = {
 					if (triggername == "jlsg_yaolingAfter" && event.drawReduce) {
 						return [event.drawReduce];
 					}
-					let list = Object.entries(lib.skill.jlsg_taotie.hasShaUsableChanged());
+					let list = Object.entries(get.info("jlsg_taotie").hasShaUsableChanged());
 					return list;
 				},
 				filter(event, player, triggername, info) {
@@ -15039,7 +15047,7 @@ const skills = {
 				if (result.control == "失去1点属性") {
 					list = ["体力", "体力上限", "出杀次数", "摸牌数"];
 					if (!_status.playerShaUsableMap) {
-						lib.skill.jlsg_taotie.updateShaUsableMap();
+						get.info("jlsg_taotie").updateShaUsableMap();
 					}
 					if (_status.playerShaUsableMap[target.playerid] <= 0) {
 						list.remove("出杀次数");
@@ -16015,12 +16023,15 @@ const skills = {
 			const target = trigger.player;
 			const info = event.indexedData;
 			let str = "";
-			let randomEff = lib.skill.jlsg_dieyun.randomBuffList.randomGet();
+			let randomEff = get.info("jlsg_dieyun").randomBuffList.randomGet();
 			const controls = [
 				link => {
 					if (link == "刷新") {
 						if (player.storage.jlsg_dieyun > 0) {
-							randomEff = lib.skill.jlsg_dieyun.randomBuffList.filter(i => i.key != info.key).randomGet();
+							randomEff = get
+								.info("jlsg_dieyun")
+								.randomBuffList.filter(i => i.key != info.key)
+								.randomGet();
 							if (typeof randomEff.str == "string") {
 								str = randomEff.str;
 							} else {
