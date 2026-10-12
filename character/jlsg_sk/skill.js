@@ -13375,7 +13375,7 @@ const skills = {
 			return { positive, negative };
 		},
 		get skillsList() {
-			let characters = Object.entries(lib.skill.jlsg_xinghan.getCharacters)
+			let characters = Object.entries(get.info("jlsg_xinghan").getCharacters)
 				.map(i => i[1])
 				.flat();
 			let list = [];
@@ -15444,7 +15444,7 @@ const skills = {
 			if (typeof player.getModableSkills == "function") {
 				skills = player.getModableSkills();
 			} else if (typeof player.getSkills == "function") {
-				skills = player.getSkills().concat(lib.skill.global);
+				skills = player.getSkills().concat(get.info("global"));
 				game.expandSkills(skills);
 				skills = skills.filter(function (skill) {
 					let info = get.info(skill);
