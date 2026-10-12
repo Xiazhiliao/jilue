@@ -873,7 +873,7 @@ export default {
 											targets: [target],
 										} = event;
 										let att = Math.sign(get.attitude(player, target));
-										return att * lib.skill.jlsg_jiexi.ai.result.target(player, target) > 0;
+										return att * get.info("jlsg_jiexi").ai.result.target(player, target) > 0;
 									})
 									.forResult();
 								if (!result?.bool) {
@@ -1192,14 +1192,14 @@ export default {
 						source: "damageSource",
 					},
 					filter(event, player) {
-						const target = lib.skill.jlsg_langgu.logTarget(event, player);
+						const target = get.info("jlsg_langgu").logTarget(event, player);
 						if (!target?.isIn()) {
 							return false;
 						}
 						return target.countGainableCards(player, "he");
 					},
 					check(event, player) {
-						const target = lib.skill.jlsg_langgu.logTarget(event, player);
+						const target = get.info("jlsg_langgu").logTarget(event, player);
 						if (target == player && !player.getVEquips("baiyin").length) {
 							return false;
 						}
@@ -1214,7 +1214,7 @@ export default {
 						return event.source;
 					},
 					async content(event, trigger, player) {
-						const target = lib.skill.jlsg_langgu.logTarget(trigger, player);
+						const [target] = event.targets;
 						const result = await player
 							.judge(function (card) {
 								if (get.color(card, get.player()) == "black") {
@@ -1623,7 +1623,7 @@ export default {
 												popname: true,
 												viewAs: { name: links[0][2] },
 												onuse(result, player) {
-													result.cards = lib.skill.jlsg_xionglve2_backup.cards;
+													result.cards = get.info("jlsg_xionglve2_backup").cards;
 													var card = result.cards[0];
 													player.logSkill("jlsg_xionglve2", result.targets);
 												},
@@ -1683,7 +1683,7 @@ export default {
 												popname: true,
 												viewAs: { name: links[0][2] },
 												onuse(result, player) {
-													result.cards = lib.skill.jlsg_xionglve2_backup.cards;
+													result.cards = get.info("jlsg_xionglve2_backup").cards;
 													var card = result.cards[0];
 													player.logSkill("jlsg_xionglve2", result.targets);
 												},
@@ -1699,7 +1699,7 @@ export default {
 									direct: true,
 									cards: links,
 									filterTarget(card, player, target) {
-										var cards = lib.skill.jlsg_xionglve2_backup.cards;
+										var cards = get.info("jlsg_xionglve2_backup").cards;
 										return player != target && !target.getCards("e", get.subtype(cards[0])[5]);
 									},
 									filterCard() {
@@ -1707,7 +1707,7 @@ export default {
 									},
 									selectCard: -1,
 									prepare(_, player, targets) {
-										const cards = lib.skill.jlsg_xionglve2_backup.cards;
+										const cards = get.info("jlsg_xionglve2_backup").cards;
 										player.$give(cards[0], targets[0], false);
 									},
 									ai2(target) {

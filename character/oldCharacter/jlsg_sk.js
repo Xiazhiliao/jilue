@@ -92,7 +92,7 @@ export default {
 									}
 								},
 								cardSavable() {
-									return lib.skill.jlsg_yingge_buff.mod.cardEnabled.apply(this, arguments);
+									return get.info("jlsg_yingge_buff").mod.cardEnabled.apply(this, arguments);
 								},
 								cardname(card, player, name) {
 									if (name == "sha") {
@@ -343,7 +343,7 @@ export default {
 								value(identity, nature) {
 									let result = setIdentity.value.apply(this, arguments);
 									if (this.storage.jlsg_xinghan) {
-										arguments[0] = lib.skill.jlsg_xinghan.mapIdentity(identity);
+										arguments[0] = get.info("jlsg_xinghan").mapIdentity(identity);
 										for (let recruit of this.storage.jlsg_xinghan) {
 											setIdentity.value.apply(recruit, arguments);
 										}
@@ -457,7 +457,7 @@ export default {
 							let next = recruit.die();
 							next._triggered = null;
 							next.then((resolve, reject) => {
-								lib.skill.jlsg_xinghan.removeRecruit(recruit);
+								get.info("jlsg_xinghan").removeRecruit(recruit);
 							});
 						}
 					},
@@ -606,7 +606,7 @@ export default {
 							// eslint-disable-next-line getter-return
 							get() {
 								if (this.storage.jlsg_xinghan_recruit) {
-									return lib.skill.jlsg_xinghan.mapIdentity(this.storage.jlsg_xinghan_recruit.identity);
+									return get.info("jlsg_xinghan").mapIdentity(this.storage.jlsg_xinghan_recruit.identity);
 								}
 							},
 						});
@@ -775,7 +775,7 @@ export default {
 									game.swapPlayerAuto(recruiter);
 								}
 							}
-							lib.skill.jlsg_xinghan.removeRecruit(player);
+							get.info("jlsg_xinghan").removeRecruit(player);
 						}
 					},
 				},
