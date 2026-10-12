@@ -6210,7 +6210,10 @@ const skills = {
 		viewAs: {
 			name: "juedou",
 			isCard: true,
-			storage: { nowuxie: true },
+			storage: {
+				nowuxie: true,
+				jlsg_huchi: true,
+			},
 		},
 		filterCard: () => false,
 		selectCard: -1,
@@ -6220,11 +6223,11 @@ const skills = {
 					global: "damageEnd",
 				},
 				filter(event) {
-					return event.card && event.card.name == "juedou" && event.skill == "jlsg_huchi";
+					return event.card?.name == "juedou" && event.card.storage?.["jlsg_huchi"];
 				},
 				silent: true,
 				async content(event, trigger, player) {
-					trigger.player.draw({ num: 3 });
+					await trigger.player.draw({ num: 3 });
 				},
 			},
 			extra: {
@@ -6236,11 +6239,12 @@ const skills = {
 					if (event.name == "useCard") {
 						return event.card.name === "juedou" && event.skill == "jlsg_huchi" && game.getGlobalHistory("changeHp", e => e.getParent().name === "damage" && e.getParent().card === event.card).length === 0;
 					}
-					return event.reason && event.reason.card && event.reason.card.name === "juedou" && event.reason.getParent().skill == "jlsg_huchi";
+					const evt = event.reason;
+					return evt?.card?.name === "juedou" && evt.card.storage?.["jlsg_huchi"];
 				},
 				silent: true,
 				async content(event, trigger, player) {
-					player.tempBanSkill("jlsg_huchi", "phaseUseAfter");
+					player.tempBanSkill("jlsg_huchi", ["phaseUseAfter", "phaseBeginStart", "phaseAfter"]);
 				},
 			},
 		},
