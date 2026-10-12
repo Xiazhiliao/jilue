@@ -543,7 +543,7 @@ const skills = {
 					return false;
 				}
 				return evtx.getParent() === "shandian" || evtx.card?.name === "shandian";
-			});
+			}).length;
 			if (cnt == 0) {
 				await player.recover();
 			} else {

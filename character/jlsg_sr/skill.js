@@ -4385,7 +4385,7 @@ const skills = {
 					return false;
 				}
 				if (cardName == "jiedao") {
-					return target.getVEquips(1).length && target.hasUseTarget("sha", false);
+					return target.getVEquips(1).length;
 				}
 			} else if (ui.selected.targets.length == 2) {
 				const user = ui.selected.targets[1];
