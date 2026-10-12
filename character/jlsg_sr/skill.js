@@ -114,7 +114,7 @@ const skills = {
 				}
 				let str = "";
 				for (const skill of skills) {
-					str += '<div class="text" style="width:90%;display:inline-block">' + '<div class="skill"><font color="#FFFF00"><span style="font-size:18px">' + lib.translate[skill] + "</font></span></div>" + '<div><font color="#9AFF02"><span style="font-size:16px">' + lib.translate[skill + "_info"] + "</font></span></div>" + "</div><br><br><br>";
+					str += '<div class="text" style="width:90%;display:inline-block">' + '<div class="skill"><font color="#FFFF00"><span style="font-size:18px">' + lib.translate[skill] + "</font></span></div>" + '<div><font color="#9AFF02"><span style="font-size:16px">' + get.skillInfoTranslation(skill, player) + "</font></span></div>" + "</div><br><br><br>";
 				}
 				const result = await player
 					.chooseControl(skills)
@@ -376,7 +376,7 @@ const skills = {
 				}
 			}
 			if (!event.check) {
-				const buttons = [skill, skill + "_upgrade"].map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + (i.endsWith("_upgrade") ? "突破" : "原始") + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
+				const buttons = [skill, skill + "_faq"].map((v, i) => [v, `<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【${i === 1 ? "突破" : "原始"}】</div><div>${get.skillInfoTranslation(v)}</div></div>`]);
 				let result = await player
 					.chooseBool()
 					.set("createDialog", [`是否突破【${get.translation(skill)}】`, [buttons, "textbutton"]])

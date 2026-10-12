@@ -40,6 +40,26 @@ for (let character in config) {
 		}
 	}
 }
+//给突破的SR武将加上突破后描述
+const upgradeList = (game.getExtensionConfig("极略", "upgradeList") || []).concat(jlsg_sr.skill._jlsgsr_upgrade.originUpgradeList);
+for (let character in jlsg_sr.character) {
+	if (!upgradeList.includes(character)) {
+		continue;
+	}
+	const skills = jlsg_sr.character[character][3];
+	for (const skill of skills) {
+		if (skill in jlsg_sr.dynamicTranslate) {
+			jlsg_sr.skill[skill].derivation ??= [];
+			if (typeof jlsg_sr.skill[skill].derivation == "string") {
+				jlsg_sr.skill[skill].derivation = [jlsg_sr.skill[skill].derivation];
+			}
+			const faq = skill + "_faq";
+			jlsg_sr.skill[skill].derivation.push(faq);
+			jlsg_sr.translate[faq] = "突破";
+			jlsg_sr.translate[faq + "_info"] = jlsg_sr.dynamicTranslate[skill]({ index: true }, skill);
+		}
+	}
+}
 //导入jlsgZhu里的skill和translate
 if (game.getExtensionConfig("极略", "jlsg_zhuBuff")) {
 	//清除原有主公技
