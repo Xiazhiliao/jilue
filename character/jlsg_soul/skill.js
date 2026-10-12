@@ -7163,7 +7163,7 @@ const skills = {
 			for (let target of event.targets) {
 				let gainableCards = target.getGainableCards(player, "h", card => get.suit(card) == "heart");
 				if (gainableCards.length) {
-					lose_list.puish([target, gainableCards]);
+					lose_list.push([target, gainableCards]);
 				}
 			}
 			if (cards.length) {
