@@ -472,7 +472,7 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			if (!_status.jlsgsy_bolue_list) {
-				lib.skill.jlsgsy_bolue.initList();
+				get.info(event.name).initList();
 			}
 			let obj = player.getStorage(event.name, {
 				wei: 1,
@@ -1379,7 +1379,7 @@ const skills = {
 				})
 				.set("from", from)
 				.set("to", to)
-				.setContent(lib.skill.jlsgsy_chanxian.choosePlayerCard)
+				.setContent(get.info(event.name).choosePlayerCard)
 				.forResult();
 			if (result.bool && result.links.length) {
 				const link = result.links[0];
@@ -2017,7 +2017,7 @@ const skills = {
 		},
 		ai: {
 			order(skill, player) {
-				if (!lib.skill.jlsgsy_quanqing.filter(null, player)) {
+				if (!get.info("jlsgsy_quanqing").filter(null, player)) {
 					return 0;
 				}
 				let hs = player.getCards("h", c => !player.getStorage("jlsgsy_quanqing", { shown: [] }).shown.includes(c));
@@ -2041,7 +2041,7 @@ const skills = {
 						for (let [, , cardName, nature] of cards) {
 							//神金传虚拟牌，cardid也不设置一下😅
 							let card = get.autoViewAs({ name: cardName, nature: nature }, []);
-							let newV = lib.skill.dcpandi.getUseValue(card, target, player);
+							let newV = get.info("dcpandi").getUseValue(card, target, player);
 							if (newV > value) {
 								choice = [cardName, nature];
 								value = newV;
@@ -2068,7 +2068,7 @@ const skills = {
 					return 0;
 				},
 				target(player, target) {
-					if (lib.skill.jlsgsy_quanqing.ai.result.player.apply(this, arguments) > 0) {
+					if (get.info("jlsgsy_quanqing").ai.result.player.apply(this, arguments) > 0) {
 						if (Math.floor(Math.random() * 7) + 1 > get.number(ui.selected.cards[0], player)) {
 							return 1;
 						}
@@ -2801,7 +2801,7 @@ const skills = {
 			},
 			2: {
 				init(player) {
-					player.disableSkill("jlsgsy_moshou", lib.skill.jlsgsy_moshou.getSkills(player));
+					player.disableSkill("jlsgsy_moshou", get.info("jlsgsy_moshou").getSkills(player));
 				},
 				onremove(player) {
 					player.enableSkill("jlsgsy_moshou");
@@ -2823,7 +2823,7 @@ const skills = {
 				firstDo: true,
 				async content(event, trigger, player) {
 					player.enableSkill("jlsgsy_moshou");
-					player.disableSkill("jlsgsy_moshou", lib.skill.jlsgsy_moshou.getSkills(player));
+					player.disableSkill("jlsgsy_moshou", get.info("jlsgsy_moshou").getSkills(player));
 				},
 				ai: {
 					neg: true,
