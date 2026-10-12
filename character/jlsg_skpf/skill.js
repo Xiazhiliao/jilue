@@ -212,8 +212,9 @@ const skills = {
 					await current.draw(num);
 				}
 				await current.recover();
-				const list = lib.skill.jlsg_lingze.typePBTY.equip
-						.filter(([suit, number, name]) => {
+				const list = get
+						.info("jlsg_lingze")
+						.typePBTY.equip.filter(([suit, number, name]) => {
 							const subtype = get.subtype(name);
 							if (current.countEmptySlot(subtype) > 0) {
 								return current.canEquip(name);
@@ -567,7 +568,7 @@ const skills = {
 				return Math.max(num, [6.5, 4, 3][Math.min(geti(), 2)]);
 			},
 			aiUseful(player, card, num) {
-				return lib.skill.jlsg_sslh_qingguo.mod.aiValue.apply(this, arguments);
+				return get.info("jlsg_sslh_qingguo").mod.aiValue.apply(this, arguments);
 			},
 		},
 		locked: false,
@@ -820,7 +821,7 @@ const skills = {
 		ai: {
 			respondSha: true,
 			skillTagFilter(player) {
-				return !!lib.skill.jlsg_spwq_wushuang.viewAsFilter(player);
+				return !!get.info("jlsg_spwq_wushuang").viewAsFilter(player);
 			},
 			order(item, player) {
 				return get.order({ name: "sha" }, player) - 0.1;
