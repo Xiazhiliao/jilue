@@ -29,6 +29,7 @@ const skills = {
 				upgradeList = game.getExtensionConfig("极略", "upgradeList") || [],
 				{ originUpgradeList, upgradeContent } = get.info(event.name);
 			upgradeList.addArray(originUpgradeList);
+			const { createList } = get.info("_jlsgsr_upgrade");
 			for (const name of nameList) {
 				if (!name.startsWith("jlsgsr_")) {
 					continue;
@@ -64,7 +65,7 @@ const skills = {
 						}
 						if (choice.includes(2)) {
 							info[2] = true;
-							const skills = lib.skill._jlsgsr_upgrade.createList(name);
+							const skills = createList(name);
 							game.broadcastAll(
 								function (player, skills) {
 									for (let i of skills) {
@@ -107,7 +108,7 @@ const skills = {
 				if (!game.getExtensionConfig("极略", "srlose") || _status._jlsgsr_upgrade?.[player.playerid]?.[name]?.[3]) {
 					continue;
 				}
-				const skills = lib.skill._jlsgsr_upgrade.createList(name);
+				const skills = createList(name);
 				if (skills.length < 2) {
 					continue;
 				}
@@ -149,7 +150,7 @@ const skills = {
 					const next = game.createEvent("_jlsgsr_upgrade_extraUpgrade", false, get.event());
 					next.set("player", player);
 					next.set("skill", skill);
-					next.setContent(lib.skill._jlsgsr_upgrade.extraUpgrade);
+					next.setContent(get.info("_jlsgsr_upgrade").extraUpgrade);
 					return next;
 				}
 				return false;
@@ -1011,7 +1012,7 @@ const skills = {
 		},
 		trigger: { global: "damageBegin1" },
 		filter(event, player) {
-			const target = lib.skill.jlsg_langgu.logTarget(event, player);
+			const target = get.info("jlsg_langgu").logTarget(event, player);
 			return target?.isIn() && target != player;
 		},
 		check(event, player) {
@@ -1057,7 +1058,7 @@ const skills = {
 				.set("callback", async function (event, _, player) {
 					const { judgeResult: result } = event,
 						trigger = event.getParent(2).getTrigger();
-					const target = lib.skill.jlsg_langgu.logTarget(trigger, player);
+					const target = get.info("jlsg_langgu").logTarget(trigger, player);
 					switch (result?.suit) {
 						case "spade":
 							trigger.num++;
@@ -2076,7 +2077,7 @@ const skills = {
 			return cards.filter(card => loses.includes(card));
 		},
 		getIndex(event, player) {
-			const cards = lib.skill.jlsg_wanrou.getCheck(event, player);
+			const cards = get.info("jlsg_wanrou").getCheck(event, player);
 			return cards;
 		},
 		filter(event, player, name, card) {
@@ -2147,7 +2148,7 @@ const skills = {
 							targets: [target],
 						} = event;
 						let att = Math.sign(get.attitude(player, target));
-						return att * lib.skill.jlsg_zhouyan.ai.result.target(player, target) > 0;
+						return att * get.info("jlsg_zhouyan").ai.result.target(player, target) > 0;
 					})
 					.forResult();
 				if (!result.bool) {
@@ -2359,10 +2360,10 @@ const skills = {
 		srlose: true,
 		trigger: { global: "phaseJieshuBegin" },
 		filter() {
-			return lib.skill.jlsg_guoshi.getCards().length > 0;
+			return get.info("jlsg_guoshi").getCards().length > 0;
 		},
 		async cost(event, trigger, player) {
-			const cards = lib.skill.jlsg_guoshi.getCards();
+			const cards = get.info(event.skill).getCards();
 			const result = await player
 				.chooseCardButton(get.prompt("jlsg_guoshi", trigger.player), cards)
 				.set("prompt2", "令其获得一张牌")
@@ -4372,11 +4373,11 @@ const skills = {
 		},
 		targetprompt: ["发起者", "承受者", "出杀目标"],
 		selectTarget() {
-			let num = lib.skill.jlsg_shouji.getCardName(ui.selected.cards[0]) == "jiedao" ? 3 : 2;
+			let num = get.info("jlsg_shouji").getCardName(ui.selected.cards[0]) == "jiedao" ? 3 : 2;
 			return get.select(num);
 		},
 		filterTarget(card, player, target) {
-			let cardName = lib.skill.jlsg_shouji.getCardName(card);
+			let cardName = get.info("jlsg_shouji").getCardName(card);
 			if (!ui.selected.targets.length) {
 				return target.hasUseTarget(cardName, false);
 			} else if (ui.selected.targets.length == 1) {
@@ -4399,7 +4400,7 @@ const skills = {
 				targets: [target1, target2, target3],
 				cards: [card],
 			} = event;
-			const name = lib.skill.jlsg_shouji.getCardName(card);
+			const name = get.info(event.name).getCardName(card);
 			const cardx = get.autoViewAs({ name }, []);
 			if (name != "jiedao") {
 				await target1.useCard(cardx, [target2], "noai");
@@ -4416,7 +4417,7 @@ const skills = {
 						return 3;
 					} else {
 						let card = ui.selected.cards[0];
-						let name = lib.skill.jlsg_shouji.getCardName(card);
+						let name = get.info("jlsg_shouji").getCardName(card);
 						if (name == "jiedao") {
 							return -1.5;
 						}
@@ -4882,7 +4883,8 @@ const skills = {
 				.set(
 					"choice",
 					(function () {
-						const resultList = lib.skill.jlsg_zhaoxiang
+						const resultList = get
+								.info(event.name)
 								.getCheck(trigger, player, storage.length == 4)
 								.map((v, i) => (storage[i] ? v : null))
 								.filter(i => i !== null),
