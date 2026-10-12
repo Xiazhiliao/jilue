@@ -1293,13 +1293,13 @@ export default {
 						player: ["showCharacterEnd", "changeHpAfter", "gainMaxHpAfter", "loseMaxHpAfter"],
 					},
 					filter(event, player) {
-						let skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
+						let skill = get.info("jlsg_yinyang_s").getCurrentSkill(player);
 						return !player.hasStorage("jlsg_yinyang_s", skill);
 					},
 					forced: true,
 					delay: false,
 					async content(event, trigger, player) {
-						const skill = lib.skill.jlsg_yinyang_s.getCurrentSkill(player);
+						const skill = get.info(event.name).getCurrentSkill(player);
 						await player
 							.changeSkills(
 								[skill],
