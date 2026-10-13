@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 import jlsg_qs from "./jlsg_qs.js";
 import old_jlsg_qs from "./old_jlsg_qs.js";
 // 旧版本七杀包卡牌替换
-if (lib.config[`extension_极略_old_jlsg_qs`]) {
+if (game.getExtensionConfig(`极略`, "old_jlsg_qs")) {
 	for (let i in old_jlsg_qs) {
 		const info = old_jlsg_qs[i];
 		for (let j in info) {
@@ -40,6 +40,8 @@ async function prepareEquip(event, trigger, player) {
 		}
 	}
 }
+
+const qsRelic = game.getExtensionConfig(`极略`, "qsRelic");
 for (let cardName in jlsg_qs.card) {
 	let card = jlsg_qs.card[cardName];
 	// 批量填写卡牌图片和语音路径
@@ -54,7 +56,7 @@ for (let cardName in jlsg_qs.card) {
 		card.audio = `ext:audio/card/极略`;
 	}
 	// 七杀特殊宝物规则
-	if (!lib.config["extension_极略_qsRelic"] || card.type != "equip") {
+	if (!qsRelic || card.type != "equip") {
 		continue;
 	}
 	if (["equip1", "equip3", "equip4", "equip5", "equip6"].includes(card.subtype)) {
