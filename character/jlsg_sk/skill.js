@@ -19607,10 +19607,10 @@ const skills = {
 		trigger: {
 			player: ["damageBegin3"],
 		},
-		filter(event, player) {
-			return event?.source != player;
-		},
 		usable: 1,
+		filter(event, player) {
+			return event.source && event.source != player;
+		},
 		async cost(event, trigger, player) {
 			const { bool, cards } = await player
 				.chooseCard({

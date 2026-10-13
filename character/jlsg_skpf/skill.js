@@ -991,7 +991,7 @@ const skills = {
 					global: "dying",
 				},
 				filter(event, player) {
-					return player.hasStorage("jlsg_smdq_lijian_used", event.player);
+					return player.hasStorage("jlsg_smdq_lijian_dying", event.player);
 				},
 				silent: true,
 				async content(event, trigger, player) {

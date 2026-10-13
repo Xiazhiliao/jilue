@@ -6217,6 +6217,7 @@ const skills = {
 		},
 		filterCard: () => false,
 		selectCard: -1,
+		group: ["jlsg_huchi_damage", "jlsg_huchi_extra"],
 		subSkill: {
 			damage: {
 				trigger: {
