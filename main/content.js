@@ -10,8 +10,8 @@ export async function content(config, pack) {
 		try {
 			eval(testCode);
 		} catch (error) {
-			if (!lib.config["extension_极略_compatibilityAlert"]) {
-				game.saveConfig("extension_极略_compatibilityAlert", true);
+			if (!game.getExtensionConfig(`极略`, "compatibilityAlert")) {
+				game.saveExtensionConfig("极略", "compatibilityAlert", true);
 				alert("极略与你的设备或是无名杀版本不兼容", "极略");
 			}
 			pack.changelog = `<span style="font-weight:bold;">极略与你的设备不兼容，因此导入被终止了。</span><br>` + pack.changelog;
@@ -27,8 +27,8 @@ export async function content(config, pack) {
 	}
 	if (!_status.evaluatingExtension) {
 		var callback = () => {
-			if (!lib.config["extension_极略_wrongExtensionNameAlert"]) {
-				game.saveConfig("extension_极略_wrongExtensionNameAlert", true);
+			if (!game.getExtensionConfig(`极略`, "wrongExtensionNameAlert")) {
+				game.saveExtensionConfig("极略", "wrongExtensionNameAlert", true);
 				alert("万能导入/玄武版导入时需将拓展名设置为极略！你是不是设置错了？");
 			}
 		};
@@ -42,12 +42,7 @@ export async function content(config, pack) {
 			});
 		}
 	} else {
-		game.saveConfig("extension_极略_wrongExtensionNameAlert", false);
-	}
-	//适配PR 换个写法（
-	//改为适配旧版本，更新了就直接肘击旧版——流年
-	if (typeof game.initCharactertList === "function") {
-		game.initCharacterList = game.initCharactertList;
+		game.saveExtensionConfig("极略", "wrongExtensionNameAlert", false);
 	}
 	//SR武将突破初始列表
 	const configx = pack.code.config;
@@ -55,7 +50,7 @@ export async function content(config, pack) {
 		if (!configx[i].jlsg_upgrade) {
 			continue;
 		} else {
-			configx[i].onclick(lib.config[`extension_极略_${i}`]);
+			configx[i].onclick(game.getExtensionConfig(`极略`, i));
 		}
 	}
 

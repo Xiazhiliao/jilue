@@ -10,7 +10,7 @@ const dynamicTranslates = {
 	},
 	jlsg_qianyuan(player, skill) {
 		let str = "当你受到未记录的负面效果前，你可以令此效果对你无效，然后获得1枚“潜渊”标记并记录此负面效果。每回合限X次（X为存活角色数），当你受到已记录的负面效果前，你可以将此负面效果随机改为另一种负面效果。";
-		if (lib.config.extension_极略测试_jlsgsoul_sp_zhaoyun) {
+		if (game.getExtensionConfig("极略测试", "jlsgsoul_sp_zhaoyun")) {
 			return "锁定技，" + str;
 		}
 		return str;

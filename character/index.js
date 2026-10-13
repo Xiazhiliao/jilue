@@ -16,7 +16,7 @@ for (let character in config) {
 	if (!["jlsgsk", "jlsgsr", "jlsgsoul", "jlsgsy"].includes(prefix)) {
 		continue;
 	}
-	const configx = lib.config[`extension_极略_${character}`];
+	const configx = game.getExtensionConfig(`极略`, character);
 	if (!configx || configx == "false") {
 		continue;
 	}
