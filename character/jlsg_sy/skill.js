@@ -679,23 +679,30 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			const [target] = event.targets;
+			let result;
 			if (!target.hasDiscardableCards(target, "e")) {
-				return;
-			}
-			const result = await target
-				.chooseBool({
-					prompt: `###逆施：是否弃置装备区内所有牌？###否则${get.translation(player)}对你使用一张【杀】`,
-					ai(event, player) {
-						const [target] = event.targets;
-						const es = target.getDiscardableCards(target, "e"),
-							sha = get.autoViewAs({ name: "sha", isCard: true }, []);
-						return get.value(es, target) < get.effect(target, sha, player, target) / 5;
-					},
-				})
-				.forResult();
-			if (result?.bool) {
-				await target.discard({ cards: target.getDiscardableCards(target, "e") });
+				result = { bool: false };
 			} else {
+				result = await target
+					.chooseBool({
+						prompt: `###逆施：是否弃置装备区内所有牌？###否则${get.translation(player)}对你使用一张【杀】`,
+						ai(event, player) {
+							const [target] = event.targets;
+							const es = target.getDiscardableCards(target, "e"),
+								sha = get.autoViewAs({ name: "sha", isCard: true }, []);
+							return get.value(es, target) < get.effect(target, sha, player, target) / 5;
+						},
+					})
+					.forResult();
+			}
+			if (result?.bool) {
+				const next = target.discard({ cards: target.getDiscardableCards(target, "e") });
+				await next;
+				if (!target.hasHistory("lose", evt => evt.getlx !== false && evt.getParent() === next)) {
+					result = { bool: false };
+				}
+			}
+			if (!result?.bool) {
 				await player.useCard({
 					card: { name: "sha", isCard: true },
 					cards: [],
