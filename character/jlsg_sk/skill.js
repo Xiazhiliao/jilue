@@ -10605,15 +10605,15 @@ const skills = {
 				const result2 = await player
 					.chooseControlList({
 						list: ["令" + get.translation(target) + "摸三张牌", "令" + get.translation(target) + "弃置三张牌"],
-						ai() {
-							return _status.event.choice;
+						ai(event, player) {
+							return get.attitude(player, event.target) > 0 ? 0 : 1;
 						},
-						choice: get.attitude(player, target) > 0 ? 0 : 1,
+						forced: true,
 					})
 					.forResult();
 				if (result2.index == 0) {
 					await target.draw({ num: 3, source: player });
-				} else {
+				} else if (target.hasDiscardableCards(target, "he")) {
 					await target.chooseToDiscard({ position: "he", selectCard: [3, 3], forced: true });
 				}
 			} else if (result.suit == "heart") {

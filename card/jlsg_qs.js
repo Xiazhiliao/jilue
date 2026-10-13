@@ -62,7 +62,7 @@ let jlsg_qs = {
 			type: "equip",
 			recastable: true,
 			subtype: "equip5",
-			skills: ["jlsgqs_yuxi_skill", "jlsgqs_yuxi_skill_give"],
+			skills: ["jlsgqs_yuxi_skill"],
 			ai: {
 				basic: {
 					equipValue: 9,

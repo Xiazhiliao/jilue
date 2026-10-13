@@ -216,15 +216,24 @@ const skills = {
 			player: "useCardToPlayered",
 			target: "useCardToTargeted",
 		},
-		filter(event, player) {
-			if (get.name(event.card) !== "sha" && get.type(event.card) !== "trick") return false;
-			if (event.player == player) return true;
-			return event.targets && event.targets.length === 1;
+		filter(event, player, name) {
+			if (get.name(event.card) !== "sha" && get.type(event.card) !== "trick") {
+				return false;
+			} else if (!event.isFirstTarget) {
+				return false;
+			} else if (name === "useCardToTargeted") {
+				return event.targets?.length === 1;
+			}
+			return true;
 		},
 		frequent: "check",
 		check(event, player) {
-			const juedou = get.autoViewAs({ ...event.card, name: "juedou", isCard: false }, event.card.cards || event.cards);
-			return get.effect(player, juedou, event.player, player) + 4 > get.effect(player, event.card, event.player, player);
+			const juedou = get.autoViewAs({ ...event.card, name: "juedou" }, "cards" in event.card ? event.card.cards : event.cards),
+				targets = event.targets;
+			const eff1 = targets.reduce((sum, target) => sum + get.effect(target, juedou, event.player, player), 0),
+				eff2 = targets.reduce((sum, target) => sum + get.effect(target, event.card, event.player, player), 0),
+				eff3 = get.effect(player, { name: "draw" }, player, player);
+			return eff1 + eff3 > eff2;
 		},
 		async content(event, trigger, player) {
 			await player.draw({ num: 1 });
