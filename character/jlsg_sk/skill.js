@@ -4207,10 +4207,10 @@ const skills = {
 						const source = event.player;
 						if (source == player) {
 							return true;
-						} else if (get.attitude(player, source) > 0 && source.countCards("e") < 2) {
+						} else if (get.attitude(source, player) > 0 && source.countCards("e") < 2) {
 							return true;
 						}
-						return player.hasCards("e", card => get.equipResult(player, source, card) < 2);
+						return player.hasCards("e", card => get.equipResult(player, source, card) < 0.7);
 					},
 				})
 				.forResult();

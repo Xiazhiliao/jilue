@@ -1224,27 +1224,27 @@ const skills = {
 					},
 				},
 			},
-		},
-		temp: {
-			charlotte: true,
-			trigger: {
-				player: ["useSkill", "logSkillBegin"],
-			},
-			filter(event, player) {
-				let info = get.info(event.skill);
-				if (info && info.charlotte) {
-					return false;
-				}
-				let skill = get.sourceSkillFor(event);
-				return player.hasStorage("jlsg_yaozhi_temp", skill);
-			},
-			direct: true,
-			firstDo: true,
-			priority: Infinity,
-			async content(event, trigger, player) {
-				let skill = get.sourceSkillFor(trigger);
-				player.removeSkill(skill);
-				player.unmarkAuto("jlsg_yaozhi_temp", [skill]);
+			temp: {
+				charlotte: true,
+				trigger: {
+					player: ["useSkill", "logSkillBegin"],
+				},
+				filter(event, player) {
+					let info = get.info(event.skill);
+					if (info && info.charlotte) {
+						return false;
+					}
+					let skill = get.sourceSkillFor(event);
+					return player.hasStorage("jlsg_yaozhi_temp", skill);
+				},
+				direct: true,
+				firstDo: true,
+				priority: Infinity,
+				async content(event, trigger, player) {
+					let skill = get.sourceSkillFor(trigger);
+					player.removeSkill(skill);
+					player.unmarkAuto("jlsg_yaozhi_temp", [skill]);
+				},
 			},
 		},
 	},
@@ -7167,7 +7167,7 @@ const skills = {
 					lose_list.push([target, gainableCards]);
 				}
 			}
-			if (cards.length) {
+			if (lose_list.length) {
 				await game
 					.loseAsync({
 						player,
@@ -7178,7 +7178,7 @@ const skills = {
 					})
 					.setContent(lib.jlsg.gaincardToOne);
 			} else {
-				await game.delay();
+				await game.delayx();
 			}
 		},
 	},

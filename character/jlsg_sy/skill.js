@@ -4304,14 +4304,21 @@ const skills = {
 				allList = _status.characterlist.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]);
 			}
 			if (!allList.length) {
-				allList = Object.keys(lib.characterPack["jlsg_sy"]).filter(name => name.endsWith("baonu"));
+				allList = Object.keys(lib.characterPack["jlsg_sy"]);
 			}
-			allList.randomSort();
+			allList = allList.filter(name => name.endsWith("baonu")).randomSort();
+			if (!allList.length) {
+				game.log("不存在未获得技能的三英武将");
+				player.chat("世上无魔？");
+				return;
+			}
 			const map = {};
 			let num = 2;
 			for (const name of allList) {
 				const skills = get.character(name).skills.filter(skill => {
 					if (lib.filter.skillDisabled(skill)) {
+						return false;
+					} else if (Object.values(map).flat().includes(skill)) {
 						return false;
 					} else if (player.hasSkill(skill, null, false, false)) {
 						return false;
@@ -4341,7 +4348,7 @@ const skills = {
 				await player.addSkills(Object.values(map).flat());
 			} else {
 				game.log("已获取全部技能");
-				player.chat("世上无魔？");
+				player.chat("我已是完全之魔！");
 			}
 		},
 		changeCharacter(player, add = [], remove = [], throwx) {
