@@ -16868,40 +16868,47 @@ const skills = {
 			if (event.card.name !== "sha" && get.type(event.card) != "trick") {
 				return false;
 			}
-			const [suit, number, name, nature] = get.cardInfo(event.card);
-			const card = get.autoViewAs({ suit, number, name, nature }, []),
+			const card = get.autoViewAs({ ...event.card, cards: [], isCard: true }, []),
 				targets = [player, event.player].unique().filter(p => p.isIn());
-			if (name != "sha") {
+			if (card.name != "sha") {
 				return targets.some(current => player.canUse(card, current, false));
 			}
 			return targets.some(current => get.info("jlsg_luanzhan").canUse(card, player, current));
 		},
 		async cost(event, trigger, player) {
-			const [suit, number, name, nature] = get.cardInfo(trigger.card);
-			const card = get.autoViewAs({ suit, number, name, nature }, []),
+			let { card } = trigger,
 				targets = [player, trigger.player]
 					.unique()
 					.filter(p => p.isIn())
-					.sortBySeat(_status.currentPhase);
+					.sortBySeat(_status.currentPhase),
+				{ canUse } = get.info(event.skill);
+			card = get.autoViewAs({ ...card, cards: [], isCard: true }, []);
 			event.result = await player
 				.chooseBool()
 				.set("prompt", get.prompt("jlsg_luanzhan"))
 				.set("prompt2", `对${get.translation(targets)}使用一张${get.translation(card)}然后摸两张牌`)
 				.set("ai", (event, player) => {
-					const card = get.event().card,
-						targets = get.event().targets;
+					const { targets, card } = get.event();
 					const useEff = targets.reduce((sum, current) => sum + get.effect(current, card, player, player), 0),
-						drawEff = get.effect(player, { name: "draw" }, player, player) * 1.5;
+						drawEff = get.effect(player, { name: "draw" }, player, player);
 					return useEff + drawEff > 0;
 				})
 				.set("card", card)
-				.set("targets", targets)
+				.set(
+					"targets",
+					targets.filter(current => {
+						if (!current.isIn()) {
+							return false;
+						}
+						if (card.name != "sha") {
+							return player.canUse(card, current, false);
+						}
+						return canUse(card, player, current);
+					})
+				)
 				.forResult();
 			if (event.result?.bool) {
-				event.result.cost_data = {
-					targets,
-					card,
-				};
+				event.result.cost_data = { targets, card };
 			}
 		},
 		async content(event, trigger, player) {

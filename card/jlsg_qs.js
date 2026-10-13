@@ -927,7 +927,7 @@ let jlsg_qs = {
 				return player.getVEquips("jlsgqs_xiujian");
 			},
 			filter(event, player, triggername, card) {
-				return event.num > 0 && card?.name == "jlsgqs_xiujian";
+				return event.num > 0 && event.card?.name === "sha" && card?.name === "jlsgqs_xiujian";
 			},
 			async cost(event, trigger, player) {
 				const vcard = event.indexedData;
