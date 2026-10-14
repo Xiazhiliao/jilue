@@ -210,7 +210,11 @@ const skills = {
 			const { target } = event,
 				num = target.countDiscardableCards(target, "he");
 			await target.chooseToDiscard(num, true, "he");
-			let { cards } = await target.draw(num).forResult();
+			const result = await target.draw(num).forResult();
+			let cards = result?.cards;
+			if (!cards?.length) {
+				return;
+			}
 			const next = target.showCards(cards.filter(i => player.hasCards("h", ii => i == ii)));
 			await next;
 			cards = target.getDiscardableCards(target, "he", card => get.type(card) != "basic" && cards.includes(card));
