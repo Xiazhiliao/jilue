@@ -53,7 +53,7 @@ for (let cardName in jlsg_qs.card) {
 		}
 	}
 	if (card.audio === true) {
-		card.audio = `ext:audio/card/极略`;
+		card.audio = `ext:极略/audio/card`;
 	}
 	// 七杀特殊宝物规则
 	if (!qsRelic || card.type != "equip") {
