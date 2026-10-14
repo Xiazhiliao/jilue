@@ -262,7 +262,7 @@ const translates = {
 	jlsg_lingze_info: "任意角色的出牌阶段开始时，或受到伤害时，若其有“逐星”牌，你可以将其中一张置于牌堆顶，令其进行一次“许愿”。",
 	jlsgsoul_caiwenji: "SK神蔡文姬",
 	jlsg_hanshuang: "寒霜",
-	jlsg_hanshuang_info: "当任意角色受到伤害时，你可以令其摸X张牌并令此伤害+X，或令其弃置x张牌并令此伤害-X(X为此技能本轮对其发动的次数）。",
+	jlsg_hanshuang_info: "当任意角色受到伤害时，你可以令其摸X张牌并令此伤害+X，或令其弃置X张牌并令此伤害-X(X为此技能本轮对其发动的次数）。",
 	jlsg_liluan: "离乱",
 	jlsg_liluan_info: "每回合限一次，你可以将任意角色的弃置牌改为其以外的所有角色各随机弃置一张牌，或将任意角色的摸牌改为其以外的所有角色各摸一张牌。",
 	jlsgsoul_sp_guanyu: "SP神关羽",
