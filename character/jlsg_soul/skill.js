@@ -215,8 +215,11 @@ const skills = {
 			if (!cards?.length) {
 				return;
 			}
-			const next = target.showCards(cards.filter(i => player.hasCards("h", ii => i == ii)));
-			await next;
+			const hs = player.getCards("h");
+			if (!hs.length) {
+				return;
+			}
+			await target.showCards(cards.filter(i => hs.includes(i)));
 			cards = target.getDiscardableCards(target, "he", card => get.type(card) != "basic" && cards.includes(card));
 			if (cards.length) {
 				const result = await player
