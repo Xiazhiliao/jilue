@@ -9,8 +9,6 @@ import { help } from "./main/help.js";
 import { basic } from "./main/basic.js";
 import { extensionDefaultPackage } from "./main/main.js";
 
-lib.init.css(lib.assetURL + "extension/极略", "extension");
-
 let changelog = `
 <a onclick="if (jlsg) jlsg.showRepo()" style="cursor: pointer;text-decoration: underline;">
 Visit Repository</a><br>

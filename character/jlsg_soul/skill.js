@@ -16668,6 +16668,7 @@ const skills = {
 		},
 	},
 	jlsg_kuijie: {
+		derivation: ["jlsg_kuijie_faq"],
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			global: "roundStart",

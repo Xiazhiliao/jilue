@@ -276,16 +276,8 @@ const translates = {
 	jlsgsoul_sp_zhenji: "SP神甄姬",
 	jlsg_qixian: "七弦",
 	jlsg_qixian_info: "锁定技，游戏开始时，或当你获得此技能后，将你的体力上限改为7点，并为前7点体力上限随机分配“弦音”。当你于濒死状态外使用手牌后，若此牌为红色/黑色，你可以将体力改为X/Y点（X/Y为你的体力向增加/减少方向循环此牌点数的值）。当你的体力改变后，你可以根据本次改变体力的方向触发当前体力的“弦音”对应的“正弦”或“逆弦”的“弱音”效果，你每触发两次“弱音”，第三次“弦音”改为触发“强音”。出牌阶段限一次，你可以交换任意两个“弦音”的位置。",
-	jlsg_qixian_append: ["gōng", "shāng", "jué", "zhǐ", "yǔ", "wén", "wǔ"].map(i => get.poptip(`jlsg_qixian_${i}`)).join(""),
 	jlsg_qixian_faq: "关于弦音",
 	jlsg_qixian_faq_info: ["gōng", "shāng", "jué", "zhǐ", "yǔ", "wén", "wǔ"].map(i => get.poptip(`jlsg_qixian_${i}`)).join(""),
-	jlsg_qixian_gōng: "宫",
-	jlsg_qixian_shāng: "商",
-	jlsg_qixian_jué: "角",
-	jlsg_qixian_zhǐ: "徵",
-	jlsg_qixian_yǔ: "羽",
-	jlsg_qixian_wén: "文",
-	jlsg_qixian_wǔ: "武",
 	jlsgsoul_dongzhuo: "SK神董卓",
 	jlsg_taotie: "饕餮",
 	jlsg_taotie_info: "锁定技，每回合限X次（X为你的体力），当其他角色失去的牌进入弃牌堆、失去属性或失去技能后，你获得之。",
@@ -323,26 +315,67 @@ const translates = {
 	jlsg_chejian: "彻见",
 	jlsg_chejian_info: `锁定技，你视为装备着${get.poptip("jlsg_cantianjishenmu")}。当任意角色的判定牌生效后，你获得之。当任意角色的判定牌生效前，你可以失去1点体力，然后用一张花色点数由你决定的临时牌替换之。`,
 	jlsg_kuijie: "窥劫",
-	jlsg_kuijie_info: "锁定技，轮次开始时，你减1点体力上限并判定，然后根据判定结果，你可以令任意名角色揭示一项“天命”。",
+	jlsg_kuijie_info: `锁定技，轮次开始时，你减1点体力上限并判定，然后根据判定结果，你可以令任意名角色揭示一项“天命”。`,
+	jlsg_kuijie_faq: "关于天命",
+	jlsg_kuijie_faq_info: `根据判定结果的花色，分别对应不同大类，<br>
+		♥：${get.poptip("jlsg_kuijie_tianming_heart")}<br>
+		♦：${get.poptip("jlsg_kuijie_tianming_diamond")}<br>
+		♠：${get.poptip("jlsg_kuijie_tianming_spade")}<br>
+		♣：${get.poptip("jlsg_kuijie_tianming_club")}`,
 };
 
+//新增poptip类型，用于展示本扩展非卡牌/技能的名词
+lib.poptip.addType("jlsg");
+
+
+//七弦效果poptip
 const jlsg_qixian = skills.jlsg_qixian.effects,
 	jlsg_qixian_addList = ["gōng", "shāng", "jué", "zhǐ", "yǔ", "wén", "wǔ"].map(i => `jlsg_qixian_${i}`),
 	jlsg_qixian_translate = {
+		gōng: "宫",
+		shāng: "商",
+		jué: "角",
+		zhǐ: "徵",
+		yǔ: "羽",
+		wén: "文",
+		wǔ: "武",
 		red: "正弦",
 		black: "逆弦",
 		piano: "弱音",
 		forte: "强音",
 	};
 for (const i of jlsg_qixian_addList) {
+	const name = jlsg_qixian_translate[i.slice(12)];
 	let str = "";
 	for (const direction of ["red", "black"]) {
 		str += `▷${jlsg_qixian_translate[direction]}<br>`;
 		for (const volume of ["piano", "forte"]) {
-			str += `<li>${jlsg_qixian_translate[volume]}：${jlsg_qixian[translates[i]][direction][volume].str}<br>`;
+			str += ` · ${jlsg_qixian_translate[volume]}：${jlsg_qixian[name][direction][volume].str}<br>`;
 		}
 	}
+	translates[i] = name;
 	translates[i + "_info"] = str;
+}
+//天命效果poptip
+const jlsg_kuijie_tianming_translate = {
+		heart: "弘泽",
+		diamond: "曜金",
+		spade: "玄戈",
+		club: "苍枢",
+	},
+	{ tianmingList } = skills["jlsg_kuijie"];
+for (const suit in jlsg_kuijie_tianming_translate) {
+	const id = "jlsg_kuijie_tianming_" + suit,
+		name = jlsg_kuijie_tianming_translate[suit],
+		str = Object.entries(tianmingList[suit])
+			.map(([index, { str }]) => `${index}.${str}`)
+			.join("<br>");
+	lib.poptip.add({
+		type: "jlsg",
+		id: id,
+		name: name,
+		info: str,
+	});
 }
 
 export default translates;
