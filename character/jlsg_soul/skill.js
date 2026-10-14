@@ -9477,45 +9477,12 @@ const skills = {
 			select: [0, Infinity],
 			check: button => 0,
 			backup(links) {
-				let next = {
-					audio: "jlsg_renzheng",
-					discard: false,
-					lose: false,
-					delay: false,
-					links: links,
-					filterTarget(card, player, target) {
-						return player != target;
-					},
-					ai1: get.info("rende").check,
-					async content(event, trigger, player) {
-						let target = event.target;
-						let links = get.info(event.name).links;
-						if (links && links.length) {
-							for (let link of links) {
-								player.popup(link, "gray");
-								target.popup(link);
-							}
-							await player.removeSkills(links);
-							await target.addSkills(links);
-							return;
-						} else {
-							await player.give(event.cards, target);
-						}
-						if (player.isIn() && target.isIn() && player.getAllHistory("useSkill", e => e.sourceSkill == "jlsg_renzheng" && e.event.childEvents[0] != event && e.event.targets[0] == target).length == 0) {
-							let result = await player.chooseBool(`是否令你与${get.translation(target)}各增加1点体力上限并回复1点体力？`, get.attitude(player, target) > 0 || player.hp < target.hp).forResult();
-							if (result.bool) {
-								player.gainMaxHp();
-								player.recover();
-								target.gainMaxHp();
-								target.recover();
-							}
-						}
-					},
-				};
+				const backup = get.copy(get.info("jlsg_renzheng_backup"));
+				backup.links = links;
 				if (!links.length) {
-					next.filterCard = true;
-					next.selectCard = [1, Infinity];
-					next.ai = {
+					backup.filterCard = lib.filter.all;
+					backup.selectCard = [1, Infinity];
+					backup.ai = {
 						result: {
 							target(player, target) {
 								if (target.hasSkillTag("nogain")) {
@@ -9542,14 +9509,50 @@ const skills = {
 						},
 					};
 				}
-				return next;
+				return backup;
 			},
 			prompt(links, player) {
 				let prompt2 = "选择一名角色，令其获得你选择的牌";
 				if (links.length) {
-					prompt2 = `选择一名角色，令其获得` + links.map(s => `【${get.translation(s)}】`).join(" ");
+					prompt2 = `选择一名角色，令其获得` + links.map(s => `${get.poptip(s)}`).join("、");
 				}
 				return `###${get.prompt("jlsg_renzheng")}###${prompt2}`;
+			},
+		},
+		subSkill: {
+			backup: {
+				audio: "jlsg_renzheng",
+				filterTarget(card, player, target) {
+					return player != target;
+				},
+				ai1: get.info("rende").check,
+				discard: false,
+				lose: false,
+				delay: false,
+				async content(event, trigger, player) {
+					let target = event.target;
+					let links = get.info(event.name).links;
+					if (links && links.length) {
+						for (let link of links) {
+							player.popup(link, "gray");
+							target.popup(link);
+						}
+						await player.removeSkills(links);
+						await target.addSkills(links);
+						return;
+					} else {
+						await player.give(event.cards, target);
+					}
+					if (player.isIn() && target.isIn() && player.getAllHistory("useSkill", e => e.sourceSkill == "jlsg_renzheng" && e.event.childEvents[0] != event && e.event.targets[0] == target).length == 0) {
+						let result = await player.chooseBool(`是否令你与${get.translation(target)}各增加1点体力上限并回复1点体力？`, get.attitude(player, target) > 0 || player.hp < target.hp).forResult();
+						if (result.bool) {
+							player.gainMaxHp();
+							player.recover();
+							target.gainMaxHp();
+							target.recover();
+						}
+					}
+				},
 			},
 		},
 		ai: {
@@ -13835,29 +13838,9 @@ const skills = {
 				return 0;
 			},
 			backup(links, player) {
-				return {
-					links,
-					prompt: "是否调换选中弦音位置",
-					async content(event, trigger, player) {
-						const storage = player.getStorage("jlsg_qixian", {
-								count: 0,
-								list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]),
-							}),
-							[first, second] = links
-								.map(i => get.translation(i[2]))
-								.sort((a, b) => {
-									const list = storage.list;
-									return list.indexOf(a) - list.indexOf(b);
-								});
-						game.log(player, "调换了", `#y${first}`, "和", `#y${second}`, "的位置");
-						player.chat("我调换了弦音位置");
-						let firstIndex = storage.list.indexOf(first),
-							secondIndex = storage.list.indexOf(second);
-						storage.list[firstIndex] = second;
-						storage.list[secondIndex] = first;
-						player.setStorage("jlsg_qixian", storage, true);
-					},
-				};
+				const backup = get.copy(get.info("jlsg_qixian_backup"));
+				backup.links = links;
+				return backup;
 			},
 			prompt: () => "是否调换选中弦音位置",
 		},
@@ -14440,7 +14423,29 @@ const skills = {
 		bestMatch: ["角", "文", "宫", "羽", "商", "徵", "武"],
 		group: "jlsg_qixian_start",
 		subSkill: {
-			backup: {},
+			backup: {
+				audio: "jlsg_qixian",
+				prompt: "是否调换选中弦音位置",
+				async content(event, trigger, player) {
+					const storage = player.getStorage("jlsg_qixian", {
+							count: 0,
+							list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]),
+						}),
+						[first, second] = links
+							.map(i => get.translation(i[2]))
+							.sort((a, b) => {
+								const list = storage.list;
+								return list.indexOf(a) - list.indexOf(b);
+							});
+					game.log(player, "调换了", `#y${first}`, "和", `#y${second}`, "的位置");
+					player.chat("我调换了弦音位置");
+					let firstIndex = storage.list.indexOf(first),
+						secondIndex = storage.list.indexOf(second);
+					storage.list[firstIndex] = second;
+					storage.list[secondIndex] = first;
+					player.setStorage("jlsg_qixian", storage, true);
+				},
+			},
 			start: {
 				audio: "jlsg_qixian",
 				trigger: {

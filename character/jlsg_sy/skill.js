@@ -172,7 +172,7 @@ const skills = {
 					if (typeof map[id].shanRequired !== "number") {
 						map[id].shanRequired = 1;
 					}
-					map[id].shanRequired ++;
+					map[id].shanRequired++;
 				}
 			} else {
 				const id = event.targets?.[0]?.["playerid"],
@@ -4032,37 +4032,9 @@ const skills = {
 				return choice[0];
 			},
 			backup(result, player) {
-				return {
-					audio: "jlsgsy_wangduan",
-					control: result.control,
-					log: false,
-					async content(event, trigger, player) {
-						const { control: type } = get.info(event.name),
-							skill = "jlsgsy_wangduan";
-						event.targets = game.filterPlayer().sortBySeat(_status.currentPhase);
-						player.logSkill(skill, event.targets);
-						game.log(player, "选择的类别为", type);
-						player.chat(get.translation(type));
-						const { gainTempCards } = get.info(skill),
-							targets = event.targets.slice();
-						targets.remove(player);
-						let num = 0;
-						for (const target of targets) {
-							const hs = target.getDiscardableCards(target, "h", card => get.type2(card) != type);
-							if (hs.length) {
-								await target.discard(hs);
-								await gainTempCards(target, hs.length, type);
-								num++;
-							}
-						}
-						const hs = player.getDiscardableCards(player, "h", card => get.type2(card) != type);
-						if (hs.length) {
-							await player.discard(hs);
-							const next = gainTempCards(player, hs.length + num, type, skill);
-							await next;
-						}
-					},
-				};
+				const backup = get.copy(get.info("jlsgsy_wangduan_backup"));
+				backup.control = result.control;
+				return backup;
 			},
 			prompt(result, player) {
 				let prompt = `令所有角色弃置手牌中的非${get.translation(result.control)}牌，然后获得等量该类别临时牌`,
@@ -4097,7 +4069,36 @@ const skills = {
 			return next;
 		},
 		subSkill: {
-			backup: {},
+			backup: {
+				audio: "jlsgsy_wangduan",
+				log: false,
+				async content(event, trigger, player) {
+					const { control: type } = get.info(event.name),
+						skill = "jlsgsy_wangduan";
+					event.targets = game.filterPlayer().sortBySeat(_status.currentPhase);
+					player.logSkill(skill, event.targets);
+					game.log(player, "选择的类别为", type);
+					player.chat(get.translation(type));
+					const { gainTempCards } = get.info(skill),
+						targets = event.targets.slice();
+					targets.remove(player);
+					let num = 0;
+					for (const target of targets) {
+						const hs = target.getDiscardableCards(target, "h", card => get.type2(card) != type);
+						if (hs.length) {
+							await target.discard(hs);
+							await gainTempCards(target, hs.length, type);
+							num++;
+						}
+					}
+					const hs = player.getDiscardableCards(player, "h", card => get.type2(card) != type);
+					if (hs.length) {
+						await player.discard(hs);
+						const next = gainTempCards(player, hs.length + num, type, skill);
+						await next;
+					}
+				},
+			},
 		},
 		ai: {
 			order: 6,

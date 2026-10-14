@@ -695,32 +695,15 @@ const skills = {
 				return get.player().getUseValue({ name, nature });
 			},
 			backup(links, player) {
-				return {
-					audio: false,
-					viewAs: {
-						name: links[0][2],
-						nature: links[0][3],
-						suit: "none",
-						number: "none",
-						isCard: true,
-					},
-					filterCard(card) {
-						return get.type2(card) == "trick";
-					},
-					ai1(card) {
-						return 6 - get.value(card);
-					},
-					log: false,
-					popname: true,
-					async precontent(event, _, player) {
-						player.logSkill("jlsg_kanwu");
-						let card = event.result.cards[0];
-						event.card = card;
-						await player.discard(card);
-						event.result.card = get.autoViewAs({ ...event.result.card }, []);
-						event.result.cards = [];
-					},
+				const backup = get.copy(get.info("jlsg_kanwu_backup"));
+				backup.viewAs = {
+					name: links[0][2],
+					nature: links[0][3],
+					suit: "none",
+					number: "none",
+					isCard: true,
 				};
+				return backup;
 			},
 			prompt(links, player) {
 				return "弃置一张锦囊牌，视为使用或打出" + get.translation({ name: links[0][2], nature: links[0][3] });
@@ -738,7 +721,24 @@ const skills = {
 			},
 		},
 		subSkill: {
-			backup: {},
+			backup: {
+				filterCard(card) {
+					return get.type2(card) == "trick";
+				},
+				ai1(card) {
+					return 6 - get.value(card);
+				},
+				log: false,
+				popname: true,
+				async precontent(event, _, player) {
+					let card = event.result.cards[0];
+					event.card = card;
+					player.logSkill("jlsg_kanwu");
+					await player.discard(card);
+					event.result.card = get.autoViewAs({ ...event.result.card, cards: undefined }, []);
+					event.result.cards = [];
+				},
+			},
 		},
 	},
 	jlsg_huage: {
@@ -1112,7 +1112,7 @@ const skills = {
 			},
 			backup(links, player) {
 				const backup = get.copy(get.info("jlsg_zhige_backup"));
-				backup.viewAs = { name: links[0][2], isCard: false, cards: player.getCards("e") };
+				backup.viewAs = { name: links[0][2], cards: player.getCards("e") };
 				return backup;
 			},
 			prompt(links, player) {
@@ -4257,18 +4257,9 @@ const skills = {
 				return get.value(link, false);
 			},
 			backup(links, player) {
-				return {
-					audio: "jlsg_lirang",
-					filterCard: lib.filter.none,
-					selectCard: -1,
-					viewAs: { name: "tao" },
-					cards: links,
-					async precontent(event, _, player) {
-						const { cards } = get.info("jlsg_lirang_backup");
-						event.result.card = get.autoViewAs({ name: "tao" }, cards);
-						event.result.cards = cards;
-					},
-				};
+				const backup = get.copy(get.info("jlsg_lirang_backup"));
+				backup.cards = links;
+				return backup;
 			},
 		},
 		ai: {
@@ -4288,7 +4279,17 @@ const skills = {
 		},
 		group: ["jlsg_lirang_gain"],
 		subSkill: {
-			backup: {},
+			backup: {
+				audio: "jlsg_lirang",
+				filterCard: lib.filter.none,
+				selectCard: -1,
+				viewAs: { name: "tao" },
+				async precontent(event, _, player) {
+					const { cards } = get.info("jlsg_lirang_backup");
+					event.result.card = get.autoViewAs({ name: "tao" }, cards);
+					event.result.cards = cards;
+				},
+			},
 			gain: {
 				trigger: { global: "phaseZhunbeiEnd" },
 				filter(event, player) {
@@ -8029,24 +8030,12 @@ const skills = {
 				return effect;
 			},
 			backup(links, player) {
-				return {
-					filterCard: true,
-					audio: "jlsg_jinzhi",
-					popname: true,
-					check: () => 1,
-					selectCard: -1,
-					viewAs: {
-						name: links[0][2],
-						nature: links[0][3],
-						cards: player.getCards("h"),
-					},
-					onuse(result, player) {
-						result.cards = player.getCards("h");
-						result.card.cards = player.getCards("h");
-						player.addTempSkill("jlsg_jinzhi_effect", "roundStart");
-						player.markAuto("jlsg_jinzhi", [result.card.name]);
-					},
+				const backup = get.copy(get.info("jlsg_jinzhi_backup"));
+				backup.viewAs = {
+					name: links[0][2],
+					nature: links[0][3],
 				};
+				return backup;
 			},
 			prompt(links, player) {
 				var card = get.translation({ name: links[0][2], nature: links[0][3] });
@@ -8057,6 +8046,20 @@ const skills = {
 			},
 		},
 		subSkill: {
+			backup: {
+				audio: "jlsg_jinzhi",
+				selectCard: -1,
+				filterCard: lib.filter.all,
+				ignoreMod: true,
+				popname: true,
+				async precontent(event, _, player) {
+					const hs = player.getCards("h");
+					event.result.cards = hs;
+					event.result.card = get.autoViewAs({ ...event.result.card, cards: hs }, hs);
+					player.addTempSkill("jlsg_jinzhi_effect", "roundStart");
+					player.markAuto("jlsg_jinzhi", [event.result.card.name]);
+				},
+			},
 			effect: {
 				charlotte: true,
 				onremove: ["jlsg_jinzhi"],
@@ -10117,14 +10120,17 @@ const skills = {
 		check(card) {
 			return get.number(card) - 3 - Math.random();
 		},
-		onuse(links, player) {
-			var next = game.createEvent("limu_recover", false, _status.event.getParent());
-			next.player = player;
-			next.setContent(function () {
-				player.draw(event.num);
-				player.recover();
-			});
-			next.num = get.number(links.card);
+		async precontent(event, _, player) {
+			player
+				.when({ player: "useCardAfter" })
+				.filter(evt => evt.skill == "jlsg_limu")
+				.then(async (evt, trigger, player) => {
+					const num = get.number(event.result.card);
+					if (typeof num === "number") {
+						await player.draw(num);
+					}
+					await player.recover();
+				});
 		},
 		ai: {
 			result: {
@@ -11264,91 +11270,14 @@ const skills = {
 				return true;
 			},
 			backup(links, player) {
-				const [character, [skill]] = links[0];
-				return {
-					audio: "jlsg_sanjue",
-					info: [character, skill],
-					filterTarget: () => true,
-					selectCard: -1,
-					filterCard: () => false,
-					async content(event, trigger, player) {
-						const target = event.targets[0],
-							[character, skill] = get.info(event.name).info,
-							storage = player.getStorage("jlsg_sanjue", {
-								card: {},
-								map: {},
-								given: [],
-							});
-						for (const name in storage.map) {
-							if (name == character) {
-								storage.map[name].remove(skill);
-							}
-							if (!storage.map[name].length) {
-								delete storage.map[name];
-							}
-						}
-						storage.given.add(skill);
-						await target.addSkills(skill);
-						target.flashAvatar("jlsg_sanjue", character);
-						player.setStorage("jlsg_sanjue", storage, true);
-					},
-					ai2(target) {
-						const event = get.event(),
-							player = get.player(),
-							skill = get.info("jlsg_sanjue_backup").info[1];
-						const info = get.info(skill);
-						const negative = info?.ai?.neg,
-							att = Math.min(2, Math.max(-2, get.attitude(player, target)));
-						if (event.getStepCache("cntSkillsList") === undefined) {
-							const targets = get.selectableTargets().concat([target]),
-								cntSkillsList = [],
-								hsList = [],
-								hpList = [];
-							for (let targetx of targets) {
-								if (get.attitude(player, targetx) <= 0) {
-									continue;
-								}
-								const cntSkills = targetx.getSkills(null, false).length,
-									hs = targetx.countCards("h"),
-									hp = target.getHp();
-								cntSkillsList.add(cntSkills);
-								hsList.add(hs);
-								hpList.add(hp);
-							}
-							event.putStepCache(
-								"cntSkillsList",
-								cntSkillsList.sort((a, b) => b - a)
-							);
-							event.putStepCache(
-								"hsList",
-								hsList.sort((a, b) => a - b)
-							);
-							event.putStepCache(
-								"hpList",
-								hpList.sort((a, b) => a - b)
-							);
-						}
-						const cntSkills = event.getStepCache("cntSkillsList").indexOf(target.getSkills(null, false)) + 1,
-							hs = event.getStepCache("hsList").indexOf(target.countCards("h")) + 1,
-							hp = event.getStepCache("hpList").indexOf(target.getHp()) + 1;
-						if (att < 0 && negative) {
-							return att;
-						} else if (att > 0 && !negative) {
-							if (info.ai?.combo ?? false) {
-								if (target.hasSkill(info.ai.combo)) {
-									return 2 + att * (cntSkills + hs + hp);
-								}
-							}
-							return att * (cntSkills + hs + hp);
-						}
-						return 0;
-					},
-				};
+				const [character, [skill]] = links[0],
+					backup = get.copy(get.info("jlsg_sanjue_backup"));
+				backup.info = [character, skill];
+				return backup;
 			},
 			prompt(links, player) {
 				const [name, [skill]] = links[0];
-				return `令一名角色获得【${get.translation(name)}】
-					<br><div class="text">${get.skillInfoTranslation(skill, player)}</div>`;
+				return `令一名角色获得${get.poptip(skill)}`;
 			},
 		},
 		$createButton(item, type, position, noclick, node) {
@@ -11406,7 +11335,84 @@ const skills = {
 		},
 		group: "jlsg_sanjue_use",
 		subSkill: {
-			backup: { sourceSkill: "jlsg_sanjue" },
+			backup: {
+				audio: "jlsg_sanjue",
+				filterTarget: () => true,
+				selectCard: -1,
+				filterCard: () => false,
+				async content(event, trigger, player) {
+					const target = event.targets[0],
+						[character, skill] = get.info(event.name).info,
+						storage = player.getStorage("jlsg_sanjue", {
+							card: {},
+							map: {},
+							given: [],
+						});
+					for (const name in storage.map) {
+						if (name == character) {
+							storage.map[name].remove(skill);
+						}
+						if (!storage.map[name].length) {
+							delete storage.map[name];
+						}
+					}
+					storage.given.add(skill);
+					await target.addSkills(skill);
+					target.flashAvatar("jlsg_sanjue", character);
+					player.setStorage("jlsg_sanjue", storage, true);
+				},
+				ai2(target) {
+					const event = get.event(),
+						player = get.player(),
+						skill = get.info("jlsg_sanjue_backup").info[1];
+					const info = get.info(skill);
+					const negative = info?.ai?.neg,
+						att = Math.min(2, Math.max(-2, get.attitude(player, target)));
+					if (event.getStepCache("cntSkillsList") === undefined) {
+						const targets = get.selectableTargets().concat([target]),
+							cntSkillsList = [],
+							hsList = [],
+							hpList = [];
+						for (let targetx of targets) {
+							if (get.attitude(player, targetx) <= 0) {
+								continue;
+							}
+							const cntSkills = targetx.getSkills(null, false).length,
+								hs = targetx.countCards("h"),
+								hp = target.getHp();
+							cntSkillsList.add(cntSkills);
+							hsList.add(hs);
+							hpList.add(hp);
+						}
+						event.putStepCache(
+							"cntSkillsList",
+							cntSkillsList.sort((a, b) => b - a)
+						);
+						event.putStepCache(
+							"hsList",
+							hsList.sort((a, b) => a - b)
+						);
+						event.putStepCache(
+							"hpList",
+							hpList.sort((a, b) => a - b)
+						);
+					}
+					const cntSkills = event.getStepCache("cntSkillsList").indexOf(target.getSkills(null, false)) + 1,
+						hs = event.getStepCache("hsList").indexOf(target.countCards("h")) + 1,
+						hp = event.getStepCache("hpList").indexOf(target.getHp()) + 1;
+					if (att < 0 && negative) {
+						return att;
+					} else if (att > 0 && !negative) {
+						if (info.ai?.combo ?? false) {
+							if (target.hasSkill(info.ai.combo)) {
+								return 2 + att * (cntSkills + hs + hp);
+							}
+						}
+						return att * (cntSkills + hs + hp);
+					}
+					return 0;
+				},
+			},
 			use: {
 				audio: "jlsg_sanjue",
 				trigger: { player: "useCard" },
@@ -12049,29 +12055,12 @@ const skills = {
 				return 0;
 			},
 			backup(links, player) {
-				return {
-					check(card) {
-						return 1 / Math.max(0.1, get.value(card));
-					},
-					filterCard(card) {
-						return get.color(card) == "black";
-					},
-					viewAs: {
-						name: links[0][2],
-						nature: links[0][3],
-					},
-					position: "he",
-					popname: true,
-					ignoreMod: true,
-					async precontent(event, _, player) {
-						if (!player.hasStorage("jlsg_huomo")) {
-							player.when({ global: ["phaseAfter", "phaseBefore"] }).then(async (event, trigger, player) => {
-								player.removeStorage("jlsg_huomo", true);
-							});
-						}
-						player.markAuto("jlsg_huomo", [event.result.card.name]);
-					},
+				const backup = get.copy(get.info("jlsg_huomo_backup"));
+				backup.viewAs = {
+					name: links[0][2],
+					nature: links[0][3],
 				};
+				return backup;
 			},
 			prompt(links, player) {
 				return "将一张黑色牌当作" + get.translation(links[0][3] || "") + get.translation(links[0][2]);
@@ -12081,6 +12070,27 @@ const skills = {
 		intro: {
 			content: "本回合已因〖活墨〗使用过$",
 			onunmark: true,
+		},
+		subSkill: {
+			backup: {
+				position: "he",
+				filterCard(card) {
+					return get.color(card) == "black";
+				},
+				check(card) {
+					return 1 / Math.max(0.1, get.value(card));
+				},
+				ignoreMod: true,
+				popname: true,
+				async precontent(event, _, player) {
+					if (!player.hasStorage("jlsg_huomo")) {
+						player.when({ global: ["phaseAfter", "phaseBefore"] }).then(async (event, trigger, player) => {
+							player.removeStorage("jlsg_huomo", true);
+						});
+					}
+					player.markAuto("jlsg_huomo", [event.result.card.name]);
+				},
+			},
 		},
 		ai: {
 			order() {
@@ -16509,7 +16519,7 @@ const skills = {
 			backup: {
 				audio: "jlsg_jishe",
 				selectCard: 0,
-				filterCard: false,
+				filterCard: lib.filter.none,
 				popname: true,
 				async precontent(event, trigger, player) {
 					player.addTempSkill("jlsg_jishe_used", { player: "phaseUseAfter" });

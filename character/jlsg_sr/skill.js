@@ -3104,15 +3104,11 @@ const skills = {
 			},
 			backup(links, player) {
 				let num = player.getHistory("useSkill", evt => evt.skill == "jlsg_quanheng_backup").length;
-				return {
-					audio: "jlsg_quanheng",
-					viewAs: { name: links[0][2], nature: links[0][3], isCard: false },
-					position: "hs",
-					selectCard: num == 0 ? -1 : [num, num],
-					filterCard: num == 0 ? () => false : true,
-					ai1: card => 7 - get.value(card),
-					popname: true,
-				};
+				const backup = get.copy(get.info("jlsg_quanheng_backup"));
+				backup.viewAs = { name: links[0][2], nature: links[0][3], isCard: false };
+				backup.selectCard = num == 0 ? -1 : [num, num];
+				backup.filterCard = lib.filter[num == 0 ? "none" : "all"];
+				return backup;
 			},
 			prompt(links, player) {
 				const num = player.getHistory("useSkill", evt => evt.skill == "jlsg_quanheng_backup").length;
@@ -3125,6 +3121,12 @@ const skills = {
 		},
 		group: "jlsg_quanheng_effect",
 		subSkill: {
+			backup: {
+				audio: "jlsg_quanheng",
+				position: "hs",
+				ai1: card => 7 - get.value(card),
+				popname: true,
+			},
 			effect: {
 				charlotte: true,
 				onremove: true,
@@ -4015,119 +4017,9 @@ const skills = {
 				return 2;
 			},
 			backup(links) {
-				return {
-					audio: "jlsg_guanxing",
-					filterCard: () => false,
-					filterTarget: () => false,
-					selectCard: -1,
-					selectTarget: -1,
-					cards: links,
-					async content(event, trigger, player) {
-						const { checkUpgrade } = get.info("_jlsgsr_upgrade");
-						const upgrade = checkUpgrade(player, "jlsg_sanfen");
-						while (true) {
-							let bool,
-								cards = Array.from(ui.cardPile.childNodes).slice(0, 2);
-							if (cards.length < 2) {
-								await game.washCard();
-								continue;
-							}
-							await player.showCards(cards);
-							if (cards.length < 2) {
-								continue;
-							}
-							if (game.countPlayer(curr => curr.isIn()) >= 2) {
-								let num1 = get.number(cards[0], false),
-									num2 = get.number(cards[1], false);
-								let boolx = num1 > num2;
-								if (num1 == num2) {
-									boolx = "nowin";
-								}
-								let targetprompt = cards.map(card => get.translation(card));
-								let result = await player
-									.chooseTarget()
-									.set("targetprompt", targetprompt)
-									.set("selectTarget", 2)
-									.set("multitarget", true)
-									.set("sanfenCompare", boolx)
-									.set("ai", target => {
-										let player = get.player(),
-											event = get.event();
-										let bool = event.sanfenCompare;
-										if (bool == "nowin") {
-											return get.attitude(player, target);
-										}
-										if (ui.selected.targets.length > 0) {
-											if (bool) {
-												return -get.attitude(player, target);
-											} else {
-												return get.attitude(player, target);
-											}
-										} else {
-											if (bool) {
-												return get.attitude(player, target);
-											} else {
-												return -get.attitude(player, target);
-											}
-										}
-									})
-									.forResult();
-								bool = result.bool;
-								if (result.bool) {
-									let targets = result.targets;
-									await game.doAsyncInOrder(
-										targets,
-										async (target, i) => {
-											await target.gain(cards[i], "gain2");
-										},
-										() => 0
-									);
-									let card = get.autoViewAs({
-										name: "sha",
-										isCard: true,
-										storage: {
-											jlsg_sanfen: true,
-										},
-									});
-									if (boolx != "nowin" && boolx && targets[0].canUse(card, targets[1], false, false)) {
-										await targets[0].useCard(card, targets[1], false);
-									} else if (boolx != "nowin" && targets[1].canUse(card, targets[0], false, false)) {
-										await targets[1].useCard(card, targets[0], false);
-									}
-									let cardx = get.autoViewAs({
-										name: "sha",
-										isCard: true,
-										storage: {
-											jlsg_sanfen: true,
-										},
-									});
-									let resultx = await player
-										.chooseTarget()
-										.set("filterTarget", (card, player, target) => {
-											player = get.player();
-											let event = get.event();
-											return player.canUse(event.sanfenCard, target, false, false) && event.sanfenTargets.includes(target);
-										})
-										.set("selectTarget", [1, 2])
-										.set("sanfenCard", cardx)
-										.set("sanfenTargets", targets)
-										.set("ai", target => {
-											let player = get.player(),
-												event = get.event();
-											return get.effect(target, event.sanfenCard, player, player);
-										})
-										.forResult();
-									if (resultx.bool) {
-										await player.useCard(cardx, resultx.targets, false);
-									}
-								}
-							}
-							if (!bool || !cards.some(card => card.name == "sha") || !upgrade) {
-								break;
-							}
-						}
-					},
-				};
+				const backup = get.copy(get.info("jlsg_sanfen_backup"));
+				backup.cards = links;
+				return backup;
 			},
 			prompt(links) {
 				return get.prompt2("jlsg_sanfen");
@@ -4135,7 +4027,118 @@ const skills = {
 		},
 		group: ["jlsg_sanfen_effect"],
 		subSkill: {
-			backup: {},
+			backup: {
+				audio: "jlsg_guanxing",
+				filterCard: () => false,
+				filterTarget: () => false,
+				selectCard: -1,
+				selectTarget: -1,
+				async content(event, trigger, player) {
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_sanfen");
+					while (true) {
+						let bool,
+							cards = Array.from(ui.cardPile.childNodes).slice(0, 2);
+						if (cards.length < 2) {
+							await game.washCard();
+							continue;
+						}
+						await player.showCards(cards);
+						if (cards.length < 2) {
+							continue;
+						}
+						if (game.countPlayer(curr => curr.isIn()) >= 2) {
+							let num1 = get.number(cards[0], false),
+								num2 = get.number(cards[1], false);
+							let boolx = num1 > num2;
+							if (num1 == num2) {
+								boolx = "nowin";
+							}
+							let targetprompt = cards.map(card => get.translation(card));
+							let result = await player
+								.chooseTarget()
+								.set("targetprompt", targetprompt)
+								.set("selectTarget", 2)
+								.set("multitarget", true)
+								.set("sanfenCompare", boolx)
+								.set("ai", target => {
+									let player = get.player(),
+										event = get.event();
+									let bool = event.sanfenCompare;
+									if (bool == "nowin") {
+										return get.attitude(player, target);
+									}
+									if (ui.selected.targets.length > 0) {
+										if (bool) {
+											return -get.attitude(player, target);
+										} else {
+											return get.attitude(player, target);
+										}
+									} else {
+										if (bool) {
+											return get.attitude(player, target);
+										} else {
+											return -get.attitude(player, target);
+										}
+									}
+								})
+								.forResult();
+							bool = result.bool;
+							if (result.bool) {
+								let targets = result.targets;
+								await game.doAsyncInOrder(
+									targets,
+									async (target, i) => {
+										await target.gain(cards[i], "gain2");
+									},
+									() => 0
+								);
+								let card = get.autoViewAs({
+									name: "sha",
+									isCard: true,
+									storage: {
+										jlsg_sanfen: true,
+									},
+								});
+								if (boolx != "nowin" && boolx && targets[0].canUse(card, targets[1], false, false)) {
+									await targets[0].useCard(card, targets[1], false);
+								} else if (boolx != "nowin" && targets[1].canUse(card, targets[0], false, false)) {
+									await targets[1].useCard(card, targets[0], false);
+								}
+								let cardx = get.autoViewAs({
+									name: "sha",
+									isCard: true,
+									storage: {
+										jlsg_sanfen: true,
+									},
+								});
+								let resultx = await player
+									.chooseTarget()
+									.set("filterTarget", (card, player, target) => {
+										player = get.player();
+										let event = get.event();
+										return player.canUse(event.sanfenCard, target, false, false) && event.sanfenTargets.includes(target);
+									})
+									.set("selectTarget", [1, 2])
+									.set("sanfenCard", cardx)
+									.set("sanfenTargets", targets)
+									.set("ai", target => {
+										let player = get.player(),
+											event = get.event();
+										return get.effect(target, event.sanfenCard, player, player);
+									})
+									.forResult();
+								if (resultx.bool) {
+									await player.useCard(cardx, resultx.targets, false);
+								}
+							}
+						}
+						if (!bool || !cards.some(card => card.name == "sha") || !upgrade) {
+							break;
+						}
+					}
+				},
+			},
 			effect: {
 				audio: "jlsg_sanfen",
 				trigger: {
@@ -4194,27 +4197,9 @@ const skills = {
 			},
 			select: [0, Infinity],
 			backup(links) {
-				return {
-					audio: "jlsg_guanxing",
-					filterCard: () => false,
-					filterTarget: () => false,
-					selectCard: -1,
-					selectTarget: -1,
-					cards: links,
-					async content(event, trigger, player) {
-						const { cards } = get.info(event.name);
-						const { checkUpgrade } = get.info("_jlsgsr_upgrade");
-						const upgrade = checkUpgrade(player, "jlsg_guanxing");
-						let next1 = player.gain(cards, "gain2"),
-							next2 = player.draw(cards.length);
-						if (upgrade) {
-							next1.gaintag.add("jlsg_guanxing_use");
-							next2.gaintag.add("jlsg_guanxing_use");
-						}
-						await next1;
-						await next2;
-					},
-				};
+				const backup = get.copy(get.info("jlsg_guanxing_backup"));
+				backup.cards = links;
+				return backup;
 			},
 			prompt(links) {
 				return get.prompt2("jlsg_guanxing");
@@ -4222,7 +4207,26 @@ const skills = {
 		},
 		group: ["jlsg_guanxing_effect", "jlsg_guanxing_use"],
 		subSkill: {
-			backup: {},
+			backup: {
+				audio: "jlsg_guanxing",
+				filterCard: () => false,
+				filterTarget: () => false,
+				selectCard: -1,
+				selectTarget: -1,
+				async content(event, trigger, player) {
+					const { cards } = get.info(event.name);
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+					const upgrade = checkUpgrade(player, "jlsg_guanxing");
+					let next1 = player.gain(cards, "gain2"),
+						next2 = player.draw(cards.length);
+					if (upgrade) {
+						next1.gaintag.add("jlsg_guanxing_use");
+						next2.gaintag.add("jlsg_guanxing_use");
+					}
+					await next1;
+					await next2;
+				},
+			},
 			effect: {
 				audio: "jlsg_guanxing",
 				trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
