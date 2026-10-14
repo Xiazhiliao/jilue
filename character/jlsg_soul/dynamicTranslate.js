@@ -16,7 +16,7 @@ const dynamicTranslates = {
 		return str;
 	},
 	jlsg_qifeng(player, skill) {
-		const [recover, draw, damage] = player?.getStorage(skill) || [(1, 0, 0)];
+		const [recover, draw, damage] = player?.getStorage(skill, [1, 0, 0]) || [1, 0, 0];
 		return `锁定技，当你进入濒死状态时，你减1点体力上限，回复体力至${recover}点，摸${draw}张牌，然后对一名其他角色造成${damage}点火焰伤害。`;
 	},
 };

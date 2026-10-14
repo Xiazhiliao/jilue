@@ -12147,6 +12147,7 @@ const skills = {
 				.chooseTarget({
 					prompt: get.prompt(event.skill),
 					prompt2: "令任意名目标角色各摸一张牌",
+					selectTarget: [1, Infinity],
 					filterTarget(_, player, target) {
 						return get.event().targets?.includes(target);
 					},

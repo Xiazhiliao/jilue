@@ -169,11 +169,10 @@ const skills = {
 					map = trigger.getParent()?.customArgs;
 				if (id != null && map) {
 					map[id] ??= {};
-					if (typeof map[id].shanRequired == "number") {
-						map[id].shanRequired++;
-					} else {
-						map[id].shanRequired = 2;
+					if (typeof map[id].shanRequired !== "number") {
+						map[id].shanRequired = 1;
 					}
+					map[id].shanRequired ++;
 				}
 			} else {
 				const id = event.targets?.[0]?.["playerid"],
@@ -182,7 +181,7 @@ const skills = {
 				if (id != null && idt != null && map) {
 					map[idt] ??= {};
 					map[idt].shaReq ??= {};
-					if (typeof map[idt].shaReq[id] == "number") {
+					if (typeof map[idt].shaReq[id] !== "number") {
 						map[idt].shaReq[id] = 1;
 					}
 					map[idt].shaReq[id]++;

@@ -3179,7 +3179,7 @@ const skills = {
 			},
 			backup(links, player) {
 				const backup = get.copy(get.info("jlsg_tianqi_backup"));
-				backup.links = links;
+				backup.links = links[0];
 				backup.viewAs = {
 					name: links[0][2],
 					nature: links[0][3],
@@ -3233,7 +3233,7 @@ const skills = {
 				log: false,
 				async precontent(event, trigger, player) {
 					player.logSkill("jlsg_tianqi");
-					const type = get.type2(get.info("jlsg_tianqi_backup").links[0]);
+					const type = get.type2(get.info("jlsg_tianqi_backup").links[2]);
 					game.log(player, "声明了" + get.translation(type) + "牌");
 					if (player.isPhaseUsing(true) && event.getParent().type == "phase") {
 						player.addTempSkill("jlsg_tianqi_used", "phaseUseAfter");

@@ -16,11 +16,11 @@ const dynamicTranslates = {
 		return result;
 	},
 	jlsg_tiandao(player, skill) {
-		const storage = player?.getStorage(skill) || [1, 1, 1, 1];
+		const storage = player?.getStorage(skill, [1, 1, 1, 1]) || [1, 1, 1, 1];
 		return `锁定技，准备阶段，你摸${storage[0]}张牌，随机获得${storage[1]}个群势力技能，然后可以选择一名角色，令其随机弃置${storage[2]}张牌，对其造成${storage[3]}点雷电伤害。`;
 	},
 	jlsg_guolun(player, skill) {
-		switch (player?.getStorage(skill) || 0) {
+		switch (player?.getStorage(skill, 0) || 0) {
 			case 3:
 				return lib.translate[`${skill}4_info`];
 			case 2:
@@ -48,7 +48,7 @@ const dynamicTranslates = {
 		return "任意角色的回合开始时，你可以观看其手牌，然后你可以" + map.get(player.storage.jlsg_guanxu);
 	},
 	jlsg_huituo(player, skill) {
-		const storage = player?.getStorage(skill) || [true, true, true, true];
+		const storage = player?.getStorage(skill, [true, true, true, true]) || [true, true, true, true];
 		const choiceList = [`1.令一名角色回复体力至全场唯一最多`, `2.令一名角色摸牌至全场唯一最多`, `3.选择一名角色，系统为该角色的每个空装备栏选择一张装备牌，然后该角色使用之`, `4.令其他一名角色获得技能〖恢拓〗`];
 		for (let i in choiceList) {
 			if (!storage[i]) {
