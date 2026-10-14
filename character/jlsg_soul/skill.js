@@ -9525,7 +9525,7 @@ const skills = {
 				filterTarget(card, player, target) {
 					return player != target;
 				},
-				ai1: get.info("rende").check,
+				ai1: card => get.info("rende").check.apply(this, arguments),
 				discard: false,
 				lose: false,
 				delay: false,
