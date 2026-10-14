@@ -755,7 +755,7 @@ let old_jlsg_qs = {
 				if (!shownCards?.length) {
 					return;
 				}
-				await target.showCards(shownCards).setContent(function () {});
+				await target.showCards(shownCards).setContent(async () => {});
 				event.dialog = ui.create.dialog(get.translation(target) + "展示的手牌", shownCards);
 				event.videoId = lib.status.videoId++;
 				game.broadcast("createDialog", event.videoId, get.translation(target) + "展示的手牌", shownCards);

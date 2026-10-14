@@ -14901,7 +14901,7 @@ const skills = {
 			if (evt.name != "chooseToCompare") {
 				//使用|打出
 				if (!_status.emptyEvent) {
-					let next = game.createEvent("empty", false).setContent(function () {});
+					let next = game.createEvent("empty", false).setContent(async () => {});
 					await next;
 					_status.emptyEvent = next;
 					game.broadcastAll(function (info) {
@@ -18433,7 +18433,7 @@ const skills = {
 				delete args.player;
 				delete args._triggered;
 				if (!_status.emptyEvent) {
-					_status.emptyEvent = await game.createEvent("empty", false).setContent(function () {});
+					_status.emptyEvent = await game.createEvent("empty", false).setContent(async () => {});
 					game.broadcastAll(function (info) {
 						_status.emptyEvent = info;
 					}, _status.emptyEvent);
