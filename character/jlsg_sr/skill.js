@@ -3616,7 +3616,7 @@ const skills = {
 			}
 			const result = await player
 				.chooseTarget("选择获得卡牌的目标", true)
-				.set("ai,", target => {
+				.set("ai", target => {
 					const player = get.player();
 					return get.attitude(player, target) * get.value(get.event().cards);
 				})
