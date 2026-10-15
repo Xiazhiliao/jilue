@@ -798,7 +798,7 @@ const skills = {
 	},
 	jlsg_aozhan: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -855,7 +855,7 @@ const skills = {
 	},
 	jlsg_huxiao: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -919,7 +919,7 @@ const skills = {
 	jlsg_guicai: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -1006,7 +1006,7 @@ const skills = {
 	jlsg_langgu: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -1108,7 +1108,7 @@ const skills = {
 		skillAnimation: true,
 		animationStr: "追尊",
 		animationColor: "water",
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -1296,7 +1296,7 @@ const skills = {
 	jlsg_jiwu: {
 		audio: "ext:极略/audio/skill:2",
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -1359,7 +1359,7 @@ const skills = {
 	jlsg_sheji: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -1698,7 +1698,7 @@ const skills = {
 	},
 	jlsg_yinmeng: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -1783,7 +1783,7 @@ const skills = {
 	},
 	jlsg_xiwu: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -1867,7 +1867,7 @@ const skills = {
 	},
 	jlsg_juelie: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -2640,7 +2640,7 @@ const skills = {
 	},
 	jlsg_jiexi: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -2767,7 +2767,7 @@ const skills = {
 		trigger: {
 			global: ["phaseZhunbeiBegin"],
 		},
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -3023,7 +3023,7 @@ const skills = {
 	jlsg_quanheng: {
 		srlose: true,
 		audio: "ext:极略/audio/skill:1",
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -3216,7 +3216,7 @@ const skills = {
 	jlsg_xionglve: {
 		srlose: true,
 		audio: "ext:极略/audio/skill:2",
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -3797,7 +3797,7 @@ const skills = {
 		intro: {
 			content: "expansion",
 		},
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -3910,7 +3910,7 @@ const skills = {
 	},
 	jlsg_shuixi: {
 		audio: "ext:极略/audio/skill:1",
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -3996,7 +3996,7 @@ const skills = {
 	jlsg_sanfen: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -4167,7 +4167,7 @@ const skills = {
 		srlose: true,
 		enable: ["phaseUse"],
 		usable: 1,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -4272,7 +4272,7 @@ const skills = {
 	jlsg_weiwo: {
 		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -4619,7 +4619,7 @@ const skills = {
 	},
 	jlsg_rende: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -4696,7 +4696,7 @@ const skills = {
 	},
 	jlsg_chouxi: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -4815,7 +4815,7 @@ const skills = {
 	jlsg_zhaoxiang: {
 		srlose: true,
 		audio: "ext:极略/audio/skill:1",
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -4954,7 +4954,7 @@ const skills = {
 	},
 	jlsg_zhishi: {
 		srlose: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -5178,7 +5178,7 @@ const skills = {
 		},
 	},
 	jlsg_zhonghou: {
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -5221,7 +5221,7 @@ const skills = {
 		},
 	},
 	jlsg_ganglie: {
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -5261,7 +5261,7 @@ const skills = {
 	},
 	jlsg_piaoling: {
 		locked: false,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -5337,7 +5337,7 @@ const skills = {
 		},
 	},
 	jlsg_miluo: {
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -5426,7 +5426,7 @@ const skills = {
 	jlsg_jueyan: {
 		xiandingji: true,
 		limited: true,
-		init(player, skill) {
+		init2(player, skill) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
@@ -5494,6 +5494,7 @@ const skills = {
 					await target.loseMaxHp(-num);
 				}
 				let storage = target.getStorage("jlsg_jueyan_buff", 0);
+				storage += num;
 				target.setStorage("jlsg_jueyan_buff", storage, true);
 				target.addSkill("jlsg_jueyan_buff");
 				await game.delayx();
