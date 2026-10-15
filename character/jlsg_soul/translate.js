@@ -324,10 +324,6 @@ const translates = {
 		♣：${get.poptip("jlsg_kuijie_tianming_club")}`,
 };
 
-//新增poptip类型，用于展示本扩展非卡牌/技能的名词
-lib.poptip.addType("jlsg");
-
-
 //七弦效果poptip
 const jlsg_qixian = skills.jlsg_qixian.effects,
 	jlsg_qixian_addList = ["gōng", "shāng", "jué", "zhǐ", "yǔ", "wén", "wǔ"].map(i => `jlsg_qixian_${i}`),
@@ -371,7 +367,6 @@ for (const suit in jlsg_kuijie_tianming_translate) {
 			.map(([index, { str }]) => `${index}.${str}`)
 			.join("<br>");
 	lib.poptip.add({
-		type: "jlsg",
 		id: id,
 		name: name,
 		info: str,
