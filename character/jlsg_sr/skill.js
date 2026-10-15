@@ -5484,18 +5484,19 @@ const skills = {
 				})
 				.forResult();
 			if (result?.bool && result.links?.length && result.targets?.length) {
-				const num = Number(result.links[0]);
+				const num = Number(result.links[0]),
+					[target] = result.targets;
 				if (num > 0) {
-					await player.recover(num);
-					await player.gainMaxHp(num);
+					await target.recover(num);
+					await target.gainMaxHp(num);
 				} else {
-					await player.loseHp(-num);
-					await player.loseMaxHp(-num);
+					await target.loseHp(-num);
+					await target.loseMaxHp(-num);
 				}
-				let storage = player.getStorage("jlsg_jueyan_buff", 0);
-				storage += num;
-				player.setStorage("jlsg_jueyan_buff", storage, true);
-				player.addSkill("jlsg_jueyan_buff");
+				let storage = target.getStorage("jlsg_jueyan_buff", 0);
+				target += num;
+				target.setStorage("jlsg_jueyan_buff", storage, true);
+				target.addSkill("jlsg_jueyan_buff");
 				await game.delayx();
 			}
 		},

@@ -1652,7 +1652,7 @@ const skills = {
 							return true;
 						}
 						let dis = get.distance(target, source);
-						return !game.hasPlayer(cur => get.distance(cur, source) > dis);
+						return !game.hasPlayer(cur => cur !== target && cur !== source && get.distance(cur, source) < dis);
 					},
 					ai2(target) {
 						return get.damageEffect(target, player, player, "fire");
