@@ -14428,12 +14428,13 @@ const skills = {
 							count: 0,
 							list: Array.from({ length: 7 }, (v, i) => Object.keys(get.info("jlsg_qixian").effects)[i]),
 						}),
-						[first, second] = links
-							.map(i => get.translation(i[2]))
-							.sort((a, b) => {
-								const list = storage.list;
-								return list.indexOf(a) - list.indexOf(b);
-							});
+						{ links } = get.info(event.name);
+					const [first, second] = links
+						.map(i => get.translation(i[2]))
+						.sort((a, b) => {
+							const list = storage.list;
+							return list.indexOf(a) - list.indexOf(b);
+						});
 					game.log(player, "调换了", `#y${first}`, "和", `#y${second}`, "的位置");
 					player.chat("我调换了弦音位置");
 					let firstIndex = storage.list.indexOf(first),

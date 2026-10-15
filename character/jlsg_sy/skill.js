@@ -2781,7 +2781,7 @@ const skills = {
 					source: "damageSource",
 				},
 				filter(event, player) {
-					if (player.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 }).current != 1) {
+					if (player.getStorage("jlsgsy_moshou", { 1: 0, 2: 0, 3: 0, current: 0 }).current != 1) {
 						return false;
 					}
 					if (event.player == player) {
@@ -2800,7 +2800,7 @@ const skills = {
 				ai: {
 					effect: {
 						player(card, player, target) {
-							if (player.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 }).current != 1) {
+							if (player.getStorage("jlsgsy_moshou", { 1: 0, 2: 0, 3: 0, current: 0 }).current != 1) {
 								return;
 							}
 							if (get.tag(card, "damage")) {
@@ -2849,7 +2849,7 @@ const skills = {
 					return lib.jlsg.debuffSkill.trigger;
 				},
 				filter(event, player) {
-					if (player.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 }).current != 3) {
+					if (player.getStorage("jlsgsy_moshou", { 1: 0, 2: 0, 3: 0, current: 0 }).current != 3) {
 						return false;
 					}
 					let key = lib.jlsg.debuffSkill.translate[event.name];
@@ -2907,7 +2907,7 @@ const skills = {
 				ai: {
 					effect: {
 						target(card, player, target) {
-							if (player == target || target.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 }).current != 3) {
+							if (player == target || target.getStorage("jlsgsy_moshou", { 1: 0, 2: 0, 3: 0, current: 0 }).current != 3) {
 								return;
 							}
 							if (card.name == "tiesuo") {
