@@ -5494,7 +5494,6 @@ const skills = {
 					await target.loseMaxHp(-num);
 				}
 				let storage = target.getStorage("jlsg_jueyan_buff", 0);
-				target += num;
 				target.setStorage("jlsg_jueyan_buff", storage, true);
 				target.addSkill("jlsg_jueyan_buff");
 				await game.delayx();
@@ -5503,6 +5502,7 @@ const skills = {
 		subSkill: {
 			buff: {
 				charlotte: true,
+				onremove: true,
 				mod: {
 					maxHandcard(player, num) {
 						const storage = player.getStorage("jlsg_jueyan_buff", 0);
