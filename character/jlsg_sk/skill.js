@@ -7065,18 +7065,17 @@ const skills = {
 						return;
 					}
 					if (trigger.name == "phase") {
-						const phase = event.getParent("phase");
-						if (phase.player != player) {
+						if (trigger.player != player) {
 							return;
 						}
-						const { phaseList } = phase;
+						const { phaseList } = trigger;
 						while (phaseList.some(name => name.startsWith("phaseDiscard"))) {
 							let index = phaseList.findIndex(name => name.startsWith("phaseDiscard"));
 							if (index > -1) {
 								phaseList.splice(index, 1, action);
 							}
 						}
-						phase.phaseList = phaseList;
+						trigger.phaseList = phaseList;
 					} else {
 						trigger.cancel();
 						let next = player[action]();
