@@ -1966,13 +1966,6 @@ const skills = {
 			}
 			target.addMark(event.name, 1);
 		},
-		global: ["jlsg_suohun_mark"],
-		subSkill: {
-			mark: {
-				forced: true,
-				charlotte: true,
-			},
-		},
 		group: ["jlsg_suohun_die"],
 		subSkill: {
 			die: {

@@ -835,7 +835,7 @@ const skills = {
 					event.result = await player
 						.chooseCardTarget({
 							prompt: get.prompt(event.skill),
-							prompt: `你可以交给一名拥有【母仪】的其他角色至多两张牌，其本回合结束后交还给你等量张牌。`,
+							prompt2: `你可以交给一名拥有【母仪】的其他角色至多两张牌，其本回合结束后交还给你等量张牌。`,
 							selectCard: [1, 2],
 							ai1(card) {
 								if (get.position(card) == "e") {
@@ -2869,7 +2869,6 @@ const skills = {
 						return player.canCompare(target);
 					},
 					ai(target) {
-						return 1;
 						const { player, num } = get.event();
 						let eff = -get.attitude(player, target) - get.attitude(player, player),
 							playerExpect = ((num - 1) / 13) ** target.countCards("h");
@@ -4794,7 +4793,7 @@ const skills = {
 					event.result = await player
 						.chooseBool({
 							prompt: get.prompt(event.skill, trigger.player),
-							prompt: `令其${color == "red" ? "摸" : "弃置"}一张牌`,
+							prompt2: `令其${color == "red" ? "摸" : "弃置"}一张牌`,
 							ai(event, player) {
 								return get.info(event.skill).frequent(event.getTrigger(), player);
 							},
@@ -5916,22 +5915,8 @@ const skills = {
 			}
 		},
 		ai: {
-			expose: 0.1,
-			order: 8,
-			result: {
-				player(player) {
-					if (player.hasStorage("jlsg_tianqi")) {
-						return 1;
-					} else if (player.hp > 2 && player.hasStorage("jlsg_tianqi")) {
-						return -10;
-					}
-					if (event.getRand() < 0.67) {
-						return 0.5;
-					}
-					return -1;
-				},
-			},
 			threaten: 4,
+			expose: 0.1,
 		},
 	},
 	jlsg_fulu: {
@@ -13281,7 +13266,6 @@ const skills = {
 			});
 			return !bool;
 		},
-		unique: true,
 		forced: true,
 		async content(event, trigger, player) {
 			const cards = get.bottomCards(1);

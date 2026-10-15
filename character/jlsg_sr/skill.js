@@ -895,13 +895,15 @@ const skills = {
 			game.log(player, `令伤害`, `#y+1`);
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const upgrade = checkUpgrade(player, event.name);
-			const { result } = await player.chooseBool({
-				prompt: `${get.translation(event.name)}：是否翻${upgrade ? "" : "至背"}面，令此伤害再+1？`,
-				prompt2: `然后若你背面朝上，你摸两张牌`,
-				ai(event, player) {
-					return true;
-				},
-			});
+			const result = await player
+				.chooseBool({
+					prompt: `${get.translation(event.name)}：是否翻${upgrade ? "" : "至背"}面，令此伤害再+1？`,
+					prompt2: `然后若你背面朝上，你摸两张牌`,
+					ai(event, player) {
+						return true;
+					},
+				})
+				.forResult();
 			if (result?.bool) {
 				if (upgrade) {
 					await player.turnOver();

@@ -167,6 +167,7 @@ let block = {
 				item: {
 					false: "最新",
 					1: "一代",
+					2: "二代",
 				},
 				jlsg_upgrade: true,
 				onclick(item) {

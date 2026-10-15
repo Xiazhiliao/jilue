@@ -406,7 +406,7 @@ let skill = {
 		jlsg_yidu2: "异度之计,臼犯之谋也。",
 		jlsg_yijian1: "主帅，这有违丞相之命。",
 		jlsg_yinbing1: "追兵众多，我来断后！",
-		jlsg_yinbing1: "来呀，先从我尸体上踏过去！",
+		jlsg_yinbing2: "来呀，先从我尸体上踏过去！",
 		jlsg_yingbing1: "幻影成兵，助我退敌。",
 		jlsg_yingbing2: "四方神将，皆为我用。",
 		jlsg_yingge1: "莺歌送君去，待君凯旋归。",

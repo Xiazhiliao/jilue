@@ -838,139 +838,6 @@ export default {
 			},
 		},
 	},
-	jlsgsr_ganning: {
-		1: {
-			skill: {
-				jlsg_jiexi: {
-					audio: "ext:极略/audio/skill:1",
-					srlose: true,
-					usable: 1,
-					enable: "phaseUse",
-					filter(event, player) {
-						return game.hasPlayer(current => player.canCompare(current));
-					},
-					filterTarget(card, target, player) {
-						return player.canCompare(target);
-					},
-					prompt: "你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢",
-					async content(event, trigger, player) {
-						const {
-								targets: [target],
-							} = event,
-							guohe = get.autoViewAs({ name: "guohe" }, []);
-						while (player.canCompare(target)) {
-							const compare = await player.chooseToCompare(target).forResult();
-							if (compare?.bool) {
-								if (player.canUse(guohe, target)) {
-									await player.useCard(guohe, target);
-								}
-								const result = await player
-									.chooseBool(`是否再次${get.translation(target)}对发动〖劫袭〗?`)
-									.set("ai", (event, player) => {
-										const {
-											targets: [target],
-										} = event;
-										let att = Math.sign(get.attitude(player, target));
-										return att * get.info("jlsg_jiexi").ai.result.target(player, target) > 0;
-									})
-									.forResult();
-								if (!result?.bool) {
-									break;
-								}
-							} else {
-								break;
-							}
-						}
-					},
-					ai: {
-						order: 9,
-						result: {
-							target(player, target) {
-								const att = get.attitude(player, target);
-								const nh = target.countCards("h");
-								if (att > 0) {
-									const js = target.getCards("j");
-									if (js.length) {
-										const jj = js[0].viewAs ? { name: js[0].viewAs } : js[0];
-										if (jj.name == "guohe" || js.length > 1 || get.effect(target, jj, target, player) < 0) {
-											return 3;
-										}
-									}
-									if (target.getEquip("baiyin") && target.isDamaged() && get.recoverEffect(target, player, player) > 0) {
-										if (target.hp == 1 && !target.hujia) {
-											return 1.6;
-										}
-										if (target.hp == 2) {
-											return 0.01;
-										}
-										return 0;
-									}
-								}
-								const es = target.getCards("e");
-								const noe = es.length == 0 || target.hasSkillTag("noe");
-								const noe2 = es.length == 1 && es[0].name == "baiyin" && target.isDamaged();
-								const noh = nh == 0 || target.hasSkillTag("noh");
-								if (noh && (noe || noe2)) {
-									return 0;
-								}
-								if (att <= 0 && !target.countCards("he")) {
-									return 1.5;
-								}
-								return -1.5;
-							},
-						},
-					},
-				},
-				jlsg_youxia: {
-					audio: "ext:极略/audio/skill:2",
-					srlose: true,
-					enable: "phaseUse",
-					filter(event, player) {
-						return !player.isTurnedOver();
-					},
-					filterTarget(card, target, player) {
-						return player != target && target.countGainableCards(player, "he") > 0;
-					},
-					selectTarget: [1, 2],
-					multitarget: true,
-					multiline: true,
-					async content(event, trigger, player) {
-						await player.turnOver();
-						for (let target of event.targets.sortBySeat()) {
-							await player.gainPlayerCard(target, "he");
-						}
-					},
-					mod: {
-						targetEnabled(card, player, target, now) {
-							if (target.isTurnedOver()) {
-								if (card.name == "sha" || card.name == "juedou") {
-									return false;
-								}
-							}
-						},
-					},
-					ai: {
-						order: 9,
-						result: {
-							player: -2,
-							target(player, target) {
-								if (get.attitude(player, target) <= 0) {
-									return target.countCards("he") > 0 ? -1.5 : 1.5;
-								}
-								return 0;
-							},
-						},
-					},
-				},
-			},
-			translate: {
-				jlsg_jiexi: "劫袭",
-				jlsg_jiexi_info: "出牌阶段，你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢。",
-				jlsg_youxia: "游侠",
-				jlsg_youxia_info: "出牌阶段，若你的武将牌正面朝上，你可以将你的武将牌翻面，然后从一至两名其他角色处各获得一张牌；锁定技，若你的武将牌背面朝上，你不能成为【杀】和【决斗】的目标。",
-			},
-		},
-	},
 	jlsgsr_zhugeliang: {
 		1: {
 			skill: {
@@ -2664,6 +2531,137 @@ export default {
 	},
 	jlsgsr_ganning: {
 		1: {
+			skill: {
+				jlsg_jiexi: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					usable: 1,
+					enable: "phaseUse",
+					filter(event, player) {
+						return game.hasPlayer(current => player.canCompare(current));
+					},
+					filterTarget(card, target, player) {
+						return player.canCompare(target);
+					},
+					prompt: "你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢",
+					async content(event, trigger, player) {
+						const {
+								targets: [target],
+							} = event,
+							guohe = get.autoViewAs({ name: "guohe" }, []);
+						while (player.canCompare(target)) {
+							const compare = await player.chooseToCompare(target).forResult();
+							if (compare?.bool) {
+								if (player.canUse(guohe, target)) {
+									await player.useCard(guohe, target);
+								}
+								const result = await player
+									.chooseBool(`是否再次${get.translation(target)}对发动〖劫袭〗?`)
+									.set("ai", (event, player) => {
+										const {
+											targets: [target],
+										} = event;
+										let att = Math.sign(get.attitude(player, target));
+										return att * get.info("jlsg_jiexi").ai.result.target(player, target) > 0;
+									})
+									.forResult();
+								if (!result?.bool) {
+									break;
+								}
+							} else {
+								break;
+							}
+						}
+					},
+					ai: {
+						order: 9,
+						result: {
+							target(player, target) {
+								const att = get.attitude(player, target);
+								const nh = target.countCards("h");
+								if (att > 0) {
+									const js = target.getCards("j");
+									if (js.length) {
+										const jj = js[0].viewAs ? { name: js[0].viewAs } : js[0];
+										if (jj.name == "guohe" || js.length > 1 || get.effect(target, jj, target, player) < 0) {
+											return 3;
+										}
+									}
+									if (target.getEquip("baiyin") && target.isDamaged() && get.recoverEffect(target, player, player) > 0) {
+										if (target.hp == 1 && !target.hujia) {
+											return 1.6;
+										}
+										if (target.hp == 2) {
+											return 0.01;
+										}
+										return 0;
+									}
+								}
+								const es = target.getCards("e");
+								const noe = es.length == 0 || target.hasSkillTag("noe");
+								const noe2 = es.length == 1 && es[0].name == "baiyin" && target.isDamaged();
+								const noh = nh == 0 || target.hasSkillTag("noh");
+								if (noh && (noe || noe2)) {
+									return 0;
+								}
+								if (att <= 0 && !target.countCards("he")) {
+									return 1.5;
+								}
+								return -1.5;
+							},
+						},
+					},
+				},
+				jlsg_youxia: {
+					audio: "ext:极略/audio/skill:2",
+					srlose: true,
+					enable: "phaseUse",
+					filter(event, player) {
+						return !player.isTurnedOver();
+					},
+					filterTarget(card, target, player) {
+						return player != target && target.countGainableCards(player, "he") > 0;
+					},
+					selectTarget: [1, 2],
+					multitarget: true,
+					multiline: true,
+					async content(event, trigger, player) {
+						await player.turnOver();
+						for (let target of event.targets.sortBySeat()) {
+							await player.gainPlayerCard(target, "he");
+						}
+					},
+					mod: {
+						targetEnabled(card, player, target, now) {
+							if (target.isTurnedOver()) {
+								if (card.name == "sha" || card.name == "juedou") {
+									return false;
+								}
+							}
+						},
+					},
+					ai: {
+						order: 9,
+						result: {
+							player: -2,
+							target(player, target) {
+								if (get.attitude(player, target) <= 0) {
+									return target.countCards("he") > 0 ? -1.5 : 1.5;
+								}
+								return 0;
+							},
+						},
+					},
+				},
+			},
+			translate: {
+				jlsg_jiexi: "劫袭",
+				jlsg_jiexi_info: "出牌阶段，你可以与一名其他角色拼点，若你赢，视为对其使用一张【过河拆桥】。你可重复此流程直到你以此法拼点没赢。",
+				jlsg_youxia: "游侠",
+				jlsg_youxia_info: "出牌阶段，若你的武将牌正面朝上，你可以将你的武将牌翻面，然后从一至两名其他角色处各获得一张牌；锁定技，若你的武将牌背面朝上，你不能成为【杀】和【决斗】的目标。",
+			},
+		},
+		2: {
 			skill: {
 				jlsg_jiexi: {
 					audio: "ext:极略/audio/skill:true",
