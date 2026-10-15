@@ -338,7 +338,7 @@ const skills = {
 			globalfrom(from, to, current) {
 				return (
 					current +
-					player.getStorage("jlsg_jdjg_xiaoji", {
+					from.getStorage("jlsg_jdjg_xiaoji", {
 						e1: 0,
 						e2: 0,
 						e3: 0,
@@ -741,7 +741,7 @@ const skills = {
 				await player.draw(hs.length);
 			}
 		},
-		group: ["jlsg_spwq_wushuang_useCardTo", "jlsg_spwq_wushuang_damage"],
+		group: ["jlsg_spwq_wushuang_useCardTo"],
 		subSkill: {
 			useCardTo: {
 				trigger: { player: "useCardToPlayered" },

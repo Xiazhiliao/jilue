@@ -4567,7 +4567,7 @@ const skills = {
 				return;
 			}
 			const group = trigger.player.group;
-			let list = jlsg.characterList.filter(c => get.character(c, 1) == group),
+			let list = lib.jlsg.characterList.filter(c => get.character(c, 1) == group),
 				players = game.players
 					.concat(game.dead)
 					.map(current => get.nameList(current))
@@ -6711,19 +6711,6 @@ const skills = {
 		},
 		marktext: "辎",
 		intro: {
-			content(storage, player) {
-				var cards = player.getCards("s", function (card) {
-					return card.hasGaintag("jlsg_jinlong_muniu");
-				});
-				if (!cards.length) {
-					return "共有零张牌";
-				}
-				if (player.isUnderControl(true)) {
-					dialog.addAuto(cards);
-				} else {
-					return "共有" + get.cnNumber(cards.length) + "张牌";
-				}
-			},
 			mark(dialog, storage, player) {
 				var cards = player.getCards("s", function (card) {
 					return card.hasGaintag("jlsg_jinlong_muniu");
@@ -9513,7 +9500,7 @@ const skills = {
 				filterTarget(card, player, target) {
 					return player != target;
 				},
-				ai1: card => get.info("rende").check.apply(this, arguments),
+				ai1: get.info("rende")?.check,
 				discard: false,
 				lose: false,
 				delay: false,
@@ -11955,7 +11942,7 @@ const skills = {
 					{
 						str: "令所有其他角色各失去1点体力",
 						content: {
-							chooseTarget: [true, "all", (_, player, target) => player != target, target => et.effect(target, { name: "losehp" }, get.player())],
+							chooseTarget: [true, "all", (_, player, target) => player != target, target => get.effect(target, { name: "losehp" }, get.player(), get.player())],
 							loseHp: [1],
 						},
 						ai(player) {
@@ -12634,7 +12621,7 @@ const skills = {
 									for (let i of position) {
 										if (target.countGainableCards(player, i)) {
 											const card = target.getGainableCards(player, i).randomGet();
-											lose_list.push([targeet, [card]]);
+											lose_list.push([target, [card]]);
 										}
 									}
 								}
@@ -15273,19 +15260,8 @@ const skills = {
 			next.gaintag.add("eternal_jlsg_qugu");
 			await next;
 		},
-		group: ["jlsg_qugu_draw", "jlsg_qugu_realDamage"],
+		group: ["jlsg_qugu_realDamage"],
 		subSkill: {
-			unequip: {
-				ai: {
-					unequip: true,
-					unequip_ai: true,
-					skillTagFilter(player, tag, arg) {
-						if (!arg?.card?.qugu_unequip) {
-							return false;
-						}
-					},
-				},
-			},
 			realDamage: {
 				hookTrigger: {
 					block(event, player, triggername, skill) {
@@ -15293,7 +15269,7 @@ const skills = {
 							delete event.nature;
 							return true;
 						}
-						if (event.player != player || skill == "jlsg_qugu_draw") {
+						if (event.player != player || skill == "jlsg_qugu") {
 							return false;
 						}
 						let skills = game.expandSkills(
@@ -15314,6 +15290,16 @@ const skills = {
 						}
 					},
 				},
+			},
+		},
+
+		ai: {
+			unequip: true,
+			unequip_ai: true,
+			skillTagFilter(player, tag, arg) {
+				if (!arg?.card?.qugu_unequip) {
+					return false;
+				}
 			},
 		},
 	},
@@ -17514,7 +17500,7 @@ const skills = {
 						} else {
 							if (key === "disableSkill") {
 								trigger.cancel();
-								next = player.addTempSkill("fengyin");
+								player.addTempSkill("fengyin");
 							} else {
 								trigger.player = player;
 							}

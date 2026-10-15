@@ -307,7 +307,7 @@ export default {
 					forbid: ["hearth", "guozhan"],
 					changeSeat: true,
 					init(player) {
-						player.storage.jlsg_xinghan_token = lib.group.filter(g => jlsg.characterList.some(c => get.character(c, 1) == g));
+						player.storage.jlsg_xinghan_token = lib.group.filter(g => lib.jlsg.characterList.some(c => get.character(c, 1) == g));
 						player.storage.jlsg_xinghan_location = false;
 						player.storage.jlsg_xinghan = [];
 						player.storage.jlsg_xinghan_removed = [];
@@ -499,7 +499,7 @@ export default {
 						if (result.control == "cancel2") {
 							return;
 						}
-						let choices = jlsg.characterList.filter(c => get.character(c, 1) == result.control).randomGets(3);
+						let choices = lib.jlsg.characterList.filter(c => get.character(c, 1) == result.control).randomGets(3);
 						if (!choices.length) {
 							return;
 						}

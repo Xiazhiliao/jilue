@@ -1345,7 +1345,6 @@ const skills = {
 	},
 	jlsg_bibu: {
 		audio: "ext:极略/audio/skill:2",
-		group: ["jlsg_bibu1"],
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
 			return event.player != player;
@@ -1731,7 +1730,7 @@ const skills = {
 						return storage.length;
 					},
 					content(storage) {
-						str = "使用过的花色：";
+						let str = "使用过的花色：";
 						if (storage.length) {
 							str += get.translation(storage);
 						} else {
@@ -3258,7 +3257,7 @@ const skills = {
 			effect: {
 				audio: "ext:极略/audio/skill/jlsg_xiemu2.mp3",
 				trigger: {
-					global: ["phsaeJieshuBegin"],
+					global: ["phaseJieshuBegin"],
 				},
 				filter(event, player) {
 					return player.hasStorage("jlsg_xiemu", event.player);
@@ -3266,9 +3265,9 @@ const skills = {
 				direct: true,
 				async content(event, trigger, player) {
 					event.target = trigger.player;
-					player.unmarkAuto(jlsg_xiemu, [trigger.player]);
+					player.unmarkAuto("jlsg_xiemu", [trigger.player]);
 					const result = await player
-						.chosoeBool({
+						.chooseBool({
 							prompt: get.prompt(event.name, trigger.player),
 							prompt2: "令其摸一张牌",
 							ai(event, player) {
@@ -5280,7 +5279,7 @@ const skills = {
 				const lose_list = new Map();
 				for (const link of result.links) {
 					const owner = get.owner(link);
-					let info = gain_list.get(owner) || [];
+					let info = lose_list.get(owner) || [];
 					info.add(link);
 					lose_list.set(owner, info);
 					owner.$giveAuto(link, target);
@@ -6343,7 +6342,7 @@ const skills = {
 			return target.isDamaged();
 		},
 		async content(event, trigger, player) {
-			target.draw(2);
+			await event.target.draw(2);
 			player.addTempSkill("jlsg_ziguo_debuff");
 		},
 		subSkill: {
@@ -9538,7 +9537,7 @@ const skills = {
 					if (target.ai.shown > player.ai.shown) {
 						player.addExpose(0.2);
 					}
-					await targets.damage({ num: 2 });
+					await target.damage({ num: 2 });
 				}
 			}
 		},
@@ -9580,6 +9579,7 @@ const skills = {
 				next.ai = function (target) {
 					const player = get.player();
 					const att = get.attitude(player, target);
+					let eff = 0;
 					if (att > 0) {
 						eff += target.getCards("h");
 					} else {
@@ -11218,7 +11218,7 @@ const skills = {
 		onremove: true,
 		intro: {
 			nocount: true,
-			mark(dialog, content, player, evt, skill) {
+			mark(dialog, storage, player, evt, skill) {
 				storage ??= player.getStorage(skill, { map: {} }).map;
 				const recordSkills = Object.entries(storage);
 				if (recordSkills && recordSkills.length) {
@@ -12203,13 +12203,13 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			const storage = target.getStorage("jlsg_tiandao", [1, 1, 1, 1]);
 			if (!target.hasSkill("jlsg_tiandao")) {
 				await target.addSkills(["jlsg_tiandao"]);
 			} else {
 				const result = await player.judge("jlsg_xianshou").forResult();
 				const suit = result.suit;
 				const num = [0, 1, 2, 3].randomGet();
-				const storage = target.getStorage("jlsg_tiandao", [1, 1, 1, 1]);
 				if (suit != "spade") {
 					storage[num]++;
 				} else {
@@ -14031,9 +14031,9 @@ const skills = {
 						str += get.numStr(maxHp);
 					}
 					let textnode = ui.create.div(".text", str, node.node.hp);
-					if (info[0] == 0) {
+					if (hp == 0) {
 						node.node.hp.hide();
-					} else if (get.infoHp(info[0]) <= 3) {
+					} else if (get.infoHp(hp) <= 3) {
 						node.node.hp.dataset.condition = "mid";
 					} else {
 						node.node.hp.dataset.condition = "high";
@@ -14044,10 +14044,10 @@ const skills = {
 					}
 				} else {
 					if (maxHp > 14) {
-						if (hp !== maxHp || shield > 0) {
-							node.node.hp.innerHTML = info[0];
+						if (hp !== maxHp || hujia > 0) {
+							node.node.hp.innerHTML = hp;
 						} else {
-							node.node.hp.innerHTML = get.numStr(info[0]);
+							node.node.hp.innerHTML = get.numStr(hp);
 						}
 						node.node.hp.classList.add("text");
 					} else {
@@ -14057,7 +14057,7 @@ const skills = {
 								next.classList.add("exclude");
 							}
 						}
-						for (let i = 0; i < shield; i++) {
+						for (let i = 0; i < hujia; i++) {
 							ui.create.div(node.node.hp, ".shield");
 						}
 					}

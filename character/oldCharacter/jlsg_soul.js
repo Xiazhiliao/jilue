@@ -1057,7 +1057,7 @@ export default {
 							});
 							if (typeof result?.index === "number") {
 								event.result = {
-									bool: bool,
+									bool: true,
 									cost_data: result.index + 2,
 								};
 							}
@@ -1331,7 +1331,7 @@ export default {
 							return get.color(card, false) == "red";
 						}, "random");
 						if (card) {
-							player.gain(cards, "gain2");
+							player.gain(card, "gain2");
 						}
 					},
 					marktext: "阳",
@@ -1400,7 +1400,7 @@ export default {
 							return get.color(card, false) == "black";
 						}, "random");
 						if (card) {
-							player.gain(cards, "gain2");
+							player.gain(card, "gain2");
 						}
 					},
 					marktext: "阴",
