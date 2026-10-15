@@ -462,16 +462,18 @@ const skills = {
 		},
 	},
 	jlsgsy_bolue: {
-		init(player, skill) {
-			player.setStorage(
-				skill,
-				{
-					wei: 1,
-					shu: 1,
-					wu: 1,
-				},
-				true
-			);
+		init2(player, skill) {
+			if (!player.hasStorage(skill)) {
+				player.setStorage(
+					skill,
+					{
+						wei: 1,
+						shu: 1,
+						wu: 1,
+					},
+					true
+				);
+			}
 		},
 		audio: "ext:极略/audio/skill:4",
 		trigger: {
@@ -2685,20 +2687,15 @@ const skills = {
 	},
 	jlsgsy_moshou: {
 		audio: "ext:极略/audio/skill:3",
-		init(player) {
-			player.storage.jlsgsy_moshou = {
-				1: 0,
-				2: 0,
-				3: 0,
-			};
-		},
 		mark: true,
 		marktext: "兽",
 		intro: {
-			markcount(storage, player) {
-				return player.storage.jlsgsy_moshou_record;
+			markcount(storage, player, skill) {
+				storage ??= player.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 });
+				return storage.current;
 			},
-			mark(dialog, storage, player) {
+			mark(dialog, storage, player, evt, skill) {
+				storage ??= player.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 });
 				const addNewRow = lib.element.dialog.addNewRow.bind(dialog),
 					itemContainerCss = { height: "20px" },
 					map = ["无", "①", "②", "③"];
@@ -2712,7 +2709,7 @@ const skills = {
 						list = [
 							{ item: `当前效果`, ratio: 0.5, itemContainerCss },
 							{
-								item: `${map[player.storage.jlsgsy_moshou_record || 0]}`,
+								item: `${map[storage.current]}`,
 								ratio: 0.5,
 								itemContainerCss,
 							},
@@ -2740,7 +2737,8 @@ const skills = {
 			return [`ext:极略/audio/skill/jlsgsy_moshou${num}.mp3`];
 		},
 		async cost(event, trigger, player) {
-			let num = [1, 2, 3].remove(player.storage.jlsgsy_moshou_record).randomGet();
+			const storage = player.getStorage(event.skill, { 1: 0, 2: 0, 3: 0, current: 0 });
+			let num = [1, 2, 3].remove(storage.current).randomGet();
 			event.result = {
 				bool: true,
 				cost_data: { num },
@@ -2748,9 +2746,10 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const num = event.cost_data.num;
-			player.storage.jlsgsy_moshou_record = num;
-			player.storage.jlsgsy_moshou[num.toString()]++;
-			player.update();
+			const storage = player.getStorage(event.name, { 1: 0, 2: 0, 3: 0, current: 0 });
+			storage.current = num;
+			storage[num.toString()]++;
+			player.setStorage(event.name, storage, true);
 			if (num == 2) {
 				let targets = game.filterPlayer().remove(player).sortBySeat(player);
 				for (let target of targets) {
@@ -2759,7 +2758,7 @@ const skills = {
 					target.addTempSkill("jlsgsy_moshou_2", { player: "phaseEnd" });
 				}
 			}
-			await player.draw(player.storage.jlsgsy_moshou[num.toString()]);
+			await player.draw(storage[num.toString()]);
 		},
 		getSkills(player) {
 			let equipSkills = player.getCards("e").reduce((list, card) => {
@@ -2782,7 +2781,7 @@ const skills = {
 					source: "damageSource",
 				},
 				filter(event, player) {
-					if (player.storage.jlsgsy_moshou_record != 1) {
+					if (player.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 }).current != 1) {
 						return false;
 					}
 					if (event.player == player) {
@@ -2801,7 +2800,7 @@ const skills = {
 				ai: {
 					effect: {
 						player(card, player, target) {
-							if (player.storage.jlsgsy_moshou_record != 1) {
+							if (player.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 }).current != 1) {
 								return;
 							}
 							if (get.tag(card, "damage")) {
@@ -2850,7 +2849,7 @@ const skills = {
 					return lib.jlsg.debuffSkill.trigger;
 				},
 				filter(event, player) {
-					if (player.storage.jlsgsy_moshou_record != 3) {
+					if (player.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 }).current != 3) {
 						return false;
 					}
 					let key = lib.jlsg.debuffSkill.translate[event.name];
@@ -2908,7 +2907,7 @@ const skills = {
 				ai: {
 					effect: {
 						target(card, player, target) {
-							if (player == target || target.storage.jlsgsy_moshou_record != 3) {
+							if (player == target || target.getStorage(skill, { 1: 0, 2: 0, 3: 0, current: 0 }).current != 3) {
 								return;
 							}
 							if (card.name == "tiesuo") {

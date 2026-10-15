@@ -8157,18 +8157,24 @@ const skills = {
 	jlsg_huituo: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: ["phaseZhunbeiBegin"] },
-		init(player) {
-			player.storage.jlsg_huituo = Array.from({ length: 4 }, () => true);
-		},
 		filter(event, player) {
-			return player.storage.jlsg_huituo?.some(i => i === true);
+			return player
+				.getStorage(
+					event.skill,
+					Array.from({ length: 4 }, () => true)
+				)
+				.some(i => i === true);
 		},
 		async cost(event, trigger, player) {
+			const storage = player.getStorage(
+				event.skill,
+				Array.from({ length: 4 }, () => true)
+			);
 			let choiceList = [`令一名角色回复体力至全场唯一最多`, `令一名角色摸牌至全场唯一最多`, `选择一名角色，系统为该角色的每个空装备栏选择一张装备牌，然后该角色使用之`, `令其他一名角色获得技能〖恢拓〗`];
-			if (game.filterPlayer().every(current => current.hasSkill("jlsg_huituo", null, false, false))) {
+			if (game.filterPlayer().every(current => current.hasSkill(event.skill, null, false, false))) {
 				choiceList = choiceList.slice(0, -1);
 			}
-			let list = choiceList.filter((v, i) => player.storage.jlsg_huituo[i]);
+			let list = choiceList.filter((v, i) => storage[i]);
 			if (!list.length) {
 				return;
 			}
@@ -8218,7 +8224,7 @@ const skills = {
 						break;
 					case 3:
 						for (let current of game.filterPlayer()) {
-							if (current.hasSkill("jlsg_huituo", null, false, false)) {
+							if (current.hasSkill(event.skill, null, false, false)) {
 								continue;
 							}
 							let currentEff = get.attitude(player, current) > 1 ? get.attitude(player, current) * 3 : 0;
@@ -8231,7 +8237,7 @@ const skills = {
 				}
 			}
 			const result1 = await player
-				.chooseTarget(get.prompt("jlsg_huituo"))
+				.chooseTarget(get.prompt(event.skill))
 				.set("prompt2", list.map((v, i) => `${i + 1}.${v}`).join("<br>"))
 				.set("filterTarget", (_, player, target) => {
 					const choice = get.event().choice;
@@ -8252,10 +8258,10 @@ const skills = {
 				} = result1,
 				[choice] = eff;
 			choiceList = [`令${get.translation(target)}回复体力至全场唯一最多`, `令${get.translation(target)}摸牌至全场唯一最多`, `系统为${get.translation(target)}的每个空装备栏选择一张装备牌，然后其使用之`, `令${get.translation(target)}获得技能〖恢拓〗`];
-			if (target.hasSkill("jlsg_huituo", null, false, false)) {
+			if (target.hasSkill(event.skill, null, false, false)) {
 				choiceList = choiceList.slice(0, -1);
 			}
-			list = choiceList.filter((v, i) => player.storage.jlsg_huituo[i]);
+			list = choiceList.filter((v, i) => storage[i]);
 			const result2 = await player
 				.chooseControlList(list, true)
 				.set("ai", () => get.event().choice || Math.floor(get.event().getRand() * get.event().controls.length + 1))
@@ -8279,7 +8285,12 @@ const skills = {
 				cost_data: { choice },
 				targets: [target],
 			} = event;
-			player.storage.jlsg_huituo[choice] = false;
+			const storage = player.getStorage(
+				event.name,
+				Array.from({ length: 4 }, () => true)
+			);
+			storage[choice] = false;
+			player.setStorage(event.name, storage, true);
 			switch (choice) {
 				case 0:
 					await target.recoverTo(game.findPlayer(current => current.isMaxHp())?.hp + 1);
@@ -11208,6 +11219,7 @@ const skills = {
 		},
 	},
 	jlsg_sanjue: {
+		unique: true,
 		init(player, skill) {
 			player.setStorage(
 				skill,
@@ -12213,7 +12225,7 @@ const skills = {
 				const result = await player.judge("jlsg_xianshou").forResult();
 				const suit = result.suit;
 				const num = [0, 1, 2, 3].randomGet();
-				const storage = target.storage.jlsg_tiandao;
+				const storage = target.getStorage("jlsg_tiandao", [1, 1, 1, 1]);
 				if (suit != "spade") {
 					storage[num]++;
 				} else {
@@ -12221,10 +12233,11 @@ const skills = {
 					storage[num] = Math.max(0, storage[num]);
 				}
 			}
-			target.markSkill("jlsg_tiandao");
+			target.setStorage("jlsg_tiandao", storage, true);
 		},
 	},
 	jlsg_tiandao: {
+		onremove: true,
 		marktext: "道",
 		mark: true,
 		intro: {
@@ -12233,15 +12246,13 @@ const skills = {
 				return `准备阶段，你摸${storage[0]}张牌，随机获得不在场上且你拥有的群势力武将的${storage[1]}个技能，然后可与选择一名角色，令其随机弃置${storage[2]}张牌，对其造成${storage[3]}点雷电伤害。`;
 			},
 		},
-		init(player, skill) {
-			player.storage[skill] = [1, 1, 1, 1];
-		},
-		onremove: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		filter: (event, player) => player.storage.jlsg_tiandao.some(i => i > 0),
+		filter(event, player) {
+			return player.getStorage("jlsg_tiandao", [1, 1, 1, 1]).some(i => i > 0);
+		},
 		async content(event, trigger, player) {
-			const info = player.storage.jlsg_tiandao;
+			const info = player.getStorage(event.name, [1, 1, 1, 1]);
 			if (info[0] > 0) {
 				await player.draw(info[0]);
 			}
@@ -12457,12 +12468,13 @@ const skills = {
 		},
 	},
 	jlsg_caiyu: {
-		audio: "ext:极略/audio/skill:2",
-		init: player => {
+		unique: true,
+		init(player, skill) {
 			player.addInvisibleSkill("jlsg_caiyu_flash");
-			player.storage.jlsg_caiyu = {};
+			player.setStorage(skill, {}, true);
 		},
 		onremove: true,
+		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "phaseZhunbeiBegin" },
 		getList(player) {
 			const configx = game.getExtensionConfig("极略", "jlsgsk_jiangwei");
@@ -12858,9 +12870,6 @@ const skills = {
 	},
 	jlsg_guolun: {
 		audio: "ext:极略/audio/skill:2",
-		init(player) {
-			player.storage.jlsg_guolun = 0;
-		},
 		trigger: { global: ["drawAfter", "discardAfter", "recoverAfter", "damageAfter"] },
 		priority: 1,
 		filter(event, player) {
@@ -12868,7 +12877,8 @@ const skills = {
 		},
 		usable: 1,
 		filterTargetDefault(trigger, player, target, isReverse) {
-			switch (player.storage.jlsg_guolun) {
+			const storage = player.getStorage("jlsg_guolun", 0);
+			switch (storage) {
 				case 0:
 					if (!isReverse) {
 						return false;
@@ -13093,8 +13103,9 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			if (player.hasSkill("jlsg_guolun")) {
-				player.setStorage("jlsg_guolun", Math.min(3, player.storage.jlsg_guolun + 1));
+			let storage = player.getStorage("jlsg_guolun", 0);
+			if (player.hasSkill("jlsg_guolun") && storage < 3) {
+				player.setStorage("jlsg_guolun", ++storage, true);
 			}
 			await player.draw(game.countPlayer());
 		},
@@ -13250,11 +13261,12 @@ const skills = {
 		},
 	},
 	jlsg_zhenge: {
-		audio: "ext:极略/audio/skill:2",
+		unique: true,
 		init(player) {
 			player.addInvisibleSkill("jlsg_zhenge_use");
 			game.addGlobalSkill("jlsg_zhenge_mod", player);
 		},
+		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			const bool = player.hasHistory("lose", evt => {
@@ -13350,24 +13362,39 @@ const skills = {
 				},
 				"使用杀的次数上限+1": async function (event, trigger, player) {
 					if (!player.hasSkill("jlsg_zhenge_effect")) {
-						await player.addSkill("jlsg_zhenge_effect");
+						player.addSkill("jlsg_zhenge_effect");
 					}
-					player.storage.jlsg_zhenge_effect.sha++;
-					player.markSkill("jlsg_zhenge_effect");
+					const storage = player.getStorage("jlsg_zhenge_effect", {
+						draw: 0,
+						maxHandCards: 0,
+						sha: 0,
+					});
+					storage.sha++;
+					player.setStorage("jlsg_zhenge_effect", storage, true);
 				},
 				"摸牌数+1": async function (event, trigger, player) {
 					if (!player.hasSkill("jlsg_zhenge_effect")) {
-						await player.addSkill("jlsg_zhenge_effect");
+						player.addSkill("jlsg_zhenge_effect");
 					}
-					player.storage.jlsg_zhenge_effect.draw++;
-					player.markSkill("jlsg_zhenge_effect");
+					const storage = player.getStorage("jlsg_zhenge_effect", {
+						draw: 0,
+						maxHandCards: 0,
+						sha: 0,
+					});
+					storage.draw++;
+					player.setStorage("jlsg_zhenge_effect", storage, true);
 				},
 				"手牌上限+1": async function (event, trigger, player) {
 					if (!player.hasSkill("jlsg_zhenge_effect")) {
-						await player.addSkill("jlsg_zhenge_effect");
+						player.addSkill("jlsg_zhenge_effect");
 					}
-					player.storage.jlsg_zhenge_effect.maxHandCards++;
-					player.markSkill("jlsg_zhenge_effect");
+					const storage = player.getStorage("jlsg_zhenge_effect", {
+						draw: 0,
+						maxHandCards: 0,
+						sha: 0,
+					});
+					storage.maxHandCards++;
+					player.setStorage("jlsg_zhenge_effect", storage, true);
 				},
 				随机获得1个技能: async function (event, trigger, player) {
 					let skill = get
@@ -13521,15 +13548,6 @@ const skills = {
 				},
 			},
 			effect: {
-				init(player) {
-					if (!player.storage.jlsg_zhenge_effect) {
-						player.storage.jlsg_zhenge_effect = {
-							draw: 0,
-							maxHandCards: 0,
-							sha: 0,
-						};
-					}
-				},
 				mod: {
 					cardUsable(card, player, num) {
 						if (!player.storage.jlsg_zhenge_effect) {
@@ -15562,10 +15580,10 @@ const skills = {
 		},
 	},
 	jlsg_guanxu: {
-		audio: "ext:极略/audio/skill:2",
-		init(player) {
-			player.setStorage("jlsg_guanxu", Array.from({ length: 8 }, (v, i) => i).randomGet());
-			player.markSkill("jlsg_guanxu");
+		init2(player, skill) {
+			if (!player.hasStorage(skill)) {
+				player.setStorage(skill, Array.from({ length: 8 }, (v, i) => i).randomGet(), true);
+			}
 		},
 		onremove: true,
 		intro: {
@@ -15574,6 +15592,7 @@ const skills = {
 				return get.skillInfoTranslation("jlsg_guanxu", player);
 			},
 		},
+		audio: "ext:极略/audio/skill:2",
 		trigger: { global: "phaseBegin" },
 		filter(event, player) {
 			return event.player.countCards("h");
@@ -15595,7 +15614,7 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			const storage = player.storage.jlsg_guanxu,
+			const storage = player.getStorage(event.name, 0),
 				cards = trigger.player.getCards("h");
 			let str = get.skillInfoTranslation("jlsg_guanxu", player).slice(25, -1);
 			if (storage == 0) {
@@ -15922,14 +15941,13 @@ const skills = {
 			} else {
 				await game.delayx();
 			}
-			let num2 = player.storage.jlsg_guanxu;
 			player.setStorage(
-				"jlsg_guanxu",
+				event.name,
 				Array.from({ length: 8 }, (v, i) => i)
-					.remove(num2)
-					.randomGet()
+					.remove(storage)
+					.randomGet(),
+				true
 			);
-			player.update();
 		},
 		ai: {
 			expose: 0.25,
@@ -15976,14 +15994,17 @@ const skills = {
 			if (!result.bool) {
 				return;
 			}
-			if (!player.hasSkill("jlsg_guanxu")) {
+			if (!player.hasSkill("jlsg_guanxu", null, false, false)) {
 				await player.addSkills("jlsg_guanxu");
 			} else {
-				let num2 = player.storage.jlsg_guanxu;
-				player.storage.jlsg_guanxu = Array.from({ length: 8 }, (v, i) => i)
-					.remove(num2)
-					.randomGet();
-				player.update();
+				let num2 = player.getStorage("jlsg_guanxu");
+				player.setStorage(
+					"jlsg_guanxu",
+					Array.from({ length: 8 }, (v, i) => i)
+						.remove(num2)
+						.randomGet(),
+					true
+				);
 			}
 		},
 		ai: {
@@ -19321,15 +19342,6 @@ const skills = {
 		selectTarget: 1,
 		selectCard: 1,
 		filterTarget: true,
-		init() {
-			game.players.forEach(curr => {
-				if (!curr.hasSkill("jlsg_junbing_effect", null, false, false)) {
-					curr.setStorage("jlsg_junbing_effect", [0, 0, 0]);
-					curr.addSkill("jlsg_junbing_effect");
-					curr.markSkill("jlsg_junbing_effect");
-				}
-			});
-		},
 		lose: false,
 		discard: false,
 		delay: false,
@@ -19340,11 +19352,13 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
 			const target = event.targets[0];
-			let list = target.getStorage("jlsg_junbing_effect");
+			if (!target.hasSkill("jlsg_junbing_effect", null, false, false)) {
+				target.addSkill("jlsg_junbing_effect");
+			}
+			let list = target.getStorage("jlsg_junbing_effect", [0, 0, 0]);
 			list[0] += 1;
 			list[1] += 1;
-			target.setStorage("jlsg_junbing_effect", list);
-			target.markSkill("jlsg_junbing_effect");
+			target.setStorage("jlsg_junbing_effect", list, true);
 			await target.draw(1);
 			if (!["shu", "wu", "qun"].includes(target.group)) {
 				await target.draw(2);
@@ -19384,11 +19398,13 @@ const skills = {
 						targets: [target],
 					} = event;
 					await player.discard(cards);
-					const list = target.getStorage("jlsg_junbing_effect");
+					if (!target.hasSkill("jlsg_junbing_effect", null, false, false)) {
+						target.addSkill("jlsg_junbing_effect");
+					}
+					const list = target.getStorage("jlsg_junbing_effect", [0, 0, 0]);
 					list[0] += 1;
 					list[1] += 1;
 					target.setStorage("jlsg_junbing_effect", list);
-					target.markSkill("jlsg_junbing_effect");
 					await target.draw(2);
 					if (!["shu", "wu", "qun"].includes(target.group)) {
 						await target.draw(2);
@@ -19442,15 +19458,6 @@ const skills = {
 		trigger: {
 			global: ["damageEnd"],
 		},
-		init() {
-			game.players.forEach(curr => {
-				if (!curr.hasSkill("jlsg_junbing_effect", null, false, false)) {
-					curr.setStorage("jlsg_junbing_effect", [0, 0]);
-					curr.addSkill("jlsg_junbing_effect");
-					curr.markSkill("jlsg_junbing_effect");
-				}
-			});
-		},
 		usable: 1,
 		filter(event, player) {
 			return player.hasDiscardableCards(player, "he", card => get.name(card, player) == "shan") && event.source && event.source != event.player;
@@ -19478,14 +19485,16 @@ const skills = {
 			await player.discard(cards);
 			await target.recover(1);
 			if (!["shu", "wu", "qun"].includes(target.group)) {
-				const note = target.getStorage("jlsg_junbing_effect");
+				const note = target.getStorage("jlsg_junbing_effect", [0, 0, 0]);
 				const list = [note[2] + 2, target.hp, target.maxHp];
 				const max = Math.min(...list);
 				switch (list.indexOf(max)) {
 					case 0:
 						note[2] += 1;
-						target.setStorage("jlsg_junbing_effect", note);
-						target.markSkill("jlsg_junbing_effect");
+						if (!target.hasSkill("jlsg_junbing_effect", null, false, false)) {
+							target.addSkill("jlsg_junbing_effect");
+						}
+						target.setStorage("jlsg_junbing_effect", note, true);
 						break;
 					case 1:
 						target.hp += 1;
@@ -19500,6 +19509,7 @@ const skills = {
 		},
 	},
 	jlsg_falu: {
+		unique: true,
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			player: ["enterGame"],

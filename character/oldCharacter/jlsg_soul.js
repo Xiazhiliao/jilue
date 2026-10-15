@@ -1281,10 +1281,8 @@ export default {
 				jlsg_yinyang_s: {
 					audio: "ext:极略/audio/skill:2",
 					derivation: ["jlsg_jiyang", "jlsg_jiyin", "jlsg_xiangsheng"],
-					charlotte: true,
-					unique: true,
-					init(player) {
-						if (player.hasSkill("jlsg_yinyang_s")) {
+					init2(player, skill) {
+						if (get.info(skill).filter({}, player)) {
 							player.useSkill("jlsg_yinyang_s");
 						}
 					},
@@ -1324,7 +1322,7 @@ export default {
 					sub: true,
 					unique: true,
 					thundertext: true,
-					init(player) {
+					init(player, skill) {
 						player.addMark(skill, 3);
 					},
 					onremove(player, skill) {

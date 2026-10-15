@@ -276,18 +276,15 @@ const skills = {
 		marktext: "枭",
 		intro: {
 			mark(dialog, storage, player) {
-				let info = player.storage.jdjg;
-				dialog.addText(`出杀次数+${info.e1}\n`);
-				dialog.addText(`手牌上限+${info.e2}\n`);
-				dialog.addText(`至其他角色距离-${info.e3}`);
+				storage ??= player.getStorage("jlsg_jdjg_xiaoji", {
+					e1: 0,
+					e2: 0,
+					e3: 0,
+				});
+				dialog.addText(`出杀次数+${storage.e1}\n`);
+				dialog.addText(`手牌上限+${storage.e2}\n`);
+				dialog.addText(`至其他角色距离-${storage.e3}`);
 			},
-		},
-		init(player, skill) {
-			player.setStorage("jdjg", {
-				e1: 0,
-				e2: 0,
-				e3: 0,
-			});
 		},
 		async cost(event, trigger, player) {
 			let str = ["摸一张牌"];
@@ -318,14 +315,35 @@ const skills = {
 		mod: {
 			cardUsable(card, player, num) {
 				if (get.name(card, false) == "sha") {
-					return num + player.storage.jdjg.e1;
+					return (
+						num +
+						player.getStorage("jlsg_jdjg_xiaoji", {
+							e1: 0,
+							e2: 0,
+							e3: 0,
+						}).e1
+					);
 				}
 			},
 			maxHandcard(player, num) {
-				return num + player.storage.jdjg.e2;
+				return (
+					num +
+					player.getStorage("jlsg_jdjg_xiaoji", {
+						e1: 0,
+						e2: 0,
+						e3: 0,
+					}).e2
+				);
 			},
 			globalfrom(from, to, current) {
-				return current + player.storage.jdjg.e3;
+				return (
+					current +
+					player.getStorage("jlsg_jdjg_xiaoji", {
+						e1: 0,
+						e2: 0,
+						e3: 0,
+					}).e3
+				);
 			},
 		},
 		async content(event, trigger, player) {
@@ -333,11 +351,15 @@ const skills = {
 				cost_data: { subtype },
 			} = event;
 			await player.draw(1);
+			let storage = player.getStorage(event.name, {
+				e1: 0,
+				e2: 0,
+				e3: 0,
+			});
 			switch (subtype) {
 				case "equip1": {
-					let storage = player.getStorage("jdjg");
 					storage.e1++;
-					player.setStorage("jdjg", storage);
+					player.setStorage(event.name, storage, true);
 					const result = await player
 						.chooseTarget("是否对一名其他角色造成1点伤害")
 						.set("filterTarget", lib.filter.notMe)
@@ -350,9 +372,8 @@ const skills = {
 				}
 				case "equip2":
 				case "equip5": {
-					let storage = player.getStorage("jdjg");
 					storage.e2++;
-					player.setStorage("jdjg", storage);
+					player.setStorage(event.name, storage, true);
 					const result = await player
 						.chooseBool("是否摸两张牌")
 						.set("ai", (event, player) => get.effect(player, { name: "draw" }, player, player) > 0)
@@ -364,9 +385,8 @@ const skills = {
 				}
 				case "equip3":
 				case "equip4": {
-					let storage = player.getStorage("jdjg");
 					storage.e3++;
-					player.setStorage("jdjg", storage);
+					player.setStorage(event.name, storage, true);
 					const chooseTarget1 = await player
 						.chooseTarget("是否弃置一名其他角色一张牌")
 						.set("filterTarget", (_, player, target) => {

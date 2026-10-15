@@ -302,6 +302,7 @@ export default {
 		xiaoas: {
 			skill: {
 				jlsg_xinghan: {
+					unique: true,
 					audio: "ext:极略/audio/skill:2",
 					forbid: ["hearth", "guozhan"],
 					changeSeat: true,
