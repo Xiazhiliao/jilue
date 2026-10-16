@@ -19632,17 +19632,13 @@ const skills = {
 			return event.source && event.source != player;
 		},
 		async cost(event, trigger, player) {
-			const { bool, cards } = await player
+			event.result = await player
 				.chooseCard({
 					prompt: `弃置一张手牌防止此伤害，然后若以此法弃置的牌为黑桃，你可以令${get.translation(trigger.source)}失去一个技能，该角色于其下个回合开始时获得之`,
 					position: "he",
 					filterCard: lib.filter.cardDiscardable,
 				})
 				.forResult();
-			event.result = {
-				bool: bool,
-				cards: cards,
-			};
 		},
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
@@ -19668,13 +19664,15 @@ const skills = {
 					await source.removeSkills(links);
 					const note = source.getStorage("jlsg_zhenyi_note");
 					note.add(links[0]);
-					source.setStorage("jlsg_zhenyi_note", note);
+					source.setStorage("jlsg_zhenyi_note", note, true);
 					source.addSkill("jlsg_zhenyi_note");
 				}
 			}
 		},
 		subSkill: {
 			note: {
+				charlotte: true,
+				onremove: true,
 				audio: "ext:极略/audio/skill:2",
 				trigger: {
 					player: ["phaseBegin"],
@@ -19682,10 +19680,10 @@ const skills = {
 				filter(event, player) {
 					return player.getStorage("jlsg_zhenyi_note").length;
 				},
-				charlotte: true,
-				forced: true,
+				silent: true,
 				async content(event, trigger, player) {
-					const skills = player.getStorage("jlsg_zhenyi_note");
+					const skills = player.getStorage(event.name, []);
+					player.removeSkill(event.name);
 					await player.addSkills(skills);
 				},
 			},
