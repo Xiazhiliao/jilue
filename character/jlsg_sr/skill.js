@@ -832,7 +832,7 @@ const skills = {
 		mod: {
 			cardUsable(card, player, num) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(cardx => cardx.hasGaintag("jlsg_aozhan"))) {
+				if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_aozhan"))) {
 					return Infinity;
 				}
 			},
@@ -4282,7 +4282,7 @@ const skills = {
 				mod: {
 					cardUsable(card, player) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_guanxing_use"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_guanxing_use"))) {
 							return Infinity;
 						}
 					},
@@ -4719,13 +4719,13 @@ const skills = {
 				mod: {
 					cardUsable(card, player, num) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_rende"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_rende"))) {
 							return Infinity;
 						}
 					},
 					targetInRange(card, player, target, now) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_rende"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_rende"))) {
 							return true;
 						}
 					},

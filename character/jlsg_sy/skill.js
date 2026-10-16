@@ -3996,7 +3996,7 @@ const skills = {
 			},
 			cardUsable(card, player) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(cardx => cardx.hasGaintag("jlsgsy_wangduan"))) {
+				if (vcard.cards.some(cardx => cardx.hasGaintag("jlsgsy_wangduan"))) {
 					return Infinity;
 				}
 			},

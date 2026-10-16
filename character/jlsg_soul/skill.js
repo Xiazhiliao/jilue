@@ -8600,19 +8600,19 @@ const skills = {
 		mod: {
 			targetInRange(card, player) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(cardx => cardx.hasGaintag("jlsg_yingshi"))) {
+				if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_yingshi"))) {
 					return true;
 				}
 			},
 			cardUsable(card, player) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(cardx => cardx.hasGaintag("jlsg_yingshi"))) {
+				if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_yingshi"))) {
 					return Infinity;
 				}
 			},
 			aiOrder(player, card, num) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(cardx => cardx.hasGaintag("jlsg_yingshi"))) {
+				if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_yingshi"))) {
 					if (_status.currentPhase != player) {
 						return num + 2;
 					} else {
@@ -8622,7 +8622,7 @@ const skills = {
 			},
 			aiUseful(player, card, num) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(cardx => cardx.hasGaintag("jlsg_yingshi"))) {
+				if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_yingshi"))) {
 					return 0;
 				}
 			},
@@ -14713,7 +14713,7 @@ const skills = {
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
 							let vcard = get.autoViewAs(card);
-							if (vcard.some(cardx => cardx.hasGaintag("jlsg_qixian"))) {
+							if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_qixian"))) {
 								return Infinity;
 							}
 							return num + player.getStorage("jlsg_qixian_buff", {}).shaUsable;
@@ -15189,7 +15189,7 @@ const skills = {
 			},
 			cardUsable(card, player, num) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(cardx => cardx.hasGaintag("eternal_jlsg_qugu"))) {
+				if (vcard.cards.some(cardx => cardx.hasGaintag("eternal_jlsg_qugu"))) {
 					return Infinity;
 				}
 			},
@@ -16336,19 +16336,19 @@ const skills = {
 				mod: {
 					cardEnabled(card, player) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_pinghe"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_pinghe"))) {
 							return false;
 						}
 					},
 					cardSavable(card, player) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_pinghe"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_pinghe"))) {
 							return false;
 						}
 					},
 					cardRespondable(card, player) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_pinghe"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_pinghe"))) {
 							return false;
 						}
 					},
@@ -16382,7 +16382,7 @@ const skills = {
 		mod: {
 			cardUsable(card) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(cardx => cardx.hasGaintag("jlsg_fuhai"))) {
+				if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_fuhai"))) {
 					return Infinity;
 				}
 			},

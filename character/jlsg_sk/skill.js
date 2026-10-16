@@ -7,7 +7,7 @@ const skills = {
 		mod: {
 			targetInRange(card, player) {
 				let vcard = get.autoViewAs(card);
-				if (vcard.some(i => i.hasGaintag?.("jlsg_duanfa"))) {
+				if (vcard.cards.some(i => i.hasGaintag?.("jlsg_duanfa"))) {
 					return true;
 				}
 			},
@@ -13422,19 +13422,19 @@ const skills = {
 				mod: {
 					aiOrder(player, card, num) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 							return num - 5;
 						}
 					},
 					aiValue(player, card, num) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 							return num + 5;
 						}
 					},
 					aiUseful(player, card, num) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 							return num + 1;
 						}
 					},
@@ -13450,7 +13450,7 @@ const skills = {
 					},
 					cardUsable(card, player, num) {
 						let vcard = get.autoViewAs(card);
-						if (vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
+						if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 							return Infinity;
 						}
 					},
@@ -13601,7 +13601,7 @@ const skills = {
 			effect: {
 				player_use(card, player, target) {
 					let vcard = get.autoViewAs(card);
-					if (!vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
+					if (!vcard.cards.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 						return [1, 1];
 					} else if (get.color(card) == "black") {
 						return [1, 0, 1, -1];
