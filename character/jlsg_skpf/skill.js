@@ -1258,7 +1258,8 @@ const skills = {
 				}
 			},
 			cardUsable(card, player, num) {
-				if (card?.cards?.some(cardx => cardx.hasGaintag("jlsg_lffw_lingxin"))) {
+				let vcard = get.autoViewAs(card);
+				if (vcard.some(cardx => cardx.hasGaintag("jlsg_lffw_lingxin"))) {
 					return Infinity;
 				}
 			},

@@ -3076,8 +3076,9 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		mod: {
 			aiOrder(player, card, num) {
-				if (get.name(card, player) == "sha") {
-					if (typeof card.hasNature === "function" && !card.hasNature()) {
+				let vcard = get.autoViewAs(card);
+				if (get.name(vcard, player) == "sha") {
+					if (!vcard.hasNature()) {
 						return num + 2;
 					}
 				}
@@ -3994,7 +3995,8 @@ const skills = {
 				}
 			},
 			cardUsable(card, player) {
-				if (card.hasGaintag?.("jlsgsy_wangduan")) {
+				let vcard = get.autoViewAs(card);
+				if (vcard.some(cardx => cardx.hasGaintag("jlsgsy_wangduan"))) {
 					return Infinity;
 				}
 			},

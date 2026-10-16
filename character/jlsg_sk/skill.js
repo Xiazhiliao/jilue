@@ -6,9 +6,8 @@ const skills = {
 	jlsg_duanfa: {
 		mod: {
 			targetInRange(card, player) {
-				let cards = card?.cards || [];
-				cards.add(card);
-				if (cards.some(i => i.hasGaintag?.("jlsg_duanfa"))) {
+				let vcard = get.autoViewAs(card);
+				if (vcard.some(i => i.hasGaintag?.("jlsg_duanfa"))) {
 					return true;
 				}
 			},
@@ -13422,20 +13421,20 @@ const skills = {
 				charlotte: true,
 				mod: {
 					aiOrder(player, card, num) {
-						let cards = player.getCards("h", card => card.hasGaintag("jlsg_zhenge"));
-						if (cards.includes(card)) {
+						let vcard = get.autoViewAs(card);
+						if (vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 							return num - 5;
 						}
 					},
 					aiValue(player, card, num) {
-						let cards = player.getCards("h", card => card.hasGaintag("jlsg_zhenge"));
-						if (cards.includes(card)) {
+						let vcard = get.autoViewAs(card);
+						if (vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 							return num + 5;
 						}
 					},
 					aiUseful(player, card, num) {
-						let cards = player.getCards("h", card => card.hasGaintag("jlsg_zhenge"));
-						if (cards.includes(card)) {
+						let vcard = get.autoViewAs(card);
+						if (vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 							return num + 1;
 						}
 					},
@@ -13450,10 +13449,8 @@ const skills = {
 						}
 					},
 					cardUsable(card, player, num) {
-						if (!card.cards) {
-							return;
-						}
-						if (card.cards.some(i => i.hasGaintag("jlsg_zhenge"))) {
+						let vcard = get.autoViewAs(card);
+						if (vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 							return Infinity;
 						}
 					},
@@ -13603,14 +13600,12 @@ const skills = {
 			//@.修改
 			effect: {
 				player_use(card, player, target) {
-					let cards = player.getCards("h", card => card.hasGaintag("jlsg_zhenge"));
-					if (!cards.includes(card)) {
+					let vcard = get.autoViewAs(card);
+					if (!vcard.some(cardx => cardx.hasGaintag("jlsg_zhenge"))) {
 						return [1, 1];
-					}
-					if (get.color(card) == "black" && cards.includes(card)) {
+					} else if (get.color(card) == "black") {
 						return [1, 0, 1, -1];
-					}
-					if (get.color(card) == "red" && cards.includes(card)) {
+					} else if (get.color(card) == "red") {
 						return [1, 0, 1, 1];
 					}
 				},
