@@ -5992,27 +5992,55 @@ const skills = {
 	jlsg_fengying: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
-			player: "drawBegin",
+			player: "drawAfter",
 		},
+		usable: 4,
 		filter(event, player) {
-			return player.getHistory("useSkill", e => e.skill == "jlsg_fengying").length < 4;
+			return player.countSkill("jlsg_fengying") < 4;
 		},
 		direct: true,
 		async content(event, trigger, player) {
-			while (trigger.num > 0 && player.getHistory("useSkill", e => e.skill == "jlsg_fengying").length < 4) {
-				let result = await player
-					.chooseUseTarget(get.prompt2(event.name), { name: "sha", nature: "thunder" }, false, "nodistance")
-					.set("ai", target => get.effect(target, { name: "sha", nature: "thunder" }, get.player(), get.player()))
-					.set("logSkill", event.name)
-					.forResult();
-				if (!result?.bool) {
-					break;
-				}
-				--trigger.num;
+			const args = {
+				card: get.autoViewAs(
+					{
+						name: "sha",
+						nature: "thunder",
+						isCard: true,
+						storage: { jlsg_fengying: true },
+					},
+					[]
+				),
+				cards: [],
+				ai(target) {
+					return get.effect_use(target, get.event()._get_card, get.player(), get.player());
+				},
+				addCount: false,
+				nodistance: true,
+				//usable已经计数了，这里把手动logSkill加的计数取消掉
+				oncard() {
+					this.addSkillCount = false;
+				},
+			};
+			const next = player.chooseUseTarget({
+				...args,
+				prompt: get.prompt2(event.name),
+				logSkill: event.name,
+			});
+			let result = await next.forResult();
+			if (!result?.bool) {
+				return;
+			}
+			if (!player.hasHistory("sourceDamage", evt => evt.card?.storage?.[event.name] && evt.getParent(3) === next)) {
+				await player.chooseUseTarget({
+					prompt: get.prompt(event.name),
+					prompt2: "再使用一张雷【杀】",
+					...args,
+				});
 			}
 		},
 	},
 	jlsg_zhiti: {
+		onremove: true,
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
 			source: "damageBegin2",
@@ -6059,28 +6087,29 @@ const skills = {
 			};
 		},
 		async content(event, trigger, player) {
-			const { choice, skills } = event.cost_data,
+			const [target] = event.targets,
+				{ choice, skills } = event.cost_data,
 				list = ["取其1点体力和体力上限", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
 				storage = player.getStorage(event.name, new Map());
-			const record = storage.get(trigger.player) || [];
+			const record = storage.get(target) || [];
 			const num = list.indexOf(choice);
 			record.add(num);
-			storage.set(trigger.player, record);
+			storage.set(target, record);
 			player.setStorage(event.name, storage, true);
 			game.log(player, "选择了", "#r" + choice);
 			switch (num) {
 				case 0:
-					await trigger.player.loseHp();
+					await target.loseHp();
 					await player.recover();
-					await trigger.player.loseMaxHp();
+					await target.loseMaxHp();
 					await player.gainMaxHp();
 					break;
 				case 1:
 					{
-						let storage = trigger.player.getStorage("jlsg_zhiti_2", 0);
+						let storage = target.getStorage("jlsg_zhiti_2", 0);
 						storage--;
-						trigger.player.setStorage("jlsg_zhiti_2", storage, true);
-						trigger.player.addSkill("jlsg_zhiti_2");
+						target.setStorage("jlsg_zhiti_2", storage, true);
+						target.addSkill("jlsg_zhiti_2");
 						storage = player.getStorage("jlsg_zhiti_2", 0);
 						storage++;
 						player.setStorage("jlsg_zhiti_2", storage, true);
@@ -6125,28 +6154,29 @@ const skills = {
 								list2.sort((a, b) => get.skillCount(b) - get.skillCount(a));
 								return list.length > 0 ? list.randomGet() : list2.randomGet();
 							})
-							.set("prompt", `获取${get.translation(trigger.player)}一个技能`)
+							.set("prompt", `获取${get.translation(target)}一个技能`)
 							.forResult();
 						if (result?.control && result.control != "cancel2") {
-							await trigger.player.removeSkills(result.control);
+							await target.removeSkills(result.control);
 							await player.addSkills(result.control);
 						}
 					}
 					break;
 				case 3:
-					trigger.player.addSkill("jlsg_zhiti_3");
+					target.addSkill("jlsg_zhiti_3");
 					break;
 				case 4:
-					await trigger.player.turnOver();
+					await target.turnOver();
 					break;
 				default:
 					break;
 			}
-			await game.delayx();
+			await player.draw({ num: 2 });
 		},
 		subSkill: {
 			2: {
 				charlotte: true,
+				onremove: true,
 				mark: true,
 				intro: {
 					markcount(storage) {
@@ -16779,7 +16809,7 @@ const skills = {
 							if (typeof result.player === "function") {
 								result.player = result.player(target, target);
 							}
-							result1 *=result.player;
+							result1 *= result.player;
 						}
 						if (result.target) {
 							if (typeof result.target === "function") {

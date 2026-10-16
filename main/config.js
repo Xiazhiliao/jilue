@@ -419,6 +419,14 @@ let block = {
 			},
 		},
 		soul: {
+			jlsgsoul_sp_zhangliao: {
+				name: "SP神张辽",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
 			jlsgsoul_caocao: {
 				name: "SK神曹操",
 				init: "false",
