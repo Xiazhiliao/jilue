@@ -81,6 +81,10 @@ let skill = {
 		jlsg_miluo2: "赠君一叶春，可愿长相守？",
 		jlsg_jueyan1: "国色将倾，亦要护君周全。",
 		jlsg_jueyan2: "花间辞别，就此分道扬镳。",
+		jlsg_yaowu1: "关羽？没听说过。",
+		jlsg_yaowu2: "联军百万，竟无一人敢上前？",
+		jlsg_yangwei1: "将首已摘，随我冲杀，扬威中原！",
+		jlsg_yangwei2: "斩一个不过瘾，再来几个送死的！",
 	},
 	die = {
 		jlsgsr_caocao: "孤之霸业，竟有终结之时！",
@@ -109,6 +113,7 @@ let skill = {
 		jlsgsr_zhenji: "悼良会之永绝兮，哀一逝而异乡。",
 		jlsgsr_zhouyu: "谁高一筹，我心中有数。",
 		jlsgsr_zhugeliang: "悠悠苍天，曷此其极。",
+		jlsgsr_huaxiong: "好快的刀……",
 	};
 for (let i in skill) {
 	let ii = "#ext:极略/audio/skill/" + i;

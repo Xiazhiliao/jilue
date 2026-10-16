@@ -22,8 +22,8 @@ const skills = {
 		},
 		forced: true,
 		popup: false,
-		//因为以前的突破将都有旧版本，用config控制突破，列表，SR小乔开始没有旧版本，所以单独列表
-		originUpgradeList: ["jlsgsr_xiaoqiao"],
+		//因为以前的突破将都有旧版本，用config控制突破列表，SR小乔开始没有旧版本，所以单独列表
+		originUpgradeList: ["jlsgsr_xiaoqiao", "jlsgsr_huaxiong"],
 		async content(event, trigger, player) {
 			const nameList = get.nameList(player),
 				upgradeList = game.getExtensionConfig("极略", "upgradeList") || [],
@@ -173,6 +173,33 @@ const skills = {
 		},
 		//属性突破列表
 		upgradeContent: {
+			jlsgsr_huaxiong: {
+				"初始手牌数+3": async function (event, trigger, player) {
+					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
+						const me = player,
+							numx = trigger.num;
+						trigger.num =
+							typeof numx == "function"
+								? function (player) {
+										if (player == me) {
+											return numx(player) + 3;
+										}
+										return numx(player);
+									}
+								: function (player) {
+										if (player == me) {
+											return numx + 3;
+										}
+										return numx;
+									};
+					});
+					event.info[0] = true;
+				},
+				"摸牌数+1": async function (event, trigger, player) {
+					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+					event.info[1] = "draw|1";
+				},
+			},
 			jlsgsr_xuzhu: {
 				"初始手牌数+3": async function (event, trigger, player) {
 					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
@@ -5561,6 +5588,199 @@ const skills = {
 						return 10;
 					}
 					return 0;
+				},
+			},
+		},
+	},
+	jlsg_yaowu: {
+		init2(player, skill) {
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
+		},
+		audio: "ext:极略/audio/skill:2",
+		enable: "phaseUse",
+		trigger: {
+			global: "phaseZhunbeiBegin",
+		},
+		filter(event, player) {
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_yaowu");
+			if (event?.name === "phaseZhunbei") {
+				return upgrade;
+			}
+			return player.getStat("skill")["jlsg_yaowu"] < player.getHp();
+		},
+		prompt: `###耀武：是否摸一张牌并选择一名有手牌的其他角色？`,
+		prompt2: `其随机将一张手牌当【决斗】对你使用，该角色不能打出【杀】响应此【决斗】，若此【决斗】为红色，其摸一张牌。`,
+		filterTarget(card, player, target) {
+			return target !== player && target.hasCards("h");
+		},
+		async cost(event, trigger, player) {
+			const info = get.info(event.skill);
+			event.result = await player
+				.chooseTarget({
+					prompt: info.prompt,
+					prompt2: info.prompt2,
+					filterTarget: info.filterTarget,
+					ai(target) {
+						const { player, drawEff, juedou } = get.event();
+						return get.effect_use(player, juedou, target, player) + drawEff;
+					},
+				})
+				.set("drawEff", get.effect(player, { name: "draw" }, player, player))
+				.set("juedou", get.autoViewAs({ name: "juedou", storage: { jlsg_yaowu: true } }, "unsure"))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			await player.draw({ num: 1 });
+			const hs = target.getCards("h");
+			let card = hs.randomGet();
+			if (!card) {
+				return;
+			}
+			const juedou = get.autoViewAs({ name: "juedou", storage: { jlsg_yaowu: true } }, [card]),
+				color = get.color(card, target);
+			const next = target.useCard({
+				card: juedou,
+				cards: [card],
+				targets: [player],
+				noai: true,
+			});
+			target.markAuto(event.name + "_debuff", next);
+			target.addTempSkill(event.name + "_debuff");
+			await next;
+			if (color === "red") {
+				await target.draw({ num: 1 });
+			}
+		},
+		subSkill: {
+			debuff: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					cardRespondable(card, player) {
+						if (card.name === "sha") {
+							return false;
+						}
+					},
+				},
+				trigger: {
+					player: "useCardEnd",
+				},
+				filter(event, player) {
+					return player.hasStorage("jlsg_yaowu_debuff", event);
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					player.unmarkAuto(event.name, [trigger]);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
+					}
+				},
+			},
+		},
+		ai: {
+			directHit: true,
+			direct_ai: true,
+			skillTagFilter(player, tag, arg) {
+				return arg?.card?.storage?.["jlsg_yaowu"] && arg?.card?.name == "juedou";
+			},
+			order(skill, player) {
+				if (player.hasCards("h", { name: "sha" })) {
+					return 7;
+				}
+				return 0;
+			},
+			result: {
+				player: 0.5,
+				target: -0.5,
+			},
+			effect: {
+				target(card, player, target, result2) {
+					if (target === player) {
+						return;
+					}
+					if (card.name === "juedou" && card.storage?.["jlsg_yaowu"]) {
+						if (result2 < 0) {
+							return -1;
+						}
+					}
+				},
+			},
+		},
+	},
+	jlsg_yangwei: {
+		init2(player, skill) {
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
+		},
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			global: "damageEnd",
+		},
+		usable: 1,
+		filter(event, player) {
+			if (event.player === player) {
+				return false;
+			}
+			return ["sha", "juedou"].includes(event.card?.name);
+		},
+		async cost(event, trigger, player) {
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.skill);
+			event.result = await player
+				.chooseTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: `令一名角色加1点体力上限，回复1点体力，摸两张牌，并令其本回合造成的伤害+1${upgrade && trigger.source === player ? "然后你可以摸两张牌并对一名其他角色造成1点伤害" : ""}。`,
+					filterTarget: lib.filter.all,
+					ai(target) {
+						const player = get.player();
+						return get.attitude(player, target) * (30 - target.countCards("h") - target.maxHp + target.getDamagedHp(true));
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			await target.gainMaxHp(1);
+			await target.recover(1);
+			await target.draw({ num: 2 });
+			target.addTempSkill(event.name + "_buff");
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
+			if (upgrade && trigger.source === player) {
+				const result = await player
+					.chooseTarget({
+						prompt: `${get.translation(event.name)}：是否摸两张牌并对一名其他角色造成一点伤害？`,
+						filterTarget: lib.filter.notMe,
+						ai(target) {
+							return get.damageEffect(target, get.player(), get.player());
+						},
+					})
+					.forResult();
+				if (result?.bool && result.targets?.length) {
+					const [targetx] = result.targets;
+					player.logSkill(event.name, result.targets);
+					await player.draw({ num: 2 });
+					await targetx.damage();
+				}
+			}
+		},
+		subSkill: {
+			buff: {
+				charlotte: true,
+				mark: true,
+				marktext: "威",
+				intro: {
+					content: "本回合造成的伤害+1",
+				},
+				trigger: {
+					source: "damageBagin1",
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					trigger.num++;
 				},
 			},
 		},

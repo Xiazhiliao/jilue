@@ -3,6 +3,20 @@ import skills from "./skill.js";
 
 const { checkUpgrade } = skills["_jlsgsr_upgrade"];
 const dynamicTranslates = {
+	jlsg_yaowu(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `任意角色的准备阶段，或出牌阶段限X次（X为你的体力），你可以摸一张牌并令一名其他角色将随机一张手牌当【决斗】对你使用，该角色不能打出【杀】响应此【决斗】，若此【决斗】为红色，其摸一张牌。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_yangwei(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `每回合限一次，当其他角色受到【杀】或【决斗】造成的伤害后，你可以令任意一名角色加1点体力上限，回复1点体力，摸两张牌，并令其本回合造成的伤害+1。若此伤害的来源为你，你可以摸两张牌并对一名其他角色造成1点伤害。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
 	jlsg_aozhan(player, skill) {
 		const upgrade = checkUpgrade(player, skill);
 		if (upgrade || player?.index) {

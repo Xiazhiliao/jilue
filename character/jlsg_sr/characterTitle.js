@@ -27,6 +27,7 @@ const characterTitle = {
 	jlsgsr_zhenji: "月下凌波",
 	jlsgsr_zhouyu: "英隽异才",
 	jlsgsr_zhugeliang: "三分天下",
+	jlsg_yangwei: "骄横跋扈",
 };
 
 export default characterTitle;
