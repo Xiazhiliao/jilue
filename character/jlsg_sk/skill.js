@@ -5671,9 +5671,21 @@ const skills = {
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					await player.changeCharacter(["jlsgsk_zuoci"]);
-					player.name2 = "jlsgsk_zuoci";
-					player.update();
+					const info = get.character("jlsgsk_zuoci");
+					let group = player.group === "unknown" ? info[1] : player.group;
+					const to = "gz_shibing" + (info[0] == "male" ? 1 : 2) + group;
+					if (!lib.character[to]) {
+						game.broadcastAll(
+							(info, to, group) => {
+								lib.character[to] = [info[0], group, 0, [], [`character:${to.slice(3, 11)}`, "unseen"]];
+								lib.translate[to] = `${get.translation(group)}兵`;
+							},
+							info,
+							to,
+							group
+						);
+					}
+					await player.changeCharacter(["jlsgsk_zuoci", to]);
 					player.removeSkill(event.name);
 				},
 			},
