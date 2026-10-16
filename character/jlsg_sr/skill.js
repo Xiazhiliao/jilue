@@ -5597,6 +5597,13 @@ const skills = {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const next = checkUpgrade(player, skill, true);
 		},
+		mod: {
+			aiUseful(player, card, num) {
+				if (get.name(card, player) === "sha") {
+					return num + 5;
+				}
+			},
+		},
 		audio: "ext:极略/audio/skill:2",
 		enable: "phaseUse",
 		trigger: {
@@ -5695,14 +5702,17 @@ const skills = {
 			},
 			result: {
 				player: 0.5,
-				target: -0.5,
+				target(player, target) {
+					const juedou = get.autoViewAs({ name: "juedou", storage: { jlsg_yaowu: true } }, "unsure");
+					return -get.effect_use(player, juedou, target, target) / 10;
+				},
 			},
 			effect: {
 				target(card, player, target, result2) {
 					if (target === player) {
 						return;
 					}
-					if (card.name === "juedou" && card.storage?.["jlsg_yaowu"]) {
+					if (card.name === "juedou" && card.storage?.["jlsg_yaowu"] && target.mayHaveSha(player, "respond")) {
 						if (result2 < 0) {
 							return -1;
 						}
