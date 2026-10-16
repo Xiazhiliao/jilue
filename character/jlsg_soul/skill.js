@@ -4317,7 +4317,7 @@ const skills = {
 					player: ["damageEnd", "phaseZhunbeiBegin"],
 				},
 				filter(event, player) {
-					if (event.name == "damege") {
+					if (event.name == "damage") {
 						return true;
 					} else {
 						return player.isDamaged();
@@ -12648,7 +12648,7 @@ const skills = {
 								.set("ai", target => {
 									const player = _status.event.player,
 										sha = get.autoViewAs({ name: "sha", isCard: true }, []);
-									if (get.attitude(player, target > 0)) {
+									if (get.attitude(player, target) > 0) {
 										return target.getUseValue(sha, false, false);
 									} else {
 										return get.attitude(player, target) < 0;
@@ -16779,7 +16779,7 @@ const skills = {
 							if (typeof result.player === "function") {
 								result.player = result.player(target, target);
 							}
-							result1 * +result.player;
+							result1 *=result.player;
 						}
 						if (result.target) {
 							if (typeof result.target === "function") {
@@ -16787,7 +16787,7 @@ const skills = {
 							}
 							result2 += result.target;
 						}
-						return (result1 = result2) * get.attitude(player, target);
+						return (result1 + result2) * get.attitude(player, target);
 					},
 					trigger: {
 						player: "phaseZhunbeiBegin",

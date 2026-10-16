@@ -657,7 +657,7 @@ const skills = {
 				}
 			},
 		},
-		hiddenCard(name, player) {
+		hiddenCard(player, name) {
 			if (name == "sha") {
 				return player.countCards("h");
 			}

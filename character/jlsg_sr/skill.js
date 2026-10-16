@@ -140,7 +140,7 @@ const skills = {
 			}
 			const upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 			upgradeList.addArray(get.info("_jlsgsr_upgrade").originUpgradeList);
-			const character = upgradeList.find(name => get.character(name).skills.includes(skill));
+			const character = upgradeList.find(name => get.character(name)?.skills?.includes(skill));
 			if (!character) {
 				return null;
 			}
@@ -825,7 +825,7 @@ const skills = {
 			global: "damageEnd",
 		},
 		filter(event, player, name) {
-			if (event.player <= 0) {
+			if (event.num <= 0) {
 				return false;
 			}
 			if (name == "damageEnd" && event.player != player) {
@@ -1328,7 +1328,7 @@ const skills = {
 			if (player.countCards("h")) {
 				return false;
 			}
-			if (event.type != "use" && event.getParent().name != "useCard") {
+			if (event.type != "use" && event.getParent()?.name != "useCard") {
 				return false;
 			}
 			return event.getParent("useCard")?.player == player && event.getl(player)?.hs?.length > 0;
@@ -1802,7 +1802,7 @@ const skills = {
 				return false;
 			}
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
-			const upgrade = checkUpgrade(player, "xiwu");
+			const upgrade = checkUpgrade(player, "jlsg_xiwu");
 			if (upgrade) {
 				return true;
 			}
@@ -1821,7 +1821,7 @@ const skills = {
 			if (upgrade) {
 				await player.draw({ num: 3 });
 			}
-			if (!player.getStorage(event.name, 0) < 3) {
+			if (player.getStorage(event.name, 0) < 3) {
 				let num = player.getStorage(event.name, 0);
 				player.setStorage(event.name, ++num, true);
 			}
@@ -1894,7 +1894,7 @@ const skills = {
 		logTarget(event, player, name) {
 			return name === "damageEnd" ? event.source : event.player;
 		},
-		prompt2(event, player) {
+		prompt2(event, player, name) {
 			const target = name === "damageEnd" ? event.source : event.player;
 			const num = Math.min(target.countDiscardableCards(target, "h"), player.countCards("h"));
 			return `令其随机弃置${num}张手牌`;
@@ -2101,7 +2101,7 @@ const skills = {
 			threaten: 0.7,
 			effect: {
 				player(card, player, target) {
-					if (get.suit(card) == "diamod" && get.type(card) != "delay") {
+					if (get.suit(card) == "diamond" && get.type(card) != "delay") {
 						return [1, 1];
 					}
 				},
@@ -2214,7 +2214,7 @@ const skills = {
 		filterCard(card, player, event) {
 			return true;
 		},
-		filterTarget(card, target, player) {
+		filterTarget(card, player, target) {
 			return player != target;
 		},
 		check(card) {
@@ -2439,7 +2439,8 @@ const skills = {
 			trigger.changeToZero();
 			const suits = [],
 				cards = [];
-			while (suits.length < 3) {
+			let timeout = 50;
+			while (suits.length < 3 && timeout > 0) {
 				const next = player.showCards(get.cards(1), undefined, true, false).set("clearArena", false);
 				await next;
 				const {
@@ -2450,6 +2451,7 @@ const skills = {
 				if (suits.length <= 2) {
 					cards.add(card);
 				} else {
+					timeout--;
 					await game.cardsDiscard(card);
 				}
 				await game.delayx(2);
@@ -3032,7 +3034,7 @@ const skills = {
 		enable: "phaseUse",
 		hiddenCard(player, name) {
 			const hs = player.getCards("h", card => {
-					const mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
+					const mod2 = game.checkMod(card, player, get.event(), "unchanged", "cardEnabled2", player);
 					if (mod2 != "unchanged") {
 						return mod2;
 					}
@@ -3224,7 +3226,7 @@ const skills = {
 		},
 		mod: {
 			aiOrder(player, card, num) {
-				if (_status.current != player) {
+				if (_status.currentPhase != player) {
 					return;
 				}
 				const check = get.info("jlsg_xionglve_effect").filter(null, player);
@@ -3278,7 +3280,7 @@ const skills = {
 			}, 0);
 		},
 		async cost(event, trigger, player) {
-			const skill = event.name.slice(0, -5),
+			const skill = event.skill,
 				cards = player.getCards("h", card => trigger.getg(player).includes(card));
 			let str = get.skillInfoTranslation(skill, player);
 			str = str.slice(0, str.indexOf("每轮限一次"));
@@ -3385,7 +3387,7 @@ const skills = {
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (_status.current != player) {
+					if (_status.currentPhase != player) {
 						return;
 					}
 					const check = get.info("jlsg_xionglve_effect").filter(null, player);
@@ -4236,6 +4238,10 @@ const skills = {
 				async content(event, trigger, player) {
 					await player.chooseToGuanxing(5);
 					let card = get.cardPile2(true, "bottom");
+					if (!card) {
+						game.log("牌堆底没有牌");
+						return;
+					}
 					let result = await player.chooseBool("是否将牌堆底牌置于武将牌上称为“星”").forResult();
 					if (result.bool) {
 						let next = player.addToExpansion(card, "gain2");
@@ -4385,7 +4391,7 @@ const skills = {
 		filterTarget(card, player, target) {
 			let cardName = get.info("jlsg_shouji").getCardName(card);
 			if (!ui.selected.targets.length) {
-				return target.hasUseTarget(cardName, false);
+				return target.hasUseTarget(get.autoViewAs({ name: cardName, isCard: true }, []), false);
 			} else if (ui.selected.targets.length == 1) {
 				const user = ui.selected.targets[0];
 				if (!user.canUse(cardName, target, false)) {
@@ -4407,7 +4413,7 @@ const skills = {
 				cards: [card],
 			} = event;
 			const name = get.info(event.name).getCardName(card);
-			const cardx = get.autoViewAs({ name }, []);
+			const cardx = get.autoViewAs({ name, isCard: true }, []);
 			if (name != "jiedao") {
 				await target1.useCard(cardx, [target2], "noai");
 			} else {
@@ -4868,7 +4874,7 @@ const skills = {
 				targets: [target],
 				cost_data: { storage, upgrade },
 			} = event;
-			await player.gain(cards, target).set("ainimate", false);
+			await player.gain(cards, target);
 			const choiceList = ["令此【杀】不能被响应", "令此【杀】无效", "将此【杀】的目标改为你"],
 				list = [];
 			if (upgrade) {
@@ -4892,13 +4898,12 @@ const skills = {
 						const resultList = get
 								.info(event.name)
 								.getCheck(trigger, player, storage.length == 4)
-								.map((v, i) => (storage[i] ? v : null))
-								.filter(i => i !== null),
-							choiceList = storage.filter(i => i);
+								.map((v, i) => (storage[i] ? v : 0)),
+							choiceList = storage;
 						let max = 0,
 							choice = 0;
 						for (let i in choiceList) {
-							if (resultList[i] > max) {
+							if (resultList[i] >= max) {
 								max = resultList[i];
 								choice = i;
 							}
@@ -5001,7 +5006,7 @@ const skills = {
 					continue;
 				}
 				const skills2 = get.character(name).skills || [];
-				for (const skill of skills2) {
+				searchSkill: for (const skill of skills2) {
 					if (skills.includes(skill)) {
 						continue;
 					}
@@ -5064,8 +5069,8 @@ const skills = {
 								}
 							}
 							skills.add(skill);
-							if (skills.length > 1) {
-								break;
+							if (skills.length > max) {
+								break searchSkill;
 							}
 						}
 					}
