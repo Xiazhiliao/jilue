@@ -1,12 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const dynamicTranslates = {
-	jlsgsy_bolue(player) {
+	jlsgsy_bolue(player, skill) {
 		let extra = "";
-		if (player?.storage?.jlsgsy_bolue) {
-			let skills = [];
-			for (let g in player.storage.jlsgsy_bolue) {
-				skills.push(get.cnNumber(player.storage.jlsgsy_bolue[g]) + "个" + (lib.translate[g] || "??"));
+		if (player?.hasStorage(skill)) {
+			let skills = [],
+				storage = player.getStorage(skill, []);
+			for (let g in storage) {
+				skills.push(get.cnNumber(storage[g]) + "个" + (lib.translate[g] || "??"));
 			}
 			if (skills.length) {
 				extra = `<span class="bluetext">及额外${skills.join("、")}势力技能</span>`;

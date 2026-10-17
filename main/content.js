@@ -4,14 +4,14 @@ export async function content(config, pack) {
 	//版本检测 and 更新公告
 	if (pack.changelog) {
 		var testCode = `\
-let a = 1;
-const b = 1;
-(() => a + b)();`;
+				let a = 1;
+				const b = 1;
+				(() => a + b)();`;
 		try {
 			eval(testCode);
 		} catch (error) {
-			if (!lib.config["extension_极略_compatibilityAlert"]) {
-				game.saveConfig("extension_极略_compatibilityAlert", true);
+			if (!game.getExtensionConfig(`极略`, "compatibilityAlert")) {
+				game.saveExtensionConfig("极略", "compatibilityAlert", true);
 				alert("极略与你的设备或是无名杀版本不兼容", "极略");
 			}
 			pack.changelog = `<span style="font-weight:bold;">极略与你的设备不兼容，因此导入被终止了。</span><br>` + pack.changelog;
@@ -27,8 +27,8 @@ const b = 1;
 	}
 	if (!_status.evaluatingExtension) {
 		var callback = () => {
-			if (!lib.config["extension_极略_wrongExtensionNameAlert"]) {
-				game.saveConfig("extension_极略_wrongExtensionNameAlert", true);
+			if (!game.getExtensionConfig(`极略`, "wrongExtensionNameAlert")) {
+				game.saveExtensionConfig("极略", "wrongExtensionNameAlert", true);
 				alert("万能导入/玄武版导入时需将拓展名设置为极略！你是不是设置错了？");
 			}
 		};
@@ -42,12 +42,7 @@ const b = 1;
 			});
 		}
 	} else {
-		game.saveConfig("extension_极略_wrongExtensionNameAlert", false);
-	}
-	//适配PR 换个写法（
-	//改为适配旧版本，更新了就直接肘击旧版——流年
-	if (typeof game.initCharactertList === "function") {
-		game.initCharacterList = game.initCharactertList;
+		game.saveExtensionConfig("极略", "wrongExtensionNameAlert", false);
 	}
 	//SR武将突破初始列表
 	const configx = pack.code.config;
@@ -55,7 +50,7 @@ const b = 1;
 		if (!configx[i].jlsg_upgrade) {
 			continue;
 		} else {
-			configx[i].onclick(lib.config[`extension_极略_${i}`]);
+			configx[i].onclick(game.getExtensionConfig(`极略`, i));
 		}
 	}
 
@@ -115,12 +110,6 @@ const b = 1;
 					trivialSolveCharacterReplace(name);
 				}
 			}
-		} else {
-			for (let name of list) {
-				if (!lib.config.forbidai_user.includes(name) && name.includes("baonu")) {
-					lib.config.forbidai.remove(name);
-				}
-			}
 		}
 	}
 
@@ -159,213 +148,13 @@ const b = 1;
 	// 评级
 	if (lib.rank) {
 		var rank = {
-			s: [
-				"jlsgsoul_diaochan",
-				"jlsgsoul_guojia",
-				"jlsgsoul_simahui",
-				"jlsgsoul_simayi",
-				"jlsgsoul_zhaoyun",
-				"jlsgsoul_sunquan",
-				"jlsgsr_huangyueying",
-				"jlsgsoul_huangyueying",
-				"jlsgsoul_sp_zhugeliang",
-				"jlsgsk_caiwenji",
-				"jlsgsoul_ganning",
-				"jlsgsoul_sp_lvbu",
-				"jlsgsoul_xiahoudun",
-				"jlsgsk_xiahoushi",
-				"jlsgsk_sundeng",
-				"jlsgsk_wuxian",
-				"jlsgsoul_xuzhu",
-				"jlsgsoul_sp_ganning",
-				"jlsgsk_hetaihou",
-				"jlsgsoul_sp_diaochan",
-				"jlsgsk_shamoke",
-				"jlsgsk_zhaoyan",
-				"jlsgsoul_sp_huangyueying",
-				"jlsgsk_caoying",
-				"jlsgsoul_caoren",
-				"jlsgsoul_sp_simayi",
-				"jlsgsk_nanhualaoxian",
-				"jlsgsoul_caopi",
-				"jlsgsk_wanniangongzhu",
-			],
-			ap: [
-				"jlsgsr_lvbu",
-				"jlsgsoul_caocao",
-				"jlsgsoul_dianwei",
-				"jlsgsoul_jiaxu",
-				"jlsgsoul_guanyu",
-				"jlsgsoul_liubei",
-				"jlsgsoul_zhugeliang",
-				"jlsgsoul_lvmeng",
-				"jlsgsoul_luxun",
-				"jlsgsoul_sunshangxiang",
-				"jlsgsoul_zhenji",
-				"jlsgsoul_huanggai",
-				"jlsgsr_zhenji",
-				"jlsgsr_sunshangxiang",
-				"jlsgsr_lvmeng",
-				"jlsgsr_luxun",
-				"jlsgsr_daqiao",
-				"jlsgsk_dongzhuo",
-				"jlsgsk_guonvwang",
-				"jlsgsoul_zhangliao",
-				"jlsgsk_xizhicai",
-				"jlsgsk_xushi",
-				"jlsgsk_caorui",
-				"jlsgsk_sunxiu",
-				"jlsgsk_zhangrang",
-				"jlsgsk_xinxianying",
-				"jlsgsoul_sp_zhangliao",
-				"jlsgsk_liuyan",
-				"jlsgsk_lvfan",
-				"jlsgsoul_xiaoqiao",
-				"jlsgsk_sslh_zhenji",
-				"jlsgsk_zhongyao",
-				"jlsgsk_huanghao",
-				"jlsgsk_huaman",
-				"jlsgsk_wangyuanji",
-				"jlsgsk_zhangchangpu",
-			],
-			a: [
-				"jlsgsoul_zhouyu",
-				"jlsgsoul_zuoci",
-				"jlsgsr_simayi",
-				"jlsgsr_guojia",
-				"jlsgsr_diaochan",
-				"jlsgsk_chengyu",
-				"jlsgsk_yujin",
-				"jlsgsk_simazhao",
-				"jlsgsk_kuaiyue",
-				"jlsgsk_zhangning",
-				"jlsgsk_zhoutai",
-				"jlsgsk_dongbai",
-				"jlsgsk_liuchen",
-				"jlsgsk_caoxiu",
-				"jlsgsk_caojie",
-				"jlsgsk_sunliang",
-				"jlsgsk_yuji",
-				"jlsgsk_sunru",
-				"jlsgsoul_huangzhong",
-				"jlsgsk_guohuanghou",
-				"jlsgsk_chenqun",
-				"jlsgsk_jiangwei",
-				"jlsgsk_spwq_lvbu",
-			],
-			am: [
-				"jlsgsoul_zhangjiao",
-				"jlsgsk_zuoci",
-				"jlsgsoul_lvbu",
-				"jlsgsr_zhugeliang",
-				"jlsgsr_zhangliao",
-				"jlsgsr_liubei",
-				"jlsgsk_dongyun",
-				"jlsgsk_sunqian",
-				"jlsgsoul_huatuo",
-				"jlsgsr_huatuo",
-				"jlsgsk_kongrong",
-				"jlsgsk_lukang",
-				"jlsgsk_xianglang",
-				"jlsgsk_guanlu",
-				"jlsgsk_zhanglu",
-				"jlsgsk_yangxiu",
-				"jlsgsk_zoushi",
-				"jlsgsk_guansuo",
-				"jlsgsk_baosanniang",
-				"jlsgsk_zhoufei",
-				"jlsgsk_zhangliang",
-				"jlsgsk_panshu",
-				"jlsgsoul_sp_zhangjiao",
-				"jlsgsk_jushou",
-				"jlsgsk_yanyan",
-				"jlsgsoul_daqiao",
-				"jlsgsk_zhugezhan",
-				"jlsgsk_gongsunyuan",
-				"jlsgsk_jdjg_sunshangxiang",
-				"jlsgsk_zhangyi",
-				"jlsgsk_caochun",
-				"jlsgsk_syqj_guanyu",
-				"jlsgsk_beimihu",
-				"jlsgsk_pangtong",
-			],
-			bp: [
-				"jlsgsr_zhouyu",
-				"jlsgsr_sunquan",
-				"jlsgsr_machao",
-				"jlsgsr_ganning",
-				"jlsgsr_caocao",
-				"jlsgsr_zhaoyun",
-				"jlsgsk_chendao",
-				"jlsgsk_guanxing",
-				"jlsgsk_huangyueying",
-				"jlsgsk_zumao",
-				"jlsgsk_zhugejin",
-				"jlsgsk_maliang",
-				"jlsgsk_sunluyu",
-				"jlsgsk_mizhu",
-				"jlsgsr_xiahoudun",
-				"jlsgsk_zhangren",
-				"jlsgsk_zhangbu",
-				"jlsgsk_heqi",
-				"jlsgsk_zhuzhi",
-				"jlsgsk_wanglang",
-				"jlsgsk_zhaoxiang",
-				"jlsgsk_lingcao",
-			],
-			b: [
-				"jlsgsoul_zhangfei",
-				"jlsgsr_zhangfei",
-				"jlsgsr_guanyu",
-				"jlsgsk_buzhi",
-				"jlsgsk_caochong",
-				"jlsgsk_dengzhi",
-				"jlsgsk_dongxi",
-				"jlsgsk_guanyu",
-				"jlsgsk_feiyi",
-				"jlsgsk_hejin",
-				"jlsgsk_jiping",
-				"jlsgsk_jiangqin",
-				"jlsgsk_luji",
-				"jlsgsk_miheng",
-				"jlsgsk_zhuran",
-				"jlsgsk_wangyi",
-				"jlsgsk_luzhi",
-				"jlsgsk_sunhao",
-				"jlsgsk_zhoucang",
-				"jlsgsk_zhangxiu",
-				"jlsgsk_quancong",
-				"jlsgsk_simashi",
-				"jlsgsk_tianfeng",
-				"jlsgsk_wenchou",
-				"jlsgsk_xuyou",
-				"jlsgsk_yanliang",
-				"jlsgsk_wangping",
-				"jlsgsk_zhangbao",
-				"jlsgsr_xuzhu",
-				"jlsgsk_zhugeguo",
-				"jlsgsoul_machao",
-				"jlsgsk_wuyi",
-				"jlsgsk_wenyang",
-				"jlsgsk_wutugu",
-				"jlsgsk_mayunlu",
-			],
-			bm: [
-				"jlsgsr_huanggai",
-				"jlsgsk_caoren",
-				"jlsgsk_bianfuren",
-				"jlsgsk_huaxiong",
-				"jlsgsk_liyan",
-				"jlsgsk_lvlingqi",
-				"jlsgsk_sunce",
-				"jlsgsk_yuji",
-				"jlsgsk_dingfeng",
-				"jlsgsk_zangba",
-				"jlsgsk_mifuren",
-				"jlsgsk_machao",
-				"jlsgsk_panzhang",
-				"jlsgsk_lvdai",
-			],
+			s: ["jlsgsoul_diaochan", "jlsgsoul_guojia", "jlsgsoul_simahui", "jlsgsoul_simayi", "jlsgsoul_zhaoyun", "jlsgsoul_sunquan", "jlsgsr_huangyueying", "jlsgsoul_huangyueying", "jlsgsoul_sp_zhugeliang", "jlsgsk_caiwenji", "jlsgsoul_ganning", "jlsgsoul_sp_lvbu", "jlsgsoul_xiahoudun", "jlsgsk_xiahoushi", "jlsgsk_sundeng", "jlsgsk_wuxian", "jlsgsoul_xuzhu", "jlsgsoul_sp_ganning", "jlsgsk_hetaihou", "jlsgsoul_sp_diaochan", "jlsgsk_shamoke", "jlsgsk_zhaoyan", "jlsgsoul_sp_huangyueying", "jlsgsk_caoying", "jlsgsoul_caoren", "jlsgsoul_sp_simayi", "jlsgsk_nanhualaoxian", "jlsgsoul_caopi", "jlsgsk_wanniangongzhu"],
+			ap: ["jlsgsr_lvbu", "jlsgsoul_caocao", "jlsgsoul_dianwei", "jlsgsoul_jiaxu", "jlsgsoul_guanyu", "jlsgsoul_liubei", "jlsgsoul_zhugeliang", "jlsgsoul_lvmeng", "jlsgsoul_luxun", "jlsgsoul_sunshangxiang", "jlsgsoul_zhenji", "jlsgsoul_huanggai", "jlsgsr_zhenji", "jlsgsr_sunshangxiang", "jlsgsr_lvmeng", "jlsgsr_luxun", "jlsgsr_daqiao", "jlsgsk_dongzhuo", "jlsgsk_guonvwang", "jlsgsoul_zhangliao", "jlsgsk_xizhicai", "jlsgsk_xushi", "jlsgsk_caorui", "jlsgsk_sunxiu", "jlsgsk_zhangrang", "jlsgsk_xinxianying", "jlsgsoul_sp_zhangliao", "jlsgsk_liuyan", "jlsgsk_lvfan", "jlsgsoul_xiaoqiao", "jlsgsk_sslh_zhenji", "jlsgsk_zhongyao", "jlsgsk_huanghao", "jlsgsk_huaman", "jlsgsk_wangyuanji", "jlsgsk_zhangchangpu"],
+			a: ["jlsgsoul_zhouyu", "jlsgsoul_zuoci", "jlsgsr_simayi", "jlsgsr_guojia", "jlsgsr_diaochan", "jlsgsk_chengyu", "jlsgsk_yujin", "jlsgsk_simazhao", "jlsgsk_kuaiyue", "jlsgsk_zhangning", "jlsgsk_zhoutai", "jlsgsk_dongbai", "jlsgsk_liuchen", "jlsgsk_caoxiu", "jlsgsk_caojie", "jlsgsk_sunliang", "jlsgsk_yuji", "jlsgsk_sunru", "jlsgsoul_huangzhong", "jlsgsk_guohuanghou", "jlsgsk_chenqun", "jlsgsk_jiangwei", "jlsgsk_spwq_lvbu"],
+			am: ["jlsgsoul_zhangjiao", "jlsgsk_zuoci", "jlsgsoul_lvbu", "jlsgsr_zhugeliang", "jlsgsr_zhangliao", "jlsgsr_liubei", "jlsgsk_dongyun", "jlsgsk_sunqian", "jlsgsoul_huatuo", "jlsgsr_huatuo", "jlsgsk_kongrong", "jlsgsk_lukang", "jlsgsk_xianglang", "jlsgsk_guanlu", "jlsgsk_zhanglu", "jlsgsk_yangxiu", "jlsgsk_zoushi", "jlsgsk_guansuo", "jlsgsk_baosanniang", "jlsgsk_zhoufei", "jlsgsk_zhangliang", "jlsgsk_panshu", "jlsgsoul_sp_zhangjiao", "jlsgsk_jushou", "jlsgsk_yanyan", "jlsgsoul_daqiao", "jlsgsk_zhugezhan", "jlsgsk_gongsunyuan", "jlsgsk_jdjg_sunshangxiang", "jlsgsk_zhangyi", "jlsgsk_caochun", "jlsgsk_syqj_guanyu", "jlsgsk_beimihu", "jlsgsk_pangtong"],
+			bp: ["jlsgsr_zhouyu", "jlsgsr_sunquan", "jlsgsr_machao", "jlsgsr_ganning", "jlsgsr_caocao", "jlsgsr_zhaoyun", "jlsgsk_chendao", "jlsgsk_guanxing", "jlsgsk_huangyueying", "jlsgsk_zumao", "jlsgsk_zhugejin", "jlsgsk_maliang", "jlsgsk_sunluyu", "jlsgsk_mizhu", "jlsgsr_xiahoudun", "jlsgsk_zhangren", "jlsgsk_zhangbu", "jlsgsk_heqi", "jlsgsk_zhuzhi", "jlsgsk_wanglang", "jlsgsk_zhaoxiang", "jlsgsk_lingcao"],
+			b: ["jlsgsoul_zhangfei", "jlsgsr_zhangfei", "jlsgsr_guanyu", "jlsgsk_buzhi", "jlsgsk_caochong", "jlsgsk_dengzhi", "jlsgsk_dongxi", "jlsgsk_guanyu", "jlsgsk_feiyi", "jlsgsk_hejin", "jlsgsk_jiping", "jlsgsk_jiangqin", "jlsgsk_luji", "jlsgsk_miheng", "jlsgsk_zhuran", "jlsgsk_wangyi", "jlsgsk_luzhi", "jlsgsk_sunhao", "jlsgsk_zhoucang", "jlsgsk_zhangxiu", "jlsgsk_quancong", "jlsgsk_simashi", "jlsgsk_tianfeng", "jlsgsk_wenchou", "jlsgsk_xuyou", "jlsgsk_yanliang", "jlsgsk_wangping", "jlsgsk_zhangbao", "jlsgsr_xuzhu", "jlsgsk_zhugeguo", "jlsgsoul_machao", "jlsgsk_wuyi", "jlsgsk_wenyang", "jlsgsk_wutugu", "jlsgsk_mayunlu"],
+			bm: ["jlsgsr_huanggai", "jlsgsk_caoren", "jlsgsk_bianfuren", "jlsgsk_huaxiong", "jlsgsk_liyan", "jlsgsk_lvlingqi", "jlsgsk_sunce", "jlsgsk_yuji", "jlsgsk_dingfeng", "jlsgsk_zangba", "jlsgsk_mifuren", "jlsgsk_machao", "jlsgsk_panzhang", "jlsgsk_lvdai"],
 			c: ["jlsgsk_gongsunzan", "jlsgsk_panfeng", "jlsgsk_mateng"],
 			d: [],
 			rarity: {
