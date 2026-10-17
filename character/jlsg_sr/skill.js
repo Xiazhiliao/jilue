@@ -4893,29 +4893,32 @@ const skills = {
 				.set("logSkill", ["jlsg_zhaoxiang", trigger.player])
 				.set("chooseonly", true)
 				.forResult();
-			if (event.result?.bool) {
-				event.result.targets = [trigger.player];
-				event.result.cost_data = { storage, upgrade };
-			}
 		},
+		logTarget: "player",
 		popup: false,
 		async content(event, trigger, player) {
-			const {
-				cards,
-				targets: [target],
-				cost_data: { storage, upgrade },
-			} = event;
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name),
+				{
+					cards,
+					targets: [target],
+				} = event;
 			await player.gain(cards, target);
 			const choiceList = ["令此【杀】不能被响应", "令此【杀】无效", "将此【杀】的目标改为你"],
 				list = [];
 			if (upgrade) {
 				choiceList.push("令目标角色于此【杀】结算后回复1点体力");
 			}
+			const storage = player.getStorage(
+					event.name,
+					Array.from({ length: upgrade ? 4 : 3 }, () => true)
+				),
+				map = ["选项一", "选项二", "选项三", "选项四"];
 			for (let i in storage) {
 				if (!storage[i]) {
 					choiceList[i] = '<span style="opacity:0.5">' + choiceList[i] + "</span>";
 				} else {
-					list.add(`选项${get.cnNumber(Number(i) + 1, true)}`);
+					list.add(map[i]);
 				}
 			}
 			const result = await player
@@ -4927,46 +4930,46 @@ const skills = {
 					"choice",
 					(function () {
 						const resultList = get
-								.info(event.name)
-								.getCheck(trigger, player, storage.length == 4)
-								.map((v, i) => (storage[i] ? v : 0)),
-							choiceList = storage;
+							.info(event.name)
+							.getCheck(trigger, player, upgrade)
+							.map((v, i) => (storage[i] ? v : 0));
 						let max = 0,
-							choice = 0;
-						for (let i in choiceList) {
-							if (resultList[i] >= max) {
+							choice;
+						for (let i in storage) {
+							if (storage[i] && resultList[i] >= max) {
 								max = resultList[i];
 								choice = i;
 							}
 						}
-						return Number(choice);
+						return map[choice];
 					})()
 				)
 				.forResult();
-			if (result) {
+			const num = map.indexOf(result?.control);
+			if (typeof num === "number") {
 				game.log(player, "选择了", result.control);
-				let map = ["选项一", "选项二", "选项三", "选项四"];
-				let num = map.indexOf(result.control);
 				storage[num] = false;
 				if (storage.every(i => i === false)) {
 					for (let i in storage) {
 						storage[i] = true;
 					}
 				}
-				player.setStorage(event.name, storage);
+				player.setStorage(event.name, storage, true);
+			} else {
+				await game.delayx();
 			}
-			await game.delay();
-			if (result?.control == "选项一") {
+			if (num === 0) {
 				game.log(player, "令", trigger.card, "不能被响应");
 				trigger.getParent().directHit.addArray(game.players);
-			} else if (result?.control == "选项二") {
+			} else if (num === 1) {
 				game.log(player, "令", trigger.player, "使用的", trigger.card, "无效");
 				trigger.getParent().all_excluded = true;
-			} else if (result?.control == "选项三") {
+			} else if (num === 2) {
 				game.log(player, "将", trigger.card, "的目标", trigger.target, "改为", player);
 				trigger.getParent().targets.remove(trigger.target);
 				trigger.getParent().targets.add(player);
-			} else if (result?.control == "选项四") {
+			} else if (num === 3) {
+				game.log(player, "令", trigger.player, "在此【杀】结算后回复一点体力");
 				trigger.target
 					.when({ global: "useCardAfter" })
 					.filter(evt => evt.card == trigger.card)
@@ -4977,6 +4980,7 @@ const skills = {
 		},
 		getCheck(trigger, player, upgrade = false) {
 			const { card, player: source, targets, target } = trigger;
+			targets.removeArray(trigger.excluded);
 			let useCardToTargets = targets.reduce((sum, targetx) => sum + get.effect(targetx, card, source, player), 0),
 				useCardToTarget = get.effect(target, card, source, player),
 				useCardToPlayer = get.effect(player, card, source, player);

@@ -14258,7 +14258,7 @@ const skills = {
 					let numx = trigger.jlsg_xinghan_turn || num + 1;
 					const name = storage.get(numx)[0];
 					get.info("jlsg_xinghan").reinitCharacters(player, name, true);
-					player.insertPhase("jlsg_xinghan_turn").set("_noTurnOver", true);
+					player.insertPhase("jlsg_xinghan").set("_noTurnOver", true);
 					player.phaseNumber--;
 				}
 			}
@@ -14792,18 +14792,19 @@ const skills = {
 			return event.player != player && ["basic", "trick"].includes(get.type(event.card));
 		},
 		check(event, player) {
-			let effect = event.targets.reduce((effect, target) => effect + get.effect(target, event.card, event.player, player), 0),
-				effect2 = game.filterPlayer().reduce((effect, current) => {
-					let eff = get.effect(current, event.card, event.player, player);
-					return eff > 0 ? effect + eff : effect;
-				}, 0);
-			if (!event.targets.includes(player)) {
-				effect2 += get.effect(player, event.card, event.player, player) * Math.random() * 2;
+			const targets = event.targets.slice().removeArray(event.excluded);
+			const info1 = targets.map(target => get.effect(target, event.card, event.player, player)),
+				info2 = game.filterPlayer().map(target => get.effect(target, event.card, event.player, player));
+			if (info1.every(num => num >= 0)) {
+				return false;
 			}
-			effect2 += get.effect(event.player, { name: "guohe_copy2" }, player, player);
-			effect2 += get.effect(player, { name: "guohe_copy2" }, event.player, player);
-			if (player.countCards("h") == 1) {
-				effect2 = effect2 * 0.5;
+			let effect = info1.reduce((sum, num) => sum + num, 0),
+				effect2 = info2.reduce((sum, num) => sum + (num > 0 ? num : 0), 0);
+			if (!targets.includes(player)) {
+				effect2 += get.effect(player, event.card, event.player, player) * Math.random();
+			}
+			if (player.countCards("h") === 1) {
+				effect2 *= 0.5;
 			}
 			return effect2 > effect;
 		},

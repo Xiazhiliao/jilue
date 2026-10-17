@@ -2376,15 +2376,15 @@ const skills = {
 			let cnt = [countShaUsable(player), 2 + draw, player.maxHp];
 			const names = ["使用【杀】的次数上限", "摸牌阶段摸牌基数", "体力上限"];
 			const list = names.map((value, index, array) => {
-				let prompt = `令${value}+1,令`;
+				let prompt = `令${value}+1，令`,
+					prompts = [];
 				for (let index2 of [0, 1, 2]) {
 					if (index2 == index) {
 						continue;
 					}
-					prompt += array[index2] + `(${cnt[index2]})`;
+					prompts.push(array[index2] + `(${cnt[index2]})`);
 				}
-				prompt += "互换";
-				return prompt;
+				return prompt + prompts.join("与") + "互换";
 			});
 			const next = player
 				.chooseControlList({
@@ -2418,11 +2418,11 @@ const skills = {
 			game.log(player, list[index]);
 			const { addMark } = get.info("jlsgsy_duzun_effect");
 			player.addSkill("jlsgsy_duzun_effect");
-			const otherTwo = [0, 1, 2].filter(index => index != index);
+			const otherTwo = [0, 1, 2].filter(indexx => indexx != index);
 			const diff = cnt[otherTwo[0]] - cnt[otherTwo[1]];
+			await addMark(player, index, 1);
 			await addMark(player, otherTwo[0], -diff);
 			await addMark(player, otherTwo[1], diff);
-			await addMark(player, index, 1);
 		},
 		countShaUsable(player) {
 			const card = get.autoViewAs({ name: "sha" }),
