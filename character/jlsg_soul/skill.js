@@ -3363,6 +3363,7 @@ const skills = {
 					})
 					.forResult();
 				if (result?.bool) {
+					player.logSkill(event.name, [target]);
 					await target.draw({ num: 2 });
 				} else {
 					break;
