@@ -1621,10 +1621,10 @@ const skills = {
 			const phaseUse = event.getParent("phaseUse"),
 				suit = get.suit(event.card);
 			const check = function (evt) {
-				if (evt.getParent("phaseUse") != phaseUse) {
+				if (evt === event || evt.getParent("phaseUse") !== phaseUse) {
 					return false;
 				}
-				return get.suit(evt.card) == suit;
+				return get.suit(evt.card) === suit;
 			};
 			if (player.hasHistory("useCard", check) || player.hasHistory("respond", check)) {
 				return false;
@@ -1654,6 +1654,7 @@ const skills = {
 			} else if (num == 2) {
 				next = player.chooseTarget({
 					prompt: get.prompt(event.skill),
+					prompt2: "弃置一名其他角色一张牌",
 					filterTarget(card, player, target) {
 						return target != player && target.hasDiscardableCards(player, "he");
 					},
@@ -1671,6 +1672,7 @@ const skills = {
 			} else if (num == 4) {
 				next = player.chooseTarget({
 					prompt: get.prompt(event.skill),
+					prompt2: "对一名其他角色造成1点伤害",
 					filterTarget(card, player, target) {
 						return target != player;
 					},
