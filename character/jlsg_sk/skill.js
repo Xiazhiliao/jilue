@@ -6262,7 +6262,8 @@ const skills = {
 		async cost(event, trigger, player) {
 			const result = await player
 				.chooseControl({
-					controls: lib.suit.map(suit => `${suit}2`),
+					prompt: get.prompt2(event.skill, trigger.player),
+					controls: [...lib.suit.map(suit => `${suit}2`), "cancel2"],
 					ai(event, player) {
 						let rand = Math.ceil(event.getRand() * 10);
 						let suit = "heart2";
@@ -6289,7 +6290,7 @@ const skills = {
 			let message = `<span style="color: ${["heart2", "diamond2"].includes(suit) ? "#631515" : "rgba(0,0,0,0.8)"}; font-size: 200%;">${get.translation(suit.slice(0, -1))}</span>`;
 			player.say(message);
 			game.log(player, "选择了", suit);
-			player.markAuto(event.name, [suit]);
+			player.markAuto(event.name, [suit.slice(0, -1)]);
 		},
 		group: "jlsg_fushe_effect",
 		global: "jlsg_fushe_globalAI",
@@ -6310,6 +6311,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player.removeStorage("jlsg_fushe", true);
 					await trigger.player.damage();
+					await player.draw();
 				},
 			},
 			globalAI: {
