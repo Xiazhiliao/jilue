@@ -3383,20 +3383,19 @@ const skills = {
 		},
 	},
 	jlsg_liangyuan: {
+		onremove: ["jlsg_liangyuan_insertPhase"],
 		audio: "ext:极略/audio/skill:1",
 		enable: "phaseUse",
 		skillAnimation: true,
 		limited: true,
 		animationColor: "fire",
-		filter(event, player) {
-			return !player.storage.jlsg_liangyuan;
-		},
 		filterTarget(card, player, target) {
 			return player != target && target.hasSex("male");
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.markSkillCharacter(event.name, event.target, get.translation(event.name), `你的自然回合结束时，${get.translation(event.target)}进行一个额外回合`);
+			player.markAuto("jlsg_liangyuan_insertPhase", [event.target]);
 			event.target.addSkill("jlsg_liangyuan_insertPhase");
 		},
 		subSkill: {
@@ -3406,7 +3405,7 @@ const skills = {
 					global: "phaseEnd",
 				},
 				filter(event, player) {
-					return event.player.hasSkill("jlsg_liangyuan") && !event.skill && event.getParent().name == "phaseLoop";
+					return !event.skill && event.getParent().name == "phaseLoop" && event.player.hasStorage("jlsg_liangyuan_insertPhase", player);
 				},
 				forced: true,
 				async content(event, trigger, player) {
