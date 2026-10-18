@@ -1334,7 +1334,7 @@ const skills = {
 			if (target.isLinked()) {
 				await target.link();
 			}
-			if (trigger.target.isTurnedOver()) {
+			if (target.isTurnedOver()) {
 				await target.turnOver();
 			}
 		},
