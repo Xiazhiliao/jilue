@@ -1036,7 +1036,7 @@ const skills = {
 		multitarget: true,
 		targetprompt: ["发起拼点", "被拼点"],
 		selectTarget: 2,
-		prompt: "乱嗣：选择两名拼点目标,然后你弃置没赢的角色的两张牌。若拼点赢的角色不是你，你摸两张牌",
+		prompt: "乱嗣：选择两名拼点目标，然后你弃置没赢的角色的两张牌。若拼点赢的角色不是你，你摸两张牌",
 		async content(event, trigger, player) {
 			const [target1, target2] = event.targets;
 			target1.line(target2, "green");

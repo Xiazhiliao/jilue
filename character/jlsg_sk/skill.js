@@ -3593,7 +3593,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const result = await event.target
 				.chooseCardTarget({
-					prompt: "选择一名角色将你的一张装备牌交给该角色,或令" + get.translation(player) + "获得你一张手牌",
+					prompt: "选择一名角色将你的一张装备牌交给该角色，或令" + get.translation(player) + "获得你一张手牌",
 					position: "e",
 					filterTarget(card, player, target) {
 						return player != target;
@@ -4090,7 +4090,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.showCards(event.cards);
 			const [card] = event.cards;
-			const choiceList = ["此【杀】不计入次数限制", "此【杀】无距离限制,且可以额外指定1个目标", "此【杀】的伤害值+1"],
+			const choiceList = ["此【杀】不计入次数限制", "此【杀】无距离限制，且可以额外指定1个目标", "此【杀】的伤害值+1"],
 				list = [1, 2, 3].filter(key => !card.gaintag.some(tag => tag == `${event.name}_${key}`)).map(key => `选项${get.cnNumber(key, true)}`);
 			const result = await player
 				.chooseControl({
@@ -8041,7 +8041,7 @@ const skills = {
 				var card = get.translation({ name: links[0][2], nature: links[0][3] });
 				var str = "将所有手牌当做" + card + "使用";
 				if (player.getStorage("jlsg_jinzhi").length) {
-					str += `,然后摸${get.cnNumber(player.getStorage("jlsg_jinzhi").length)}张牌`;
+					str += `，然后摸${get.cnNumber(player.getStorage("jlsg_jinzhi").length)}张牌`;
 				}
 			},
 		},
@@ -9163,7 +9163,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(`###安国：是否少摸一张牌并选择一名角色，令其随机使用一张装备牌？###此牌为:武器牌,其摸X张牌（X为此武器牌的攻击范围）;防具或宝物牌,其回复1点体力;坐骑牌,重复此流程.`)
+				.chooseTarget(`###安国：是否少摸一张牌并选择一名角色，令其随机使用一张装备牌？###此牌为:武器牌，其摸X张牌（X为此武器牌的攻击范围）；防具或宝物牌，其回复1点体力；坐骑牌,重复此流程。`)
 				.set("ai", target => {
 					if (get.cardPile(card => get.type(card) == "equip")) {
 						return get.attitude(_status.event.player, target);
@@ -18733,7 +18733,7 @@ const skills = {
 			const target = trigger.player;
 			const result = await player
 				.chooseBool(get.prompt2(event.skill, target))
-				.set("prompt2", `令${get.translation(target)}摸三张牌,然后弃置三张牌,你获得以此法弃置的类别相同且数量最多的牌`)
+				.set("prompt2", `令${get.translation(target)}摸三张牌，然后弃置三张牌，你获得以此法弃置的类别相同且数量最多的牌`)
 				.set("ai", (event, player) => {
 					const target = event.getTrigger().player;
 					const att = get.attitude(player, target);

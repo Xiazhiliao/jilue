@@ -211,7 +211,7 @@ export default {
 						const card1 = result1.links[0];
 						await player.showCards(card1);
 						const result2 = await player
-							.chooseCard(get.translation(target) + "展示的牌是" + get.translation(card1) + ",请选择你展示的牌", true)
+							.chooseCard(get.translation(target) + "展示的牌是" + get.translation(card1) + "，请选择你展示的牌", true)
 							.set("card1", card1)
 							.set("ai", function (card) {
 								const player = get.player(),
@@ -615,7 +615,7 @@ export default {
 							charlotte: true,
 							mark: true,
 							intro: {
-								content: "水袭失败,不能使用【杀】",
+								content: "水袭失败，不能使用【杀】",
 							},
 							mod: {
 								cardEnabled(card, player) {
@@ -1882,7 +1882,7 @@ export default {
 						await game.cardsGotoOrdering(cards);
 						await player.showCards(event.cards1);
 						const types = cards.map(card => get.type2(card, false)).sort();
-						let prompt = "弃置一张与展示牌类别均不同的牌,然后令" + get.translation(player) + "获得" + get.translation(event.cards1) + ",或受到来自" + get.translation(player) + "的1点伤害并获得其中一种类别的牌.";
+						let prompt = "弃置一张与展示牌类别均不同的牌，然后令" + get.translation(player) + "获得" + get.translation(event.cards1) + "，或受到来自" + get.translation(player) + "的1点伤害并获得其中一种类别的牌.";
 						// value from card ownership
 						let cardDiff = 0;
 						for (let type of types) {

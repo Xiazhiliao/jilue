@@ -3188,7 +3188,7 @@ const skills = {
 				return backup;
 			},
 			prompt(links, player) {
-				return "亮出牌堆顶的一张牌,并将此牌当" + get.translation(links[0][2]) + "使用或打出.若亮出的牌不为" + get.translation(links[0][0]) + "牌,你须先失去1点体力.(你的出牌阶段每个类别限一次.)";
+				return "亮出牌堆顶的一张牌，并将此牌当" + get.translation(links[0][2]) + "使用或打出.若亮出的牌不为" + get.translation(links[0][0]) + "牌，你须先失去1点体力。(你的出牌阶段每个类别限一次)";
 			},
 		},
 		ai: {
@@ -3673,7 +3673,7 @@ const skills = {
 				marktext: "离",
 				intro: {
 					name: "离魂",
-					content: "使用牌无次数距离限制,且可以指定任意角色为目标,且可指定任意名目标",
+					content: "使用牌无次数距离限制，且可以指定任意角色为目标，且可指定任意名目标",
 				},
 				mod: {
 					cardUsable: () => Infinity,
@@ -5553,7 +5553,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt("jlsg_jiyang"))
-				.set("prompt2", "令一名角色回复1点体力,若其未受伤则改为加1点体力上限.")
+				.set("prompt2", "令一名角色回复1点体力，若其未受伤则改为加1点体力上限。")
 				.set("ai", target => {
 					var player = get.player();
 					var eff = get.attitude(player, target);
@@ -5635,7 +5635,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt("jlsg_jiyin"))
-				.set("prompt2", "对一名角色造成1点雷电伤害,若其已受伤则改为减1点体力上限.")
+				.set("prompt2", "对一名角色造成1点雷电伤害，若其已受伤则改为减1点体力上限。")
 				.set("ai", target => {
 					var player = get.player();
 					var eff = get.attitude(player, target);
@@ -9110,7 +9110,7 @@ const skills = {
 					resultStr.push(`${info[1]}张<span class="yellowtext">${info[0]}</span>`);
 				}
 				if (resultStr.length) {
-					resultStr = resultStr.join(",");
+					resultStr = resultStr.join("，");
 				}
 				return resultStr;
 			};

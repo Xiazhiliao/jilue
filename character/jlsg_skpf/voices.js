@@ -39,7 +39,7 @@ let skill = {
 	die = {
 		jlsgsk_jdjg_sunshangxiang: "此生此身，唯与君随。",
 		jlsgsk_syqj_guanyu: "梦回桃园，恩义常在。",
-		jlsgsk_sslh_zhenji: "行行重行行,与君生别离。",
+		jlsgsk_sslh_zhenji: "行行重行行，与君生别离。",
 		jlsgsk_spwq_lvbu: "呃啊，绝不可能！",
 		jlsgsk_smdq_diaochan: "倾城绝世舞，亦有落幕时...",
 		jlsgsk_gygs_sunce: "大业未成，竟被无名之辈暗算...",

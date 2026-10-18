@@ -1361,7 +1361,7 @@ export default {
 					async cost(event, trigger, player) {
 						event.result = await player
 							.chooseTarget(get.prompt("jlsg_jiyang"))
-							.set("prompt2", "令一名角色回复1点体力,若其未受伤则改为加1点体力上限.")
+							.set("prompt2", "令一名角色回复1点体力，若其未受伤则改为加1点体力上限。")
 							.set("ai", target => {
 								var player = get.player();
 								var eff = get.attitude(player, target);
@@ -1430,7 +1430,7 @@ export default {
 					async cost(event, trigger, player) {
 						event.result = await player
 							.chooseTarget(get.prompt("jlsg_jiyin"))
-							.set("prompt2", "对一名角色造成1点雷电伤害,若其已受伤则改为减1点体力上限.")
+							.set("prompt2", "对一名角色造成1点雷电伤害，若其已受伤则改为减1点体力上限。")
 							.set("ai", target => {
 								var player = get.player();
 								var eff = get.attitude(player, target);
@@ -1736,7 +1736,7 @@ export default {
 							return backup;
 						},
 						prompt(links, player) {
-							return "亮出牌堆顶的一张牌,并将此牌当" + get.translation(links[0][2]) + "使用或打出.若亮出的牌不为" + get.translation(links[0][0]) + "牌,你须先失去1点体力";
+							return "亮出牌堆顶的一张牌，并将此牌当" + get.translation(links[0][2]) + "使用或打出.若亮出的牌不为" + get.translation(links[0][0]) + "牌，你须先失去1点体力";
 						},
 					},
 					ai: {

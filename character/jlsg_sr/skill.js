@@ -2765,7 +2765,7 @@ const skills = {
 				intro: {
 					name: "劫袭",
 					mark(dialog, storage) {
-						let str = storage.map(char => get.translation(char)).join(",");
+						let str = storage.map(char => get.translation(char)).join("，");
 						if (str.length) {
 							dialog.addText(`已对${str}发动过劫袭`);
 						} else {
@@ -3673,7 +3673,7 @@ const skills = {
 				mark: true,
 				intro: {
 					content(storage, player) {
-						return "出杀次数+" + storage + ",攻击距离为" + storage;
+						return "出杀次数+" + storage + "，攻击距离为" + storage;
 					},
 				},
 				mod: {
@@ -4510,7 +4510,7 @@ const skills = {
 				marktext: "♥︎",
 				intro: {
 					name: "合谋·顺手",
-					content: "本回合内限一次,可将一张♥︎牌当顺手牵羊使用.",
+					content: "本回合内限一次，可将一张♥︎牌当顺手牵羊使用.",
 				},
 				enable: "phaseUse",
 				usable: 1,
@@ -4534,7 +4534,7 @@ const skills = {
 				marktext: "♦︎",
 				intro: {
 					name: "合谋·火攻",
-					content: "本回合内限一次,可将一张♦︎牌当火攻使用.",
+					content: "本回合内限一次，可将一张♦︎牌当火攻使用.",
 				},
 				enable: "chooseToUse",
 				usable: 1,
@@ -4565,7 +4565,7 @@ const skills = {
 				marktext: "♣︎",
 				intro: {
 					name: "合谋·借刀",
-					content: "本回合内限一次,可将一张♣︎牌当借刀杀人使用.",
+					content: "本回合内限一次，可将一张♣︎牌当借刀杀人使用.",
 				},
 				enable: "phaseUse",
 				usable: 1,
@@ -4589,7 +4589,7 @@ const skills = {
 				marktext: "♠︎",
 				intro: {
 					name: "合谋·决斗",
-					content: "回合限一次,可将一张♠︎牌当决斗使用.",
+					content: "回合限一次，可将一张♠︎牌当决斗使用.",
 				},
 				enable: "phaseUse",
 				usable: 1,
