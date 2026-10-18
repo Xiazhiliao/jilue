@@ -332,30 +332,24 @@ const skills = {
 		trigger: {
 			global: ["loseAfter", "loseAsyncAfter"],
 		},
-		frequent: true,
-		filter(event, player) {
-			if (event.type != "discard" || event.getlx === false) {
+		getIndex(event, player) {
+			return game.filterPlayer2(current => current !== player).sortBySeat();
+		},
+		filter(event, player, name, target) {
+			if (event.type !== "discard" || event.getlx === false) {
 				return false;
-			} else if (
-				!game.hasPlayer(current => {
-					if (current == player) {
-						return false;
-					}
-					const evt = event.getl(current);
-					return evt?.cards2?.length;
-				})
-			) {
+			} else if (!event.getl(target)?.cards2?.length) {
 				return false;
 			}
 			return (event.discarder || event.getParent().player) === player;
 		},
+		logTarget(event, player, name, target) {
+			return target;
+		},
+		frequent: true,
 		async content(event, trigger, player) {
-			let cards = game
-				.filterPlayer(p => p != player)
-				.flatMap(p => {
-					let evt = trigger.getl(p);
-					return evt?.cards2 | [];
-				});
+			const target = event.indexedData;
+			const cards = trigger.getl(target).cards2;
 			if (cards.length) {
 				let card = cards.randomGet();
 				await player.gain({ cards: [card], animate: "gain2" });

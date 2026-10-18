@@ -5626,7 +5626,7 @@ const skills = {
 			const number = player.getStat("skill")["jlsg_yaowu"];
 			return !number || number < player.getHp();
 		},
-		prompt: `###耀武：是否摸一张牌并选择一名有手牌的其他角色？`,
+		prompt: `耀武：是否摸一张牌并选择一名有手牌的其他角色？`,
 		prompt2: `其随机将一张手牌当【决斗】对你使用，该角色不能打出【杀】响应此【决斗】，若此【决斗】为红色，其摸一张牌。`,
 		filterTarget(card, player, target) {
 			return target !== player && target.hasCards("h");
