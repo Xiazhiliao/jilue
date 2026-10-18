@@ -6053,7 +6053,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const record = player.getStorage("jlsg_zhiti", new Map()).get(trigger.player) || [],
-				list = ["取其1点体力和体力上限", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
+				list = ["取其1点体力上限和体力", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
 				options = list.filter((_, i) => !record.includes(i)),
 				skills = trigger.player.getStockSkills();
 			if (!skills.length) {
@@ -6068,9 +6068,9 @@ const skills = {
 				.set("ai", (event, player) => {
 					const controls = get.event().controls,
 						target = event.getTrigger().player;
-					let sortList = ["令其翻面", "取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力和体力上限", "令其不能使用装备牌"];
+					let sortList = ["令其翻面", "取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力上限和体力", "令其不能使用装备牌"];
 					if (game.countPlayer() > 4 || target.hasSkillTag("maixie")) {
-						sortList = ["取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力和体力上限", "令其翻面", "令其不能使用装备牌"];
+						sortList = ["取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力上限和体力", "令其翻面", "令其不能使用装备牌"];
 					}
 					for (let text of sortList) {
 						if (controls.includes(text)) {
@@ -6089,7 +6089,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const [target] = event.targets,
 				{ choice, skills } = event.cost_data,
-				list = ["取其1点体力和体力上限", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
+				list = ["取其1点体力限和体力上", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
 				storage = player.getStorage(event.name, new Map());
 			const record = storage.get(target) || [];
 			const num = list.indexOf(choice);
@@ -6099,10 +6099,10 @@ const skills = {
 			game.log(player, "选择了", "#r" + choice);
 			switch (num) {
 				case 0:
-					await target.loseHp();
-					await player.recover();
 					await target.loseMaxHp();
 					await player.gainMaxHp();
+					await target.loseHp();
+					await player.recover();
 					break;
 				case 1:
 					{

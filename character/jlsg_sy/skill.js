@@ -4194,7 +4194,7 @@ const skills = {
 				const targetsx = info.map(i => i[0]);
 				game.log(player, "将受到", trigger.num, "点伤害改为", targetsx, "失去体力");
 				player.line(targetsx);
-				await Promise.all([player.recover(trigger.num), ...info.map(([target, num]) => target.loseHp(num))]);
+				await Promise.all([...info.map(([target, num]) => target.loseHp(num)), player.recover(trigger.num)]);
 			}
 		},
 	},

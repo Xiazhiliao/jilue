@@ -2248,7 +2248,7 @@ export default {
 					},
 					async cost(event, trigger, player) {
 						const record = player.getStorage("jlsg_zhiti", new Map()).get(trigger.player) || [],
-							list = ["取其1点体力和体力上限", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
+							list = ["取其1点体力上限和体力", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
 							options = list.filter((_, i) => !record.includes(i)),
 							skills = trigger.player.getStockSkills();
 						if (!skills.length) {
@@ -2263,9 +2263,9 @@ export default {
 							.set("ai", (event, player) => {
 								const controls = get.event().controls,
 									target = event.getTrigger().player;
-								let sortList = ["令其翻面", "取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力和体力上限", "令其不能使用装备牌"];
+								let sortList = ["令其翻面", "取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力上限和体力", "令其不能使用装备牌"];
 								if (game.countPlayer() > 4 || target.hasSkillTag("maixie")) {
-									sortList = ["取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力和体力上限", "令其翻面", "令其不能使用装备牌"];
+									sortList = ["取其一个技能", "取其摸牌阶段的一摸牌数", "取其1点体力上限和体力", "令其翻面", "令其不能使用装备牌"];
 								}
 								for (let text of sortList) {
 									if (controls.includes(text)) {
@@ -2283,7 +2283,7 @@ export default {
 					},
 					async content(event, trigger, player) {
 						const { choice, skills } = event.cost_data,
-							list = ["取其1点体力和体力上限", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
+							list = ["取其1点体力上限和体力", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
 							storage = player.getStorage(event.name, new Map());
 						const record = storage.get(trigger.player) || [];
 						const num = list.indexOf(choice);
@@ -2293,10 +2293,10 @@ export default {
 						game.log(player, "选择了", "#r" + choice);
 						switch (num) {
 							case 0:
-								await trigger.player.loseHp();
-								await player.recover();
 								await trigger.player.loseMaxHp();
 								await player.gainMaxHp();
+								await trigger.player.loseHp();
+								await player.recover();
 								break;
 							case 1:
 								{
@@ -2425,7 +2425,7 @@ export default {
 			},
 			translate: {
 				jlsg_fengying_info: "当你摸一张牌前，你可以改为使用一张无距离限制的雷【杀】。每回合限四次。",
-				jlsg_zhiti_info: "当你对其他角色造成伤害时，你可以选择一项：1. 取其1点体力和体力上限；2. 取其摸牌阶段的一摸牌数。3.取其一个技能；4.令其不能使用装备牌；5.令其翻面。每项对每名其他角色限一次。",
+				jlsg_zhiti_info: "当你对其他角色造成伤害时，你可以选择一项：1. 取其1点体力上限和体力；2. 取其摸牌阶段的一摸牌数。3.取其一个技能；4.令其不能使用装备牌；5.令其翻面。每项对每名其他角色限一次。",
 			},
 		},
 	},
