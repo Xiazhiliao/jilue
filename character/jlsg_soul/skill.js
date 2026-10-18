@@ -6089,7 +6089,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const [target] = event.targets,
 				{ choice, skills } = event.cost_data,
-				list = ["取其1点体力限和体力上", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
+				list = ["取其1点体力上限和体力", "取其摸牌阶段的一摸牌数", "取其一个技能", "令其不能使用装备牌", "令其翻面"],
 				storage = player.getStorage(event.name, new Map());
 			const record = storage.get(target) || [];
 			const num = list.indexOf(choice);
