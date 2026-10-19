@@ -5727,16 +5727,18 @@ const skills = {
 			source: "damageSource",
 		},
 		filter(event, player, name) {
-			if (name === "damageSource") {
-				return event.player != player && event.player.getHp() != event.player.getDamagedHp();
-			}
-			if (player.getHp() === player.getDamagedHp()) {
-				return false;
-			}
+			let target = player;
 			if (event.name === "damage") {
-				return event.source?.isIn() && event.source != player;
+				if (name === "damageSource") {
+					if (!event.player.isIn() || event.player === player) {
+						return false;
+					}
+					target = event.player;
+				} else if (name === "damageEnd" && event.source === player) {
+					return false;
+				}
 			}
-			return true;
+			return target.getHp() !== target.getDamagedHp();
 		},
 		check(event, player) {
 			let markCnt = player.countMark(get.info("jlsg_yinyang_s").getCurrentSkill(player));
