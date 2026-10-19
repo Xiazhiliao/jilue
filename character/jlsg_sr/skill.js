@@ -5021,18 +5021,10 @@ const skills = {
 		async content(event, trigger, player) {
 			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 			const upgrade = checkUpgrade(player, event.name);
-			if (!_status.characterlist) {
-				game.initCharacterList();
+			const allList = lib.jlsg.characterList.slice(0);
+			for (const current of game.filterPlayer2(() => true, undefined, true)) {
+				allList.removeArray(get.nameList(current));
 			}
-			const allList = _status.characterlist.slice(0);
-			game.countPlayer(function (current) {
-				const nameList = get.nameList(current);
-				nameList.forEach(name => {
-					if (lib.character[name] && name.indexOf("gz_shibing") != 0 && name.indexOf("gz_jun_") != 0) {
-						allList.add(name);
-					}
-				});
-			});
 			const skills = [],
 				max = upgrade ? 2 : 1;
 			allList.randomSort();

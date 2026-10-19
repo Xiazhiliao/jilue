@@ -1650,18 +1650,10 @@ export default {
 					},
 					logTarget: "player",
 					async content(event, trigger, player) {
-						if (!_status.characterlist) {
-							game.initCharacterList();
+						const allList = lib.jlsg.characterList.slice(0);
+						for (const current of game.filterPlayer2(() => true, undefined, true)) {
+							allList.removeArray(get.nameList(current));
 						}
-						const allList = _status.characterlist.slice(0);
-						game.countPlayer(function (current) {
-							const nameList = get.nameList(current);
-							nameList.forEach(name => {
-								if (lib.character[name] && name.indexOf("gz_shibing") != 0 && name.indexOf("gz_jun_") != 0) {
-									allList.add(name);
-								}
-							});
-						});
 						const skills = [];
 						allList.randomSort();
 						for (const name of allList) {

@@ -497,7 +497,7 @@ const skills = {
 			for (let c of lib.jlsg.characterList) {
 				let info = get.character(c);
 				result[info.group] ??= [];
-				const skills = info.skills.filter(s => !lib.filter.skillDisabled(s) && (!lib.skill[s]?.ai || !lib.skill[s]?.ai?.neg));
+				const skills = info.skills.filter(s => !lib.jlsg.skillDisabled(s) && (!lib.skill[s]?.ai || !lib.skill[s]?.ai?.neg));
 				if (skills.length) {
 					result[info.group].addArray(skills);
 				}
@@ -4300,10 +4300,7 @@ const skills = {
 			}
 			let allList = [];
 			if (get.mode() !== "boss") {
-				if (!_status.characterlist) {
-					game.initCharacterList();
-				}
-				allList = _status.characterlist.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]);
+				allList = lib.jlsg.characterList.filter(name => get.character(name, 1) === "jlsgsy" || name in lib.characterPack["jlsg_sy"]);
 			}
 			if (!allList.length) {
 				allList = Object.keys(lib.characterPack["jlsg_sy"]);
@@ -4318,19 +4315,10 @@ const skills = {
 			let num = 2;
 			for (const name of allList) {
 				const skills = get.character(name).skills.filter(skill => {
-					if (lib.filter.skillDisabled(skill)) {
+					if (lib.jlsg.skillDisabled(skill, player)) {
 						return false;
 					} else if (Object.values(map).flat().includes(skill)) {
 						return false;
-					} else if (player.hasSkill(skill, null, false, false)) {
-						return false;
-					}
-					const info = get.info(skill);
-					if (info.charlotte) {
-						return false;
-					} else if (info.ai?.combo) {
-						const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
-						return combo.every(skillx => player.hasSkill(skillx, null, false, false));
 					}
 					return !skill.startsWith("jlsgsy_baonu");
 				});
@@ -4346,122 +4334,12 @@ const skills = {
 			}
 			if (Object.values(map).flat().length) {
 				let add = Object.keys(map);
-				await get.info(event.name).changeCharacter(player, add);
+				await lib.jlsg.changeCharacter(player, add);
 				await player.addSkills(Object.values(map).flat());
 			} else {
 				game.log("已获取全部技能");
 				player.chat("我已是完全之魔！");
 			}
-		},
-		changeCharacter(player, add = [], remove = [], throwx) {
-			let next = game.createEvent("jlsgsy_youmo_changeCharacter");
-			next.player = player;
-			next.add = add;
-			next.remove = remove;
-			next.throwx = throwx;
-			next.setContent(async function (event, trigger, player) {
-				const add = event.add,
-					remove = event.remove;
-				if (remove.length) {
-					game.broadcastAll(
-						function (player, list) {
-							const cards = [];
-							for (let i = 0; i < list.length; i++) {
-								const cardname = "huashen_card_" + list[i];
-								if (!lib.card[cardname]) {
-									lib.card[cardname] = {
-										fullborder: true,
-										image: "character:" + list[i],
-									};
-									lib.translate[cardname] = get.rawName2(list[i]);
-								}
-								cards.push(game.createCard(cardname, "", ""));
-							}
-							player.$throw(cards, 1000, "nobroadcast");
-						},
-						player,
-						remove
-					);
-				}
-				if (add.length) {
-					if (event.throwx !== false) {
-						if (remove.length) {
-							await game.delay(1.5);
-						}
-					}
-					await new Promise((resolve, reject) => {
-						game.broadcastAll(
-							async function (player, list) {
-								let cards = [];
-								for (let i = 0; i < list.length; i++) {
-									let cardname = "huashen_card_" + list[i];
-									lib.card[cardname] = {
-										fullborder: true,
-										image: "character:" + list[i],
-									};
-									lib.translate[cardname] = get.slimNameHorizontal(list[i]);
-									cards.push(game.createCard(cardname, "", ""));
-								}
-								let nodes = [];
-								for (let card of cards) {
-									let i = cards.indexOf(card);
-									const left0 = -cards.length * 52 - (cards.length - 1) * 8,
-										left = left0 + i * 120;
-									let node1 = player.$throwxy2(card, "calc(50% - " + -left + "px)", "calc(50% - 52px)", "perspective(600px) rotateY(180deg)", true);
-									card.clone = node1;
-									nodes.push(node1);
-									if (lib.config.cardback_style != "default") {
-										node1.style.transitionProperty = "none";
-										ui.refresh(node1);
-										node1.classList.add("infohidden");
-										ui.refresh(node1);
-										node1.style.transitionProperty = "";
-									} else {
-										node1.classList.add("infohidden");
-									}
-									node1.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
-								}
-								let nodes_copy = nodes.slice();
-								const showNode = async function (node) {
-									const onEnd01 = async function () {
-										node.style.transition = "all ease-in 0.3s";
-										node.style.transform = "perspective(600px) rotateY(270deg) translateX(52px)";
-										let onEnd = async function () {
-											node.classList.remove("infohidden");
-											node.style.transition = "all 0s";
-											ui.refresh(node);
-											node.style.transform = "perspective(600px) rotateY(-90deg) translateX(52px)";
-											ui.refresh(node);
-											node.style.transition = "";
-											ui.refresh(node);
-											node.style.transform = "";
-										};
-										node.listenTransition(onEnd);
-									};
-									node.listenTransition(onEnd01);
-									if (nodes_copy.length) {
-										showNode(nodes_copy.shift());
-									} else {
-										await game.delay(3.5);
-										player.$gain2(cards);
-										try {
-											resolve(true);
-										} catch (e) {}
-									}
-								};
-								showNode(nodes_copy.shift());
-							},
-							player,
-							add
-						);
-					});
-				}
-				event.result = {
-					add: event.add,
-					remove: event.remove,
-				};
-			});
-			return next;
 		},
 		group: "jlsgsy_youmo_effect",
 		subSkill: {
