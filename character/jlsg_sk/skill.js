@@ -5856,7 +5856,7 @@ const skills = {
 			global: "judgeEnd",
 		},
 		filter(event, player) {
-			if (event.name != "judgeEnd") {
+			if (event.name != "judge") {
 				return event.card.name == "shandian";
 			}
 			return [event.result.card].someInD("od") && event.card && event.card.name == "shandian" && event.player != player;
@@ -5865,7 +5865,7 @@ const skills = {
 		priority: 15,
 		async content(event, trigger, player) {
 			if (trigger.name == "addJudge") {
-				trigger.cancel(undefined, undefined, undefined);
+				trigger.cancel();
 				const owner = get.owner(trigger.card);
 				if (owner?.getCards("hej").includes(trigger.card)) {
 					await owner.lose(trigger.card, ui.discardPile);
@@ -5875,6 +5875,7 @@ const skills = {
 				game.log(trigger.card, "进入了弃牌堆");
 			} else if (trigger.name == "useCardToTarget") {
 				trigger.getParent()?.targets.remove(player);
+				game.log(trigger.card, "对", player, "无效");
 			} else {
 				await player.gain({ cards: [trigger.result.card], animate: "gain2" });
 			}

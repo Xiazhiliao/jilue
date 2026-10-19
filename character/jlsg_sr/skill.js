@@ -5789,17 +5789,22 @@ const skills = {
 		subSkill: {
 			buff: {
 				charlotte: true,
+				init2(player, skill) {
+					let count = player.getStorage(skill, 0);
+					player.setStorage(skill, ++count, true);
+				},
+				onremove: true,
 				mark: true,
 				marktext: "威",
 				intro: {
-					content: "本回合造成的伤害+1",
+					content: "本回合造成的伤害+#",
 				},
 				trigger: {
 					source: "damageBegin1",
 				},
 				silent: true,
 				async content(event, trigger, player) {
-					trigger.num++;
+					trigger.num += player.getStorage(event.name, 0);
 				},
 			},
 		},
