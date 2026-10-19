@@ -308,33 +308,22 @@ export async function precontent(config, originalPack) {
 			const packs = ["standard", "shenhua", "jlsg_sr", "jlsg_sk", "jlsg_skpf", "jlsg_soul", "jlsg_sy"],
 				config = game.getExtensionConfig("极略", "characterList"),
 				list = [];
+			let enabledPacks;
 			if (_status.connectMode) {
-				for (const packName of lib.configOL.characterPack) {
-					if (config && !packs.includes(packName)) {
-						continue;
-					}
-					const pack = lib.characterPack[packName];
-					for (let j in pack) {
-						if (lib.connectBanned.includes(j)) {
-							continue;
-						} else if (lib.filter.characterDisabled(i) || lib.filter.characterDisabled2(i)) {
-							continue;
-						}
-						list.add(j);
-					}
-				}
+				enabledPacks = lib.configOL.characterPack;
 			} else {
-				for (const packName of lib.config.characters) {
-					if (config && !packs.includes(packName)) {
+				enabledPacks = lib.config.characters;
+			}
+			for (const packName of enabledPacks) {
+				if (config && !packs.includes(packName)) {
+					continue;
+				}
+				const pack = lib.characterPack[packName];
+				for (let j in pack) {
+					if (lib.filter.characterDisabled(j) || lib.filter.characterDisabled2(j)) {
 						continue;
 					}
-					const pack = lib.characterPack[packName];
-					for (let j in pack) {
-						if (lib.filter.characterDisabled(j) || lib.filter.characterDisabled2(j)) {
-							continue;
-						}
-						list.add(j);
-					}
+					list.add(j);
 				}
 			}
 			delete this.characterList;
