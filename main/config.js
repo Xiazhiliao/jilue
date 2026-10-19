@@ -1,5 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 let block = {
+		characterList: {
+			name: "极略将池",
+			intro: "将本扩展检索武将的范围限制在标风+极略范围内",
+			init: false,
+		},
 		srlose: {
 			name: "srlose",
 			intro: "是否要求SR武将弃置技能",

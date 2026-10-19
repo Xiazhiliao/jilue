@@ -1686,21 +1686,7 @@ const skills = {
 					characterInfo = get.info(event.name).characterInfo;
 				const characterList = Object.keys(characterInfo).randomSort();
 				for (let name of characterList) {
-					const skills = characterInfo[name].filter(skill => {
-						if (lib.filter.skillDisabled(skill)) {
-							return false;
-						}
-						if (target.hasSkill(skill, null, false, false)) {
-							return false;
-						}
-						const info = get.info(skill);
-						if (info?.groupSkill && target.group != info.groupSkill) {
-							return false;
-						} else if (info?.ai?.combo && !target.hasSkill(info?.ai?.combo, null, false, false)) {
-							return false;
-						}
-						return !info.zhuSkill || target.isZhu2();
-					});
+					const skills = characterInfo[name].filter(skill => lib.jlsg.skillDisabled(skill, target));
 					if (skills.length) {
 						map[name] = skills.randomGet();
 					}

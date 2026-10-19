@@ -300,18 +300,184 @@ export async function precontent(config, originalPack) {
 				});
 			},
 		},
+		/***
+		 * 极略将池。用开关控制是否全扩
+		 */
 		get characterList() {
-			let result;
-			if (_status.characterlist) {
-				result = _status.characterlist;
-			} else if (_status.connectMode) {
-				result = get.charactersOL(() => true);
+			//只包含标风+极略的将包
+			const packs = ["standard", "shenhua", "jlsg_sr", "jlsg_sk", "jlsg_skpf", "jlsg_soul", "jlsg_sy"],
+				config = game.getExtensionConfig("极略", "characterList"),
+				list = [];
+			let enabledPacks;
+			if (_status.connectMode) {
+				enabledPacks = lib.configOL.characterPack;
 			} else {
-				result = game.initCharacterList();
+				enabledPacks = lib.config.characters;
+			}
+			for (const packName of enabledPacks) {
+				if (config && !packs.includes(packName)) {
+					continue;
+				}
+				const pack = lib.characterPack[packName];
+				for (let j in pack) {
+					if (lib.filter.characterDisabled(j) || lib.filter.characterDisabled2(j)) {
+						continue;
+					}
+					list.add(j);
+				}
 			}
 			delete this.characterList;
-			this.characterList = result;
-			return result;
+			this.characterList = list;
+			return list;
+		},
+		/***
+		 * 技能筛选，用法同`lib.filter.skillDisabled`
+		 * @param {string} skill 需要检测的技能
+		 * @param {Player} [player] 检测该技能是否符合`player`需求
+		 * @returns { boolean } 若技能不通过检测，则返回`ture`
+		 */
+		skillDisabled(skill, player) {
+			if (lib.filter.skillDisabled(skill)) {
+				return true;
+			}
+			const info = get.info(skill);
+			if (!info || info.charlotte) {
+				return true;
+			}
+			if (player && typeof player.hasSkill === "function") {
+				if (player.hasSkill(skill, null, false, false)) {
+					return true;
+				} else if (info.groupSkill && player.group !== info.groupSkill) {
+					return true;
+				} else if (info.zhuSkill && !player.isZhu2()) {
+					return true;
+				} else if (info.ai?.combo) {
+					const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
+					if (!combo.every(skillx => player.hasSkill(skillx, null, false, false))) {
+						return true;
+					}
+				}
+			}
+			return false;
+		},
+		//绝对魔王包3的东西，作者：鬼神易(GuiShenYi)
+		/***
+		 * 用于播放弃置/获得多张武将牌动画的函数
+		 * @param {Player} player 弃置/获得多张武将牌的目标
+		 * @param {string[]} [add] 获得的武将牌列表
+		 * @param {string[]} [remove] 弃置的武将牌列表
+		 * @param {boolean} [throwx] 是否间隔弃置和获得动画之间的延迟，默认延迟`true`
+		 * @returns { GameEvent }
+		 */
+		changeCharacter(player, add = [], remove = [], throwx = true) {
+			let next = game.createEvent("jlsg_changeCharacter");
+			next.player = player;
+			next.add = add;
+			next.remove = remove;
+			next.throwx = throwx;
+			next.setContent(async function (event, trigger, player) {
+				const add = event.add,
+					remove = event.remove;
+				if (remove.length) {
+					game.broadcastAll(
+						function (player, list) {
+							const cards = [];
+							for (let i = 0; i < list.length; i++) {
+								const cardname = "huashen_card_" + list[i];
+								if (!lib.card[cardname]) {
+									lib.card[cardname] = {
+										fullborder: true,
+										image: "character:" + list[i],
+									};
+									lib.translate[cardname] = get.rawName2(list[i]);
+								}
+								cards.push(game.createCard(cardname, "", ""));
+							}
+							player.$throw(cards, 1000, "nobroadcast");
+						},
+						player,
+						remove
+					);
+				}
+				if (add.length) {
+					if (event.throwx) {
+						if (remove.length) {
+							await game.delay(1.5);
+						}
+					}
+					await new Promise((resolve, reject) => {
+						game.broadcastAll(
+							async function (player, list) {
+								let cards = [];
+								for (let i = 0; i < list.length; i++) {
+									let cardname = "huashen_card_" + list[i];
+									lib.card[cardname] = {
+										fullborder: true,
+										image: "character:" + list[i],
+									};
+									lib.translate[cardname] = get.slimNameHorizontal(list[i]);
+									cards.push(game.createCard(cardname, "", ""));
+								}
+								let nodes = [];
+								for (let card of cards) {
+									let i = cards.indexOf(card);
+									const left0 = -cards.length * 52 - (cards.length - 1) * 8,
+										left = left0 + i * 120;
+									let node1 = player.$throwxy2(card, "calc(50% - " + -left + "px)", "calc(50% - 52px)", "perspective(600px) rotateY(180deg)", true);
+									card.clone = node1;
+									nodes.push(node1);
+									if (lib.config.cardback_style != "default") {
+										node1.style.transitionProperty = "none";
+										ui.refresh(node1);
+										node1.classList.add("infohidden");
+										ui.refresh(node1);
+										node1.style.transitionProperty = "";
+									} else {
+										node1.classList.add("infohidden");
+									}
+									node1.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
+								}
+								let nodes_copy = nodes.slice();
+								const showNode = async function (node) {
+									const onEnd01 = async function () {
+										node.style.transition = "all ease-in 0.3s";
+										node.style.transform = "perspective(600px) rotateY(270deg) translateX(52px)";
+										let onEnd = async function () {
+											node.classList.remove("infohidden");
+											node.style.transition = "all 0s";
+											ui.refresh(node);
+											node.style.transform = "perspective(600px) rotateY(-90deg) translateX(52px)";
+											ui.refresh(node);
+											node.style.transition = "";
+											ui.refresh(node);
+											node.style.transform = "";
+										};
+										node.listenTransition(onEnd);
+									};
+									node.listenTransition(onEnd01);
+									if (nodes_copy.length) {
+										showNode(nodes_copy.shift());
+									} else {
+										await game.delay(3.5);
+										player.$gain2(cards);
+										try {
+											resolve(true);
+										} catch (e) {}
+									}
+								};
+								showNode(nodes_copy.shift());
+							},
+							player,
+							add
+						);
+					});
+				}
+				event.result = {
+					add: event.add,
+					remove: event.remove,
+				};
+			});
+			return next;
 		},
 		/**
 		 *

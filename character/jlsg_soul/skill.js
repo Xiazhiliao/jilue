@@ -926,15 +926,10 @@ const skills = {
 		usable: 1,
 		async content(event, trigger, player) {
 			await player.draw(1);
-			let evt = event.getParent(2);
-			let characterList;
-			if (game.getExtensionConfig("极略", "jlsgsoul_sp_zhugeliang") == "false") {
-				if (!_status.characterlist) {
-					game.initCharacterList();
-				}
-				characterList = _status.characterlist.slice().randomSort();
-			} else {
-				characterList = Object.keys(lib.character).randomSort();
+			const evt = event.getParent(2);
+			const characterList = lib.jlsg.characterList.slice().randomSort();
+			for (const current of game.filterPlayer2(() => true, undefined, true)) {
+				characterList.removeArray(get.nameList(current));
 			}
 			const storage = player.getStorage("jlsg_yaozhi", {}),
 				list = {};
@@ -951,13 +946,11 @@ const skills = {
 				let skills = get.character(name).skills,
 					record = Object.values(list).flat();
 				searchSKill: for (let skill of skills) {
-					if (["jlsg_xianshou"].includes(skill)) {
+					if (lib.jlsg.skillDisabled(skill, player)) {
+						return false;
+					} else if (Object.values(storage).flat().includes(skill) || record.includes(skill)) {
 						continue;
-					}
-					if (player.hasSkill(skill, null, false, false) || Object.values(storage).flat().includes(skill) || record.includes(skill)) {
-						continue;
-					}
-					if (get.is.locked(skill, player)) {
+					} else if (get.is.locked(skill, player)) {
 						continue;
 					}
 					let translation = lib.translate[skill + "_info"];
@@ -970,11 +963,13 @@ const skills = {
 					}
 					const skills2 = game.expandSkills([skill]);
 					for (let skill2 of skills2) {
-						let info = lib.skill[skill2];
-						if (get.is.zhuanhuanji(skill2, player)) {
+						if (lib.jlsg.skillDisabled(skill2, player)) {
 							continue;
 						}
-						if (!info || !info.enable || info.charlotte || info.juexingji || info.hiddenSkill || info.dutySkill || (info.zhuSkill && !player.isZhu2())) {
+						let info = get.info(skill2);
+						if (get.is.zhuanhuanji(skill2, player)) {
+							continue;
+						} else if (!info.enable || info.charlotte || info.juexingji || info.hiddenSkill || info.dutySkill) {
 							continue;
 						}
 						if (info.enable == "phaseUse" || (Array.isArray(info.enable) && info.enable.includes("phaseUse")) || info.enable == "chooseToUse" || (Array.isArray(info.enable) && info.enable.includes("chooseToUse"))) {
@@ -1069,14 +1064,9 @@ const skills = {
 				frequent: true,
 				async content(event, trigger, player) {
 					await player.draw();
-					let characterList;
-					if (game.getExtensionConfig("极略", "jlsgsoul_sp_zhugeliang") == "false") {
-						if (!_status.characterlist) {
-							game.initCharacterList();
-						}
-						characterList = _status.characterlist.slice().randomSort();
-					} else {
-						characterList = Object.keys(lib.character).randomSort();
+					const characterList = lib.jlsg.characterList.slice().randomSort();
+					for (const current of game.filterPlayer2(() => true, undefined, true)) {
+						characterList.removeArray(get.nameList(current));
 					}
 					const storage = player.getStorage("jlsg_yaozhi", {}),
 						list = {};
@@ -1093,10 +1083,9 @@ const skills = {
 						let skills = get.character(name).skills,
 							record = Object.values(list).flat();
 						searchSKill: for (let skill of skills) {
-							if (player.hasSkill(skill, null, false, false) || Object.values(storage).flat().includes(skill) || record.includes(skill)) {
+							if (lib.jlsg.skillDisabled(skill, player)) {
 								continue;
-							}
-							if (["jlsg_xianshou"].includes(skill)) {
+							} else if (Object.values(storage).flat().includes(skill) || record.includes(skill)) {
 								continue;
 							}
 							//防技能重名
@@ -1105,8 +1094,11 @@ const skills = {
 							}
 							const skills2 = game.expandSkills([skill]);
 							for (let skill2 of skills2) {
+								if (lib.jlsg.skillDisabled(skills, player)) {
+									continue;
+								}
 								const info = lib.skill[skill2];
-								if (!info || !info.trigger || !info.trigger.player || info.silent || info.juexingji || info.zhuanhuanji || info.hiddenSkill || info.dutySkill) {
+								if (!info.trigger || !info.trigger.player || info.silent || info.juexingji || info.zhuanhuanji || info.hiddenSkill || info.dutySkill) {
 									continue;
 								}
 								if (info.trigger.player == event.triggername || (Array.isArray(info.trigger.player) && info.trigger.player.includes(event.triggername))) {
@@ -1422,10 +1414,10 @@ const skills = {
 		$createButton(item, type, position, noclick, node) {
 			const [name, skills] = item;
 			node = ui.create.buttonPresets.character(name, "character", position, noclick);
-			const info = lib.character[name];
+			const info = get.character(name);
 			if (skills.length) {
 				const skillstr = skills.map(i => `[${get.translation(i)}]`).join("<br>");
-				const skillnode = ui.create.caption(`<div class="text" data-nature=${get.groupnature(info[1], "raw")}m style="font-family: ${lib.config.name_font || "xinwei"},xinwei">${skillstr}</div>`, node);
+				const skillnode = ui.create.caption(`<div class="text" data-nature=${get.groupnature(info.group, "raw")}m style="font-family: ${lib.config.name_font || "xinwei"},xinwei">${skillstr}</div>`, node);
 				skillnode.style.left = "2px";
 				skillnode.style.bottom = "2px";
 			}
@@ -4192,55 +4184,28 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			if (!_status.characterlist) {
-				game.initCharacterList();
+			const characterList = lib.jlsg.characterist.slice().randomSort();
+			for (const current of game.filterPlayer2()) {
+				characterList.removeArray(get.nameList(current));
 			}
-			_status.characterlist.randomSort();
-			let list = [];
-			let skills = [];
-			let map = [];
-			for (let i = 0; i < _status.characterlist.length; i++) {
-				let name = _status.characterlist[i];
-				if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_") || name.startsWith("jlsgsy_")) {
+			let list = [],
+				skills = [],
+				map = [];
+			for (const name of characterList) {
+				if (name.indexOf("zuoci") > -1 || name.indexOf("xushao")) {
 					continue;
 				}
-				if (!get.character(name)) {
-					continue;
-				}
-				let skills2 = get.character(name)[3] ?? [];
-				if (!skills2.length) {
-					continue;
-				}
-				for (let j = 0; j < skills2.length; j++) {
-					if (["jlsg_sanjue", "jlsg_xianshou"].includes(skills2[j])) {
+				const skills2 = get.character(name).skills;
+				for (const skill of skills2) {
+					if (lib.jlsg.skillDisabled(skill, player)) {
+						continue;
+					} else if (skills.includes(skill)) {
 						continue;
 					}
-					if (skills.includes(skills2[j])) {
-						list.add(name);
-						if (!map[name]) {
-							map[name] = [];
-						}
-						map[name].push(skills2[j]);
-						skills.add(skills2[j]);
-						continue;
-					}
-					let list2 = [skills2[j]];
-					game.expandSkills(list2);
-					for (let k = 0; k < list2.length; k++) {
-						let info = lib.skill[list2[k]];
-						if (!info || info.silent || info.hiddenSkill || info.unique || info.charlotte) {
-							continue;
-						}
-						list.add(name);
-						if (!map[name]) {
-							map[name] = [];
-						}
-						map[name].push(skills2[j]);
-						skills.add(skills2[j]);
-					}
-				}
-				if (list.length > 2) {
-					break;
+					list.add(name);
+					skills.add(skill);
+					map[name] ??= [];
+					map[name].add(skill);
 				}
 			}
 			if (!skills.length) {
@@ -4268,6 +4233,8 @@ const skills = {
 				}
 				let cards = player.getCards("h");
 				await targets[0].gain(cards, player, "giveAuto");
+				const character = Object.entries(map).find(info => info[1].includes(result.control))[0];
+				targets[0].flashAvatar(event.name, character);
 				await targets[0].addSkills(result.control);
 				await targets[0].loseHp();
 			}
@@ -4567,13 +4534,10 @@ const skills = {
 				return;
 			}
 			const group = trigger.player.group;
-			let list = lib.jlsg.characterList.filter(c => get.character(c, 1) == group),
-				players = game.players
-					.concat(game.dead)
-					.map(current => get.nameList(current))
-					.unique()
-					.flat();
-			list.removeArray(players);
+			let list = lib.jlsg.characterList.filter(c => get.character(c, 1) == group);
+			for (const current of game.filterPlayer2(() => true, undefined, true)) {
+				list.removeArray(get.nameList(current));
+			}
 			list = list.randomGets(3);
 			if (!list.length) {
 				return;
@@ -4922,13 +4886,14 @@ const skills = {
 	jlsg_luocha: {
 		audio: "ext:极略/audio/skill:2",
 		initList() {
-			if (!_status.characterlist) {
-				game.initCharacterList();
+			const characterList = lib.jlsg.characterList;
+			for (const current of game.filterPlayer2(() => true, undefined, true)) {
+				characterList.removeArray(get.nameList(current));
 			}
 			_status.jlsg_luocha_list = [];
 			_status.jlsg_luocha_list_hidden = [];
-			for (var c of _status.characterlist) {
-				let list = (get.character(c)[3] ?? []).filter(s => lib.skill[s] && lib.translate[s] && lib.translate[s + "_info"]);
+			for (var c of characterList) {
+				let list = (get.character(c).skills ?? []).filter(s => lib.skill[s] && lib.translate[s] && lib.translate[s + "_info"]);
 				_status.jlsg_luocha_list.addArray(list.filter(s => lib.skill[s].shaRelated));
 				_status.jlsg_luocha_list_hidden.addArray(list.filter(s => get.plainText(get.skillInfoTranslation(s, get.player())).includes("【杀】")));
 			}
@@ -7025,14 +6990,12 @@ const skills = {
 				if (c.indexOf("zuoci") != -1 || c.indexOf("xushao") != -1 || c.startsWith("jlsgsoul_sp_") || c.startsWith("jlsgsy_")) {
 					continue;
 				}
-				if (!get.character(c) || !get.character(c)[3]?.length) {
+				if (!get.character(c) || !get.character(c).skills?.length) {
 					continue;
 				}
 				let sex = get.character(c, 0);
 				skills[sex] = skills[sex] || [];
-				let skills2 = get.character(c).skills.filter(s => {
-					return !["jlsg_xianshou", "jlsg_sanjue"].includes(s) && !lib.filter.skillDisabled(s) && !lib.skill[s]?.charlotte;
-				});
+				let skills2 = get.character(c).skills.filter(s => !lib.jlsg.skillDisabled(s));
 				skills[sex].addArray(skills2);
 			}
 			delete this.skills;
@@ -7079,7 +7042,7 @@ const skills = {
 					if (get.character(c, 0) != target.sex) {
 						continue;
 					}
-					skills.addArray(get.character(c)[3].filter(s => targetSkills.includes(s)));
+					skills.addArray(get.character(c).skills.filter(s => targetSkills.includes(s)));
 				}
 			}
 			let skill = skills.randomGet();
@@ -8159,16 +8122,7 @@ const skills = {
 						}
 						let skillsList = _status.jlsgsy_bolue_list[lib.skill[event.getParent().name]?.groupType];
 						skillsList.removeArray(game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), []));
-						skillsList = skillsList.filter(skill => {
-							const info = lib.skill[skill];
-							if (lib.filter.skillDisabled(skill)) {
-								return false;
-							}
-							if (info.ai?.combo) {
-								return event.target.hasSkill(info.ai?.combo, null, false, false);
-							}
-							return true;
-						});
+						skillsList = skillsList.filter(skill => !lib.jlsg.skillDisabled(skill, player));
 						if (skillsList.length) {
 							await event.target.addSkills(skillsList.randomGet());
 						}
@@ -9342,24 +9296,19 @@ const skills = {
 				if (!get.character(name)) {
 					continue;
 				}
-				const skills2 = get.character(name)[3];
+				const skills2 = get.character(name).skills;
 				if (!skills2 || !skills2.length) {
 					continue;
 				}
 				for (let j = 0; j < skills2.length; j++) {
-					if (player.hasSkill(skills2[j])) {
-						continue;
-					} else if (skills.includes(skills2[j])) {
+					if (skills.includes(skills2[j])) {
 						continue;
 					}
-					if (lib.filter.skillDisabled(skills2[j])) {
+					if (lib.jlsg.skillDisabled(skills2[j], player)) {
 						continue;
 					}
 					const info = lib.skill[skills2[j]];
-					if (!info || (!info.trigger && !info.enable && !info.mod) || info.silent || info.hiddenSkill || (info.zhuSkill && !player.isZhu2())) {
-						continue;
-					}
-					if (info.ai && info.ai.combo && !player.hasSkill(info.ai.combo)) {
+					if (!info || (!info.trigger && !info.enable && !info.mod) || info.silent || info.hiddenSkill) {
 						continue;
 					}
 					skills.add(skills2[j]);
@@ -9373,29 +9322,14 @@ const skills = {
 			}
 		},
 		getCharacters() {
-			const name = ["曹操", "曹芳", "曹奂", "曹髦", "曹丕", "曹睿", "曹叡", "董卓", "公孙度", "公孙恭", "公孙康", "公孙渊", "公孙瓒", "郭汜", "韩遂", "李傕", "刘备", "刘辩", "刘表", "刘禅", "刘琮", "刘宏", "刘琦", "刘协", "刘焉", "刘繇", "刘璋", "吕布", "马超", "马腾", "孟获", "士燮", "司马炎", "司马昭", "孙策", "孙登", "孙皓", "孙坚", "孙亮", "孙权", "孙休", "陶谦", "王朗", "袁尚", "袁绍", "袁术", "袁谭", "袁熙", "张角", "张鲁"];
-			if (!_status.characterlist) {
-				let list = [];
-				if (_status.connectMode) {
-					list = get.charactersOL();
-				} else {
-					for (var i in lib.character) {
-						if (!lib.filter.characterDisabled2(i) && !lib.filter.characterDisabled(i)) {
-							list.push(i);
-						}
-					}
+			const names = ["曹操", "曹芳", "曹奂", "曹髦", "曹丕", "曹睿", "曹叡", "董卓", "公孙度", "公孙恭", "公孙康", "公孙渊", "公孙瓒", "郭汜", "韩遂", "李傕", "刘备", "刘辩", "刘表", "刘禅", "刘琮", "刘宏", "刘琦", "刘协", "刘焉", "刘繇", "刘璋", "吕布", "马超", "马腾", "孟获", "士燮", "司马炎", "司马昭", "孙策", "孙登", "孙皓", "孙坚", "孙亮", "孙权", "孙休", "陶谦", "王朗", "袁尚", "袁绍", "袁术", "袁谭", "袁熙", "张角", "张鲁"];
+			const characterList = lib.jlsg.characterList,
+				list = [];
+			for (const name of characterList) {
+				if (names.includes(get.rawName(name))) {
+					list.add(name);
 				}
-				game.countPlayer2(function (current) {
-					list.remove(current.name);
-					list.remove(current.name1);
-					list.remove(current.name2);
-				});
-				_status.characterlist = list;
 			}
-			let list = _status.characterlist.filter(i => {
-				const str1 = get.translation(i);
-				return name.some(i => str1.indexOf(i) > -1 && str1.lastIndexOf(i) > -1);
-			});
 			return list.randomSort();
 		},
 		ai: {
@@ -10389,10 +10323,7 @@ const skills = {
 					contentStr: "获得一个同势力武将技能",
 					async content(event, trigger, player) {
 						const group = player.group;
-						if (!_status.characterlist?.length) {
-							game.initCharacterList();
-						}
-						const allList = _status.characterlist.slice(0).randomSort();
+						const allList = lib.jlsg.characterList.slice(0).randomSort();
 						for (let name of allList) {
 							if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_") || name.startsWith("jlsgsy_")) {
 								continue;
@@ -10400,32 +10331,7 @@ const skills = {
 							if (get.character(name, 1) != group) {
 								continue;
 							}
-							const skills = get.character(name).skills.filter(s => {
-								if (["jlsg_sanjue", "jlsg_xianshou"].includes(s)) {
-									return false;
-								} else if (player.hasSkill(s, null, false, false)) {
-									return false;
-								} else if (lib.filter.skillDisabled(s)) {
-									return false;
-								}
-								const info = get.info(s);
-								if (info.charlotte) {
-									return false;
-								}
-								if (info.ai?.combo) {
-									const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
-									if (combo.every(skillx => player.hasSkill(skillx, null, false, false))) {
-										return false;
-									}
-								}
-								if (info.zhuSkill && !player.isZhu2()) {
-									return false;
-								}
-								if (info.groupSkill && info.groupSkill != player.group) {
-									return false;
-								}
-								return true;
-							});
+							const skills = get.character(name).skills.filter(s => !lib.jlsg.skillDisabled(s, player));
 							if (!skills.length) {
 								continue;
 							} else {
@@ -15743,11 +15649,9 @@ const skills = {
 		},
 		init(player) {
 			if (!_status.jlsg_dieyun_skill) {
-				const list = [];
-				if (!_status.characterlist) {
-					game.initCharacterList();
-				}
-				for (let name of _status.characterlist) {
+				const characterList = lib.jlsg.characterList,
+					list = [];
+				for (let name of characterList) {
 					const skills = get.character(name, 3);
 					list.addArray(skills);
 				}
@@ -16858,41 +16762,16 @@ const skills = {
 						player: "phaseBegin",
 					},
 					async content(event, trigger, player) {
-						if (!_status.characterlist?.length) {
-							game.initCharacterList();
-						}
-						const allList = _status.characterlist.slice(0).randomSort(),
+						const allList = lib.jlsg.characterList.slice(0).randomSort(),
 							map = {};
+						for (const current of game.filterPlayer2(() => true, undefined, true)) {
+							allList.removeArray(get.nameList(current));
+						}
 						for (let name of allList) {
 							if (name.indexOf("zuoci") != -1 || name.indexOf("xushao") != -1 || name.startsWith("jlsgsoul_sp_") || name.startsWith("jlsgsy_")) {
 								continue;
 							}
-							const skills = get.character(name).skills.filter(s => {
-								if (["jlsg_sanjue", "jlsg_xianshou"].includes(s)) {
-									return false;
-								} else if (player.hasSkill(s, null, false, false)) {
-									return false;
-								} else if (lib.filter.skillDisabled(s)) {
-									return false;
-								}
-								const info = get.info(s);
-								if (info.charlotte) {
-									return false;
-								}
-								if (info.ai?.combo) {
-									const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
-									if (combo.every(skillx => player.hasSkill(skillx, null, false, false))) {
-										return false;
-									}
-								}
-								if (info.zhuSkill && !player.isZhu2()) {
-									return false;
-								}
-								if (info.groupSkill && info.groupSkill != player.group) {
-									return false;
-								}
-								return true;
-							});
+							const skills = get.character(name).skills.filter(s => !lib.jlsg.skillDisabled(s, player));
 							if (!skills.length) {
 								continue;
 							} else {
