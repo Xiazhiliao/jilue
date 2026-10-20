@@ -19572,7 +19572,10 @@ const skills = {
 											createDialog: [`令${get.translation(target)}获得你储备技能中的一个技能`, [skillList.map(sk => [sk, `${get.translation(sk)}:${get.skillInfoTranslation(sk)}`]), "textbutton"]],
 										})
 										.forResult();
-									await target.addSkills(skills);
+									if (skills?.length) {
+										await target.addSkills(skills);
+										player.unmarkAuto("jlsg_falu_skill", skills);
+									}
 								}
 							} else if (color[0] == "black") {
 								const { targets } = await player
