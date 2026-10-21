@@ -19496,7 +19496,7 @@ const skills = {
 				const characterList = lib.jlsg.characterList.filter(name => get.character(name, 1) === "qun"),
 					list = [];
 				for (let name of characterList) {
-					list.addArray(info.skills);
+					list.addArray(get.character(name).skills || []);
 				}
 				game.broadcastAll(list => {
 					_status.jlsg_falu_skill = list;
