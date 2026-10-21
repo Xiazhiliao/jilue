@@ -4176,13 +4176,14 @@ const skills = {
 	},
 
 	jlsg_zhitian: {
+		unique: true,
 		audio: "ext:极略/audio/skill:1",
 		trigger: {
 			player: "phaseBegin",
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const characterList = lib.jlsg.characterist.slice().randomSort();
+			const characterList = lib.jlsg.characterList.slice().randomSort();
 			for (const current of game.filterPlayer2()) {
 				characterList.removeArray(get.nameList(current));
 			}
