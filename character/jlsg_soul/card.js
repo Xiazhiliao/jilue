@@ -29,6 +29,19 @@ const cards = {
 		fullskin: true,
 		noname: true,
 	},
+	jlsg_cantianjishenmu: {
+		fullskin: true,
+		type: "equip",
+		subtype: "equip2",
+		derivation: "jlsgsoul_sp_guojia",
+		bingzhu: ["jlsgsoul_sp_guojia"],
+		skills: ["jlsg_cantianjishenmu_skill"],
+		ai: {
+			basic: {
+				equipValue: 10,
+			},
+		},
+	},
 };
 for (let cardName in cards) {
 	let card = cards[cardName];
