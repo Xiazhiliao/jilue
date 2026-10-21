@@ -973,10 +973,9 @@ const skills = {
 							continue;
 						}
 						if (info.enable == "phaseUse" || (Array.isArray(info.enable) && info.enable.includes("phaseUse")) || info.enable == "chooseToUse" || (Array.isArray(info.enable) && info.enable.includes("chooseToUse"))) {
-							if (info.ai && ((info.ai.combo && !player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)) {
+							if (info.ai?.notemp || info.ai?.neg) {
 								continue;
-							}
-							if (info.init || info.onChooseToUse) {
+							} else if (info.init || info.onChooseToUse) {
 								continue;
 							}
 							if (info.filter) {
@@ -1102,10 +1101,9 @@ const skills = {
 									continue;
 								}
 								if (info.trigger.player == event.triggername || (Array.isArray(info.trigger.player) && info.trigger.player.includes(event.triggername))) {
-									if (info.ai && ((info.ai.combo && !trigger.player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)) {
+									if (info.ai?.notemp || info.ai?.neg) {
 										continue;
-									}
-									if (info.init) {
+									} else if (info.init) {
 										continue;
 									}
 									if (info.filter) {
@@ -4925,13 +4923,7 @@ const skills = {
 				let skills = list1
 					.concat(list2)
 					.unique()
-					.filter(skill => {
-						const info = lib.skill[skill];
-						if (info.ai?.combo) {
-							return player.hasSkill(info.ai.combo, null, false, false);
-						}
-						return true;
-					});
+					.filter(skill => !lib.jlsg.skillDisabled(skill, player));
 				if (!skills.length) {
 					game.log("没有可以获得的技能了");
 				} else {
@@ -7016,13 +7008,7 @@ const skills = {
 				skills.addArray(info.skills[sex].filter(s => !targetSkills.includes(s)));
 			}
 			skills.removeArray(game.filterPlayer(null, undefined, true).reduce((list, current) => list.addArray(current.getSkills(null, false, false)), []));
-			skills = skills.filter(skill => {
-				const info = lib.skill[skill];
-				if (info.ai?.combo) {
-					return target.hasSkill(info.ai?.combo, null, false, false);
-				}
-				return true;
-			});
+			skills = skills.filter(skill => !lib.jlsg.skillDisabled(skill, target));
 			skills = skills.randomGets(cnt);
 			if (!skills.length) {
 				return;
@@ -11214,20 +11200,7 @@ const skills = {
 				//手动添加“随机技能”选项
 				if (event.getRand() < 0.5) {
 					const skills = get
-						.gainableSkills((info, skill, character) => {
-							if (character.indexOf("zuoce") > -1 || character.indexOf("xushao") > -1) {
-								return false;
-							} else if (trigger.player.hasSkill(skill, null, false, false)) {
-								return false;
-							}
-							if (info.ai?.combo) {
-								if (Array.isArray(info.ai.combo)) {
-									return info.ai.combo.every(s => trigger.player.hasSkill(s, null, false, false));
-								}
-								return trigger.player.hasSkill(info.ai.combo, null, false, false);
-							}
-							return !info.charlotte;
-						})
+						.gainableSkills((info, skill, character) => lib.jlsg.skillDisabled(skill, trigger.player))
 						.filter(skill => {
 							let translation = lib.translate[skill];
 							return typeSkills[type].includes(translation);
@@ -12702,20 +12675,7 @@ const skills = {
 									})
 									.forResult();
 								if (result.bool) {
-									let gains = get.gainableSkills((info, skill, character) => {
-										if (character.indexOf("zuoce") > -1 || character.indexOf("xushao") > -1) {
-											return false;
-										} else if (player.hasSkill(skill, null, false, false)) {
-											return false;
-										}
-										if (info.ai?.combo) {
-											if (Array.isArray(info.ai.combo)) {
-												return info.ai.combo.every(s => player.hasSkill(s, null, false, false));
-											}
-											return player.hasSkill(info.ai.combo, null, false, false);
-										}
-										return !info.charlotte;
-									});
+									let gains = get.gainableSkills((info, skill, character) => lib.jlsg.skillDisabled(skill, player));
 									let num = Math.min(result.links.length * 3, 50);
 									gains = gains.randomGets(num);
 									player.changeSkills(gains, result.links).set("$handle", lib.jlsg.changeSkillsHandle);
@@ -12740,22 +12700,7 @@ const skills = {
 									if (loseList.length) {
 										await target.removeSkills(loseList.randomGet());
 									}
-									const addList = get
-										.gainableSkills((info, skill, character) => {
-											if (character.indexOf("zuoce") > -1 || character.indexOf("xushao") > -1) {
-												return false;
-											} else if (target.hasSkill(skill, null, false, false)) {
-												return false;
-											}
-											if (info.ai?.combo) {
-												if (Array.isArray(info.ai.combo)) {
-													return info.ai.combo.every(s => target.hasSkill(s, null, false, false));
-												}
-												return target.hasSkill(info.ai.combo, null, false, false);
-											}
-											return !info.charlotte;
-										})
-										.randomGets(2);
+									const addList = get.gainableSkills((info, skill, character) => lib.jlsg.skillDisabled(skill, target)).randomGets(2);
 									if (addList.length) {
 										await target.addSkills(addList);
 									}

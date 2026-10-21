@@ -1686,7 +1686,7 @@ const skills = {
 					characterInfo = get.info(event.name).characterInfo;
 				const characterList = Object.keys(characterInfo).randomSort();
 				for (let name of characterList) {
-					const skills = characterInfo[name].filter(skill => lib.jlsg.skillDisabled(skill, target));
+					const skills = characterInfo[name].filter(skill => !lib.jlsg.skillDisabled(skill, target));
 					if (skills.length) {
 						map[name] = skills.randomGet();
 					}

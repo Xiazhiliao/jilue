@@ -5048,10 +5048,15 @@ const skills = {
 							continue;
 						}
 						if (info.trigger.player == "damageEnd" || (Array.isArray(info.trigger.player) && info.trigger.player.includes("damageEnd"))) {
-							if (info.ai && ((info.ai.combo && !trigger.player.hasSkill(info.ai.combo)) || info.ai.notemp || info.ai.neg)) {
-								continue;
+							if (info.ai?.combo) {
+								const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
+								if (combo.every(skillx => trigger.player.hasSkill(skillx, null, false, false))) {
+									continue;
+								}
 							}
-							if (info.init) {
+							if (info.ai?.notemp || info.ai?.neg) {
+								continue;
+							} else if (info.init) {
 								continue;
 							}
 							if (info.filter) {

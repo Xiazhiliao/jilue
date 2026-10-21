@@ -11423,8 +11423,9 @@ const skills = {
 					if (att < 0 && negative) {
 						return att;
 					} else if (att > 0 && !negative) {
-						if (info.ai?.combo ?? false) {
-							if (target.hasSkill(info.ai.combo)) {
+						if (info.ai?.combo) {
+							const combo = Array.isArray(info.ai.combo) ? info.ai.combo : [info.ai.combo];
+							if (combo.every(skill => target.hasSkill(skill, false, false))) {
 								return 2 + att * (cntSkills + hs + hp);
 							}
 						}
@@ -15862,13 +15863,7 @@ const skills = {
 					case 3:
 						var skills = get.gainableSkills();
 						skills.removeArray(player.getSkills(null, false, false));
-						skills = skills.filter(skill => {
-							const info = lib.skill[skill];
-							if (info.ai?.combo) {
-								return player.hasSkill(info.ai?.combo, null, false, false);
-							}
-							return true;
-						});
+						skills = skills.filter(skill => !lib.jlsg.skillDisabled(skill,player));
 						skills = skills.randomGets(3);
 						var buttons = skills.map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
 						var result2 = await trigger.player
@@ -19703,6 +19698,9 @@ const skills = {
 		async content(event, trigger, player) {
 			const { skills } = event.cost_data;
 			trigger.addSkill = skills;
+		},
+		ai: {
+			combo: "jlsg_falu",
 		},
 	},
 	jlsg_shiming: {
