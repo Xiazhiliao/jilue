@@ -952,6 +952,8 @@ const skills = {
 						continue;
 					} else if (get.is.locked(skill, player)) {
 						continue;
+					} else if (lib.jlsg.skillDisabled(skill, player)) {
+						continue;
 					}
 					let translation = lib.translate[skill + "_info"];
 					if (translation && translation.indexOf("当你于出牌阶段") != -1 && translation.indexOf("当你于出牌阶段外") == -1) {
@@ -963,9 +965,6 @@ const skills = {
 					}
 					const skills2 = game.expandSkills([skill]);
 					for (let skill2 of skills2) {
-						if (lib.jlsg.skillDisabled(skill2, player)) {
-							continue;
-						}
 						let info = get.info(skill2);
 						if (get.is.zhuanhuanji(skill2, player)) {
 							continue;
@@ -1086,16 +1085,14 @@ const skills = {
 								continue;
 							} else if (Object.values(storage).flat().includes(skill) || record.includes(skill)) {
 								continue;
-							}
-							//防技能重名
-							if (record.some(i => get.translation(i) == get.translation(skill))) {
+							} else if (record.some(i => get.translation(i) == get.translation(skill))) {
+								//防技能重名
+								continue;
+							} else if (lib.jlsg.skillDisabled(skill, player)) {
 								continue;
 							}
 							const skills2 = game.expandSkills([skill]);
 							for (let skill2 of skills2) {
-								if (lib.jlsg.skillDisabled(skills, player)) {
-									continue;
-								}
 								const info = lib.skill[skill2];
 								if (!info.trigger || !info.trigger.player || info.silent || info.juexingji || info.zhuanhuanji || info.hiddenSkill || info.dutySkill) {
 									continue;
