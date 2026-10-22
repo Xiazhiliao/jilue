@@ -13639,9 +13639,7 @@ const skills = {
 		get getCharacters() {
 			const characterList = lib.jlsg.characterList.slice(),
 				list = {};
-			if (get.mode() === "boss") {
-				characterList.addArray(Object.keys(lib.characterPack["jlsg_sy"]).filter(name => name.endsWith("baonu")));
-			}
+			characterList.addArray(Object.keys(lib.characterPack["jlsg_sy"]).filter(name => name.endsWith("baonu")));
 			for (const name of characterList) {
 				const group = get.character(name, 1);
 				list[group] ??= [];
@@ -14145,8 +14143,8 @@ const skills = {
 					return !event.skill;
 				}
 			} else if (name == "phaseAfter") {
-				return max >= num && (event.skill == "jlsg_xinghan_turn" || (num == 0 && !event.skill));
-			} else if (name == "changeSkillsEnd") {
+				return max >= num && (event.skill == "jlsg_xinghan" || (num == 0 && !event.skill));
+			} else if (name == "changeSkillsAfter") {
 				if (game.getExtensionConfig("极略", "jlsgsk_wanniangongzhu") === "false" && event.addSkill?.length) {
 					return true;
 				}
@@ -14237,6 +14235,7 @@ const skills = {
 				storage.set(num, info);
 				player.setStorage("jlsg_xinghan", storage, true);
 			} else {
+				console.log(trigger.jlsg_xinghan_turn,max,num)
 				if (trigger.jlsg_xinghan_turn >= max || num >= max) {
 					await get.info("jlsg_xinghan").chooseCharacter(player, true);
 				} else {

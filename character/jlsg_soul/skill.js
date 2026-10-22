@@ -3553,7 +3553,7 @@ const skills = {
 					if (event.triggername == "phaseBegin") {
 						trigger.player.removeMark("jlsg_meixin", trigger.player.countMark("jlsg_meixin"), false);
 					} else {
-						const type = get.type2(trigger.card, trigger.player);
+						const type = get.type2(trigger.card);
 						let targets = game.filterPlayer(cur => cur.hasMark("jlsg_meixin")).sortBySeat(player);
 						player.logSkill("jlsg_meixin", targets);
 						for (const target of targets) {
@@ -3562,7 +3562,10 @@ const skills = {
 							}
 							if (type == "basic") {
 								await target.discard(target.getCards("he").randomGet());
-							} else if (type == "trick" && target.countGainableCards(player, "he")) {
+							} else if (type == "trick") {
+								if (!target.hasGainableCards(player, "he")) {
+									return;
+								}
 								let card = target.getGainableCards(player, "he").randomGet();
 								await player.gain(card, target, "giveAuto", "bySelf");
 							} else {
