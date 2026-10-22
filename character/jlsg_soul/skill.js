@@ -947,7 +947,7 @@ const skills = {
 					record = Object.values(list).flat();
 				searchSKill: for (let skill of skills) {
 					if (lib.jlsg.skillDisabled(skill, player)) {
-						return false;
+						continue;
 					} else if (Object.values(storage).flat().includes(skill) || record.includes(skill)) {
 						continue;
 					} else if (get.is.locked(skill, player)) {
@@ -11201,7 +11201,7 @@ const skills = {
 				//手动添加“随机技能”选项
 				if (event.getRand() < 0.5) {
 					const skills = get
-						.gainableSkills((info, skill, character) => lib.jlsg.skillDisabled(skill, trigger.player))
+						.gainableSkills((info, skill, character) => !lib.jlsg.skillDisabled(skill, trigger.player))
 						.filter(skill => {
 							let translation = lib.translate[skill];
 							return typeSkills[type].includes(translation);
@@ -12676,7 +12676,7 @@ const skills = {
 									})
 									.forResult();
 								if (result.bool) {
-									let gains = get.gainableSkills((info, skill, character) => lib.jlsg.skillDisabled(skill, player));
+									let gains = get.gainableSkills((info, skill, character) => !lib.jlsg.skillDisabled(skill, player));
 									let num = Math.min(result.links.length * 3, 50);
 									gains = gains.randomGets(num);
 									player.changeSkills(gains, result.links).set("$handle", lib.jlsg.changeSkillsHandle);
@@ -12701,7 +12701,7 @@ const skills = {
 									if (loseList.length) {
 										await target.removeSkills(loseList.randomGet());
 									}
-									const addList = get.gainableSkills((info, skill, character) => lib.jlsg.skillDisabled(skill, target)).randomGets(2);
+									const addList = get.gainableSkills((info, skill, character) => !lib.jlsg.skillDisabled(skill, target)).randomGets(2);
 									if (addList.length) {
 										await target.addSkills(addList);
 									}

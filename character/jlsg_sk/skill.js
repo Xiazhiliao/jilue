@@ -2111,9 +2111,11 @@ const skills = {
 					}
 				}
 			}
-			if (achieve && target.canUse("tao", trigger.player, false)) {
+			const tao = get.autoViewAs({ name: "tao", isCard: true }, []);
+			if (achieve && lib.filter.targetEnabled2(tao, target, trigger.player)) {
 				await target.useCard({
-					card: { name: "tao", isCard: true },
+					card: tao,
+					cards: [],
 					targets: [trigger.player],
 				});
 			}
@@ -8344,6 +8346,9 @@ const skills = {
 	jlsg_xingshuai: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return event.source && event.source !== player;
+		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget({
@@ -15863,7 +15868,7 @@ const skills = {
 					case 3:
 						var skills = get.gainableSkills();
 						skills.removeArray(player.getSkills(null, false, false));
-						skills = skills.filter(skill => !lib.jlsg.skillDisabled(skill,player));
+						skills = skills.filter(skill => !lib.jlsg.skillDisabled(skill, player));
 						skills = skills.randomGets(3);
 						var buttons = skills.map(i => [i, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(i) + "】</div><div>" + lib.translate[i + "_info"] + "</div></div>"]);
 						var result2 = await trigger.player
