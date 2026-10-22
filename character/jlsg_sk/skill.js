@@ -1766,7 +1766,7 @@ const skills = {
 		audio: "ext:极略/audio/skill:2",
 		trigger: { global: "phaseBegin" },
 		filter(event, player) {
-			return player.countCards("h") != 0 && event.player != player;
+			return player.hasDiscardableCards(player, "h") && event.player != player;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -1784,9 +1784,11 @@ const skills = {
 				.forResult();
 		},
 		popup: false,
+		logTarget: "player",
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
-			await player.judge({
+			const [target] = event.targets;
+			await target.judge({
 				judge(card) {
 					if (get.color(card) == "black") {
 						return -1;
@@ -1797,14 +1799,15 @@ const skills = {
 					return !result.bool;
 				},
 				async callback(event, trigger, player) {
-					const { target } = event.getParent();
+					const {
+						targets: [target],
+					} = event.getParent(2);
 					if (event.judgeResult.suit === "spade") {
 						target.addTempSkill("baiban");
 					} else if (event.judgeResult.suit === "club") {
 						await target.chooseToDiscard({ selectCard: [2, 2], forced: true });
 					}
 				},
-				target: trigger.player,
 			});
 		},
 		ai: {
@@ -14235,7 +14238,6 @@ const skills = {
 				storage.set(num, info);
 				player.setStorage("jlsg_xinghan", storage, true);
 			} else {
-				console.log(trigger.jlsg_xinghan_turn,max,num)
 				if (trigger.jlsg_xinghan_turn >= max || num >= max) {
 					await get.info("jlsg_xinghan").chooseCharacter(player, true);
 				} else {
