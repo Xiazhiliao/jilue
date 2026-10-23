@@ -13393,7 +13393,7 @@ const skills = {
 				随机获得1个技能: async function (event, trigger, player) {
 					const characterList = lib.jlsg.characterList.slice();
 					for (const current of game.filterPlayer2()) {
-						characterList.removeArray(current => get.nameList(current));
+						characterList.removeArray(get.nameList(current));
 					}
 					characterList.randomSort();
 					if (!characterList.length) {
