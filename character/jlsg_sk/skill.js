@@ -13401,14 +13401,14 @@ const skills = {
 						return;
 					}
 					let list;
-					for (const name of characterList) {
+					search: for (const name of characterList) {
 						const skills = get.character(name).skills || [];
 						for (const skill of skills) {
 							if (lib.jlsg.skillDisabled(skill, player)) {
 								continue;
 							}
 							list = [name, skill];
-							break;
+							break search;
 						}
 					}
 					if (!list?.length) {
