@@ -4189,7 +4189,7 @@ const skills = {
 			}
 			let list = [],
 				skills = [],
-				map = [];
+				map = {};
 			for (const name of characterList) {
 				if (name.indexOf("zuoci") > -1 || name.indexOf("xushao")) {
 					continue;
@@ -4209,34 +4209,33 @@ const skills = {
 			}
 			if (!skills.length) {
 				return;
-			} else {
-				const result = await player
-					.chooseControl(skills)
-					.set("dialog", ["选择一个技能", [list, "character"]])
-					.set("ai", function () {
-						return Math.floor(Math.random() * _status.event.controls.length);
-					})
-					.forResult();
-				const { targets } = await player
-					.chooseTarget(true)
-					.set("prompt2", "将所有手牌交给一名角色")
-					.set("ai", function (target) {
-						return get.attitude(player, target);
-					})
-					.forResult();
-				if (!targets?.length) {
-					return;
-				}
-				if (targets[0] != player) {
-					player.line(targets[0], "green");
-				}
-				let cards = player.getCards("h");
-				await targets[0].gain(cards, player, "giveAuto");
-				const character = Object.entries(map).find(info => info[1].includes(result.control))[0];
-				targets[0].flashAvatar(event.name, character);
-				await targets[0].addSkills(result.control);
-				await targets[0].loseHp();
 			}
+			const result = await player
+				.chooseControl(skills)
+				.set("dialog", ["选择一个技能", [list, "character"]])
+				.set("ai", function () {
+					return Math.floor(Math.random() * _status.event.controls.length);
+				})
+				.forResult();
+			const { targets } = await player
+				.chooseTarget(true)
+				.set("prompt2", "将所有手牌交给一名角色")
+				.set("ai", function (target) {
+					return get.attitude(player, target);
+				})
+				.forResult();
+			if (!targets?.length) {
+				return;
+			}
+			if (targets[0] != player) {
+				player.line(targets[0], "green");
+			}
+			let cards = player.getCards("h");
+			await targets[0].gain(cards, player, "giveAuto");
+			const character = Object.entries(map).find(info => info[1].includes(result.control))[0];
+			targets[0].flashAvatar(event.name, character);
+			await targets[0].addSkills(result.control);
+			await targets[0].loseHp();
 		},
 	},
 	jlsg_zhiji: {
