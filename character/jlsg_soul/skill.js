@@ -4739,7 +4739,8 @@ const skills = {
 		},
 	},
 	jlsg_qianqi: {
-		audio: "ext:极略/audio/skill:2",
+		audio: "ext:极略/audio/skill:4",
+		logAudio: index => (typeof index === "number" ? `ext:极略/audio/skill/jlsg_qianqi${index}.mp3` : "ext:极略/audio/skill:4"),
 		mod: {
 			targetInRange(card) {
 				if (card?.storage?.jlsg_qianqi) {
@@ -4770,24 +4771,27 @@ const skills = {
 		},
 		prompt: "弃置一枚「千骑」标记，视为使用一张无距离次数限制且不计入次数的【杀】",
 		async precontent(event, trigger, player) {
+			player.logSkill("jlsg_qianqi", null, null, null, [get.rand(1, 2)]);
 			if (event.getParent().addCount != false) {
 				event.getParent().addCount = false;
 			}
 			player.removeMark("jlsg_qianqi", 1);
 		},
+		log: false,
 		group: ["jlsg_qianqi_start", "jlsg_qianqi_lose"],
 		subSkill: {
 			start: {
-				audio: "ext:极略/audio/skill:2",
 				trigger: {
 					player: "enterGame",
 					global: "phaseBefore",
 				},
-				forced: true,
 				filter(event) {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
+					player.logSkill("jlsg_qianqi", null, null, null, [get.rand(3, 4)]);
 					let defend = get.cardPile(card => get.subtype(card, player) == "equip3"),
 						attack = get.cardPile(card => get.subtype(card, player) == "equip4");
 					if (defend || attack) {
