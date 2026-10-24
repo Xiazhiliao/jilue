@@ -21,6 +21,7 @@ export async function content(config, pack) {
 	}
 
 	if (config.debug) {
+		lib.arenaReady ??= [];
 		lib.arenaReady.push(() => {
 			lib.config.characters = window.__configCharactersBackup.slice();
 		});
@@ -115,6 +116,7 @@ export async function content(config, pack) {
 
 	//BOSS音乐
 	if (config.jlsg_identity_music_image && get.mode() != "boss") {
+		lib.arenaReady ??= [];
 		lib.arenaReady.push(function () {
 			ui.backgroundMusic.volume = lib.config.volumn_background / 8;
 			setTimeout(function () {
@@ -124,6 +126,7 @@ export async function content(config, pack) {
 				ui.backgroundMusic.src = lib.assetURL + "extension/极略/audio/other/jlsg_identity_music_image.mp3";
 			}, 137000);
 		});
+		lib.arenaReady ??= [];
 		lib.arenaReady.push(function () {
 			ui.background.setBackgroundImage("extension/极略/image/other/jlsg_identity_music_image.jpg");
 		});
@@ -131,6 +134,7 @@ export async function content(config, pack) {
 
 	//BOSS背景
 	if (config.jlsg_boss_music_image && get.mode() == "boss") {
+		lib.arenaReady ??= [];
 		lib.arenaReady.push(function () {
 			ui.backgroundMusic.volume = lib.config.volumn_background / 8;
 			setTimeout(function () {
@@ -140,6 +144,7 @@ export async function content(config, pack) {
 				ui.backgroundMusic.src = lib.assetURL + "extension/极略/audio/other/jlsg_boss_music_image.mp3";
 			}, 168000);
 		});
+		lib.arenaReady ??= [];
 		lib.arenaReady.push(function () {
 			ui.background.setBackgroundImage("extension/极略/image/other/jlsg_boss_music_image.jpg");
 		});

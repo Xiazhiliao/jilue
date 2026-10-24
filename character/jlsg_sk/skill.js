@@ -4430,8 +4430,8 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			for (var i = 0; i < game.players.length; i++) {
-				if (game.players[i].countCards("h") > player.countCards("h")) {
+			for (const current of game.players) {
+				if (current.countCards("h") > player.countCards("h")) {
 					return true;
 				}
 			}
@@ -4464,15 +4464,16 @@ const skills = {
 			order: 2,
 			result: {
 				player(player) {
-					var cangain = 0;
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].countCards("h") > player.countCards("h")) {
+					let cangain = 0;
+					for (const current of game.players) {
+						if (current.countCards("h") > player.countCards("h") && target.hasGainableCards(player, "h")) {
 							cangain++;
 						}
 					}
-					var maxh = true;
-					for (var i = 0; i < game.players.length; i++) {
-						if (game.players[i].countCards("h") - 1 > player.countCards("h") + cangain) {
+					let maxh = true;
+					let after = player.countCards("h") + cangain;
+					for (const current of game.players) {
+						if (target.hasGainableCards(player, "h") && current.countCards("h") - 1 > after) {
 							maxh = false;
 						}
 					}
@@ -4628,7 +4629,7 @@ const skills = {
 							nu = i;
 						}
 					}
-					return list[nu - 1] - target.countCards("h");
+					return (list[nu - 1] || 0) - target.countCards("h");
 				},
 			},
 		},
@@ -5427,11 +5428,10 @@ const skills = {
 	jlsg_qianhuan: {
 		unique: true,
 		init(player, skill) {
-			let map = player.getStorage(skill, { list: {}, num: 2 });
+			let map = player.getStorage(skill, { list: {}, num: 2, start: false });
 			if (get.config("double_character") === true || player.name2) {
-				if (get.mode() !== "guozhan") {
-					player.changeCharacter(["jlsgsk_zuoci"]);
-				} else {
+				if (get.mode() === "guozhan") {
+					map.start = true;
 					player.addSkill("jlsg_qianhuan_show");
 				}
 				map.num = 4;
@@ -5453,7 +5453,14 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			let storage = player.getStorage(event.name, { list: {}, num: 2 });
+			let storage = player.getStorage(event.name, { list: {}, num: 2, start: false });
+			if (!storage.start) {
+				if (get.config("double_character") === true || player.name2) {
+					await player.changeCharacter(["jlsgsk_zuoci"]);
+					storage.start = true;
+					player.setStorage(event.name, storage, true);
+				}
+			}
 			event.num = storage.num;
 			const extraCharacter = [];
 			if (game.getExtensionConfig("极略", "jlsgsk_zuoci") && !(_status.connectMode ? player.isAuto : _status.auto)) {
@@ -9471,7 +9478,7 @@ const skills = {
 			const storage = player.getStorage(event.name, new Map());
 			let cnt = storage.get(target) || 0;
 			if (cnt) {
-				target.loseHp(cnt);
+				await target.loseHp(cnt);
 			}
 			storage.set(target, ++cnt);
 			player.setStorage(event.name, storage, true);
@@ -11964,8 +11971,8 @@ const skills = {
 		},
 		combo: "jlsg_rongzhuang",
 		subSkill: {
-			sha: {},
-			juedou: {},
+			sha: { charlotte: true },
+			juedou: { charlotte: true },
 		},
 	},
 	jlsg_rongzhuang: {
@@ -12323,7 +12330,7 @@ const skills = {
 			}
 		},
 		getSkill(player, num) {
-			const characterList = lib.jlsg.characterList;
+			const characterList = lib.jlsg.characterList.slice();
 			for (const current of game.filterPlayer2(() => true, undefined, true)) {
 				characterList.removeArray(get.nameList(current));
 			}
@@ -14312,9 +14319,9 @@ const skills = {
 						player.addExpose(0.2);
 					}
 					if (event.cost_data == 0) {
-						target.recover(2, player);
+						await target.recover(2, player);
 					} else {
-						target.draw(target.maxHp, player);
+						await target.draw(target.maxHp, player);
 					}
 				},
 			},
@@ -17018,7 +17025,7 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			const list = get.info("jlsg_lingze").typePBTY.basic.randomGets(2),
+			const list = lib.jlsg.typePBTY.basic.randomGets(2),
 				cards = [];
 			for (let info of list) {
 				const [suit, number, name, nature = null] = info;
@@ -17159,8 +17166,7 @@ const skills = {
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			const list = get
-					.info("jlsg_lingze")
+			const list = lib.jlsg
 					.typePBTY.equip.filter(([suit, number, name]) => {
 						const subtype = get.subtype(name);
 						if (player.countEmptySlot(subtype) > 0) {

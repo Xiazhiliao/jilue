@@ -123,6 +123,7 @@ if (game.getExtensionConfig("极略", "syRefactor")) {
 			if (!title) {
 				continue;
 			} else {
+				lib.arenaReady ??= [];
 				lib.arenaReady.push(function () {
 					lib.characterTitle[name] ??= title;
 					let translation = get.rawName(info);

@@ -668,7 +668,7 @@ export default {
 							if (!bool) {
 								player.addTempSkill("jlsg_zhonghou_use");
 								player.markAuto("jlsg_zhonghou_use", [trigger.player]);
-								game.log(player, Math.random() < 0.5 ? "丑拒了" : "蠢拒了", trigger.player);
+								game.log(player, event.getRand() < 0.5 ? "丑拒了" : "蠢拒了", trigger.player);
 								player.chat("拒绝");
 								trigger.cancel();
 								trigger.getParent().goto(0);
@@ -2374,9 +2374,7 @@ export default {
 							});
 						}
 						event.given_map = {};
-						if (!cards.length) {
-							return;
-						}
+						let stop = false;
 						while (cards.length > 0) {
 							const { bool, links } =
 								cards.length == 1
@@ -2391,7 +2389,8 @@ export default {
 											})
 											.forResult();
 							if (!bool) {
-								return;
+								stop = true;
+								break;
 							}
 							cards.removeArray(links);
 							event.togive = links.slice(0);
@@ -2409,7 +2408,7 @@ export default {
 								})
 								.set("enemy", get.value(event.togive[0], player, "raw") < 0)
 								.forResult();
-							if (targets.length) {
+							if (targets?.length) {
 								const id = targets[0].playerid,
 									map = event.given_map;
 								if (!map[id]) {
@@ -2418,11 +2417,14 @@ export default {
 								map[id].addArray(event.togive);
 							}
 						}
-						if (_status.connectMode) {
-							game.broadcastAll(function () {
-								delete _status.noclearcountdown;
-								game.stopCountChoose();
-							});
+						if (stop) {
+							if (_status.connectMode) {
+								game.broadcastAll(function () {
+									delete _status.noclearcountdown;
+									game.stopCountChoose();
+								});
+							}
+							return;
 						}
 						const list = [];
 						for (const i in event.given_map) {

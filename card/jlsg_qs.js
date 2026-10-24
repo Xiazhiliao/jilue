@@ -171,12 +171,11 @@ let jlsg_qs = {
 				},
 				result: {
 					player(player, target) {
-						let num = 0,
-							att = get.attitude(player, player);
+						let num = 0;
 						if (player.hp > target.hp && !player.hasSkillTag("nogain")) {
-							num += get.effect(player, { name: "draw" }, player, player) / att;
+							num += get.effect(player, { name: "draw" }, player, player) / 10;
 						} else if (player.hp < target.hp) {
-							num += get.recoverEffect(player, player, player) / att;
+							num += get.recoverEffect(player, player, player) / 10;
 						}
 						return num;
 					},

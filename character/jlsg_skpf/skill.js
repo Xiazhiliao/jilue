@@ -212,8 +212,7 @@ const skills = {
 					await current.draw(num);
 				}
 				await current.recover();
-				const list = get
-						.info("jlsg_lingze")
+				const list = lib.jlsg
 						.typePBTY.equip.filter(([suit, number, name]) => {
 							const subtype = get.subtype(name);
 							if (current.countEmptySlot(subtype) > 0) {
@@ -1343,7 +1342,7 @@ const skills = {
 			return get.effect(player, { name: "draw" }, player, player) > 0;
 		},
 		async content(event, trigger, player) {
-			event.num = Math.floor(Math.random() * 3 + 1);
+			event.num = Math.floor(event.getRend() * 3 + 1);
 			await player.draw(event.num);
 		},
 		group: "jlsg_shhs_tiandu_shandian",

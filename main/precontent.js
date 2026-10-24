@@ -90,6 +90,7 @@ export async function precontent(config, originalPack) {
 	}
 	//七杀包规则重构
 	if (game.getExtensionConfig("极略", "qsRelic")) {
+		lib.arenaReady ??= [];
 		lib.arenaReady.push(function () {
 			game.broadcastAll(function () {
 				const cardPacks = _status.connectMode ? lib.configOL.cardPack : lib.cardPack,
@@ -146,6 +147,7 @@ export async function precontent(config, originalPack) {
 
 	//失效技能时机创建
 	if (game.getExtensionConfig("极略", "jlsg_disableSkill")) {
+		lib.arenaReady ??= [];
 		lib.arenaReady.push(() => {
 			lib.disableSkill ??= {};
 			for (let item of ["tempBanSkill", "disableSkill", "addSkillBlocker"]) {
@@ -255,7 +257,7 @@ export async function precontent(config, originalPack) {
 				evt.args = [arg];
 				//Before, Begin, Omitted手动trigger，方便修改
 				evt._triggered = 2;
-				evt.blocker = skill.skillBlocker;
+				evt.blocker = lib.skill[skill].skillBlocker;
 				evt.setContent("DisableSkill");
 			};
 		});
@@ -922,7 +924,8 @@ export async function precontent(config, originalPack) {
 					if (!game.getExtensionConfig("极略", "jlsg_disableSkill") && player.storage?.jlsg_qianyuan?.disableSkill === false) {
 						player.storage.jlsg_qianyuan.disableSkill = true;
 					} else {
-						next = player.tempBanSkill(
+						next = game.delayx();
+						player.tempBanSkill(
 							player
 								.getSkills(null, false, false)
 								?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
@@ -1067,7 +1070,7 @@ export async function precontent(config, originalPack) {
 			if (!(name in lib.card) && name !== null) {
 				return;
 			}
-			const list = get.info("jlsg_lingze").typePBTY;
+			const list = lib.jlsg.typePBTY;
 			if (name === null) {
 				const { PBTY } = list;
 				const numx = Math.random();
@@ -1107,6 +1110,36 @@ export async function precontent(config, originalPack) {
 				return card;
 			}
 			return;
+		},
+		/**
+		 * 获取当前牌堆构成及类别概率
+		 */
+		get typePBTY() {
+			let sum = 0;
+			const cardList = {},
+				PBTY = {};
+			const list = Array.from(lib.card.list);
+			for (const info of list) {
+				const name = info[2];
+				const type = get.type2(name, false);
+				if (!cardList[type]) {
+					cardList[type] = [];
+				}
+				cardList[type].push(info);
+				if (!PBTY[type]) {
+					PBTY[type] = 0;
+				}
+				PBTY[type]++;
+				sum++;
+			}
+			let num = 0;
+			for (let type in PBTY) {
+				PBTY[type] = [num, (num += PBTY[type] / sum)];
+			}
+			cardList.PBTY = PBTY;
+			delete this.typePBTY;
+			this.typePBTY = cardList;
+			return cardList;
 		},
 
 		/**
@@ -1211,10 +1244,10 @@ export async function precontent(config, originalPack) {
 			}
 		},
 	};
-	const keys = Object.keys(jlsg.debuffSkill.translate);
+	const keys = Object.keys(lib.jlsg.debuffSkill.translate);
 	for (let item of keys) {
 		for (let time of ["Before", "Begin", "End", "After"]) {
-			jlsg.debuffSkill.translate[item + time] = jlsg.debuffSkill.translate[item];
+			jlsg.debuffSkill.translate[item + time] = lib.jlsg.debuffSkill.translate[item];
 		}
 	}
 	lib.jlsg = jlsg;

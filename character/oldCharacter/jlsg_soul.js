@@ -1499,7 +1499,7 @@ export default {
 					frequent: true,
 					async cost(event, trigger, player) {
 						const { indexedData: color } = event;
-						event.result = player.chooseBool(get.prompt("jlsg_xiangsheng")).set("prompt2", `你可以摸一张${lib.translate[color]}牌`).set("frequentSkill", "jlsg_xiangsheng").forResult();
+						event.result = await player.chooseBool(get.prompt("jlsg_xiangsheng")).set("prompt2", `你可以摸一张${lib.translate[color]}牌`).set("frequentSkill", "jlsg_xiangsheng").forResult();
 					},
 					async content(event, trigger, player) {
 						const { indexedData: color } = event;
@@ -1713,7 +1713,7 @@ export default {
 								card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"),
 								knowHead = _status.pileTop?.isKnownBy(player);
 							let val = event.type == "phase" ? player.getUseValue(card) / 10 : 3;
-							if (val > 0 && !event.type == "phase" && get.tag(event.getParent(), "damage") && event.getParent().name != "juedou" && !player.countCards("h", { name: button.link[2] }) && (!knowHead || get.type(ui.cardPile.firstChild, "trick") == get.type(button.link[2], "trick") || event.getParent().baseDamage > 1)) {
+							if (val > 0 && event.type !== "phase" && get.tag(event.getParent(), "damage") && event.getParent().name != "juedou" && !player.countCards("h", { name: button.link[2] }) && (!knowHead || get.type(ui.cardPile.firstChild, "trick") == get.type(button.link[2], "trick") || event.getParent().baseDamage > 1)) {
 								return val;
 							}
 							let loseHpEffect = get.effect(player, { name: "losehp" }, player, player);
@@ -1874,7 +1874,7 @@ export default {
 						await game.cardsDiscard(cards);
 						player.$throw(cards, 1000);
 						await game.delayx();
-						const num = cards.filter(card => !get.type2(card, false) === "basic").length;
+						const num = cards.filter(card => get.type2(card, false) !== "basic").length;
 						if (num > 0) {
 							await player.discardPlayerCard({
 								target: trigger.target,

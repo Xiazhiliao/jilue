@@ -757,8 +757,8 @@ const skills = {
 				charlotte: true,
 				mod: {
 					maxHandcard(player, num) {
-						if (player.hasMark("jlsgsy_bujiao")) {
-							return num - player.countMark("jlsgsy_bujiao") * game.filterPlayer(p => p != player && p.hasSkill("jlsgsy_bujiao")).length;
+						if (player.hasMark("jlsgsy_bujiao") && game.hasPlayer(p => p != player && p.hasSkill("jlsgsy_bujiao"))) {
+							return num - player.countMark("jlsgsy_bujiao");
 						}
 					},
 				},
@@ -779,14 +779,14 @@ const skills = {
 			if (marks > diff) {
 				return true;
 			}
-			return Math.random > 0.5;
+			return event.getRand() > 0.5;
 		},
 		async content(event, trigger, player) {
 			const currents = game.filterPlayer().sortBySeat();
 			let marks = currents.reduce((a, b) => a + b.countMark("jlsgsy_bujiao"), 0);
 			await player.draw(marks);
 			for (let p of currents) {
-				p.clearMark(event.name);
+				p.clearMark("jlsgsy_bujiao");
 			}
 			let others = currents.filter(current => current != player).reduce((a, b) => a + b.countCards("h"), 0);
 			if (others >= player.countCards("h")) {
@@ -3645,7 +3645,7 @@ const skills = {
 					await target.discard(cards.randomGets(info.num));
 				} else if (key == "disableSkill") {
 					if (trigger.type == "addSkillBlocker") {
-						await target.addSkillBlocker(trigger.args[0]);
+						target.addSkillBlocker(trigger.args[0]);
 					} else {
 						const skills = target.getSkills(null, false, false).randomGets(trigger.num);
 						if (!skills.length) {
@@ -4038,8 +4038,7 @@ const skills = {
 			},
 		},
 		async gainTempCards(player, num, type, tag) {
-			const { createTempCard } = lib.jlsg;
-			const { typePBTY } = get.info("jlsg_lingze");
+			const { createTempCard, typePBTY } = lib.jlsg;
 			let list = typePBTY[type].slice();
 			const cards = [];
 			while (num-- > 0) {

@@ -718,12 +718,12 @@ const skills = {
 				ai: {
 					effect: {
 						target(card, player, target) {
-							let mark = target.countMark("jlsg_kuangfeng2");
+							let mark = target.countMark("jlsg_kuangfeng_2");
 							if (get.tag(card, "damage")) {
 								if (get.tag(card, "fireDamage")) {
 									return 1 + mark / 10;
 								}
-								if (get.tag(card, "thunder") && player.hasSkill("jlsg_kuangfeng") && player.hasSkill("jlsg_qixing")) {
+								if (get.tag(card, "thunderDamage") && player.hasSkill("jlsg_kuangfeng") && player.hasSkill("jlsg_qixing")) {
 									return [1, 0, 1, 1];
 								}
 								if (!get.tag(card, "natureDamage")) {
@@ -1328,82 +1328,92 @@ const skills = {
 					game.stopCountChoose();
 				}
 			};
-			while (true) {
-				const next = player.chooseButton(true).set("dialog", id);
-				next.set("ai", ({ link }) => {
-					const { player, cond } = get.event();
-					const storage = player.getStorage("jlsg_yaozhi", {});
-					let skills = Object.values(storage).flat();
-					skills.sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
-					let name = Object.keys(storage).find(i => storage[i].includes(skills[0]));
-					return name == link;
-				});
-				next.set("cond", event.triggername);
+			try {
+				let timeout = 0;
+				while (timeout < 50) {
+					const next = player.chooseButton(true).set("dialog", id);
+					next.set("ai", ({ link }) => {
+						const { player, cond } = get.event();
+						const storage = player.getStorage("jlsg_yaozhi", {});
+						let skills = Object.values(storage).flat();
+						skills.sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
+						let name = Object.keys(storage).find(i => storage[i].includes(skills[0]));
+						return name == link;
+					});
+					next.set("cond", event.triggername);
 
-				const result = await next.forResult();
-				const name = result.links[0],
-					func = function (card, id) {
-						const dialog = get.idDialog(id);
-						if (dialog) {
-							//禁止翻页
-							const paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
-							if (paginationInstance?.state) {
-								paginationInstance.state.pageRefuseChanged = true;
-							}
-							for (let i = 0; i < dialog.buttons.length; i++) {
-								if (dialog.buttons[i].link == card) {
-									dialog.buttons[i].classList.add("selectedx");
-								} else {
-									dialog.buttons[i].classList.add("unselectable");
+					const result = await next.forResult();
+					if (!result?.bool || !result.links?.length) {
+						timeout++;
+						continue;
+					}
+					const name = result?.links?.[0],
+						func = function (card, id) {
+							const dialog = get.idDialog(id);
+							if (dialog) {
+								//禁止翻页
+								const paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
+								if (paginationInstance?.state) {
+									paginationInstance.state.pageRefuseChanged = true;
+								}
+								for (let i = 0; i < dialog.buttons.length; i++) {
+									if (dialog.buttons[i].link == card) {
+										dialog.buttons[i].classList.add("selectedx");
+									} else {
+										dialog.buttons[i].classList.add("unselectable");
+									}
 								}
 							}
-						}
-					};
-				if (player.isOnline2()) {
-					player.send(func, name, id);
-				} else if (event.isMine()) {
-					func(name, id);
-				}
-				const result2 = await player
-					.chooseControl(storage[name], "返回")
-					.set("ai", () => {
-						const { cond, controls } = get.event();
-						controls.slice().sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
-						return controls[0];
-					})
-					.set("cond", event.triggername)
-					.forResult();
-				const control = result2.control;
-				if (control === "返回") {
-					const func2 = function (card, id) {
-						const dialog = get.idDialog(id);
-						if (dialog) {
-							//允许翻页
-							const paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
-							if (paginationInstance?.state) {
-								paginationInstance.state.pageRefuseChanged = false;
-							}
-							for (let i = 0; i < dialog.buttons.length; i++) {
-								dialog.buttons[i].classList.remove("selectedx");
-								dialog.buttons[i].classList.remove("unselectable");
-							}
-						}
-					};
+						};
 					if (player.isOnline2()) {
-						player.send(func2, name, id);
+						player.send(func, name, id);
 					} else if (event.isMine()) {
-						func2(name, id);
+						func(name, id);
 					}
-				} else {
-					finish();
-					storage[name].remove(control);
-					if (!storage[name].length) {
-						delete storage[name];
+					const result2 = await player
+						.chooseControl(storage[name], "返回")
+						.set("ai", () => {
+							const { cond, controls } = get.event();
+							controls.slice().sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
+							return controls[0];
+						})
+						.set("cond", event.triggername)
+						.forResult();
+					const control = result2.control;
+					if (control === "返回") {
+						const func2 = function (card, id) {
+							const dialog = get.idDialog(id);
+							if (dialog) {
+								//允许翻页
+								const paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
+								if (paginationInstance?.state) {
+									paginationInstance.state.pageRefuseChanged = false;
+								}
+								for (let i = 0; i < dialog.buttons.length; i++) {
+									dialog.buttons[i].classList.remove("selectedx");
+									dialog.buttons[i].classList.remove("unselectable");
+								}
+							}
+						};
+						if (player.isOnline2()) {
+							player.send(func2, name, id);
+						} else if (event.isMine()) {
+							func2(name, id);
+						}
+					} else {
+						finish();
+						storage[name].remove(control);
+						if (!storage[name].length) {
+							delete storage[name];
+						}
+						player.setStorage("jlsg_yaozhi", storage);
+						await player.addSkills([control]);
+						return;
 					}
-					player.setStorage("jlsg_yaozhi", storage);
-					await player.addSkills([control]);
-					return;
 				}
+			} catch (e) {
+			} finally {
+				finish();
 			}
 		},
 		$createButton(item, type, position, noclick, node) {
@@ -1969,15 +1979,15 @@ const skills = {
 				async content(event, trigger, player) {
 					let num = Math.ceil(player.maxHp / 2);
 					await player.loseMaxHp(num);
-					player.recoverTo(player.maxHp);
+					await player.recoverTo(player.maxHp);
 					player.update();
-					for (let i = 0; i < game.players.length; i++) {
-						if (game.players[i].hasMark("jlsg_suohun")) {
-							player.line(game.players[i], "fire");
-							await game.delay(1.5);
-							await game.players[i].damage(game.players[i].countMark("jlsg_suohun", 0));
-							game.players[i].clearMark("jlsg_suohun");
-						}
+					const currents = game.filterPlayer(current => current.hasMark("jlsg_suohun"));
+					for (const target of currents) {
+						player.line(target, "fire");
+						await game.delayx(1.5);
+						let cnt = target.countMark("jlsg_suohun");
+						target.clearMark("jlsg_suohun");
+						await target.damage({ num: cnt });
 					}
 				},
 				ai: {
@@ -3152,7 +3162,7 @@ const skills = {
 					card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"),
 					knowHead = _status.pileTop?.isKnownBy(player);
 				let val = event.type == "phase" ? player.getUseValue(card) / 10 : 3;
-				if (val > 0 && !event.type == "phase" && get.tag(event.getParent(), "damage") && event.getParent().name != "juedou" && !player.countCards("h", { name: button.link[2] }) && (!knowHead || get.type(ui.cardPile.firstChild, "trick") == get.type(button.link[2], "trick") || event.getParent().baseDamage > 1)) {
+				if (val > 0 && event.type !== "phase" && get.tag(event.getParent(), "damage") && event.getParent().name != "juedou" && !player.countCards("h", { name: button.link[2] }) && (!knowHead || get.type(ui.cardPile.firstChild, "trick") == get.type(button.link[2], "trick") || event.getParent().baseDamage > 1)) {
 					return val;
 				}
 				let loseHpEffect = get.effect(player, { name: "losehp" }, player, player);
@@ -4191,7 +4201,7 @@ const skills = {
 				skills = [],
 				map = {};
 			for (const name of characterList) {
-				if (name.indexOf("zuoci") > -1 || name.indexOf("xushao")) {
+				if (name.indexOf("zuoci") > -1 || name.indexOf("xushao") > -1) {
 					continue;
 				}
 				const skills2 = get.character(name).skills;
@@ -4888,7 +4898,7 @@ const skills = {
 	jlsg_luocha: {
 		audio: "ext:极略/audio/skill:2",
 		initList() {
-			const characterList = lib.jlsg.characterList;
+			const characterList = lib.jlsg.characterList.slice();
 			for (const current of game.filterPlayer2(() => true, undefined, true)) {
 				characterList.removeArray(get.nameList(current));
 			}
@@ -5668,7 +5678,7 @@ const skills = {
 		frequent: true,
 		async cost(event, trigger, player) {
 			const { indexedData: color } = event;
-			event.result = player.chooseBool(get.prompt("jlsg_xiangsheng")).set("prompt2", `你可以摸一张${lib.translate[color]}牌`).set("frequentSkill", "jlsg_xiangsheng").forResult();
+			event.result = await player.chooseBool(get.prompt("jlsg_xiangsheng")).set("prompt2", `你可以摸一张${lib.translate[color]}牌`).set("frequentSkill", "jlsg_xiangsheng").forResult();
 		},
 		async content(event, trigger, player) {
 			const { indexedData: color } = event;
@@ -6886,9 +6896,9 @@ const skills = {
 	},
 	jlsg_xingwu: {
 		unique: true,
-		init(player) {
+		init2(player) {
 			game.broadcastAll(player => {
-				player.storage.jlsg_xingwu_mark = {};
+				player.storage.jlsg_xingwu_mark ??= {};
 				for (let i of game.filterPlayer()) {
 					player.storage.jlsg_xingwu_mark[i.playerid] = i.countMark("jlsg_xingwu") || 0;
 				}
@@ -6960,14 +6970,38 @@ const skills = {
 				trigger.player.line(event.targets[0]);
 				trigger.player.removeMark("jlsg_xingwu", 1);
 				removeSkill(trigger.player);
-				game.broadcastAll((player, id) => player.storage.jlsg_xingwu_mark[id]--, player, trigger.player.playerid);
+				game.broadcastAll(
+					(player, target) => {
+						let id = target.playerid;
+						player.storage.jlsg_xingwu_mark[id] ??= target.countMark("jlsg_xingwu");
+						player.storage.jlsg_xingwu_mark[id]--;
+					},
+					player,
+					trigger.player
+				);
 				event.targets[0].addMark("jlsg_xingwu", 1);
 				await gainSkill(event.targets[0]);
-				game.broadcastAll((player, id) => player.storage.jlsg_xingwu_mark[id]++, player, event.targets[0].playerid);
+				game.broadcastAll(
+					(player, target) => {
+						let id = target.playerid;
+						player.storage.jlsg_xingwu_mark[id] ??= target.countMark("jlsg_xingwu");
+						player.storage.jlsg_xingwu_mark[id]++;
+					},
+					player,
+					event.targets[0]
+				);
 			} else {
 				trigger.player.addMark("jlsg_xingwu", 1);
 				await gainSkill(trigger.player);
-				game.broadcastAll((player, id) => player.storage.jlsg_xingwu_mark[id]++, player, trigger.player.playerid);
+				game.broadcastAll(
+					(player, target) => {
+						let id = target.playerid;
+						player.storage.jlsg_xingwu_mark[id] ??= target.countMark("jlsg_xingwu");
+						player.storage.jlsg_xingwu_mark[id]++;
+					},
+					player,
+					trigger.player
+				);
 			}
 			const result = await player.chooseBool(`是否令${get.translation(trigger.player)}重新获得【星舞】的技能？`, () => get.event().getRand() < 0.5).forResult();
 			if (result?.bool) {
@@ -6998,9 +7032,9 @@ const skills = {
 			this.skills = skills;
 			return skills;
 		},
-		gainSkill(target, norecover, cnt = 1) {
+		async gainSkill(target, norecover, cnt = 1) {
 			if (target.isDamaged() && !norecover) {
-				target.recover();
+				await target.recover();
 			}
 			let targetSkills = target.getSkills(null, false, false);
 			let skills = [];
@@ -7021,10 +7055,10 @@ const skills = {
 				target.storage.jlsg_xingwu_skill = target.storage.jlsg_xingwu_skill || [];
 				target.storage.jlsg_xingwu_skill.addArray(skills);
 			}, target);
-			target.addSkills(skills);
+			await target.addSkills(skills);
 		},
-		removeSkill(target) {
-			target.loseHp();
+		async removeSkill(target) {
+			await target.loseHp();
 			let skills = [];
 			let targetSkills = target.getSkills(null, false, false);
 			for (let pack in lib.characterPack) {
@@ -7037,7 +7071,7 @@ const skills = {
 			}
 			let skill = skills.randomGet();
 			if (skill) {
-				target.removeSkills(skill);
+				await target.removeSkills(skill);
 			}
 		},
 		group: ["jlsg_xingwu_start", "jlsg_xingwu_effect"],
@@ -8102,7 +8136,7 @@ const skills = {
 				},
 			};
 			get.info("jlsgsy_bolue").initList();
-			let groups = new Set(jlsg.characterList.map(c => get.character(c, 1)));
+			let groups = new Set(lib.jlsg.characterList.map(c => get.character(c, 1)));
 			for (let g of groups) {
 				result[`随机获得一个${lib.translate[g]}势力技能`] = {
 					content: async function (event, trigger, player) {
@@ -8956,7 +8990,7 @@ const skills = {
 			if (player.hasMark(skill)) {
 				player.useSkill("jlsg_shenyin_dying", false);
 			} else {
-				delete player.setStorage("jlsg_shenyin_record", undefined);
+				player.removeStorage("jlsg_shenyin_record");
 			}
 		},
 		priority: 1,
@@ -10901,7 +10935,7 @@ const skills = {
 				} else if (key == "removeSkill") {
 					await target.removeSkills(target.getSkills(null, false, false).randomGets(number));
 				} else if (key == "disableSkill") {
-					await target.tempBanSkill(
+					target.tempBanSkill(
 						target
 							.getSkills(null, false, false)
 							?.filter(sk => !lib.skill[sk]?.charlotte && !lib.skill[sk]?.persevereSkill)
@@ -11155,8 +11189,8 @@ const skills = {
 			event.result = { bool: result?.bool, cards: result?.links, targets: [trigger.player] };
 		},
 		async content(event, trigger, player) {
-			const { createTempCard } = lib.jlsg;
-			const { cardListContent, processContent, getEffects, typeSkills, typePBTY } = get.info(event.name);
+			const { createTempCard, typePBTY } = lib.jlsg;
+			const { cardListContent, processContent, getEffects, typeSkills } = get.info(event.name);
 			game.log(player, "将", event.cards, "置于了牌堆顶");
 			trigger.player.$throw(event.cards, 1000);
 			await game.cardsGotoPile(event.cards, "insert");
@@ -11289,8 +11323,7 @@ const skills = {
 			}
 		},
 		async cardListContent(event, trigger, player) {
-			const { createTempCard } = lib.jlsg;
-			const { typePBTY } = get.info("jlsg_lingze");
+			const { createTempCard, typePBTY } = lib.jlsg;
 			let cards = [];
 			for (let cardName in event.cardList) {
 				let num = event.cardList[cardName];
@@ -12841,33 +12874,6 @@ const skills = {
 			delete this.typeSkills;
 			this.typeSkills = list;
 			return list;
-		},
-		get typePBTY() {
-			let sum = 0;
-			const cardList = {},
-				PBTY = {};
-			const list = Array.from(lib.card.list);
-			for (const info of list) {
-				const name = info[2];
-				const type = get.type2(name, false);
-				if (!cardList[type]) {
-					cardList[type] = [];
-				}
-				cardList[type].push(info);
-				if (!PBTY[type]) {
-					PBTY[type] = 0;
-				}
-				PBTY[type]++;
-				sum++;
-			}
-			let num = 0;
-			for (let type in PBTY) {
-				PBTY[type] = [num, (num += PBTY[type] / sum)];
-			}
-			cardList.PBTY = PBTY;
-			delete this.typePBTY;
-			this.typePBTY = cardList;
-			return cardList;
 		},
 		subSkill: {
 			buff: {
@@ -14565,7 +14571,7 @@ const skills = {
 				},
 				mod: {
 					maxHandcard(player, num) {
-						return num + player.getStorage("jlsg_qixian_buff", {}).maxHandcard;
+						return num + (player.getStorage("jlsg_qixian_buff", {}).maxHandcard || 0);
 					},
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
@@ -14573,11 +14579,11 @@ const skills = {
 							if (vcard.cards.some(cardx => cardx.hasGaintag("jlsg_qixian"))) {
 								return Infinity;
 							}
-							return num + player.getStorage("jlsg_qixian_buff", {}).shaUsable;
+							return num + (player.getStorage("jlsg_qixian_buff", {}).shaUsable || 0);
 						}
 					},
 					attackRange(player, num) {
-						return num + player.getStorage("jlsg_qixian_buff", {}).attack;
+						return num + (player.getStorage("jlsg_qixian_buff", {}).attack || 0);
 					},
 				},
 				trigger: {
@@ -16554,7 +16560,7 @@ const skills = {
 			const { tianmingList, addTianming } = get.info(event.name);
 			const list = tianmingList[suit];
 			for (const num in list) {
-				const info = list[num];
+				const info = { ...list[num] };
 				let str = info.str.slice();
 				if (num !== "7" && num !== "8") {
 					let expire = get.rand(1, 3);
@@ -16777,8 +16783,7 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						let num = 2;
-						const { createTempCard } = lib.jlsg;
-						const { typePBTY } = get.info("jlsg_lingze");
+						const { createTempCard, typePBTY } = lib.jlsg;
 						while (num-- > 0) {
 							const result = await player
 								.chooseButton({
@@ -16915,9 +16920,8 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						let num = 2;
-						const { createTempCard } = lib.jlsg;
-						const { typePBTY } = get.info("jlsg_lingze"),
-							cards = [];
+						const { createTempCard, typePBTY } = lib.jlsg;
+						cards = [];
 						while (num-- > 0) {
 							let name = lib.inpile.filter(name => get.is.damageCard({ name })).randomGet();
 							const card = createTempCard(name, undefined, undefined, undefined, true);

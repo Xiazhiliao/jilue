@@ -547,7 +547,6 @@ export default {
 								}
 							}
 						}
-						jlsg.characterList.remove(name);
 						recruit.storage.jlsg_xinghan_recruit = player;
 						recruit.addSkill("jlsg_xinghan_recruit");
 						const draw = recruit.draw(2);

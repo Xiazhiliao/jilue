@@ -464,7 +464,7 @@ export default {
 			ai: {
 				respondShan: true,
 				skillTagFilter(player) {
-					if (player.storage.hujiaing) {
+					if (player.storage.jlsg_zhugong_hujia) {
 						return false;
 					}
 					if (!player.hasZhuSkill("jlsg_zhugong_hujia")) {
@@ -481,13 +481,13 @@ export default {
 			zhuSkill: true,
 			trigger: { global: "damageEnd" },
 			filter(event, player) {
-				if (!get.itemtype(event.cards) == "cards") {
+				if (get.itemtype(event.cards) !== "cards") {
 					return false;
 				}
 				if (!event.cards?.someInD("od")) {
 					return false;
 				}
-				if (!event.source || event.source == player || event.player?.isIn() || event.player == player) {
+				if (!event.source || event.source == player || !event.player?.isIn() || event.player == player) {
 					return false;
 				}
 				return get.info("_jlsg_zhuBuff").groupCheck(player, event.player);

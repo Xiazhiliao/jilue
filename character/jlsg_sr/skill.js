@@ -138,7 +138,7 @@ const skills = {
 			if (!_status.gameStarted) {
 				return null;
 			}
-			const upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
+			const upgradeList = game.getExtensionConfig("极略", "upgradeList")?.slice() || [];
 			upgradeList.addArray(get.info("_jlsgsr_upgrade").originUpgradeList);
 			const character = upgradeList.find(name => get.character(name)?.skills?.includes(skill));
 			if (!character) {
@@ -455,7 +455,7 @@ const skills = {
 					let infoList = upgrade[name].filter(info => typeof info === "string" && info.startsWith("sha")).map(info => Number(info.split("|")[1]));
 					numx += infoList.reduce((sum, info) => sum + info, 0);
 				}
-				if (card.name == "sha") {
+				if (get.name(card) == "sha") {
 					return num + numx;
 				}
 			},
@@ -1496,8 +1496,7 @@ const skills = {
 							await player.gain(equip1, target, "giveAuto");
 						}
 					} else {
-						const { createTempCard } = lib.jlsg;
-						const { typePBTY } = get.info("jlsg_lingze");
+						const { createTempCard, typePBTY } = lib.jlsg;
 						const name = typePBTY["equip"].filter(i => get.subtype(i[2]) == "equip1").randomGet()?.[2];
 						const card = createTempCard(name, null, null, null, true);
 						if (card && target.canEquip(card)) {
@@ -4777,7 +4776,7 @@ const skills = {
 						}
 						return source.getUseValue(card);
 					}
-					return get.value(card) < 2 || !source.getUseValue(card) == 0;
+					return 2 - get.value(card) || -source.getUseValue(card);
 				})
 				.set("source", target)
 				.forResult();
@@ -5343,8 +5342,7 @@ const skills = {
 			if (!trigger.player.isIn()) {
 				return;
 			}
-			const { createTempCard } = lib.jlsg;
-			const { typePBTY } = get.info("jlsg_lingze");
+			const { createTempCard, typePBTY } = lib.jlsg;
 			const list = [];
 			for (const type in typePBTY) {
 				if (type == "PBTY") {
