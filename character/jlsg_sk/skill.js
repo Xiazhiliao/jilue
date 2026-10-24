@@ -16209,7 +16209,7 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseBool("###功獒：是否减1点体力上限并获得以下效果？###摸牌数、手牌上限、攻击范围、使用【杀】的次数上限+1")
+				.chooseBool(`###${get.translation(event.skill)}：是否减1点体力上限并获得以下效果？###摸牌数、手牌上限、攻击范围、使用【杀】的次数上限+1`)
 				.set("ai", (event, player) => {
 					if (player.maxHp > game.countPlayer(true, undefined, true)) {
 						return player.isDamaged();
