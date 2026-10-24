@@ -7074,6 +7074,7 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
+				mark: true,
 				intro: {
 					nocount: true,
 					content(content, player, skill) {
@@ -7092,9 +7093,8 @@ const skills = {
 					return player.hasStorage("jlsg_dengxian_effect");
 				},
 				silent: true,
-				forced: true,
 				async content(event, trigger, player) {
-					const action = ["phaseDraw", "phaseUse"][player.storage.jlsg_dengxian];
+					const action = ["phaseDraw", "phaseUse"][player.getStorage("jlsg_dengxian_effect", 0)];
 					if (!action) {
 						return;
 					}
