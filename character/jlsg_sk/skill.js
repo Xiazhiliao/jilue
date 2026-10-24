@@ -5463,7 +5463,7 @@ const skills = {
 			}
 			event.num = storage.num;
 			const extraCharacter = [];
-			if (game.getExtensionConfig("极略", "jlsgsk_zuoci") && !(_status.connectMode ? player.isAuto : _status.auto)) {
+			if (game.getExtensionConfig("极略", "jlsgsk_zuoci") && (player === game.me || player.isOnline())) {
 				if (player.isUnderControl()) {
 					game.swapPlayerAuto(player);
 				}
@@ -17166,8 +17166,8 @@ const skills = {
 		forced: true,
 		locked: false,
 		async content(event, trigger, player) {
-			const list = lib.jlsg
-					.typePBTY.equip.filter(([suit, number, name]) => {
+			const list = lib.jlsg.typePBTY.equip
+					.filter(([suit, number, name]) => {
 						const subtype = get.subtype(name);
 						if (player.countEmptySlot(subtype) > 0) {
 							return player.canEquip(name);
