@@ -1244,10 +1244,10 @@ export async function precontent(config, originalPack) {
 			}
 		},
 	};
-	const keys = Object.keys(lib.jlsg.debuffSkill.translate);
+	const keys = Object.keys(jlsg.debuffSkill.translate);
 	for (let item of keys) {
 		for (let time of ["Before", "Begin", "End", "After"]) {
-			jlsg.debuffSkill.translate[item + time] = lib.jlsg.debuffSkill.translate[item];
+			jlsg.debuffSkill.translate[item + time] = jlsg.debuffSkill.translate[item];
 		}
 	}
 	lib.jlsg = jlsg;
