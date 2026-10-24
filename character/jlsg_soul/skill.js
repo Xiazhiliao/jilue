@@ -4197,32 +4197,32 @@ const skills = {
 			for (const current of game.filterPlayer2()) {
 				characterList.removeArray(get.nameList(current));
 			}
-			let list = [],
-				skills = [],
-				map = {};
+			const map = {};
 			for (const name of characterList) {
 				if (name.indexOf("zuoci") > -1 || name.indexOf("xushao") > -1) {
 					continue;
 				}
-				const skills2 = get.character(name).skills;
-				for (const skill of skills2) {
+				const skills = get.character(name).skills;
+				for (const skill of skills) {
 					if (lib.jlsg.skillDisabled(skill, player)) {
 						continue;
-					} else if (skills.includes(skill)) {
+					} else if (Object.values(map).flat().includes(skill)) {
 						continue;
 					}
-					list.add(name);
-					skills.add(skill);
 					map[name] ??= [];
 					map[name].add(skill);
 				}
+				if (Object.keys(map).length >= 3) {
+					break;
+				}
 			}
-			if (!skills.length) {
+			if (!Object.keys(map).length) {
 				return;
 			}
+			const info = Object.entries(map);
 			const result = await player
-				.chooseControl(skills)
-				.set("dialog", ["选择一个技能", [list, "character"]])
+				.chooseControl(info.flatMap(i => i[1]))
+				.set("dialog", ["选择一个技能", [info.map(i => i[0]), "character"]])
 				.set("ai", function () {
 					return Math.floor(Math.random() * _status.event.controls.length);
 				})
@@ -4242,7 +4242,7 @@ const skills = {
 			}
 			let cards = player.getCards("h");
 			await targets[0].gain(cards, player, "giveAuto");
-			const character = Object.entries(map).find(info => info[1].includes(result.control))[0];
+			const character = info.find(([name, skills]) => skills.includes(result.control))[0];
 			targets[0].flashAvatar(event.name, character);
 			await targets[0].addSkills(result.control);
 			await targets[0].loseHp();
@@ -4294,9 +4294,8 @@ const skills = {
 				filter(event, player) {
 					if (event.name == "damage") {
 						return true;
-					} else {
-						return player.isDamaged();
 					}
+					return player.isDamaged();
 				},
 				check(event, player) {
 					return !player.hasSkillTag("nogain");
