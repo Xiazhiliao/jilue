@@ -546,7 +546,7 @@ const skills = {
 				if (evtx.name != "damage") {
 					return false;
 				}
-				return evtx.getParent() === "shandian" || evtx.card?.name === "shandian";
+				return evtx.getParent().name === "shandian" || evtx.card?.name === "shandian";
 			}).length;
 			if (cnt == 0) {
 				await player.recover();
@@ -947,16 +947,24 @@ const skills = {
 		trigger: {
 			player: "useCardAfter",
 		},
-		filter(event, player) {
-			const historys = player
-				.getAllHistory("useCard")
-				.map(evt => get.type2(evt.card))
-				.unique();
-			return historys.length % 3 === 0;
-		},
-		check: () => true,
+		forced: true,
+		popup: false,
 		async content(event, trigger, player) {
-			game.filterPlayer(p => p != player).forEach(p => p.addMark("jlsgsy_bujiao"));
+			player.markAuto(event.name, [get.type2(trigger.card)]);
+			if (player.getStorage(event.name, []).length == 3) {
+				const result = await player
+					.chooseBool({
+						prompt: get.prompt2(event.name),
+						ai(event, player) {
+							return true;
+						},
+					})
+					.forResult();
+				player.removeStorage(event.name, true);
+				if (result?.bool) {
+					game.filterPlayer(p => p != player).forEach(p => p.addMark("jlsgsy_bujiao"));
+				}
+			}
 		},
 		ai: {
 			combo: "jlsgsy_bujiao",
@@ -1106,9 +1114,12 @@ const skills = {
 					}
 				}
 				if (position.length > 0) {
-					await player
-						.gainPlayerCard(trigger.source, position, position.length, "祸心：获得每个区域各一张牌")
-						.set("filterButton", button => {
+					await player.gainPlayerCard({
+						target: trigger.source,
+						prompt: "祸心：获得每个区域各一张牌",
+						position,
+						selectButton: position.length,
+						filterButton(button) {
 							const player = get.player(),
 								target = get.event().target;
 							if (!lib.filter.canBeGained(button.link, player, target)) {
@@ -1123,8 +1134,9 @@ const skills = {
 								}
 							}
 							return true;
-						})
-						.set("target", trigger.source);
+						},
+						forced: true,
+					});
 					return;
 				}
 			}
@@ -2164,7 +2176,7 @@ const skills = {
 						.chooseToDiscard({
 							prompt2: "否则减一点体力上限",
 							position: "he",
-							selectCard: [hs, hs],
+							selectCard: [damage, damage],
 							ai(card) {
 								const player = get.player();
 								if (player.maxHp == 1 && !player.storage.nohp) {
@@ -2196,7 +2208,7 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			await player.draw({ num: 2 });
-			if (!trigger.card) {
+			if (!trigger.card || (trigger.card.name !== "sha" && get.type(trigger.card) !== "trick")) {
 				return;
 			}
 			let cards = trigger.cards?.slice()?.filterInD("od") || [];
@@ -3566,8 +3578,8 @@ const skills = {
 			trigger.getParent().baseDamage++;
 			trigger.getParent().directHit = game.players;
 			player.addSkill(`${event.name}_debuff`);
-			player.storage[`${event.name}_debuff`]++;
-			player.markSkill(`${event.name}_debuff`);
+			let storage = player.getStorage(`${event.name}_debuff`, 0);
+			player.setStorage(`${event.name}_debuff`, ++storage, true);
 		},
 		subSkill: {
 			debuff: {
@@ -3587,7 +3599,7 @@ const skills = {
 					player: "damageBegin3",
 				},
 				forced: true,
-				pupup: false,
+				popup: false,
 				async content(event, trigger, player) {
 					trigger.num += player.getStorage(event.name, 0);
 					player.removeSkill(event.name);
