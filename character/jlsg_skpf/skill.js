@@ -1342,7 +1342,7 @@ const skills = {
 			return get.effect(player, { name: "draw" }, player, player) > 0;
 		},
 		async content(event, trigger, player) {
-			event.num = Math.floor(event.getRend() * 3 + 1);
+			event.num = Math.floor(event.getRand() * 3 + 1);
 			await player.draw(event.num);
 		},
 		group: "jlsg_shhs_tiandu_shandian",
