@@ -117,7 +117,7 @@ const skills = {
 			if (!result.bool) {
 				return;
 			}
-			let { targets } = await player
+			const result2 = await player
 				.chooseTarget("将此伤害转移给一名其他角色")
 				.set("filterTarget", lib.filter.notMe)
 				.set("ai", target => {
@@ -127,8 +127,8 @@ const skills = {
 					return get.damageEffect(target, trigger.source, player, trigger.nature);
 				})
 				.forResult();
-			if (targets) {
-				trigger.player = targets[0];
+			if (result2?.bool && result2.targets?.length) {
+				trigger.player = result2.targets[0];
 			}
 		},
 		subSkill: {
@@ -212,8 +212,8 @@ const skills = {
 					await current.draw(num);
 				}
 				await current.recover();
-				const list = lib.jlsg
-						.typePBTY.equip.filter(([suit, number, name]) => {
+				const list = lib.jlsg.typePBTY.equip
+						.filter(([suit, number, name]) => {
 							const subtype = get.subtype(name);
 							if (current.countEmptySlot(subtype) > 0) {
 								return current.canEquip(name);
