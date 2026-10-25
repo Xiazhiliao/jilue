@@ -4124,6 +4124,9 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
+			if (player.hasHistory("useSkill", evt => evt.skill === "jlsgsy_huachong" && evt.event["jlsgsy_huachong"] === event.name)) {
+				return false;
+			}
 			return event.num > 0;
 		},
 		check(event, player) {
@@ -4140,6 +4143,7 @@ const skills = {
 			return player.isDamaged() || event.num > player.getHp();
 		},
 		async content(event, trigger, player) {
+			event[event.name] = trigger.name;
 			trigger.cancel();
 			let num = trigger.num,
 				timeout = 10;
