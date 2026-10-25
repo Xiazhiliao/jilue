@@ -12383,6 +12383,9 @@ const skills = {
 			}
 			const map = {};
 			for (const name of characterList) {
+				if (get.character(name, 1) !== "qun") {
+					continue;
+				}
 				const skills = get.character(name).skills.slice().randomSort();
 				for (const skill of skills) {
 					if (lib.jlsg.skillDisabled(skill, player)) {
