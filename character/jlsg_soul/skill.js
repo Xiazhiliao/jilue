@@ -16667,14 +16667,13 @@ const skills = {
 					},
 					selectTarget: [1, Infinity],
 					ai2(target) {
-						if (!ui.selected.buttons) {
+						if (!ui.selected.buttons?.length) {
 							return 0;
 						}
 						const { list } = get.event();
 						const { ai_check } = list[ui.selected.buttons[0].link];
 						return ai_check(player, target);
 					},
-					forced: true,
 				})
 				.set("list", list)
 				.forResult();
