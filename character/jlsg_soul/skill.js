@@ -16994,8 +16994,8 @@ const skills = {
 					},
 					async content(event, trigger, player) {
 						let num = 2;
-						const { createTempCard, typePBTY } = lib.jlsg;
-						cards = [];
+						const { createTempCard, typePBTY } = lib.jlsg,
+							cards = [];
 						while (num-- > 0) {
 							let name = lib.inpile.filter(name => get.is.damageCard({ name })).randomGet();
 							const card = createTempCard(name, undefined, undefined, undefined, true);
