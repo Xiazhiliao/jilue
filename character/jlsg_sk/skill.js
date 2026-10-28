@@ -17327,7 +17327,6 @@ const skills = {
 					[true],
 				];
 			}
-			const { effectsList } = get.info("jlsg_zhuren").effectsList;
 			for (let i in lib.card) {
 				const info = lib.card[i];
 				if (info?.subtype != "equip1") {
@@ -17360,15 +17359,16 @@ const skills = {
 						}
 						if (Object.keys(vcard.storage?.jlsg_zhuren || {}).length) {
 							const str2 = [`<br><span style="color: #8b2caeff" data-nature="graymm">附魔效果</span>：`];
-							for (const type in effectsList) {
-								const typeList = effectsList[type];
+							const storage = vcard.storage.jlsg_zhuren;
+							for (const type in storage) {
+								const typeList = storage[type];
 								for (const subtype in typeList) {
 									const skillName = `jlsg_zhuren_${type}_${subtype}`,
 										num = vcard.storage.jlsg_zhuren?.[type]?.[subtype];
-									if (!vcard.skills?.includes(skillName) || !num) {
+									if (!(skillName in lib.skill) || !vcard.skills?.includes(skillName) || !num) {
 										continue;
 									}
-									str2.push(info.jlsg_zhuren_name.replaceAll(/\d+/g, num));
+									str2.push(get.info(skillName).description.replaceAll(/\d+/g, num));
 								}
 							}
 							str += str2.join("<br><li>");
@@ -17415,8 +17415,9 @@ const skills = {
 						}
 						return extraFilter ? extraFilter(...args) : true;
 					},
+					silent: true,
 					async content(event, trigger, player) {
-						const { log, extraContent } = get.event();
+						const { log, extraContent } = get.info(event.name);
 						if (log !== false) {
 							game.log(event.indexedData, "的附魔效果触发了");
 						}
@@ -17543,15 +17544,18 @@ const skills = {
 							const player = event.player,
 								info = event.info,
 								[target] = event.getParent().result.targets;
-							return info[link].ai_chrck(target, player);
+							return info[link].ai_check(target, player);
 						},
 					})
 					.set("info", info)
 					.forResult();
-				if (!result?.bool || !result.links?.length) {
-					continue;
+				if (result?.bool && result.links?.length) {
+					let type = choice;
+					choice = get.copy(info[result.links[0]]);
+					choice.type = type;
+					choice.subtype = result.links[0];
+					break;
 				}
-				choice = { type: choice, ...info[result.links[0]] };
 			}
 			if (!choice) {
 				delete event.getParent().result;
@@ -17592,7 +17596,7 @@ const skills = {
 		},
 		//获取可用附魔
 		checkEffect(card, type, ignore = false) {
-			const result = { ...get.info("jlsg_zhuren").effectsList[type] },
+			const result = get.copy(get.info("jlsg_zhuren").effectsList[type]),
 				record = card.storage?.["jlsg_zhuren"]?.[type] || {};
 			for (const subtype in result) {
 				const { description } = result[subtype];
@@ -17648,7 +17652,7 @@ const skills = {
 				extraCards = [player.getExpansions("jlsg_jinlong")].flat().unique();
 			const cards = es.concat(equipEnabled).concat(extraCards);
 			if (getCards) {
-				return cards;
+				return cards.filter(vcard => vcard.storage?.jlsg_zhuren);
 			}
 			return cards.reduce((list, card) => {
 				const storage = card.storage?.jlsg_zhuren || {};
@@ -17897,8 +17901,8 @@ const skills = {
 											}
 										}
 										if (num > 0) {
-											await player.loseHp(num);
-											await player.loseMaxHp(num);
+											await player.gainMaxHp(num);
+											await player.recover(num);
 										}
 									});
 							}
@@ -17944,10 +17948,11 @@ const skills = {
 						if (list.length) {
 							const num = Math.floor(event.getRand() * list.length);
 							const info = result[num];
-							game.log(player, "的", event.indexedData, "获得", `#y断玉`, "效果为：", `#r${info.description}`);
+							game.log(event.indexedData, "获得", `#y断玉`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
+							info.subtype = String(num);
 							const skillName = createSkill(info);
-							game.addVideo("skill", player, [event.name, [info]]);
+							game.addVideo("skill", player, ["jlsg_zhuren", [info]]);
 							game.broadcast(createSkill, info);
 							syncRecord(event.indexedData, skillName, jlsg_zhuren_type, info.subtype);
 							player.addEquipTrigger(event.indexedData);
@@ -17969,10 +17974,11 @@ const skills = {
 						if (list.length) {
 							const num = Math.floor(event.getRand() * list.length);
 							const info = result[num];
-							game.log(player, "的", event.indexedData, "获得", `#y附灵`, "效果为：", `#r${info.description}`);
+							game.log(event.indexedData, "获得", `#y附灵`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
+							info.subtype = String(num);
 							const skillName = createSkill(info);
-							game.addVideo("skill", player, [event.name, [info]]);
+							game.addVideo("skill", player, ["jlsg_zhuren", [info]]);
 							game.broadcast(createSkill, info);
 							syncRecord(event.indexedData, skillName, jlsg_zhuren_type, info.subtype);
 							player.addEquipTrigger(event.indexedData);
@@ -18183,8 +18189,9 @@ const skills = {
 							const info = result[num];
 							game.log(event.indexedData, "获得", `#y噬主`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
+							info.subtype = String(num);
 							const skillName = createSkill(info);
-							game.addVideo("skill", player, [event.name, [info]]);
+							game.addVideo("skill", player, ["jlsg_zhuren", [info]]);
 							game.broadcast(createSkill, info);
 							syncRecord(event.indexedData, skillName, jlsg_zhuren_type, info.subtype);
 							player.addEquipTrigger(event.indexedData);
