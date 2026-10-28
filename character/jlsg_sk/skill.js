@@ -1990,13 +1990,15 @@ const skills = {
 				event.effect += get.effect(p, trigger.card, player, player);
 			}
 			if (game.hasPlayer(p => p != player && get.distance(player, p) > 1)) {
-				const result = await player.chooseControlList({
-					prompt: get.prompt(event.skill),
-					list: ["此【杀】不可被【闪】响应", "此【杀】伤害+1"],
-					ai(event, player) {
-						return event.effect >= 1;
-					},
-				});
+				const result = await player
+					.chooseControlList({
+						prompt: get.prompt(event.skill),
+						list: ["此【杀】不可被【闪】响应", "此【杀】伤害+1"],
+						ai(event, player) {
+							return event.effect >= 1;
+						},
+					})
+					.forResult();
 				event.result = {
 					bool: result?.control && result.control != "cancel2",
 					cost_data: { index: result?.index },
@@ -10341,7 +10343,7 @@ const skills = {
 						return false;
 					}
 					const vcard = get.autoViewAs({ name, nature }, "unsure");
-					return game.hasPlayer(current => current != player && player.canUse(vcard, p, false));
+					return game.hasPlayer(current => current != player && player.canUse(vcard, current, false));
 				});
 				return ui.create.dialog("矫诏", [list, "vcard"]);
 			},
