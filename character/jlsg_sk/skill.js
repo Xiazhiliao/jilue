@@ -5727,17 +5727,14 @@ const skills = {
 				map[name].addArray(storage.list[name]);
 			}
 			for (const name in map) {
-				const preadd = map[name].filter(skill => addSkill.includes(skill));
+				const preadd = map[name].filter(skill => skills.includes(skill));
 				if (preadd.length) {
 					list[name] = preadd;
 				}
 			}
-			const remove = Object.entries(map)
-					.filter(([name, skills]) => skills.some(i => removeSkill.includes(i)))
-					.flatMap(i => [i[0]]),
-				add = Object.entries(map)
-					.filter(([name, skills]) => skills.some(i => addSkill.includes(i)))
-					.flatMap(i => [i[0]]);
+			const entries = Object.entries(map);
+			const remove = entries.filter(([_, skillsx]) => skillsx.some(i => removeSkill.includes(i))).flatMap(i => [i[0]]),
+				add = entries.filter(([_, skillsx]) => skillsx.some(i => addSkill.includes(i))).flatMap(i => [i[0]]);
 			await lib.jlsg.changeCharacter(player, add, remove);
 			await player.changeSkills(addSkill, removeSkill).set("$handle", lib.jlsg.changeSkillsHandle);
 			storage.list = list;
@@ -17605,7 +17602,7 @@ const skills = {
 				if (description.match(/\d+/g)) {
 					continue;
 				} else if (description.includes("强化")) {
-					if (typeof ignore === "string" && description.includes(ignore)) {
+					if (typeof ignore === "string" && description.indexOf(ignore) > -1) {
 						delete result[subtype];
 					}
 					continue;
@@ -17948,7 +17945,7 @@ const skills = {
 						const result = checkEffect(event.indexedData, jlsg_zhuren_type, "断玉");
 						const list = Object.keys(result);
 						if (list.length) {
-							const num = Math.floor(event.getRand() * list.length);
+							const num = Math.floor(event.getRand() * list.length + 1);
 							const info = result[num];
 							game.log(event.indexedData, "获得", `#y断玉`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
@@ -17974,7 +17971,7 @@ const skills = {
 						const result = checkEffect(event.indexedData, jlsg_zhuren_type, "附灵");
 						const list = Object.keys(result);
 						if (list.length) {
-							const num = Math.floor(event.getRand() * list.length);
+							const num = Math.floor(event.getRand() * list.length + 1);
 							const info = result[num];
 							game.log(event.indexedData, "获得", `#y附灵`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
@@ -18187,7 +18184,7 @@ const skills = {
 						const result = checkEffect(event.indexedData, jlsg_zhuren_type, "噬主");
 						const list = Object.keys(result);
 						if (list.length) {
-							const num = Math.floor(event.getRand() * list.length);
+							const num = Math.floor(event.getRand() * list.length + 1);
 							const info = result[num];
 							game.log(event.indexedData, "获得", `#y噬主`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
