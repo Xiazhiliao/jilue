@@ -153,7 +153,7 @@ const skills = {
 							}
 							return evt.event.getParent("phaseUse").player === player;
 						})
-						.map(evt => [evt.event.card, evt.getParent("phaseUse")]);
+						.map(evt => [evt.event.card, evt.event.getParent("phaseUse")]);
 					return !player.hasHistory("useCard", evt => {
 						const phaseUse = evt.getParent("phaseUse");
 						if (!phaseUseList.some(([card, evtx]) => evtx === phaseUse)) {
@@ -12635,7 +12635,7 @@ const skills = {
 							if (!lib.skill[s] || !lib.skill[s].trigger) {
 								continue;
 							}
-							let tri = { ...lib.skill[i].trigger };
+							let tri = { ...lib.skill[s].trigger };
 							if (tri.player) {
 								if (typeof tri.player == "string") {
 									tri.player = [tri.player];

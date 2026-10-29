@@ -2976,7 +2976,7 @@ const skills = {
 				return;
 			}
 			player.logSkill(event.name);
-			let card2 = get.cardPile2(c => get.type2(c) != type0);
+			let card2 = get.cardPile2(c => get.type2(c) != type0 && !cards.includes(c));
 			if (card2) {
 				cards.push(card2);
 			}
