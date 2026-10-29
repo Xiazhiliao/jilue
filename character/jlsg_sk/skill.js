@@ -11309,8 +11309,8 @@ const skills = {
 		intro: {
 			nocount: true,
 			mark(dialog, storage, player, evt, skill) {
-				storage ??= player.getStorage(skill, { map: {} }).map;
-				const recordSkills = Object.entries(storage);
+				storage ??= player.getStorage(skill, { map: {} });
+				const recordSkills = Object.entries(storage.map);
 				if (recordSkills && recordSkills.length) {
 					if (player == game.me || player.isUnderControl()) {
 						dialog.addText(`储备技能数：${recordSkills.map(i => i[1]).flat().length}`);
@@ -17945,7 +17945,7 @@ const skills = {
 						const result = checkEffect(event.indexedData, jlsg_zhuren_type, "断玉");
 						const list = Object.keys(result);
 						if (list.length) {
-							const num = Math.floor(event.getRand() * list.length + 1);
+							const num = list[Math.floor(event.getRand() * list.length)];
 							const info = result[num];
 							game.log(event.indexedData, "获得", `#y断玉`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
@@ -17971,7 +17971,7 @@ const skills = {
 						const result = checkEffect(event.indexedData, jlsg_zhuren_type, "附灵");
 						const list = Object.keys(result);
 						if (list.length) {
-							const num = Math.floor(event.getRand() * list.length + 1);
+							const num = list[Math.floor(event.getRand() * list.length)];
 							const info = result[num];
 							game.log(event.indexedData, "获得", `#y附灵`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
@@ -18184,7 +18184,7 @@ const skills = {
 						const result = checkEffect(event.indexedData, jlsg_zhuren_type, "噬主");
 						const list = Object.keys(result);
 						if (list.length) {
-							const num = Math.floor(event.getRand() * list.length + 1);
+							const num = list[Math.floor(event.getRand() * list.length)];
 							const info = result[num];
 							game.log(event.indexedData, "获得", `#y噬主`, "效果为：", `#r${info.description}`);
 							info.type = jlsg_zhuren_type;
