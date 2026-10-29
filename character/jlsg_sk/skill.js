@@ -10177,7 +10177,7 @@ const skills = {
 		mod: {
 			cardUsable(card, player) {
 				if (player.hasCards("j")) {
-					return true;
+					return Infinity;
 				}
 			},
 		},

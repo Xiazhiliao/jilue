@@ -2997,7 +2997,7 @@ const skills = {
 			if (!result1.bool) {
 				return;
 			}
-			if (!target.countCards("h")) {
+			if (!target.hasDiscardableCards(player, "h")) {
 				return;
 			}
 			const card = result1.cards[0];

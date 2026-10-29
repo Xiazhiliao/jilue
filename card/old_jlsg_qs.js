@@ -793,7 +793,7 @@ let old_jlsg_qs = {
 				},
 				wuxie(target, card, player, current, state) {
 					if (get.attitude(current, player) >= 0 && state > 0) {
-						return false;
+						return 0;
 					}
 				},
 				result: {
