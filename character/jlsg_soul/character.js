@@ -1,5 +1,5 @@
 const characters = {
-	jlsgsoul_caocao: ["male", "shen", 3, ["jlsg_guixin", "jlsg_feiying"], ["wei"]],
+	jlsgsoul_caocao: ["male", "shen", 3, ["jlsg_guixin", "jlsg_feiying"], ["wei","die:ext:极略/audio/die:2"]],
 	jlsgsoul_sunquan: ["male", "shen", 5, ["jlsg_huju"], ["wu"]],
 	jlsgsoul_jiaxu: ["male", "shen", 3, ["jlsg_yanmie", "jlsg_shunshi"], ["wei"]],
 	jlsgsoul_liubei: ["male", "shen", 4, ["jlsg_junwang", "jlsg_jizhao"], ["shu"]],
@@ -28,7 +28,7 @@ const characters = {
 	jlsgsoul_ganning: ["male", "shen", 4, ["jlsg_lvezhen", "jlsg_youlong"], ["wu"]],
 	jlsgsoul_sp_ganning: ["male", "shen", 4, ["jlsg_jieying", "jlsg_jinlong"], ["wu"]],
 	jlsgsoul_xiahoudun: ["male", "shen", 5, ["jlsg_danjing", "jlsg_zhonghun"], ["wei", "name:夏侯|惇"]],
-	jlsgsoul_dianwei: ["male", "shen", 6, ["jlsg_zhiji"], ["wei"]],
+	jlsgsoul_dianwei: ["male", "shen", 5, ["jlsg_zhiji"], ["wei"]],
 	jlsgsoul_huatuo: ["male", "shen", 3, ["jlsg_yuanhua", "jlsg_guiyuan", "jlsg_chongsheng"], ["qun"]],
 	jlsgsoul_zhouyu: ["male", "shen", 4, ["jlsg_qinyin", "jlsg_yeyan"], ["wu"]],
 	jlsgsoul_machao: ["male", "shen", 4, ["jlsg_qianqi", "jlsg_juechen"], ["shu"]],
@@ -48,9 +48,11 @@ const characters = {
 	jlsgsoul_zhoutai: ["male", "shen", 10, ["jlsg_zhanhun"], ["wu", "name:周|泰"]],
 	jlsgsoul_sp_zhenji: ["female", "shen", 7, ["jlsg_qixian"], ["wei", "name:甄|null"]],
 	jlsgsoul_dongzhuo: ["male", "shen", 5, ["jlsg_taotie", "jlsg_yaoling"], ["qun"]],
-	jlsgsoul_sp_zhouyu: ["male", "shen", 4, ["jlsg_qugu", "jlsg_suhui"], ["wu"]],
+	jlsgsoul_sp_zhouyu: ["male", "shen", 4, ["jlsg_qugu", "jlsg_suhui"], ["wu", "name:null|null"]],
 	jlsgsoul_zhurong: ["female", "shen", 5, ["jlsg_yanfeng", "jlsg_shenji"], ["qun"]],
-	jlsgsoul_sp_daqiao: ["female", "shen", 2, ["jlsg_dieyun", "jlsg_juexian"], ["wu"]],
+	jlsgsoul_sp_daqiao: ["female", "shen", 2, ["jlsg_dieyun", "jlsg_juexian"], ["wu", "name:桥|null"]],
+	jlsgsoul_sunce: ["male", "shen", 4, ["jlsg_pinghe", "jlsg_fuhai"], ["wu"]],
+	jlsgsoul_sp_guojia: ["male", "shen", 10, ["jlsg_chejian", "jlsg_kuijie"], ["wei"]],
 };
 
 export default characters;

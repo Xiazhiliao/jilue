@@ -1,5 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "../../../noname.js";
 let block = {
+		characterList: {
+			name: "极略将池",
+			intro: "将本扩展检索武将的范围限制在标风+极略范围内",
+			init: false,
+		},
 		srlose: {
 			name: "srlose",
 			intro: "是否要求SR武将弃置技能",
@@ -37,7 +42,7 @@ let block = {
 			name: "失效技能时机",
 			intro: "开启后SP神赵云，神周泰，魔孟获的负面效果中将包含失效技能",
 			init: false,
-			onclick: function (item) {
+			onclick(item) {
 				alert("该功能并未测试联机或AI是否适用\n出bug概不由@虫豸负责\n出事请找@时机已到，今日起兵");
 				game.saveExtensionConfig("极略", "jlsg_disableSkill", item);
 			},
@@ -45,7 +50,7 @@ let block = {
 		oldCharacterReplace: {
 			clear: true,
 			name: "<li>技能替换（点击后折叠）▽",
-			onclick: function () {
+			onclick() {
 				if (lib.config.oldCharacterReplace == undefined) {
 					lib.config.oldCharacterReplace = [];
 					let nextSibling = this.nextSibling;
@@ -69,6 +74,29 @@ let block = {
 	},
 	oldCharacterReplace = {
 		sr: {
+			jlsgsr_xuzhu: {
+				name: "SR许褚",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				jlsg_upgrade: true,
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_xuzhu", item);
+					if (item == "false" || Number(item) > 1) {
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
+						upgradeList.add("jlsgsr_xuzhu");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_xuzhu")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
+							upgradeList.remove("jlsgsr_xuzhu");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
 			jlsgsr_sunshangxiang: {
 				name: "SR孙尚香",
 				init: "false",
@@ -80,12 +108,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_sunshangxiang", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_sunshangxiang");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_sunshangxiang")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_sunshangxiang")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_sunshangxiang");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -103,12 +131,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_guanyu", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_guanyu");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_guanyu")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_guanyu")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_guanyu");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -126,12 +154,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_xiahoudun", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_xiahoudun");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_xiahoudun")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_xiahoudun")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_xiahoudun");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -144,17 +172,18 @@ let block = {
 				item: {
 					false: "最新",
 					1: "一代",
+					2: "二代",
 				},
 				jlsg_upgrade: true,
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_ganning", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_ganning");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_ganning")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_ganning")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_ganning");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -172,12 +201,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_zhugeliang", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_zhugeliang");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_zhugeliang")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_zhugeliang")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_zhugeliang");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -195,12 +224,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_simayi", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_simayi");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_simayi")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_simayi")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_simayi");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -220,12 +249,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_caocao", item);
 					if (item == "false" || Number(item) > 3) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_caocao");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_caocao")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_caocao")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_caocao");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -267,12 +296,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_liubei", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_liubei");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_liubei")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_liubei")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_liubei");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -290,12 +319,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_sunquan", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_sunquan");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_sunquan")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_sunquan")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_sunquan");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -313,12 +342,12 @@ let block = {
 				onclick(item) {
 					game.saveExtensionConfig("极略", "jlsgsr_lvbu", item);
 					if (item == "false" || Number(item) > 1) {
-						let upgradeList = lib.config.extension_极略_upgradeList || [];
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 						upgradeList.add("jlsgsr_lvbu");
 						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 					} else {
-						if (lib.config.extension_极略_upgradeList?.includes("jlsgsr_lvbu")) {
-							let upgradeList = lib.config.extension_极略_upgradeList || [];
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_lvbu")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
 							upgradeList.remove("jlsgsr_lvbu");
 							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
 						}
@@ -327,6 +356,11 @@ let block = {
 			},
 		},
 		sk: {
+			jlsgsk_zuoci: {
+				name: "SK左慈",
+				intro: "开启后“千幻”会在展示武将牌前进行一次自由选将，将选择结果传入展示的武将牌（占用展示数量）",
+				init: false,
+			},
 			jlsgsk_xiahoushi: {
 				name: "Sk夏侯氏",
 				init: "false",
@@ -380,14 +414,6 @@ let block = {
 					1: "一代",
 				},
 			},
-			jlsgsk_zhaoyan: {
-				name: "SK赵嫣",
-				init: "false",
-				item: {
-					false: "最新",
-					xiaoas: "谷歌",
-				},
-			},
 			jlsgsk_lvlingqi: {
 				name: "SK吕玲绮",
 				init: "false",
@@ -398,6 +424,14 @@ let block = {
 			},
 		},
 		soul: {
+			jlsgsoul_sp_zhangliao: {
+				name: "SP神张辽",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+			},
 			jlsgsoul_caocao: {
 				name: "SK神曹操",
 				init: "false",
@@ -512,14 +546,6 @@ let block = {
 			},
 			jlsgsoul_guojia: {
 				name: "SK神郭嘉",
-				init: "false",
-				item: {
-					false: "最新",
-					1: "一代",
-				},
-			},
-			jlsgsoul_zhugeliang: {
-				name: "SK神诸葛亮",
 				init: "false",
 				item: {
 					false: "最新",
