@@ -6237,7 +6237,7 @@ const skills = {
 					const names = ["juedou", "useCard"];
 					for (const i in names) {
 						const name = names[i];
-						const evt = event.getParent(i + 1);
+						const evt = event.getParent(Number(i) + 1);
 						if (evt.name !== name || evt.player !== player) {
 							return false;
 						}

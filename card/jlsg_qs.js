@@ -727,7 +727,6 @@ let jlsg_qs = {
 						event.cards
 					);
 					player.markSkill(event.name);
-					console.log(vcard);
 					await game.delayx();
 				} else {
 					await player.give(event.cards, target);
