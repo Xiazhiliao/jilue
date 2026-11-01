@@ -368,7 +368,7 @@ export async function precontent(config, originalPack) {
 		 * @param {Player} player 弃置/获得多张武将牌的目标
 		 * @param {string[]} [add] 获得的武将牌列表
 		 * @param {string[]} [remove] 弃置的武将牌列表
-		 * @param {boolean} [throwx] 是否间隔弃置和获得动画之间的延迟，默认延迟`true`
+		 * @param {boolean} [throwx] 是为获得动画前增加扔出动画，默认开启`true`
 		 * @returns { GameEvent }
 		 */
 		changeCharacter(player, add = [], remove = [], throwx = true) {
@@ -382,20 +382,20 @@ export async function precontent(config, originalPack) {
 					remove = event.remove;
 				if (remove.length) {
 					game.broadcastAll(
-						function (player, list) {
+						function (player, remove) {
 							const cards = [];
-							for (let i = 0; i < list.length; i++) {
-								const cardname = "huashen_card_" + list[i];
+							for (let name of remove) {
+								const cardname = "huashen_card_" + name;
 								if (!lib.card[cardname]) {
 									lib.card[cardname] = {
 										fullborder: true,
-										image: "character:" + list[i],
+										image: "character:" + name,
 									};
-									lib.translate[cardname] = get.rawName2(list[i]);
+									lib.translate[cardname] = get.slimNameHorizontal(name);
 								}
 								cards.push(game.createCard(cardname, "", ""));
 							}
-							player.$throw(cards, 1000, "nobroadcast");
+							player.$throw(cards, 500, "nobroadcast");
 						},
 						player,
 						remove
@@ -404,73 +404,101 @@ export async function precontent(config, originalPack) {
 				if (add.length) {
 					if (event.throwx) {
 						if (remove.length) {
-							await game.delay(1.5);
+							await game.delay(1 * (lib.config.game_speed == "vvfast" ? 3 : 1));
 						}
 					}
 					await new Promise((resolve, reject) => {
 						game.broadcastAll(
-							async function (player, list) {
-								let cards = [];
-								for (let i = 0; i < list.length; i++) {
-									let cardname = "huashen_card_" + list[i];
-									lib.card[cardname] = {
-										fullborder: true,
-										image: "character:" + list[i],
-									};
-									lib.translate[cardname] = get.slimNameHorizontal(list[i]);
+							async function (player, add, throwx) {
+								const cards = [];
+								for (let name of add) {
+									const cardname = "huashen_card_" + name;
+									if (!lib.card[cardname]) {
+										lib.card[cardname] = {
+											fullborder: true,
+											image: "character:" + name,
+										};
+										lib.translate[cardname] = get.slimNameHorizontal(name);
+									}
 									cards.push(game.createCard(cardname, "", ""));
 								}
-								let nodes = [];
-								for (let card of cards) {
-									let i = cards.indexOf(card);
-									const left0 = -cards.length * 52 - (cards.length - 1) * 8,
-										left = left0 + i * 120;
-									let node1 = player.$throwxy2(card, "calc(50% - " + -left + "px)", "calc(50% - 52px)", "perspective(600px) rotateY(180deg)", true);
-									card.clone = node1;
-									nodes.push(node1);
-									if (lib.config.cardback_style != "default") {
-										node1.style.transitionProperty = "none";
-										ui.refresh(node1);
-										node1.classList.add("infohidden");
-										ui.refresh(node1);
-										node1.style.transitionProperty = "";
-									} else {
-										node1.classList.add("infohidden");
-									}
-									node1.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
+								let event;
+								if (game.online) {
+									event = {};
+								} else {
+									event = _status.event;
 								}
-								let nodes_copy = nodes.slice();
-								const showNode = async function (node) {
-									const onEnd01 = async function () {
-										node.style.transition = "all ease-in 0.3s";
-										node.style.transform = "perspective(600px) rotateY(270deg) translateX(52px)";
-										let onEnd = async function () {
-											node.classList.remove("infohidden");
-											node.style.transition = "all 0s";
-											ui.refresh(node);
-											node.style.transform = "perspective(600px) rotateY(-90deg) translateX(52px)";
-											ui.refresh(node);
-											node.style.transition = "";
-											ui.refresh(node);
-											node.style.transform = "";
-										};
-										node.listenTransition(onEnd);
-									};
-									node.listenTransition(onEnd01);
-									if (nodes_copy.length) {
-										showNode(nodes_copy.shift());
+								event.nodes ??= [];
+								for (let card of cards) {
+									if (throwx === true) {
+										let i = cards.indexOf(card);
+										const left0 = -cards.length * 52 - (cards.length - 1) * 8,
+											left = left0 + i * 120;
+										let node1 = player.$throwxy2(card, "calc(50% - " + -left + "px)", "calc(50% - 52px)", "perspective(600px) rotateY(180deg)", true);
+										card.clone = node1;
+										event.nodes.push(node1);
+										if (lib.config.cardback_style != "default") {
+											node1.style.transitionProperty = "none";
+											ui.refresh(node1);
+											node1.classList.add("infohidden");
+											ui.refresh(node1);
+											node1.style.transitionProperty = "";
+										} else {
+											node1.classList.add("infohidden");
+										}
+										node1.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
 									} else {
-										await game.delay(3.5);
-										player.$gain2(cards);
-										try {
-											resolve(true);
-										} catch (e) {}
+										let node;
+										if (game.chess) {
+											node = card.copy("thrown", "center", ui.arena).addTempClass("start");
+										} else {
+											node = player.$throwordered(card.copy(), true);
+										}
+										node.classList.add("thrownhighlight");
+										event.nodes.push(node);
 									}
-								};
-								showNode(nodes_copy.shift());
+								}
+								if (throwx !== true) {
+									await game.delay(1 * (lib.config.game_speed == "vvfast" ? 3 : 1));
+									player.$gain2(cards);
+									try {
+										resolve(true);
+									} catch (e) {}
+								} else {
+									let nodes_copy = event.nodes.slice();
+									const showNode = async function (node) {
+										const onEnd01 = async function () {
+											node.style.transition = "all ease-in 0.3s";
+											node.style.transform = "perspective(600px) rotateY(270deg) translateX(52px)";
+											let onEnd = async function () {
+												node.classList.remove("infohidden");
+												node.style.transition = "all 0s";
+												ui.refresh(node);
+												node.style.transform = "perspective(600px) rotateY(-90deg) translateX(52px)";
+												ui.refresh(node);
+												node.style.transition = "";
+												ui.refresh(node);
+												node.style.transform = "";
+											};
+											node.listenTransition(onEnd);
+										};
+										node.listenTransition(onEnd01);
+										if (nodes_copy.length) {
+											showNode(nodes_copy.shift());
+										} else {
+											await game.delaye(3.5 * (lib.config.game_speed == "vvfast" ? 3 : 1));
+											player.$gain2(cards);
+											try {
+												resolve(true);
+											} catch (e) {}
+										}
+									};
+									await showNode(nodes_copy.shift());
+								}
 							},
 							player,
-							add
+							add,
+							event.throwx
 						);
 					});
 				}
