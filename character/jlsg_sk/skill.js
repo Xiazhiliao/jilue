@@ -5353,7 +5353,7 @@ const skills = {
 		enable: "phaseUse",
 		filter(event, player) {
 			const suits = player
-				.gettDiscardableCards(player, "h")
+				.getDiscardableCards(player, "h")
 				.map(card => get.suit(card))
 				.unique();
 			return suits.length >= player.getHp();
@@ -17535,7 +17535,7 @@ const skills = {
 					.forResult();
 				if (result?.bool && result.links?.length) {
 					let type = choice;
-					choice = get.copy(info[result.links[0]]);
+					choice = { ...info[result.links[0]] };
 					choice.type = type;
 					choice.subtype = result.links[0];
 					break;
