@@ -1,4 +1,10 @@
 let skill = {
+		jlsg_chongxu1: "青丝绾三魂，素手拂尘寰。",
+		jlsg_chongxu2: "踏遍越溪烟雨，方窥云中玉阙。",
+		jlsg_miaojian1: "袖舞流云断旧念，剑裁星河落情丝。",
+		jlsg_miaojian2: "华姥峰巅一痕雪，剑底寒光破瞋痴。",
+		jlsg_lianhua_x1: "莲台承星露，月魄照无暇。",
+		jlsg_lianhua_x2: "拈花结云障，劫火化飞星。",
 		jlsg_anguo1: "止戈休战，为安国之本。",
 		jlsg_anguo2: "尽毕生之力，保国泰民安。",
 		jlsg_angyang1: "若要一战，求之不得！",
@@ -490,6 +496,7 @@ let skill = {
 		jlsg_zuilun2: "空有其表，溢美其实，吾不堪此时！",
 	},
 	die = {
+		jlsgsk_sunhanhua: "华姥云散，唯余半阙青词......",
 		jlsgsk_baosanniang: "花落终别离..",
 		jlsgsk_beimihu: "我会在黄泉路上等着你",
 		jlsgsk_bianfuren: "子桓，莫要再逼他们了",
@@ -500,7 +507,7 @@ let skill = {
 		jlsgsk_caohua: "忠魂已伴烽烟逝，孝义空随逝水潺‌",
 		jlsgsk_caojie: "不负君恩，无愧于民..",
 		jlsgsk_caojinyu: "红颜如梦，烟消云散..",
-		jlsgsk_caoren: "即便是死，也要坚守下去。\r\n即便是屎，我也要咽下去",
+		jlsgsk_caoren: "即便是死，也要坚守下去。即便是屎，我也要咽下去",
 		jlsgsk_caorui: "大魏，如何托付..",
 		jlsgsk_caoxiu: "孤军深入，是我太轻敌了..",
 		jlsgsk_caoying: "敌军精锐，我还是大意了..",
