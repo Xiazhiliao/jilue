@@ -8612,6 +8612,7 @@ const skills = {
 				.chooseToDiscard({
 					prompt: get.prompt(event.skill),
 					prompt2: `你可以弃置一张牌，令${get.translation(trigger.player)}使用的${get.translation(trigger.card)}的牌名改为由你指定的另一张同类型的牌`,
+					position: "he",
 					ai(card) {
 						if (!get.event().check) {
 							return 0;
