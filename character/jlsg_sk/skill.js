@@ -104,7 +104,6 @@ const skills = {
 				.forResult();
 			if (cards?.length) {
 				await player.showCards(cards);
-				event.card = cards[0];
 				player.markAuto(`${event.name}_global`, cards);
 				player.addTempSkill(`${event.name}_effect`);
 			}
@@ -146,14 +145,21 @@ const skills = {
 					if (event.name == "useCard") {
 						return storage.some(card => card.name == event.card.name);
 					}
-					const phaseUseList = player
-						.getHistory("useSkill", evt => {
-							if (evt.skill !== "jlsg_qianxi") {
+					const phaseUseList = game
+						.getGlobalHistory("everything", evt => {
+							if (evt.name !== "showCards" || evt.player !== player) {
 								return false;
 							}
-							return evt.event.getParent("phaseUse").player === player;
+							const useSkill = evt.getParent();
+							if (useSkill.name !== "jlsg_qianxi" || useSkill.player !== player) {
+								return false;
+							}
+							return evt.getParent("phaseUse").player === player;
 						})
-						.map(evt => [evt.event.card, evt.event.getParent("phaseUse")]);
+						.map(evt => [evt.cards?.[0], evt.getParent("phaseUse")]);
+					if (!phaseUseList.length) {
+						return false;
+					}
 					return !player.hasHistory("useCard", evt => {
 						const phaseUse = evt.getParent("phaseUse");
 						if (!phaseUseList.some(([card, evtx]) => evtx === phaseUse)) {
