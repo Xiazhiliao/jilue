@@ -6230,7 +6230,7 @@ const skills = {
 				trigger: {
 					global: "damageEnd",
 				},
-				filter(event) {
+				filter(event, player) {
 					if (event.card?.name !== "juedou" || !event.card.storage?.["jlsg_huchi"]) {
 						return false;
 					}
