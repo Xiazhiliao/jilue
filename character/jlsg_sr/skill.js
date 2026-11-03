@@ -3366,7 +3366,7 @@ const skills = {
 						return get.player().getUseValue(card, true, false) * get.order(card, get.player());
 					})
 					.forResult();
-				if (result.bool) {
+				if (result?.bool && result.links?.length) {
 					const card = result.links[0];
 					useCards.remove(card);
 					await player.chooseUseTarget(true, false, `雄略：视为使用${get.translation(card)}`).set("card", {
