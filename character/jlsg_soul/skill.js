@@ -6631,7 +6631,7 @@ const skills = {
 				return event.name != "phase" || game.phaseNumber == 0;
 			}
 			if (event.getg && event.getg?.(player)) {
-				if (event.getg(player).some(c => get.type(c) == "equip") && get.position(card) === "h") {
+				if (event.getg(player).some(c => get.type(c) == "equip") && get.position(c) === "h") {
 					return true;
 				}
 			}
