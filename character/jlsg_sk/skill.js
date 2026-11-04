@@ -15817,7 +15817,7 @@ const skills = {
 			if (result.bool) {
 				game.log("本次效果为：", str);
 				const cards = result.links;
-				effects(player, target, cards);
+				await effects(player, trigger.player, cards);
 			} else {
 				await game.delayx();
 			}
