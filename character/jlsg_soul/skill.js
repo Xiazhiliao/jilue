@@ -6631,7 +6631,7 @@ const skills = {
 				return event.name != "phase" || game.phaseNumber == 0;
 			}
 			if (event.getg && event.getg?.(player)) {
-				if (event.getg(player).some(c => get.type(c) == "equip") && get.position(c) === "h") {
+				if (event.getg(player).some(c => get.type(c) == "equip" && get.position(c) === "h")) {
 					return true;
 				}
 			}
@@ -6675,7 +6675,7 @@ const skills = {
 			} else {
 				const nexts = [];
 				if (trigger.getg && trigger.getg(player)) {
-					const cardsx = trigger.getg(player).filter(c => get.type(c) == "equip") && get.position(c) === "h";
+					const cardsx = trigger.getg(player).filter(c => get.type(c) == "equip" && get.position(c) === "h");
 					if (gain.length) {
 						gain.addArray(cardsx);
 						const next = player.addToExpansion(gain, "give", "log");
