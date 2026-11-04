@@ -2376,7 +2376,7 @@ const skills = {
 							player
 								.when({ global: "eventNeutralized" })
 								.filter(evt => {
-									if (evt.type != "card" || evt.name != "_wuxie") {
+									if (evt.type != "card" && evt.name != "_wuxie") {
 										return false;
 									}
 									return evt._neutralize_event.card == trigger.card;
