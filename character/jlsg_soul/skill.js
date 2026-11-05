@@ -6676,7 +6676,7 @@ const skills = {
 				const nexts = [];
 				if (trigger.getg && trigger.getg(player)) {
 					const cardsx = trigger.getg(player).filter(c => get.type(c) == "equip" && get.position(c) === "h");
-					if (gain.length) {
+					if (cardsx.length) {
 						gain.addArray(cardsx);
 						const next = player.addToExpansion(gain, "give", "log");
 						next.gaintag.add(event.name);
