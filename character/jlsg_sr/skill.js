@@ -5658,8 +5658,13 @@ const skills = {
 				targets: [player],
 				noai: true,
 			});
-			target.markAuto(event.name + "_debuff", next);
 			target.addTempSkill(event.name + "_debuff");
+			target
+				.when({ player: "useCardEnd" })
+				.filter(evt => evt === next)
+				.then(async () => {
+					target.removeSkill(event.name + "_debuff");
+				});
 			await next;
 			if (color === "red") {
 				await target.draw({ num: 1 });
@@ -5676,24 +5681,10 @@ const skills = {
 						}
 					},
 				},
-				trigger: {
-					player: "useCardEnd",
-				},
-				filter(event, player) {
-					return player.hasStorage("jlsg_yaowu_debuff", event);
-				},
-				silent: true,
-				async content(event, trigger, player) {
-					player.unmarkAuto(event.name, [trigger]);
-					if (!player.getStorage(event.name).length) {
-						player.removeSkill(event.name);
-					}
-				},
 			},
 		},
 		ai: {
-			directHit: true,
-			direct_ai: true,
+			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
 				return arg?.card?.storage?.["jlsg_yaowu"] && arg?.card?.name == "juedou";
 			},
@@ -5712,10 +5703,12 @@ const skills = {
 			},
 			effect: {
 				target(card, player, target, result2) {
-					if (target === player) {
+					if (target === player || card.name !== "juedou" || !card.storage?.["jlsg_yaowu"]) {
+						return;
+					} else if (player.hasSkillTag("directHit_ai", true, { target, card }, true)) {
 						return;
 					}
-					if (card.name === "juedou" && card.storage?.["jlsg_yaowu"] && target.mayHaveSha(player, "respond")) {
+					if (target.mayHaveSha(player, "respond")) {
 						if (result2 < 0) {
 							return -1;
 						}
