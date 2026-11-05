@@ -16004,12 +16004,15 @@ const skills = {
 				.set("custom", {
 					add: {
 						confirm(bool) {
+							if (typeof bool !== "boolean") {
+								return;
+							}
 							const event = get.event();
 							if (event.controls) {
 								event.controls.forEach(i => i.close());
 							}
 							if (ui.confirm) {
-								ui.confirm.close();
+								ui.confirm?.close();
 							}
 						},
 					},
@@ -16035,7 +16038,7 @@ const skills = {
 			}
 			const result = await next.forResult();
 			event.result = {
-				bool: result.bool,
+				bool: result?.bool,
 				cost_data: {
 					info: randomEff,
 					str: str,
