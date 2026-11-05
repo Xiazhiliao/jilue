@@ -15840,12 +15840,12 @@ const skills = {
 				cards = cards2.filter(i => get.number(i) == max);
 				num = cards.length;
 			} else if (storage === 4) {
-				let cards2 = trigger.player.getDiscardableCards(player, "h");
+				let cards2 = target.getDiscardableCards(player, "h");
 				let min = Math.min(...cards2.map(i => get.number(i)));
 				cards = cards2.filter(i => get.number(i) == min);
 				num = cards.length;
 			} else if (storage === 5) {
-				let cards2 = trigger.player.getDiscardableCards(player, "h");
+				let cards2 = target.getDiscardableCards(player, "h");
 				let map = cards2.reduce((list, card) => {
 					let suit = get.suit(card);
 					if (!list[suit]) {
@@ -15858,7 +15858,7 @@ const skills = {
 				cards = cards2.filter(i => map[get.suit(i)] == min);
 				num = cards.length;
 			} else if (storage === 6) {
-				let cards2 = trigger.player.getDiscardableCards(player, "h");
+				let cards2 = target.getDiscardableCards(player, "h");
 				let map = cards2.reduce((list, card) => {
 					let suit = get.suit(card);
 					if (!list[suit]) {
