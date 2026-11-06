@@ -1,6 +1,13 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const translates = {
+	jlsgsk_sunhanhua: "SK孙寒华",
+	jlsg_chongxu: "冲虚",
+	jlsg_chongxu_info: "锁定技，当你使用牌时，若你手牌数小于弃牌堆牌数，你依次执行以下选项：①随机获得一张弃牌堆中颜色较多的牌；②若弃牌堆中两种颜色的牌数量相同，你令下一次使用【杀】造成的伤害+1。",
+	jlsg_miaojian: "妙剑",
+	jlsg_miaojian_info: "你可以将X张手牌当作无距离与次数限制的【杀】使用，此牌至多可指定X个任意目标（X为你本回合发动此技能的次数+1）；此【杀】对目标造成伤害前，你可以将此牌对其的效果改为任意普通锦囊牌。",
+	jlsg_lianhua_x: "莲华",
+	jlsg_lianhua_x_info: "蓄力技（8/8），当你获得弃牌堆中的牌后，蓄力值+1。当你成为【杀】的目标后，你可以消耗8点蓄力值，交换手牌与弃牌堆。",
 	jlsgsk_zhoufang: "SK周鲂",
 	jlsg_duanfa: "断发",
 	jlsg_duanfa_info: "游戏开始时，或出牌阶段限一次，你可以摸两张牌，然后弃置所有黑色非临时手牌并摸等量的牌，若如此做，你获得X张无距离限制的临时【顺手牵羊】（X为你本次发动此技能弃置的黑色牌数）。",

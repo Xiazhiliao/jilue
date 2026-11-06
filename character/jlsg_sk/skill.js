@@ -3,6 +3,389 @@ import { CacheContext } from "../../../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	jlsg_chongxu: {
+		audio: "ext:极略/audio/skill:2",
+		trigger: {
+			player: "useCard",
+		},
+		filter(event, player) {
+			return player.countCards("h") < _status.discarded?.length;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			let num = 0;
+			while (num++ < 2) {
+				const cards = _status.discarded,
+					list = {};
+				for (const card of cards) {
+					const color = get.color(card, false);
+					list[color] ??= [];
+					list[color].push(card);
+				}
+				const info = Object.entries(list);
+				const max = Math.max(...info.map(i => i[1].length));
+				const infox = info.map(i => i[1]).filter(i => i.length === max);
+				if (infox.length === 1 && num === 0) {
+					let card = infox[0].randomGet();
+					await player.gain({ cards: [card], animate: "gain2" });
+				} else if (infox.length > 1) {
+					game.log(player, "令下一次使用【杀】造成的伤害+1");
+					let num = player.getStorage("jlsg_chongxu_buff", 0);
+					player.setStorage("jlsg_chongxu_buff", ++num, true);
+					player.addSkill("jlsg_chongxu_buff");
+					break;
+				}
+			}
+		},
+		subSkill: {
+			buff: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				intro: {
+					content: "下次使用【杀】造成的伤害+#",
+				},
+				trigger: {
+					source: "damageBegin1",
+				},
+				filter(event, player) {
+					if (event.card?.name !== "sha") {
+						return false;
+					}
+					const names = ["sha", "useCard"];
+					for (let i in names) {
+						const name = names[i];
+						const evt = event.getParent(Number(i) + 1);
+						if (evt.name !== name || evt.player !== player) {
+							return false;
+						}
+					}
+					return player.getStorage("jlsg_chongxu_buff", 0) > 0;
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					let add = player.getStorage(event.name, 0);
+					player.removeSkill(event.name);
+					trigger.num += add;
+				},
+			},
+		},
+	},
+	jlsg_miaojian: {
+		/**
+		 * player能否对target使用card，特别的，能对自己使用【杀】
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Card | VCard | object | string } card
+		 * @param { Player } target
+		 * @param { false } [distance] false：无距离限制
+		 * @param { boolean | GameEvent } [includecard] 是否受使用次数限制，可以填入用于检测的事件
+		 * @returns { boolean }
+		 */
+		canUse(player, card, target, distance, includecard) {
+			if (!card || !player || player.removed || !target || target.removed) {
+				return false;
+			}
+			if (typeof card == "string") {
+				card = { name: card, isCard: true };
+			}
+			const info = get.info(card);
+			if (!info?.deadTarget && target.isDead()) {
+				return false;
+			} else if (!info?.includeOut && target.isOut()) {
+				return false;
+			} else if (info.multicheck && !info.multicheck(card, player)) {
+				return false;
+			} else if (!lib.filter.cardEnabled(card, player)) {
+				return false;
+			}
+			if (includecard) {
+				let evt = includecard;
+				if (typeof evt !== "object") {
+					evt = _status.event.getParent("chooseToUse", false, true);
+				}
+				if (get.itemtype(evt) !== "event") {
+					evt = undefined;
+				}
+				if (!lib.filter.cardUsable(card, player, evt)) {
+					return false;
+				}
+			}
+			if (distance !== false && !lib.filter.targetInRange(card, player, target)) {
+				return false;
+			}
+			if (includecard) {
+				const event = _status.event;
+				let evt = event.getParent("chooseToUse");
+				if (get.itemtype(evt) !== "event") {
+					evt = event;
+				}
+				if (event._backup && event._backup.filterCard === lib.filter.filterCard && (!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, evt))) {
+					return false;
+				} else if (event.addCount_extra) {
+					const usableTarget = game.checkMod(card, player, target, false, "cardUsableTarget", player);
+					if (!lib.filter.cardUsable2(card, player) && !usableTarget) {
+						return false;
+					}
+				}
+				if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
+					return Boolean(info.filterAddedTarget(card, player, target, ui.selected.targets[ui.selected.targets.length - 1]));
+				}
+			}
+			if (!info.singleCard || ui.selected.targets.length === 0) {
+				const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+				if (playerEnabled !== "unchanged") {
+					return Boolean(playerEnabled);
+				}
+				const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+				if (targetEnabled !== "unchanged") {
+					return Boolean(targetEnabled);
+				}
+			}
+			if (card.name === "sha") {
+				return true;
+			}
+			const filterTarget = info.filterTarget;
+			if (typeof filterTarget === "boolean") {
+				return filterTarget;
+			}
+			if (typeof filterTarget === "function") {
+				return Boolean(filterTarget(card, player, target));
+			}
+			return false;
+		},
+		mod: {
+			targetInRange(card) {
+				if (card.storage?.jlsg_miaojian) {
+					return true;
+				}
+			},
+			cardUsable(card) {
+				if (card.storage?.jlsg_miaojian) {
+					return Infinity;
+				}
+			},
+		},
+		audio: "ext:极略/audio/skill:2",
+		enable: "phaseUse",
+		viewAs: {
+			name: "sha",
+			storage: {
+				jlsg_miaojian: true,
+			},
+		},
+		filter(event, player) {
+			if (player.countCards("h") < (player.getStat("skill")["jlsg_miaojian"] || 0) + 1) {
+				return false;
+			}
+			const sha = get.autoViewAs({ name: "sha", storage: { jlsg_miaojian: true } }, "unsure");
+			return game.hasPlayer(current => get.info("jlsg_miaojian").canUse(player, sha, current, true, true));
+		},
+		position: "h",
+		selectCard() {
+			const player = get.player();
+			const num = (player.getStat("skill")["jlsg_miaojian"] || 0) + 1;
+			return [num, num];
+		},
+		filterCard: lib.filter.all,
+		check(card) {
+			return 8 - get.value(card);
+		},
+		selectTarget() {
+			const player = get.player();
+			const num = (player.getStat("skill")["jlsg_miaojian"] || 0) + 1;
+			return [1, num];
+		},
+		filterTarget(card, player, target) {
+			return get.info("jlsg_miaojian").canUse(player, card, target, true, true);
+		},
+		ai: {
+			order(skill, player) {
+				return get.order({ name: "sha" }, player) - 0.1;
+			},
+			result: {
+				player: 1,
+				target(player, target) {
+					return get.attitude(player, target);
+				},
+			},
+		},
+		group: ["jlsg_miaojian_change"],
+		global: "jlsg_miaojian_globalAI",
+		subSkill: {
+			change: {
+				charlotte: true,
+				locked: true,
+				firstDo: true,
+				trigger: {
+					source: "damageBefore",
+				},
+				filter(event, player) {
+					return event.card?.name === "sha" && event.card?.storage?.["jlsg_miaojian"];
+				},
+				async cost(event, trigger, player) {
+					const target = trigger.player;
+					const vcards = get.inpileVCardList(([type, num, name, nature]) => {
+						if (type !== "trick" || name === "sha" || nature) {
+							return false;
+						}
+						const vcard = get.autoViewAs({ name, nature, storage: { jlsg_miaojian: true } }, trigger.cards || []);
+						return get.info("jlsg_miaojian").canUse(player, vcard, target, true, true);
+					});
+					if (!vcards.length) {
+						return;
+					}
+					const result = await player
+						.chooseButton({
+							createDialog: [`###妙剑###是否修改${get.translation(trigger.card)}对${get.translation(trigger.player)}的效果`, [vcards, "vcard"]],
+							ai({ link: [_, __, name] }) {
+								const { player, target, evt } = get.event();
+								return get.effect(target, get.autoViewAs({ ...evt.card, name }, evt.cards || []), player, player);
+							},
+						})
+						.set("evt", trigger)
+						.set("target", trigger.player)
+						.forResult();
+					event.result = {
+						bool: result?.bool && result.links?.length,
+						cost_data: result?.links?.[0],
+					};
+				},
+				popup: false,
+				async content(event, trigger, player) {
+					const [type, _, name] = event.cost_data;
+					const useCard = trigger.getParent(2);
+					trigger.cancel(true, null, "notrigger");
+					trigger.getParent().cancel(true, null, "notrigger");
+					game.log(player, "将", trigger.card, "对", trigger.player, "的效果改为", `#g${get.translation(name)}`);
+					useCard.originalName = useCard.card.name;
+					useCard.card.name = name;
+					useCard.jlsg_miaojian_check = true;
+					if (!useCard.jlsg_miaojian) {
+						useCard.jlsg_miaojian = true;
+						useCard.pushHandler("onUseCard", (evt, option) => {
+							if (evt.step === 11 && option.state === "end") {
+								evt.num = evt.jlsg_miaojian_num;
+								evt.effectedCount--;
+							} else if (evt.step === 12 && option.state === "end") {
+								if (evt.jlsg_miaojian_check) {
+									evt.step = 11;
+									delete evt.jlsg_miaojian_check;
+								} else if (!get.info({ name: evt.card.name }).contentAfter) {
+									evt.card.name = evt.originalName;
+								} else {
+									evt.step = 14;
+								}
+								useCard.jlsg_miaojian_num = useCard.num;
+							} else if (evt.step === 14 && option.state === "end") {
+								if (evt.num < evt.targets.length - 1 && !evt.cancelled && evt.card.name !== evt.originalName) {
+									evt.jlsg_miaojian_num++;
+									evt.step = 11;
+								}
+								evt.card.name = evt.originalName;
+							}
+						});
+					}
+				},
+			},
+			globalAI: {
+				charlotte: true,
+				trigger: {
+					player: "chooseToUseBefore",
+				},
+				filter(event, player) {
+					const evt = event.getParent();
+					if (evt.name !== "sha" || !evt.card.storage?.["jlsg_miaojian"] || !evt.player.hasSkill("jlsg_miaojian")) {
+						return false;
+					}
+					return get.attitude(player, evt.player) > 1;
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					trigger.toUse = false;
+				},
+			},
+		},
+	},
+	jlsg_lianhua_x: {
+		audio: "ext:极略/audio/skill:2",
+		beginMarkCount: 8,
+		chargeSkill: 8,
+		init(player, skill) {
+			const num = lib.skill[skill].beginMarkCount;
+			player.addCharge(num, false);
+		},
+		trigger: {
+			target: "useCardToTargeted",
+		},
+		filter(event, player) {
+			return player.countCharge() >= 8;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseBool({
+					prompt: get.prompt(event.skill),
+					prompt2: "消耗8点蓄力值，交换你的手牌和弃牌堆",
+					ai(event, player) {
+						const discardPile = _status.discarded || [],
+							hs = player.getCards("h");
+						return discardPile.length >= hs.length && get.value(discardPile, player) >= get.value(hs, player);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.removeCharge(8);
+			await game
+				.loseAsync({
+					player,
+					cards: player.getCards("h"),
+					animate: "gain2",
+				})
+				.setContent(async (event, trigger, player) => {
+					event.visible = true;
+					const discardPile = _status.discarded || [],
+						{ cards } = event;
+					await player.lose({ cards, position: ui.discardPile }).set("type", "loseToDiscardpile").set("getlx", false).set("delay", false);
+					game.log(player, "将", cards, "置入了弃牌堆");
+					player.$gain2(discardPile, true);
+					await game.delay(0, get.delayx(500, 500));
+					await player.gain({ cards: discardPile }).set("visible", Boolean(event.visible)).set("getlx", false);
+					await game.delayx();
+				});
+		},
+		group: "jlsg_lianhua_x_addCharge",
+		subSkill: {
+			addCharge: {
+				charlotte: true,
+				onremove: true,
+				trigger: {
+					player: ["gainBefore", "gainAfter"],
+					global: "loseAsyncAfter",
+				},
+				filter(event, player, name) {
+					if (name === "gainBefore") {
+						return event.cards.some(card => get.position(card) === "d");
+					} else if (event.getlx !== false && player.hasStorage("jlsg_lianhua_x_addCharge")) {
+						return true;
+					}
+					return event.getg?.(player)?.some(card => player.hasStorage("jlsg_lianhua_x_addCharge", card));
+				},
+				silent: true,
+				async content(event, trigger, player) {
+					if (event.triggername === "gainBefore") {
+						player.markAuto(
+							event.name,
+							trigger.cards.filter(card => get.position(card) === "d")
+						);
+						return;
+					} else if (trigger.getg(player).some(card => player.hasStorage(event.name, card))) {
+						player.addCharge(1);
+					}
+					player.removeStorage(event.name);
+				},
+			},
+		},
+	},
 	jlsg_duanfa: {
 		mod: {
 			targetInRange(card, player) {

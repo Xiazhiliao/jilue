@@ -1,4 +1,6 @@
 const characters = {
+	jlsgsk_sunhanhua: ["female", "wu", 3, ["jlsg_chongxu", "jlsg_miaojian", "jlsg_lianhua_x"], ["name:孙|null"]],
+	jlsgsk_zhoufang: ["male", "wu", 3, ["jlsg_duanfa"], []],
 	jlsgsk_madai: ["male", "shu", 4, ["jlsg_qianxi", "mashu"], []],
 	jlsgsk_caohua: ["female", "wei", 3, ["jlsg_caiyi", "jlsg_guili"], ["name:曹|null"]],
 	jlsgsk_simashi: ["male", "wei", 4, ["jlsg_quanlue"], ["name:司马|师"]],
@@ -151,7 +153,6 @@ const characters = {
 	jlsgsk_simalang: ["male", "wei", 3, ["jlsg_junbing", "jlsg_quji"], ["name:司马|朗"]],
 	jlsgsk_zhangqiying: ["female", "qun", 3, ["jlsg_falu", "jlsg_zhenyi", "jlsg_dianhua"], ["name:张|null"]],
 	jlsgsk_qiaozhou: ["male", "shu", 3, ["jlsg_shiming", "jlsg_xingbu"], []],
-	jlsgsk_zhoufang: ["male", "wu", 3, ["jlsg_duanfa"], []],
 };
 
 export default characters;
