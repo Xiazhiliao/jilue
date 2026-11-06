@@ -1,139 +1,175 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
+import skills from "./skill.js";
 
+const { checkUpgrade } = skills["_jlsgsr_upgrade"];
 const dynamicTranslates = {
-	jlsg_yinmeng(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage.other?.jlsg_yinmeng;
-		if (improve || player?.index) {
+	jlsg_yaowu(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `任意角色的准备阶段，或出牌阶段限X次（X为你的体力），你可以摸一张牌并令一名其他角色将随机一张手牌当【决斗】对你使用，该角色不能打出【杀】响应此【决斗】，若此【决斗】为红色，其摸一张牌。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_yangwei(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `每回合限一次，当其他角色受到【杀】或【决斗】造成的伤害后，你可以令任意一名角色加1点体力上限，回复1点体力，摸两张牌，并令其本回合造成的伤害+1。若此伤害的来源为你，你可以摸两张牌并对一名其他角色造成1点伤害。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_aozhan(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `当你造成伤害后，或当任意角色受到伤害后，你可以摸一张牌，你以此法获得的伤害牌无次数限制且不计入手牌上限。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_huxiao(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `当任意角色使用【杀】或【决斗】造成伤害时，你可以弃置一张伤害牌，令此伤害+1，然后你可以翻面，令此伤害+1，若你背面朝上，你摸两张牌。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_piaoling(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `任意角色的准备阶段，你可以令其失去1点体力并获得五张红桃临时牌，你以此法获得的牌不计入手牌上限。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_miluo(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `出牌阶段限一次，你可以选择两名角色，令先选择的角色回复1点体力，后选择的角色失去1点体力。本次回复体力的角色若是你上次发动此技能失去体力的角色，其改为回复3点体力；本次失去体力的角色若是你上次发动此技能回复体力的角色，其改为失去3点体力。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_jueyan(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `限定技，当你进入濒死状态时，你可以回复体力至体力上限，然后令一名角色的体力、体力上限、摸牌数、手牌上限均+2或-2。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_yinmeng(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "出牌阶段限一次，你可以将任意张类别相同的手牌交给一名其他男性角色，然后摸等同于其手牌里此类别牌数的牌，若如此做，你可以令其弃置所有不为此类别的手牌。";
 		}
-		return lib.translate["jlsg_yinmeng_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_xiwu(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage.other?.jlsg_xiwu;
-		if (improve || player?.index) {
+	jlsg_xiwu(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "当你使用【杀】后，若此【杀】没有造成伤害，你可以摸三张牌，然后依次执行未执行过的一项：1．令你使用【杀】无次数限制；2．令你使用【杀】造成的伤害+1；3．令你使用的【杀】不能被【闪】响应。";
 		}
-		return lib.translate["jlsg_xiwu_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_juelie(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_sunshangxiang"]?.[2] || upgradeStorage.other?.jlsg_juelie;
-		if (improve || player?.index) {
+	jlsg_juelie(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "每回合限一次，当你对其他角色或其他角色对你造成伤害时，你可以令其随机弃置X张手牌（X为你的手牌数）";
 		}
-		return lib.translate["jlsg_juelie_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_wenjiu(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_guanyu"]?.[2] || upgradeStorage.other?.jlsg_wenjiu;
-		if (improve || player?.index) {
+	jlsg_wenjiu(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "任意角色的出牌阶段开始时，你可以摸一张牌，若此牌为黑色，将之置于你的武将牌上，称为“酒”。当你使用【杀】造成伤害时，你可以将任意张“酒”置入手牌，令此【杀】加等量的伤害。当你进入濒死状态时，你可以将任意张“酒”置入手牌，回复等量的体力。";
 		}
-		return lib.translate["jlsg_wenjiu_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_shuixi(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_guanyu"]?.[2] || upgradeStorage.other?.jlsg_shuixi;
-		if (improve || player?.index) {
+	jlsg_shuixi(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "任意角色的准备阶段，你可以展示一张手牌并选择一名其他角色，除非该角色弃置两张相同花色的手牌，否则你令其失去1点体力并令其一个技能于本回合内无效。";
 		}
-		return lib.translate["jlsg_shuixi_info"];
+		return lib.translate[`${skill}_info`];
 	},
 
-	jlsg_zhonghou(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_xiahoudun"]?.[2] || upgradeStorage.other?.jlsg_zhonghou;
-		if (improve || player?.index) {
+	jlsg_zhonghou(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "每回合限两次，当其他角色使用基本牌或非延时锦囊牌指定目标后，若目标不包含其自己，你可以令此牌无效并获得此牌，若如此做，你可以对其使用【杀】。";
 		}
-		return lib.translate["jlsg_zhonghou_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_ganglie(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_xiahoudun"]?.[2] || upgradeStorage.other?.jlsg_ganglie;
-		if (improve || player?.index) {
+	jlsg_ganglie(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "出牌阶段，你可以对一名其他角色造成1点伤害，然后若其手牌里有【杀】，你令其随机选择一张对你使用。若你以此法没有造成伤害或其手牌里没有【杀】，你回复1点体力令此技能于本回合内无效。";
 		}
-		return lib.translate["jlsg_ganglie_info"];
+		return lib.translate[`${skill}_info`];
 	},
 
-	jlsg_jiexi(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_jiexi;
-		if (improve || player?.index) {
+	jlsg_jiexi(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "出牌阶段每名其他角色限一次，你可以获得一名其他角色的一张牌，然后若其有手牌，你可以与其拼点：当你赢后，你获得其一张牌并令此技能本阶段对其视为未发动过。当你以此法获得牌后，若此牌是【杀】或【决斗】，你可以将此牌对其使用。";
 		}
-		return lib.translate["jlsg_jiexi_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_youxia(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_ganning"]?.[2] || upgradeStorage.other?.jlsg_youxia;
-		if (improve || player?.index) {
+	jlsg_youxia(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "任意角色的准备阶段，你可以翻面并视为使用【杀】，若此【杀】造成了伤害，你摸一张牌并于本阶段结束后执行一个额外出牌阶段。若你背面朝上，【杀】和【决斗】对你无效。";
 		}
-		return lib.translate["jlsg_youxia_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_guanxing(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_guanxing;
-		if (improve || player?.index) {
+	jlsg_guanxing(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "准备阶段，或结束阶段，你可以观看牌堆顶的五张牌，将这些牌以任意顺序置于牌堆顶或牌堆底，然后你可以将牌堆底牌置于你的武将牌上，称为“星”。出牌阶段限一次，你可以获得任意张“星”，然后摸等量的牌，你以此法获得的牌无次数限制。";
 		}
-		return lib.translate["jlsg_guanxing_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_sanfen(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_sanfen;
-		if (improve || player?.index) {
+	jlsg_sanfen(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "出牌阶段限一次，你可以展示牌堆顶的两张牌并分别交给两名角色，若如此做，视为以此法获得点数较大的牌的角色对另一名角色使用【杀】，然后你可以视为对其中任意名角色使用【杀】。当以此法使用的【杀】造成伤害后，你获得受伤角色的一张牌。若你以此法给出的牌里有【杀】，你可以重复此流程。";
 		}
-		return lib.translate["jlsg_sanfen_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_weiwo(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_zhugeliang"]?.[2] || upgradeStorage.other?.jlsg_weiwo;
+	jlsg_weiwo(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
 		let bool = player.storage?.jlsg_weiwo;
-		if (improve || player?.index) {
+		if (upgrade || player?.index) {
 			if (!bool) {
 				return "锁定技，当你受到属性伤害时，若你有手牌，你防止此伤害；当你受到非属性伤害时，若你没有手牌，你防止此伤害。任意角色的回合结束时，若你于本回合内没有受到过伤害，你可以摸一张牌，然后对调此技能的“若你有手牌”和“若你没有手牌”。";
 			} else {
 				return "锁定技，当你受到属性伤害时，若你没有手牌，你防止此伤害；当你受到非属性伤害时，若你有手牌，你防止此伤害。任意角色的回合结束时，若你于本回合内没有受到过伤害，你可以摸一张牌，然后对调此技能的“若你有手牌”和“若你没有手牌”。";
 			}
 		}
-		return lib.translate["jlsg_weiwo_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_guicai(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_simayi"]?.[2] || upgradeStorage.other?.jlsg_sheji;
-		if (improve || player?.index) {
+	jlsg_guicai(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "当判定牌生效前，你可以打出一张牌或用牌堆顶牌代替之，然后摸两张牌。";
 		}
-		return lib.translate["jlsg_guicai_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_langgu(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_simayi"]?.[2] || upgradeStorage.other?.jlsg_sheji;
-		if (improve || player?.index) {
+	jlsg_langgu(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "当你对其他角色造成伤害时，或其他角色对你造成伤害时，你可以摸一张牌并判定，若结果为：黑桃，此伤害+1；红桃，此伤害-1；梅花，你弃置其一张牌；方片，你摸一张牌。";
 		}
-		return lib.translate["jlsg_langgu_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_zhuizun(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_simayi"]?.[2] || upgradeStorage.other?.jlsg_sheji;
-		if (improve || player?.index) {
+	jlsg_zhuizun(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "限定技，当你进入濒死状态时，你可以回复体力至体力上限，然后判定，若如此做，你获得其他角色手牌里和弃牌堆里的与判定结果花色相同的所有牌。此回合结束后，你进行一个额外回合。";
 		}
-		return lib.translate["jlsg_zhuizun_info"];
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_zhaoxiang(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player?.playerid] || {},
-			storage = player?.getStorage?.("jlsg_zhaoxiang", [true, true, true]) || [true, true, true];
+	jlsg_zhaoxiang(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		const storage = player?.getStorage?.("jlsg_zhaoxiang", [true, true, true]) || [true, true, true];
 		let str = "当其他角色使用【杀】指定目标时，你可以获得其一张手牌，然后选择未执行过的一项：",
 			list = ["1．令此【杀】不能被响应", "2．令此【杀】无效", "3．将此【杀】的目标改为你"];
-		if (upgradeStorage["jlsgsr_caocao"]?.[2] || upgradeStorage.other?.jlsg_zhaoxiang || player?.index) {
+		if (upgrade || player?.index) {
 			list.push("4．令目标角色于此【杀】结算后回复1点体力");
 			if (storage.length < 4) {
 				storage.push(true);
@@ -147,64 +183,58 @@ const dynamicTranslates = {
 		str += list.join("；") + "。当所有选项执行后，重置此技能。";
 		return str;
 	},
-	jlsg_zhishi(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player?.playerid] || {};
-		if (upgradeStorage["jlsgsr_caocao"]?.[2] || upgradeStorage.other?.jlsg_zhishi || player?.index) {
+	jlsg_zhishi(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "当任意角色受到伤害后，你可以令其从随机三个能在此时机发动的技能中选择一个并发动。";
 		}
-		return lib.translate.jlsg_zhishi_info;
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_rende(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_liubei"]?.[2] || upgradeStorage.other?.jlsg_rende;
-		if (improve || player?.index) {
+	jlsg_rende(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "任意角色的结束阶段，你可以摸三张牌，然后将等量的牌交给该角色，若如此做，该角色于本阶段结束后执行一个额外出牌阶段，该角色于此额外出牌阶段使用以此法获得的牌无距离和次数限制。";
 		} else {
-			return get.translation("jlsg_rende_info");
+			return lib.translate[`${skill}_info`];
 		}
 	},
-	jlsg_chouxi(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_liubei"]?.[2] || upgradeStorage.other?.jlsg_chouxi;
-		if (improve || player?.index) {
+	jlsg_chouxi(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "出牌阶段每名角色限一次，你可以获得一名其他角色至多三张牌，然后交给其等量的牌，若如此做，你可以对其造成X点伤害（X为你以此法获得的牌与给出的牌的类别数之差）。";
 		} else {
-			return get.translation("jlsg_chouxi_info");
+			return lib.translate[`${skill}_info`];
 		}
 	},
-	jlsg_quanheng(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_sunquan"]?.[2] || upgradeStorage.other?.jlsg_quanheng;
-		if (improve || player?.index) {
+	jlsg_quanheng(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "出牌阶段，你可以将X张手牌当【无中生有】或【杀】使用（X为你本回合先前发动此技能的次数）；当你使用【无中生有】后，你本回合使用的下一张【杀】的伤害+1；当你使用【杀】后，你本回合使用的下一张【无中生有】的摸牌数+1。";
 		} else {
-			return get.translation("jlsg_quanheng_info");
+			return lib.translate[`${skill}_info`];
 		}
 	},
-	jlsg_xionglve(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_sunquan"]?.[2] || upgradeStorage.other?.jlsg_xionglve;
-		if (improve || player?.index) {
+	jlsg_xionglve(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "每回合限一次，当你获得牌后，你可以将其中至少一张牌置于你的武将牌上，称为“略”，若这些牌里有出牌阶段可以使用的基本牌或普通锦囊牌，你可以依次视为使用之；每轮限一次，回合结束时，若你有“略”且你本回合造成的伤害为X，或获得的牌数为2X（X为“略”数），你可以获得所有“略”，然后于本回合结束后执行一个额外回合。";
 		} else {
-			return get.translation("jlsg_xionglve_info");
+			return lib.translate[`${skill}_info`];
 		}
 	},
-	jlsg_jiwu(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_lvbu"]?.[2] || upgradeStorage.other?.jlsg_jiwu;
-		if (improve || player?.index) {
+	jlsg_jiwu(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "锁定技，若你的装备区里没有武器牌，你视为装备着【方天画戟】，你使用【杀】造成的伤害+1。若你使用的【杀】是你每回合使用的第一张牌或最后的手牌，你令此【杀】不能被响应且造成的伤害+1。";
 		}
-		return get.translation("jlsg_jiwu_info");
+		return lib.translate[`${skill}_info`];
 	},
-	jlsg_sheji(player) {
-		const upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
-		let improve = upgradeStorage["jlsgsr_lvbu"]?.[2] || upgradeStorage.other?.jlsg_sheji;
-		if (improve || player?.index) {
+	jlsg_sheji(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
 			return "当任意角色造成伤害后，若其装备区有武器牌，你可以获得之，否则你可以将随机临时武器牌置入其装备区。你可以将装备区的武器牌或所有手牌当【杀】使用。";
 		}
-		return get.translation("jlsg_sheji_info");
+		return lib.translate[`${skill}_info`];
 	},
 };
 export default dynamicTranslates;
