@@ -15951,7 +15951,7 @@ const skills = {
 				await target.draw(cards.length * 2);
 			} else if (storage === 7) {
 				const result = await player
-					.chooseTarget("###选择一名角色令其获得" + get.translation(cards) + "###且可以对" + get.translation(target) + "使用一张“杀”")
+					.chooseTarget("###选择一名角色令其获得" + get.translation(cards) + "###且可以视为对" + get.translation(target) + "使用一张“杀”")
 					.set("source", target)
 					.set("cardx", cards[0])
 					.set("filterTarget", (card, player, target) => target != get.event().source)
@@ -15962,7 +15962,7 @@ const skills = {
 					.forResult();
 				if (result.bool) {
 					const target = result.targets[0];
-					await target.give(cardx, target);
+					await target.give(cards, target);
 					const sha = get.autoViewAs({ name: "sha", isCard: true }, []);
 					if (target.canUse(sha, target, false)) {
 						await target.useCard(sha, target);
