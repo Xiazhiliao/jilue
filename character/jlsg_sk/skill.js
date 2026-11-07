@@ -1855,7 +1855,7 @@ const skills = {
 							maxNum = maxNumCards.length ? maxNumCards[0].number : 0,
 							dngr = player.getHp() < 2 && !player.hasCards("hs", card => card.name == "tao" || card.name == "jiu");
 						const att = get.attitude(player, owner);
-						let number = get.number(linkx);
+						let number = get.number(link);
 						if (!isFinite(number)) {
 							return 0;
 						}
@@ -16010,12 +16010,13 @@ const skills = {
 		},
 	},
 	jlsg_guanxu: {
-		init2(player, skill) {
-			if (!player.hasStorage(skill)) {
+		init(player, skill) {
+			if (!player.hasStorage(skill) || typeof player.getStorage(skill) !== "number") {
 				player.setStorage(skill, Math.floor(get.event().getRand(skill) * 8 + 1), true);
 			}
 		},
 		onremove: true,
+		mark: true,
 		marktext: "虚",
 		intro: {
 			content(storage, player, skill) {
@@ -16049,7 +16050,7 @@ const skills = {
 			const storage = player.getStorage(event.name, 0),
 				hs = trigger.player.getCards("h");
 			let str = get.skillInfoTranslation("jlsg_guanxu", player).slice(25, -1);
-			if (storage == 0) {
+			if (storage == 1) {
 				str = str.slice(0, -7).replace("X", trigger.player.getHp().toString());
 			}
 			for (let i of hs) {
@@ -16389,7 +16390,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(2);
 			let result;
-			if (!player.hasSkill("jlsg_guanxu")) {
+			if (!player.hasSkill("jlsg_guanxu", null, false, false)) {
 				result = await player
 					.chooseBool("是否获得技能“观虚”？")
 					.set("ai", () => true)
@@ -16409,7 +16410,7 @@ const skills = {
 				let num2 = player.getStorage("jlsg_guanxu");
 				player.setStorage(
 					"jlsg_guanxu",
-					Array.from({ length: 8 }, (v, i) => i)
+					Array.from({ length: 8 }, (v, i) => Number(i) + 1)
 						.remove(num2)
 						.randomGet(),
 					true
