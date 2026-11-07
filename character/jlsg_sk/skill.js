@@ -14,7 +14,7 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			let num = 0;
-			while (num++ < 2) {
+			while (num < 2) {
 				const cards = _status.discarded,
 					list = {};
 				for (const card of cards) {
@@ -35,6 +35,7 @@ const skills = {
 					player.addSkill("jlsg_chongxu_buff");
 					break;
 				}
+				num++;
 			}
 		},
 		subSkill: {
