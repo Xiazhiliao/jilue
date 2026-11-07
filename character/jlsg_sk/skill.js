@@ -6,7 +6,7 @@ const skills = {
 	jlsg_chongxu: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: {
-			player: "useCard",
+			player: "useCardAfter",
 		},
 		filter(event, player) {
 			return player.countCards("h") < _status.discarded?.length;
@@ -14,7 +14,7 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			let num = 0;
-			while (num < 2) {
+			while (++num < 3) {
 				const cards = _status.discarded,
 					list = {};
 				for (const card of cards) {
@@ -25,7 +25,7 @@ const skills = {
 				const info = Object.entries(list);
 				const max = Math.max(...info.map(i => i[1].length));
 				const infox = info.map(i => i[1]).filter(i => i.length === max);
-				if (infox.length === 1 && num === 0) {
+				if (infox.length === 1 && num === 1) {
 					let card = infox[0].randomGet();
 					await player.gain({ cards: [card], animate: "gain2" });
 				} else if (infox.length > 1) {
@@ -35,7 +35,6 @@ const skills = {
 					player.addSkill("jlsg_chongxu_buff");
 					break;
 				}
-				num++;
 			}
 		},
 		subSkill: {
@@ -16076,7 +16075,7 @@ const skills = {
 							storage,
 							info: { num },
 						} = get.event();
-						if (storage > 1 && storage < 6) {
+						if (storage > 2 && storage < 6) {
 							return [0, num];
 						}
 						return [1, num];
@@ -16089,7 +16088,7 @@ const skills = {
 						if (!cards.includes(button.link)) {
 							return false;
 						}
-						if (storage > 1 && storage < 6) {
+						if (storage > 2 && storage < 6) {
 							if (cards.includes(button.link) && !ui.selected.buttons.includes(button)) {
 								button.classList.add("selected");
 								ui.selected.buttons.add(button);
