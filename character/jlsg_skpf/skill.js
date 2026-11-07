@@ -1842,7 +1842,7 @@ const skills = {
 		},
 		prompt(event, player) {
 			const source = get.info("jlsg_dmtt_shichou").getSource(event, player);
-			return `恃仇：是否对${get.translation(source)}展开报复？`;
+			return `誓仇：是否对${get.translation(source)}展开报复？`;
 		},
 		prompt2(event, player) {
 			const { getSource, getMaxNum } = get.info("jlsg_dmtt_shichou");

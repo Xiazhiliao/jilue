@@ -318,7 +318,7 @@ const skills = {
 			target: "useCardToTargeted",
 		},
 		filter(event, player) {
-			return player.countCharge() >= 8;
+			return player.countCharge() >= 8 && event.card.name === "sha";
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
