@@ -15,7 +15,7 @@ const skills = {
 		async content(event, trigger, player) {
 			let num = 0;
 			while (num < 2) {
-				const cards = Array.from(ui.discardPile),
+				const cards = Array.from(ui.discardPile.childNodes),
 					list = {};
 				for (const card of cards) {
 					const color = get.color(card, false);
@@ -332,7 +332,7 @@ const skills = {
 					prompt: get.prompt(event.skill),
 					prompt2: "消耗8点蓄力值，交换你的手牌和弃牌堆",
 					ai(event, player) {
-						const discardPile = Array.from(ui.discardPile) || [],
+						const discardPile = Array.from(ui.discardPile.childNodes) || [],
 							hs = player.getCards("h");
 						return discardPile.length >= hs.length && get.value(discardPile, player) >= get.value(hs, player);
 					},
@@ -352,7 +352,7 @@ const skills = {
 					const { cards } = event;
 					await player.lose({ cards, position: ui.discardPile }).set("type", "loseToDiscardpile").set("getlx", false).set("delay", false);
 					game.log(player, "将", cards, "置入了弃牌堆");
-					const discardPile = Array.from(ui.discardPile);
+					const discardPile = Array.from(ui.discardPile.childNodes);
 					if (discardPile.length) {
 						discardPile.removeArray(cards);
 						player.$gain2(discardPile, true);
