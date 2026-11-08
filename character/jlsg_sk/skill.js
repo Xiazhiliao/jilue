@@ -9,13 +9,13 @@ const skills = {
 			player: "useCardAfter",
 		},
 		filter(event, player) {
-			return player.countCards("h") < _status.discarded?.length;
+			return player.countCards("h") < ui.discardPile.childElementCount;
 		},
 		forced: true,
 		async content(event, trigger, player) {
 			let num = 0;
-			while (++num < 3) {
-				const cards = _status.discarded,
+			while (num < 2) {
+				const cards = Array.from(ui.discardPile),
 					list = {};
 				for (const card of cards) {
 					const color = get.color(card, false);
@@ -25,7 +25,7 @@ const skills = {
 				const info = Object.entries(list);
 				const max = Math.max(...info.map(i => i[1].length));
 				const infox = info.map(i => i[1]).filter(i => i.length === max);
-				if (infox.length === 1 && num === 1) {
+				if (infox.length === 1 && num === 0) {
 					let card = infox[0].randomGet();
 					await player.gain({ cards: [card], animate: "gain2" });
 				} else if (infox.length > 1) {
@@ -35,6 +35,7 @@ const skills = {
 					player.addSkill("jlsg_chongxu_buff");
 					break;
 				}
+				num++;
 			}
 		},
 		subSkill: {
@@ -145,11 +146,16 @@ const skills = {
 				return true;
 			}
 			const filterTarget = info.filterTarget;
-			if (typeof filterTarget === "boolean") {
-				return filterTarget;
+			if (filterTarget === true) {
+				return true;
+			} else if (typeof filterTarget === "function" && Boolean(filterTarget(card, player, target))) {
+				return true;
 			}
-			if (typeof filterTarget === "function") {
-				return Boolean(filterTarget(card, player, target));
+			const modTarget = info.modTarget;
+			if (modTarget === true) {
+				return true;
+			} else if (typeof modTarget === "function" && Boolean(modTarget(card, player, target))) {
+				return true;
 			}
 			return false;
 		},
@@ -326,7 +332,7 @@ const skills = {
 					prompt: get.prompt(event.skill),
 					prompt2: "消耗8点蓄力值，交换你的手牌和弃牌堆",
 					ai(event, player) {
-						const discardPile = _status.discarded || [],
+						const discardPile = Array.from(ui.discardPile) || [],
 							hs = player.getCards("h");
 						return discardPile.length >= hs.length && get.value(discardPile, player) >= get.value(hs, player);
 					},
@@ -343,13 +349,16 @@ const skills = {
 				})
 				.setContent(async (event, trigger, player) => {
 					event.visible = true;
-					const discardPile = _status.discarded || [],
-						{ cards } = event;
+					const { cards } = event;
 					await player.lose({ cards, position: ui.discardPile }).set("type", "loseToDiscardpile").set("getlx", false).set("delay", false);
 					game.log(player, "将", cards, "置入了弃牌堆");
-					player.$gain2(discardPile, true);
-					await game.delay(0, get.delayx(500, 500));
-					await player.gain({ cards: discardPile }).set("visible", Boolean(event.visible)).set("getlx", false);
+					const discardPile = Array.from(ui.discardPile);
+					if (discardPile.length) {
+						discardPile.removeArray(cards);
+						player.$gain2(discardPile, true);
+						await game.delay(0, get.delayx(500, 500));
+						await player.gain({ cards: discardPile }).set("visible", Boolean(event.visible)).set("getlx", false);
+					}
 					await game.delayx();
 				});
 		},
