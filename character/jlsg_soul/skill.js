@@ -3478,6 +3478,7 @@ const skills = {
 				return !current.hasMark("jlsg_meixin");
 			});
 		},
+		position: "he",
 		selectCard() {
 			const num =
 				game.countPlayer(current => {

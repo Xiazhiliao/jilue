@@ -7869,14 +7869,15 @@ const skills = {
 	jlsg_shemi: {
 		onremove: true,
 		intro: {
-			markcount(storage, player) {
-				return player.getStorage("jlsg_shemi", { draw: 0 }).draw;
+			markcount(storage, player, skill) {
+				storage ??= player.getStorage(skill, { draw: 0 });
+				return storage.draw;
 			},
 			content(storage, player, skill) {
-				storage ??= player.getStorage("jlsg_shemi", { last: 0, draw: 0 });
-				var str = "弃牌阶段记录弃牌数：" + storage.last;
+				storage ??= player.getStorage(skill, { last: 0, draw: 0 });
+				let str = "弃牌阶段记录弃牌数：" + storage.last;
 				if (storage.draw > 0) {
-					str = `摸牌阶段额外摸${get.cnNumber(storage.draw)}张牌 <br>` + str;
+					str = `摸牌阶段摸牌数+${get.cnNumber(storage.draw)}<br>` + str;
 				}
 				return str;
 			},
@@ -7894,7 +7895,7 @@ const skills = {
 			rewrite(trigger, player);
 		},
 		rewrite(trigger, player) {
-			if (player.getStorage("jlsg_shemi", 0) == trigger.selectCard[0]) {
+			if (player.getStorage("jlsg_shemi", { draw: 0, last: 0 }).last == trigger.selectCard[0]) {
 				const cards = player.getCards(player, "h", card => lib.filter.cardDiscardable(card, player, trigger));
 				if (cards.length > trigger.selectCard[0]) {
 					const card = cards.map(c => [c, trigger.ai(c)]).sort((pair1, pair2) => pair1[1] - pair2[1])[0][0];
@@ -7934,12 +7935,12 @@ const skills = {
 				silent: true,
 				async content(event, trigger, player) {
 					const historys = player.getHistory("lose", evt => {
-							return evt?.type == "discard" && evt.getParent("phaseDiscard") == trigger && evt.hs.length;
+							return evt?.type == "discard" && evt.getParent("phaseDiscard") == trigger && evt.cards2.length;
 						}),
 						storage = player.getStorage("jlsg_shemi", { last: 0, draw: 0 });
 					let { last: num } = storage;
-					storage.last = historys.reduce((sum, evt) => sum + evt.hs.length, 0);
-					if (num > storage.last) {
+					storage.last = historys.reduce((sum, evt) => sum + evt.cards2.length, 0);
+					if (num < storage.last) {
 						player.logSkill("jlsg_shemi");
 						if (!player.isDamaged()) {
 							await player.gainMaxHp(1);
