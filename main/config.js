@@ -74,6 +74,29 @@ let block = {
 	},
 	oldCharacterReplace = {
 		sr: {
+			jlsgsr_machao: {
+				name: "SR马超",
+				init: "false",
+				item: {
+					false: "最新",
+					1: "一代",
+				},
+				jlsg_upgrade: true,
+				onclick(item) {
+					game.saveExtensionConfig("极略", "jlsgsr_machao", item);
+					if (item == "false" || Number(item) > 1) {
+						let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
+						upgradeList.add("jlsgsr_machao");
+						game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+					} else {
+						if (game.getExtensionConfig("极略", "upgradeList")?.includes("jlsgsr_machao")) {
+							let upgradeList = game.getExtensionConfig("极略", "upgradeList") || [];
+							upgradeList.remove("jlsgsr_machao");
+							game.saveExtensionConfig("极略", "upgradeList", upgradeList);
+						}
+					}
+				},
+			},
 			jlsgsr_xuzhu: {
 				name: "SR许褚",
 				init: "false",

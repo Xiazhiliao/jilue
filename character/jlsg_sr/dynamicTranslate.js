@@ -3,6 +3,20 @@ import skills from "./skill.js";
 
 const { checkUpgrade } = skills["_jlsgsr_upgrade"];
 const dynamicTranslates = {
+	jlsg_benxi(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `锁定技，你与其他角色的距离-2。当你使用【杀】指定一个目标后，若你与其的距离为1，你令其弃置所有锦囊牌；若其没有锦囊牌，你令其弃置所有基本牌；若其没有基本牌，你令其弃置所有装备牌；若其没有牌，你令其非锁定技于本回合内无效。你获得其以此法弃置的牌。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
+	jlsg_yaozhan(player, skill) {
+		const upgrade = checkUpgrade(player, skill);
+		if (upgrade || player?.index) {
+			return `每回合各限两次，当其他角色对你使用【杀】后，你可以摸两张牌并视为对其使用【杀】；当你对一名其他角色使用【杀】后，你可以摸两张牌并令其视为对你使用【杀】。`;
+		}
+		return lib.translate[`${skill}_info`];
+	},
 	jlsg_yaowu(player, skill) {
 		const upgrade = checkUpgrade(player, skill);
 		if (upgrade || player?.index) {

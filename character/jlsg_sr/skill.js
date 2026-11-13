@@ -173,6 +173,18 @@ const skills = {
 		},
 		//属性突破列表
 		upgradeContent: {
+			jlsgsr_machao: {
+				"出【杀】次数+2": async function (event, trigger, player) {
+					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+					event.info[0] = "sha|2";
+				},
+				"体力上限+1": async function (event, trigger, player) {
+					player.maxHp++;
+					player.hp++;
+					player.update();
+					event.info[1] = true;
+				},
+			},
 			jlsgsr_huaxiong: {
 				"初始手牌数+3": async function (event, trigger, player) {
 					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
@@ -3716,104 +3728,241 @@ const skills = {
 		},
 	},
 	jlsg_benxi: {
-		audio: "ext:极略/audio/skill:1",
-		shaRelated: true,
 		srlose: true,
-		trigger: { player: "shaBegin" },
-		forced: true,
-		logTarget: "target",
-		async content(event, trigger, player) {
-			const result = await trigger.target
-				.chooseToDiscard("请弃置一张装备牌，否则不能使用闪抵消此杀", "he")
-				.set("filterCard", (card, player) => get.type(card) == "equip")
-				.set("ai", card => {
-					const player = get.player();
-					const num = player.countCards("h", card => {
-						return player.canRespond(get.event().getParent("useCard"), card);
-					});
-					if (num == 0) {
-						return 0;
-					}
-					return 8 - get.value(card);
-				})
-				.forResult();
-			if (!result?.bool) {
-				trigger.directHit = true;
-			}
+		init2(player, skill) {
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
 		mod: {
 			globalFrom(from, to, distance) {
-				return distance - 1;
+				const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+				const upgrade = checkUpgrade(from, "jlsg_benxi");
+				return distance - (upgrade ? 2 : 1);
+			},
+			aiOrder(player, card, num) {
+				if (player.storage.jlsg_benxi_check || get.name(card, player) !== "sha") {
+					return num;
+				}
+				player.storage.jlsg_benxi_check = true;
+				const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+				const upgrade = checkUpgrade(from, "jlsg_benxi");
+				if (upgrade) {
+					num = get.order({ name: "shunshou" }, player) + 0.1;
+				} else {
+					num = get.order({ name: "guohe" }, player) + 0.1;
+				}
+				delete player.storage.jlsg_benxi_check;
+				return num;
+			},
+		},
+		audio: "ext:极略/audio/skill:1",
+		trigger: {
+			player: "useCardToPlayered",
+		},
+		filter(event, player) {
+			return event.card.name === "sha" && event.target?.isIn() && get.distance(player, event.target) <= 1;
+		},
+		logTarget: "target",
+		forced: true,
+		async content(event, trigger, player) {
+			const types = ["trick", "basic", "equip"],
+				target = trigger.target,
+				{ checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, event.name);
+			if (target.hasCards("he")) {
+				while (types.length) {
+					const type = types.shift();
+					const discardCards = target.getDiscardableCards(target, "he", card => get.type2(card, target) === type);
+					if (discardCards.length) {
+						const next = target.discard({ cards: discardCards });
+						await next;
+						if (upgrade) {
+							const cards = [];
+							target.checkHistory("lose", evt => {
+								if (evt.getParent() === next) {
+									const cards2 = (evt.getl(target).cards2 || []).filterInD("od");
+									cards.addArray(cards2);
+								}
+							});
+							if (cards.length) {
+								await player.gain({ cards, animate: "gain2" });
+							}
+						}
+						return;
+					}
+				}
+			}
+			target.addTempSkill("fengyin");
+		},
+		ai: {
+			effect: {
+				player_use(card, player, target) {
+					if (get.name(card, player) !== "sha" || get.distance(player, target) > 1) {
+						return;
+					}
+					const cards = target.countDiscardableCards(target, "he");
+					if (cards.length) {
+						const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+						const upgrade = checkUpgrade(player, "jlsg_benxi");
+						return [1, upgrade ? cards.length / 5 : 0, 1, -cards.length / 5];
+					}
+				},
 			},
 		},
 	},
 	jlsg_yaozhan: {
-		audio: "ext:极略/audio/skill:1",
 		srlose: true,
-		enable: "phaseUse",
-		usable: 1,
-		filter(event, player) {
-			return game.hasPlayer(current => player.canCompare(current));
+		init2(player, skill) {
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const next = checkUpgrade(player, skill, true);
 		},
-		filterTarget(card, player, target) {
-			return player.canCompare(target);
+		audio: "ext:极略/audio/skill:1",
+		trigger: {
+			global: "useCardAfter",
+		},
+		filter(event, player) {
+			if (event.card.name !== "sha") {
+				return false;
+			} else if (event.player !== player && !event.targets.includes(player)) {
+				return false;
+			}
+			const targets = event.targets.concat([event.player]).unique();
+			targets.remove(player);
+			if (!targets.length) {
+				return false;
+			}
+			const { checkUpgrade } = get.info("_jlsgsr_upgrade");
+			const upgrade = checkUpgrade(player, "jlsg_yaozhan");
+			const { to, from } = player.getStorage("jlsg_yaozhan_used", { to: 0, from: 0 });
+			if (event.player === player) {
+				return to < (upgrade ? 2 : 1);
+			} else if (event.targets.includes(player)) {
+				return from < (upgrade ? 2 : 1);
+			}
+			return false;
+		},
+		async cost(event, trigger, player) {
+			const targets = trigger.targets.concat([trigger.player]).unique();
+			targets.remove(player);
+			let prompt2 = `你摸两张牌`;
+			if (targets.length === 1 || !targets.some(target => target.isIn())) {
+				if (targets[0]?.isIn()) {
+					prompt2 += `然后${trigger.player === player ? `${get.translation(targets[0])}视为对你` : `你视为对${get.translation(targets[0])}`}使用一张【杀】`;
+				}
+				const result = await player
+					.chooseBool({
+						prompt: get.prompt(event.skill, targets[0]?.isIn() ? targets[0] : null),
+						prompt2,
+						choice: (function () {
+							const drawEff = get.effect(player, { name: "draw" }, player, player) * 1.5,
+								sha = get.autoViewAs({ name: "sha", isCard: true }, []);
+							let shaEff = 0;
+							if (targets[0]?.isIn()) {
+								if (trigger.player === player && targets[0].canUse(sha, player, false, false)) {
+									shaEff = get.effect_use(targets[0], sha, player, player);
+								} else if (player.canUse(sha, targets[0], false, false)) {
+									shaEff = get.effect_use(player, sha, targets[0], player);
+								}
+							}
+							return drawEff + shaEff > 0;
+						})(),
+					})
+					.forResult();
+				event.result = {
+					bool: result?.bool,
+					targets,
+				};
+			} else {
+				prompt2 += `然后${trigger.player === player ? `令一名其他角色视为对你` : `你视为对一名其他角色`}使用一张【杀】`;
+				event.result = await player
+					.chooseTarget({
+						prompt: get.prompt(event.skill),
+						prompt2,
+						filterTarget(card, player, target) {
+							return get.event().targets?.includes(target);
+						},
+						ai(target) {
+							const { player, drawEff, sha, to } = get.event();
+							let shaEff = 0;
+							if (to && target.canUse(sha, player, false, false)) {
+								shaEff = get.effect_use(target, sha, player, player);
+							} else if (player.canUse(sha, target, false, false)) {
+								shaEff = get.effect_use(player, sha, target, player);
+							}
+							return drawEff + shaEff;
+						},
+					})
+					.set("targets", targets)
+					.set("drawEff", get.effect(player, { name: "draw" }, player, player) * 1.5)
+					.set("sha", get.autoViewAs({ name: "sha", isCard: true }, []))
+					.set("to", trigger.player === player)
+					.forResult();
+			}
 		},
 		async content(event, trigger, player) {
-			const {
-				targets: [target],
-			} = event;
-			const result = await player.chooseToCompare(target).forResult();
-			if (result.bool) {
-				await player.draw("nodelay");
-				const sha = get.autoViewAs({ name: "sha" }, []);
-				if (player.canUse(sha, target, false)) {
-					await player.useCard(sha, target, false);
+			await player.draw({ num: 2 });
+			const [target] = event.targets,
+				storage = player.getStorage("jlsg_yaozhan_used", { to: 0, from: 0 }),
+				sha = get.autoViewAs({ name: "sha", isCard: true }, []);
+			let next;
+			if (trigger.player === player) {
+				if (target.isIn() && target.canUse(sha, player, false, false)) {
+					next = target.useCard({ card: sha, cards: [], targets: [player], addCount: false, noai: true });
 				}
+				storage.to++;
 			} else {
-				await target.chooseToUse((card, player) => get.name(card, player) == "sha", player);
+				if (target.isIn() & player.canUse(sha, target, false, false)) {
+					next = player.useCard({ card: sha, cards: [], targets: [target], addCount: false });
+				}
+				storage.from++;
+			}
+			player.setStorage("jlsg_yaozhan_used", storage, true);
+			player.addTempSkill("jlsg_yaozhan_used");
+			if (next instanceof lib.element.GameEvent) {
+				await next;
 			}
 		},
 		ai: {
-			threaten: 1.3,
-			order(name, player) {
-				const cards = player.getCards("h");
-				if (player.countCards("h", "sha") == 0) {
-					return 1;
+			maixie_defend: true,
+			skillTagFilter(player, tag, arg) {
+				const { checkUpgrade } = get.info("_jlsgsr_upgrade"),
+					{ from } = player.getStorage("jlsg_yaozhan", { from: 0 });
+				const upgrade = checkUpgrade(player, "jlsg_yaozhan");
+				if (from > (upgrade ? 1 : 0)) {
+					return false;
 				}
-				for (const card of cards) {
-					if (card.name != "sha" && card.number > 11 && get.value(card) < 7) {
-						return 9;
-					}
-				}
-				return lib.card.sha.ai.order - 1;
 			},
-			result: {
-				player(player) {
-					if (player.countCards("h", "sha") > 0) {
-						return 0.6;
+			effect: {
+				player(card, player, target) {
+					if (get.name(card, player) !== "sha" || target === player || get.attitude(player, target) > 0) {
+						return;
 					}
-					const num = player.countCards("h");
-					if (num > player.hp) {
-						return 0;
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade"),
+						{ to } = player.getStorage("jlsg_yaozhan", { to: 0 });
+					const upgrade = checkUpgrade(player, "jlsg_yaozhan");
+					if (to > (upgrade ? 1 : 0)) {
+						return;
 					}
-					if (num == 1) {
-						return -2;
-					}
-					if (num == 2) {
-						return -1;
-					}
-					return -0.7;
+					return [1, 2, 1, -2];
 				},
-				target(player, target) {
-					const num = target.countCards("h");
-					if (num == 1) {
-						return -1;
+				target(card, player, target) {
+					if (get.name(card, player) !== "sha" || target === player || get.attitude(player, target) > 0) {
+						return;
 					}
-					if (num == 2) {
-						return -0.7;
+					const { checkUpgrade } = get.info("_jlsgsr_upgrade"),
+						{ from } = player.getStorage("jlsg_yaozhan", { from: 0 });
+					const upgrade = checkUpgrade(player, "jlsg_yaozhan");
+					if (from > (upgrade ? 1 : 0)) {
+						return;
 					}
-					return -0.5;
+					return [1, 2, 1, -2];
 				},
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
 			},
 		},
 	},
@@ -5160,7 +5309,7 @@ const skills = {
 			}
 		},
 		ai: {
-			maixue: true,
+			maixie: true,
 			maixie_hp: true,
 		},
 	},

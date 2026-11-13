@@ -1,5 +1,117 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 export default {
+	jlsgsr_machao: {
+		1: {
+			skill: {
+				jlsg_benxi: {
+					audio: "ext:极略/audio/skill:1",
+					shaRelated: true,
+					srlose: true,
+					trigger: { player: "shaBegin" },
+					forced: true,
+					logTarget: "target",
+					async content(event, trigger, player) {
+						const result = await trigger.target
+							.chooseToDiscard("请弃置一张装备牌，否则不能使用闪抵消此杀", "he")
+							.set("filterCard", (card, player) => get.type(card) == "equip")
+							.set("ai", card => {
+								const player = get.player();
+								const num = player.countCards("h", card => {
+									return player.canRespond(get.event().getParent("useCard"), card);
+								});
+								if (num == 0) {
+									return 0;
+								}
+								return 8 - get.value(card);
+							})
+							.forResult();
+						if (!result?.bool) {
+							trigger.directHit = true;
+						}
+					},
+					mod: {
+						globalFrom(from, to, distance) {
+							return distance - 1;
+						},
+					},
+				},
+				jlsg_yaozhan: {
+					audio: "ext:极略/audio/skill:1",
+					srlose: true,
+					enable: "phaseUse",
+					usable: 1,
+					filter(event, player) {
+						return game.hasPlayer(current => player.canCompare(current));
+					},
+					filterTarget(card, player, target) {
+						return player.canCompare(target);
+					},
+					async content(event, trigger, player) {
+						const {
+							targets: [target],
+						} = event;
+						const result = await player.chooseToCompare(target).forResult();
+						if (result.bool) {
+							await player.draw("nodelay");
+							const sha = get.autoViewAs({ name: "sha" }, []);
+							if (player.canUse(sha, target, false)) {
+								await player.useCard(sha, target, false);
+							}
+						} else {
+							await target.chooseToUse((card, player) => get.name(card, player) == "sha", player);
+						}
+					},
+					ai: {
+						threaten: 1.3,
+						order(name, player) {
+							const cards = player.getCards("h");
+							if (player.countCards("h", "sha") == 0) {
+								return 1;
+							}
+							for (const card of cards) {
+								if (card.name != "sha" && card.number > 11 && get.value(card) < 7) {
+									return 9;
+								}
+							}
+							return lib.card.sha.ai.order - 1;
+						},
+						result: {
+							player(player) {
+								if (player.countCards("h", "sha") > 0) {
+									return 0.6;
+								}
+								const num = player.countCards("h");
+								if (num > player.hp) {
+									return 0;
+								}
+								if (num == 1) {
+									return -2;
+								}
+								if (num == 2) {
+									return -1;
+								}
+								return -0.7;
+							},
+							target(player, target) {
+								const num = target.countCards("h");
+								if (num == 1) {
+									return -1;
+								}
+								if (num == 2) {
+									return -0.7;
+								}
+								return -0.5;
+							},
+						},
+					},
+				},
+			},
+			translate: {
+				jlsg_benxi_info: "锁定技，你计算与其他角色的距离时始终-1。你使用【杀】指定目标后，目标角色须弃置一张装备牌，否则此【杀】不可被【闪】响应。",
+				jlsg_yaozhan_info: "出牌阶段限一次，你可以与一名其他角色拼点：若你赢，你摸一张牌并视为对其使用一张【杀】（此【杀】不计入每回合的使用限制）；若你没赢，该角色可以对你使用一张【杀】。",
+			},
+		},
+	},
 	jlsgsr_xuzhu: {
 		1: {
 			skill: {
