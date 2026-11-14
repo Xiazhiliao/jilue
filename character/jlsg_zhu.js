@@ -21,9 +21,9 @@ export default {
 			},
 			forced: true,
 			//适应helpStr，方便调用
-			list: ["jlsg_zhugong_yuren", "jlsg_zhugong_yongbin", "jlsg_zhugong_ruoyu", "jlsg_zhugong_hujia", "jlsg_zhugong_jianxiong", "jlsg_zhugong_songwei", "jlsg_zhugong_jiuyuan", "jlsg_zhugong_fuzheng", "jlsg_zhugong_xieli", "jlsg_zhugong_huangtian", "jlsg_zhugong_mingmen", "jlsg_zhugong_hunlie"],
+			list: ["jlsg_yuren", "jlsg_yongbin", "jlsg_ruoyu", "jlsg_hujia", "jlsg_jianxiong", "jlsg_songwei", "jlsg_jiuyuan", "jlsg_fuzheng", "jlsg_xieli", "jlsg_huangtian", "jlsg_mingmen", "jlsg_hunlie"],
 			async content(event, trigger, player) {
-				let list = lib.skill._jlsg_zhuBuff.list.filter(skill => !player.hasSkill(skill, null, false, false));
+				let list = get.info("_jlsg_zhuBuff").list.filter(skill => !player.hasSkill(skill, null, false, false));
 				event.num = 0;
 				while (list.length) {
 					let skills = list.filter(skill => !player.hasSkill(skill, null, false, false)).randomGets(3);
@@ -55,42 +55,42 @@ export default {
 		},
 		//极略buff主公技
 		//驭人
-		jlsg_zhugong_yuren: {
+		jlsg_yuren: {
 			audio: "jijiang1",
 			audioname: ["ol_liushan", "re_liubei"],
 			unique: true,
 			zhuSkill: true,
 			enable: ["chooseToUse", "chooseToRespond"],
 			filter(event, player) {
-				if (!game.hasPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target))) {
+				if (!game.hasPlayer(target => target != player && get.info("_jlsg_zhuBuff").groupCheck(player, target))) {
 					return false;
 				}
-				return !event.jlsg_zhugong_yuren && (event.type != "phase" || !player.hasSkill("jlsg_zhugong_yuren_ban"));
+				return !event.jlsg_yuren && (event.type != "phase" || !player.hasSkill("jlsg_yuren_ban"));
 			},
 			viewAs: { name: "sha" },
 			filterCard: () => false,
 			selectCard: -1,
 			log: false,
 			async precontent(event, trigger, player) {
-				player.logSkill("jlsg_zhugong_yuren", event.result.targets);
+				player.logSkill("jlsg_yuren", event.result.targets);
 				let evt = event.getParent();
-				evt.set("jlsg_zhugong_yuren", true);
+				evt.set("jlsg_yuren", true);
 				while (true) {
 					if (event.current == undefined) {
 						event.current = player.next;
 					}
 					if (event.current == player) {
-						player.addTempSkill("jlsg_zhugong_yuren_ban");
+						player.addTempSkill("jlsg_yuren_ban");
 						evt.goto(0);
 						return;
-					} else if (lib.skill._jlsg_zhuBuff.groupCheck(player, event.current)) {
+					} else if (get.info("_jlsg_zhuBuff").groupCheck(player, event.current)) {
 						const chooseToRespondEvent = event.current.chooseToRespond("是否替" + get.translation(player) + "打出一张杀？", { name: "sha" });
 						chooseToRespondEvent.set("ai", () => {
 							const event = _status.event;
 							return get.attitude(event.player, event.source) - 2;
 						});
 						chooseToRespondEvent.set("source", player);
-						chooseToRespondEvent.set("jlsg_zhugong_yuren", true);
+						chooseToRespondEvent.set("jlsg_yuren", true);
 						chooseToRespondEvent.set("skillwarn", "替" + get.translation(player) + "打出一张杀");
 						chooseToRespondEvent.noOrdering = true;
 						chooseToRespondEvent.autochoose = lib.filter.autoRespondSha;
@@ -98,6 +98,8 @@ export default {
 						if (bool) {
 							event.result.card = card;
 							event.result.cards = cards;
+							event.result._apply_args ??= {};
+							event.result._apply_args.throw = false;
 							if (typeof event.current.ai.shown == "number" && event.current.ai.shown < 0.95) {
 								event.current.ai.shown += 0.3;
 								if (event.current.ai.shown > 0.95) {
@@ -119,7 +121,7 @@ export default {
 				},
 				respondSha: true,
 				skillTagFilter(player) {
-					if (!player.hasZhuSkill("jlsg_zhugong_yuren") || !game.hasPlayer(current => current != player && current.group == player.group)) {
+					if (!player.hasZhuSkill("jlsg_yuren") || !game.hasPlayer(current => current != player && current.group == player.group)) {
 						return false;
 					}
 				},
@@ -283,28 +285,28 @@ export default {
 				tag: {
 					respond: 1,
 					respondShan: 1,
-					damage: function (card) {
+					damage(card) {
 						if (game.hasNature(card, "poison")) {
 							return;
 						}
 						return 1;
 					},
-					natureDamage: function (card) {
+					natureDamage(card) {
 						if (game.hasNature(card, "linked")) {
 							return 1;
 						}
 					},
-					fireDamage: function (card, nature) {
+					fireDamage(card, nature) {
 						if (game.hasNature(card, "fire")) {
 							return 1;
 						}
 					},
-					thunderDamage: function (card, nature) {
+					thunderDamage(card, nature) {
 						if (game.hasNature(card, "thunder")) {
 							return 1;
 						}
 					},
-					poisonDamage: function (card, nature) {
+					poisonDamage(card, nature) {
 						if (game.hasNature(card, "poison")) {
 							return 1;
 						}
@@ -316,18 +318,18 @@ export default {
 					trigger: { global: ["useCardAfter", "useSkillAfter", "phaseAfter"] },
 					silent: true,
 					charlotte: true,
-					sourceSkill: "jlsg_zhugong_yuren",
+					sourceSkill: "jlsg_yuren",
 					filter(event) {
-						return event.skill != "jlsg_zhugong_yuren" && event.skill != "qinwang" && event.skill?.indexOf("jijiang") == -1;
+						return event.skill != "jlsg_yuren" && event.skill != "qinwang" && event.skill?.indexOf("jijiang") == -1;
 					},
 					async content(event, trigger, player) {
-						player.removeSkill("jlsg_zhugong_yuren_ban");
+						player.removeSkill("jlsg_yuren_ban");
 					},
 				},
 			},
 		},
 		//拥兵
-		jlsg_zhugong_yongbin: {
+		jlsg_yongbin: {
 			audio: false,
 			unique: true,
 			zhuSkill: true,
@@ -339,7 +341,7 @@ export default {
 				if (!event.source || event.source == player) {
 					return false;
 				}
-				return lib.skill._jlsg_zhuBuff.groupCheck(player, event.source);
+				return get.info("_jlsg_zhuBuff").groupCheck(player, event.source);
 			},
 			async cost(event, trigger, player) {
 				event.result = await trigger.source
@@ -358,7 +360,7 @@ export default {
 			priority: 0,
 		},
 		//若愚
-		jlsg_zhugong_ruoyu: {
+		jlsg_ruoyu: {
 			audio: "ruoyu",
 			audioname: ["re_liushan"],
 			skillAnimation: true,
@@ -378,8 +380,8 @@ export default {
 				player.awakenSkill(event.name);
 				await player.gainMaxHp();
 				await player.recover();
-				player.addMark("jlsg_zhugong_ruoyu_draw", 1);
-				player.addSkill("jlsg_zhugong_ruoyu_draw");
+				player.addMark("jlsg_ruoyu_draw", 1);
+				player.addSkill("jlsg_ruoyu_draw");
 			},
 			subSkill: {
 				draw: {
@@ -396,27 +398,27 @@ export default {
 					forced: true,
 					popup: false,
 					async content(event, trigger, player) {
-						trigger.num += player.countMark("jlsg_zhugong_ruoyu_draw");
+						trigger.num += player.countMark("jlsg_ruoyu_draw");
 					},
 				},
 			},
 			priority: 0,
 		},
 		//护驾
-		jlsg_zhugong_hujia: {
+		jlsg_hujia: {
 			audio: "hujia",
 			audioname: ["re_caocao"],
 			unique: true,
 			zhuSkill: true,
 			trigger: { player: ["chooseToRespondBefore", "chooseToUseBefore"] },
 			filter(event, player) {
-				if (event.responded || player.storage.jlsg_zhugong_hujia) {
+				if (event.responded || player.storage.jlsg_hujia) {
 					return false;
 				}
 				if (!event.filterCard({ name: "shan", isCard: true }, player, event)) {
 					return false;
 				}
-				return game.hasPlayer(current => current != player && lib.skill._jlsg_zhuBuff.groupCheck(player, current));
+				return game.hasPlayer(current => current != player && get.info("_jlsg_zhuBuff").groupCheck(player, current));
 			},
 			check(event, player) {
 				return get.damageEffect(player, event.player, player) < 0;
@@ -429,9 +431,9 @@ export default {
 					}
 					if (event.current == player) {
 						return;
-					} else if (lib.skill._jlsg_zhuBuff.groupCheck(player, event.current)) {
+					} else if (get.info("_jlsg_zhuBuff").groupCheck(player, event.current)) {
 						if ((event.current == game.me && !_status.auto) || get.attitude(event.current, player) > 2 || event.current.isOnline()) {
-							player.setStorage("jlsg_zhugong_hujia", true);
+							player.setStorage("jlsg_hujia", true);
 							const next = event.current.chooseToRespond("是否替" + get.translation(player) + "打出一张闪？", { name: "shan" });
 							next.set("ai", () => {
 								const event = _status.event;
@@ -443,7 +445,7 @@ export default {
 							result = await next.forResult();
 						}
 					}
-					player.setStorage("jlsg_zhugong_hujia", false);
+					player.setStorage("jlsg_hujia", false);
 					if (result?.bool) {
 						await player.draw();
 						trigger.result = { bool: true, card: result.card, cards: result.cards };
@@ -464,10 +466,10 @@ export default {
 			ai: {
 				respondShan: true,
 				skillTagFilter(player) {
-					if (player.storage.hujiaing) {
+					if (player.storage.jlsg_hujia) {
 						return false;
 					}
-					if (!player.hasZhuSkill("jlsg_zhugong_hujia")) {
+					if (!player.hasZhuSkill("jlsg_hujia")) {
 						return false;
 					}
 					return game.hasPlayer(current => current != player && current.group == player.group);
@@ -475,26 +477,26 @@ export default {
 			},
 		},
 		//奸雄
-		jlsg_zhugong_jianxiong: {
-			audio: "ext:极略/audio/skill/jlsg_jianxiong.mp3",
+		jlsg_jianxiong: {
+			audio: "ext:极略/audio/skill/jlsg_jianxiong1.mp3",
 			unique: true,
 			zhuSkill: true,
 			trigger: { global: "damageEnd" },
 			filter(event, player) {
-				if (!get.itemtype(event.cards) == "cards") {
+				if (get.itemtype(event.cards) !== "cards") {
 					return false;
 				}
 				if (!event.cards?.someInD("od")) {
 					return false;
 				}
-				if (!event.source || event.source == player || event.player?.isIn() || event.player == player) {
+				if (!event.source || event.source == player || !event.player?.isIn() || event.player == player) {
 					return false;
 				}
-				return lib.skill._jlsg_zhuBuff.groupCheck(player, event.player);
+				return get.info("_jlsg_zhuBuff").groupCheck(player, event.player);
 			},
 			async cost(event, trigger, player) {
 				event.result = await trigger.player
-					.chooseBool(get.prompt("jlsg_zhugong_jianxiong", player), "令" + get.translation(player) + "获得" + get.translation(trigger.cards.filterInD("od")))
+					.chooseBool(get.prompt("jlsg_jianxiong", player), "令" + get.translation(player) + "获得" + get.translation(trigger.cards.filterInD("od")))
 					.set("choice", get.attitude(trigger.player, player) > 0)
 					.forResult();
 				if (event.result?.bool) {
@@ -503,13 +505,13 @@ export default {
 				}
 			},
 			async content(event, trigger, player) {
-				trigger.player.logSkill("jlsg_zhugong_jianxiong", player);
+				trigger.player.logSkill("jlsg_jianxiong", player);
 				await player.gain(trigger.cards.filterInD("od"), "gain2", "log");
 			},
 			priority: 0,
 		},
 		//颂威
-		jlsg_zhugong_songwei: {
+		jlsg_songwei: {
 			audio: "songwei",
 			audioname: ["re_caopi"],
 			unique: true,
@@ -519,7 +521,7 @@ export default {
 				if (event.player == player) {
 					return false;
 				}
-				return lib.skill._jlsg_zhuBuff.groupCheck(player, event.player);
+				return get.info("_jlsg_zhuBuff").groupCheck(player, event.player);
 			},
 			async cost(event, trigger, player) {
 				event.result = await trigger.player
@@ -532,13 +534,13 @@ export default {
 				}
 			},
 			async content(event, trigger, player) {
-				trigger.player.logSkill("jlsg_zhugong_songwei", player);
+				trigger.player.logSkill("jlsg_songwei", player);
 				await player.draw();
 			},
 			priority: 0,
 		},
 		//救援
-		jlsg_zhugong_jiuyuan: {
+		jlsg_jiuyuan: {
 			audio: "jiuyuan",
 			unique: true,
 			zhuSkill: true,
@@ -550,7 +552,7 @@ export default {
 				if (event.player == player) {
 					return false;
 				}
-				return lib.skill._jlsg_zhuBuff.groupCheck(player, event.player);
+				return get.info("_jlsg_zhuBuff").groupCheck(player, event.player);
 			},
 			async content(event, trigger, player) {
 				trigger.baseDamage++;
@@ -558,18 +560,18 @@ export default {
 			priority: 0,
 		},
 		//辅政
-		jlsg_zhugong_fuzheng: {
+		jlsg_fuzheng: {
 			unique: true,
 			zhuSkill: true,
 			trigger: {
 				player: "phaseDrawBegin2",
 			},
 			filter(event, player) {
-				return game.hasPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target));
+				return game.hasPlayer(target => target != player && get.info("_jlsg_zhuBuff").groupCheck(player, target));
 			},
 			frequent: true,
 			async content(event, trigger, player) {
-				let playerList = game.filterPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target));
+				let playerList = game.filterPlayer(target => target != player && get.info("_jlsg_zhuBuff").groupCheck(player, target));
 				for (let target of playerList) {
 					const result = await target
 						.chooseBool("是否令" + get.translation(player) + "摸一张牌")
@@ -584,11 +586,11 @@ export default {
 						//我来助你！
 						target.chat("我来助你！");
 						let node = target.node.avatar;
-						if (node._jlsg_zhugong_fuzheng) {
-							node._jlsg_zhugong_fuzheng.push(`${lib.assetURL}extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`);
+						if (node._jlsg_fuzheng) {
+							node._jlsg_fuzheng.push(`${lib.assetURL}extension/极略/image/other/jlsg_fuzheng${["1", "2"].randomGet()}.jpg`);
 						} else {
 							const func = function () {
-								if (node._jlsg_zhugong_fuzheng.length) {
+								if (node._jlsg_fuzheng.length) {
 									game.broadcastAll(
 										function (target, src) {
 											let node = target.node.avatar;
@@ -598,17 +600,17 @@ export default {
 											}
 										},
 										target,
-										node._jlsg_zhugong_fuzheng.shift()
+										node._jlsg_fuzheng.shift()
 									);
 								} else {
-									clearInterval(node._jlsg_zhugong_fuzhengInterval);
-									delete node._jlsg_zhugong_fuzheng;
-									delete node._jlsg_zhugong_fuzhengInterval;
+									clearInterval(node._jlsg_fuzhengInterval);
+									delete node._jlsg_fuzheng;
+									delete node._jlsg_fuzhengInterval;
 									target.setAvatar(target.name, target.name, false, false);
 								}
 							};
-							node._jlsg_zhugong_fuzheng = [`${lib.assetURL}extension/极略/image/other/jlsg_zhugong_fuzheng${["1", "2"].randomGet()}.jpg`];
-							node._jlsg_zhugong_fuzhengInterval = setInterval(func, 1000);
+							node._jlsg_fuzheng = [`${lib.assetURL}extension/极略/image/other/jlsg_fuzheng${["1", "2"].randomGet()}.jpg`];
+							node._jlsg_fuzhengInterval = setInterval(func, 1000);
 							func();
 						}
 						await player.draw();
@@ -617,7 +619,7 @@ export default {
 			},
 		},
 		//协力
-		jlsg_zhugong_xieli: {
+		jlsg_xieli: {
 			frequent: true,
 			unique: true,
 			zhuSkill: true,
@@ -628,21 +630,21 @@ export default {
 				if (player.group == "shen") {
 					return false;
 				}
-				if (!game.hasPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target))) {
+				if (!game.hasPlayer(target => target != player && get.info("_jlsg_zhuBuff").groupCheck(player, target))) {
 					return false;
 				}
-				return game.hasPlayer(target => target != player && (!lib.skill._jlsg_zhuBuff.groupCheck(player, target) || target.group == "shen"));
+				return game.hasPlayer(target => target != player && (!get.info("_jlsg_zhuBuff").groupCheck(player, target) || target.group == "shen"));
 			},
 			async cost(event, trigger, player) {
 				event.result = await player
-					.chooseTarget([1, 1], get.prompt2("jlsg_zhugong_xieli"))
-					.set("filterTarget", (card, player, target) => target != player && (target.group == "shen" || !lib.skill._jlsg_zhuBuff.groupCheck(player, target)))
+					.chooseTarget([1, 1], get.prompt2("jlsg_xieli"))
+					.set("filterTarget", (card, player, target) => target != player && (target.group == "shen" || !get.info("_jlsg_zhuBuff").groupCheck(player, target)))
 					.set("ai", target => -1 * get.attitude(player, target))
 					.forResult();
 			},
 			async content(event, trigger, player) {
 				const targetx = event.targets[0];
-				let playerList = game.filterPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target));
+				let playerList = game.filterPlayer(target => target != player && get.info("_jlsg_zhuBuff").groupCheck(player, target));
 				for (let target of playerList) {
 					if (target.hasSha()) {
 						await target
@@ -664,31 +666,31 @@ export default {
 								return lib.filter.targetEnabled.apply(this, arguments);
 							})
 							.set("sourcex", targetx)
-							.set("logSkill", ["jlsg_zhugong_xieli", targetx])
+							.set("logSkill", ["jlsg_xieli", targetx])
 							.set("addCount", false);
 					}
 				}
 			},
 		},
 		//黄天
-		jlsg_zhugong_huangtian: {
+		jlsg_huangtian: {
 			audio: "xinhuangtian2",
 			audioname: ["zhangjiao", "re_zhangjiao"],
 			unique: true,
 			zhuSkill: true,
-			global: "jlsg_zhugong_huangtian2",
+			global: "jlsg_huangtian2",
 		},
-		jlsg_zhugong_huangtian2: {
+		jlsg_huangtian2: {
 			trigger: { player: "phaseUseBegin" },
 			filter(event, player) {
 				let list = game.filterPlayer(function (target) {
-					return target != player && target.hasZhuSkill("jlsg_zhugong_huangtian", player);
+					return target != player && target.hasZhuSkill("jlsg_huangtian", player);
 				});
 				if (!list.length) {
 					return false;
 				}
 				return list.some(target => {
-					if (!lib.skill._jlsg_zhuBuff.groupCheck(target, player)) {
+					if (!get.info("_jlsg_zhuBuff").groupCheck(target, player)) {
 						return false;
 					}
 					return player.countGainableCards(target, "h", function (card) {
@@ -698,10 +700,10 @@ export default {
 			},
 			async cost(event, trigger, player) {
 				const list = game.filterPlayer(function (target) {
-					if (!lib.skill._jlsg_zhuBuff.groupCheck(target, player)) {
+					if (!get.info("_jlsg_zhuBuff").groupCheck(target, player)) {
 						return false;
 					}
-					return target != player && target.hasZhuSkill("jlsg_zhugong_huangtian", player);
+					return target != player && target.hasZhuSkill("jlsg_huangtian", player);
 				});
 				let str = "将一张【闪】或黑桃手牌交给" + get.translation(list);
 				if (list.length > 1) {
@@ -709,13 +711,13 @@ export default {
 				}
 				event.result = await player
 					.chooseCardTarget({
-						prompt: "是否发动】【黄天】",
+						prompt: "是否发动【黄天】",
 						prompt2: str,
 						filterCard(card, player) {
 							return get.name(card, player) == "shan" || get.suit(card, player) == "spade";
 						},
 						filterTarget(card, player, target) {
-							if (!lib.skill._jlsg_zhuBuff.groupCheck(target, player)) {
+							if (!get.info("_jlsg_zhuBuff").groupCheck(target, player)) {
 								return false;
 							}
 							return lib.filter.canBeGained(card, player, target) && get.event().list.includes(target);
@@ -742,12 +744,12 @@ export default {
 			},
 		},
 		//名门
-		jlsg_zhugong_mingmen: {
+		jlsg_mingmen: {
 			unique: true,
 			zhuSkill: true,
 			mod: {
 				maxHandcard(player, num) {
-					return num + game.countPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target));
+					return num + game.countPlayer(target => target != player && get.info("_jlsg_zhuBuff").groupCheck(player, target));
 				},
 			},
 			trigger: {
@@ -756,17 +758,17 @@ export default {
 			},
 			forced: true,
 			filter(event, player) {
-				if (!game.countPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target))) {
+				if (!game.countPlayer(target => target != player && get.info("_jlsg_zhuBuff").groupCheck(player, target))) {
 					return false;
 				}
 				return event.name != "phase" || game.phaseNumber == 0;
 			},
 			async content(event, trigger, player) {
-				await player.draw(game.countPlayer(target => target != player && lib.skill._jlsg_zhuBuff.groupCheck(player, target))).set("_triggered", null);
+				await player.draw(game.countPlayer(target => target != player && get.info("_jlsg_zhuBuff").groupCheck(player, target))).set("_triggered", null);
 			},
 		},
 		//魂烈
-		jlsg_zhugong_hunlie: {
+		jlsg_hunlie: {
 			unique: true,
 			zhuSkill: true,
 			mode: ["identity"],
@@ -784,7 +786,7 @@ export default {
 			async cost(event, trigger, player) {
 				const num = game.dead.filter(current => current.identity == "zhong" || current.identity == "mingzhong").length;
 				event.result = await player
-					.chooseTarget(get.prompt("jlsg_zhugong_hunlie"), `对一名其他角色造成${num}点伤害`)
+					.chooseTarget(get.prompt("jlsg_hunlie"), `对一名其他角色造成${num}点伤害`)
 					.set("filterTarget", lib.filter.notMe)
 					.set("ai", target => get.damageEffect(target, get.player(), get.player()))
 					.forResult();
@@ -803,29 +805,29 @@ export default {
 	},
 	translate: {
 		//极略主公技
-		jlsg_zhugong_yuren: "驭人",
-		jlsg_zhugong_yuren_info: "当你需要使用或打出一张【杀】时，你可以令其他同势力角色选择是否打出一张【杀】（视为你使用或打出此【杀】）；若有角色如此做，你摸一张牌。",
-		jlsg_zhugong_yongbin: "拥兵",
-		jlsg_zhugong_yongbin_info: "当一名其他同势力角色使用【杀】造成伤害后，其可以令你摸一张牌。",
-		jlsg_zhugong_ruoyu: "若愚",
-		jlsg_zhugong_ruoyu_info: "觉醒技，准备阶段，若你的体力值为场上最少，你加1点体力上限并回复1点体力，然后你本局游戏内摸牌阶段额外摸一张牌。",
-		jlsg_zhugong_hujia: "护驾",
-		jlsg_zhugong_hujia_info: "当你需要使用或打出一张【闪】时，你可以令其他同势力角色选择是否打出一张【闪】（视为你使用或打出此【闪】）；若有角色如此做，你摸一张牌。",
-		jlsg_zhugong_jianxiong: "奸雄",
-		jlsg_zhugong_jianxiong_info: "当其他同势力角色受到伤害后，若伤害来源不是你，其可以令你获得造成伤害的牌。",
-		jlsg_zhugong_songwei: "颂威",
-		jlsg_zhugong_songwei_info: "当一名其他同势力角色的判定牌生效后，其可以令你摸一张牌。",
-		jlsg_zhugong_jiuyuan: "救援",
-		jlsg_zhugong_jiuyuan_info: "锁定技，其他同势力角色对处于濒死状态的你使用的【桃】回复的体力值+1。",
-		jlsg_zhugong_fuzheng: "辅政",
-		jlsg_zhugong_fuzheng_info: "摸牌阶段开始时，你可以令所有其他同势力角色依次选择是否令你摸一张牌。",
-		jlsg_zhugong_xieli: "协力",
-		jlsg_zhugong_xieli_info: "准备阶段，你可以选择一名与你势力不同的其他角色，然后所有其他同势力角色依次选择是否对该角色使用一张无视距离的【杀】。",
-		jlsg_zhugong_huangtian: "黄天",
-		jlsg_zhugong_huangtian_info: "其他同势力角色的出牌阶段开始时，其可以交给你一张【闪】或花色为黑桃的牌，然后摸一张牌。",
-		jlsg_zhugong_mingmen: "名门",
-		jlsg_zhugong_mingmen_info: "锁定技，你的初始手牌数与手牌上限+X（X为其他同势力角色）。",
-		jlsg_zhugong_hunlie: "魂烈",
-		jlsg_zhugong_hunlie_info: "准备阶段，你可以对一名其他角色造成X点伤害（X为已阵亡的忠臣数）。",
+		jlsg_yuren: "驭人",
+		jlsg_yuren_info: "当你需要使用或打出一张【杀】时，你可以令其他同势力角色选择是否打出一张【杀】（视为你使用或打出此【杀】）；若有角色如此做，你摸一张牌。",
+		jlsg_yongbin: "拥兵",
+		jlsg_yongbin_info: "当一名其他同势力角色使用【杀】造成伤害后，其可以令你摸一张牌。",
+		jlsg_ruoyu: "若愚",
+		jlsg_ruoyu_info: "觉醒技，准备阶段，若你的体力值为场上最少，你加1点体力上限并回复1点体力，然后你本局游戏内摸牌阶段额外摸一张牌。",
+		jlsg_hujia: "护驾",
+		jlsg_hujia_info: "当你需要使用或打出一张【闪】时，你可以令其他同势力角色选择是否打出一张【闪】（视为你使用或打出此【闪】）；若有角色如此做，你摸一张牌。",
+		jlsg_jianxiong: "奸雄",
+		jlsg_jianxiong_info: "当其他同势力角色受到伤害后，若伤害来源不是你，其可以令你获得造成伤害的牌。",
+		jlsg_songwei: "颂威",
+		jlsg_songwei_info: "当一名其他同势力角色的判定牌生效后，其可以令你摸一张牌。",
+		jlsg_jiuyuan: "救援",
+		jlsg_jiuyuan_info: "锁定技，其他同势力角色对处于濒死状态的你使用的【桃】回复的体力值+1。",
+		jlsg_fuzheng: "辅政",
+		jlsg_fuzheng_info: "摸牌阶段开始时，你可以令所有其他同势力角色依次选择是否令你摸一张牌。",
+		jlsg_xieli: "协力",
+		jlsg_xieli_info: "准备阶段，你可以选择一名与你势力不同的其他角色，然后所有其他同势力角色依次选择是否对该角色使用一张无视距离的【杀】。",
+		jlsg_huangtian: "黄天",
+		jlsg_huangtian_info: "其他同势力角色的出牌阶段开始时，其可以交给你一张【闪】或花色为黑桃的牌，然后摸一张牌。",
+		jlsg_mingmen: "名门",
+		jlsg_mingmen_info: "锁定技，你的初始手牌数与手牌上限+X（X为其他同势力角色）。",
+		jlsg_hunlie: "魂烈",
+		jlsg_hunlie_info: "准备阶段，你可以对一名其他角色造成X点伤害（X为已阵亡的忠臣数）。",
 	},
 };
