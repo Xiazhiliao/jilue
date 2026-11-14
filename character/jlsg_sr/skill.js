@@ -58,10 +58,10 @@ const skills = {
 						const choice = upgrade.links;
 						event.info = info;
 						if (choice.includes(0)) {
-							await upgradeContent[name][choiceList[0]](event, trigger, player);
+							await upgradeContent[name][choiceList[0]](event, player, 0);
 						}
 						if (choice.includes(1)) {
-							await upgradeContent[name][choiceList[1]](event, trigger, player);
+							await upgradeContent[name][choiceList[1]](event, player, 1);
 						}
 						if (choice.includes(2)) {
 							info[2] = true;
@@ -134,6 +134,7 @@ const skills = {
 				player.update();
 			}
 		},
+		//武将突破判断部分
 		checkUpgrade(player, skill, createEvent = false) {
 			if (!_status.gameStarted) {
 				return null;
@@ -157,6 +158,7 @@ const skills = {
 			}
 			return true;
 		},
+		//武将突破技能显示列表
 		createList(name) {
 			const list = [];
 			const info = get.character(name);
@@ -174,230 +176,190 @@ const skills = {
 		//属性突破列表
 		upgradeContent: {
 			jlsgsr_machao: {
-				"出【杀】次数+2": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "sha|2";
+				"出【杀】次数+2": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "sha", num: 2 });
 				},
-				"体力上限+1": async function (event, trigger, player) {
-					player.maxHp++;
-					player.hp++;
-					player.update();
-					event.info[1] = true;
+				"体力上限+1": async function (event, player, type) {
+					const { addMaxHp } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addMaxHp(event, player, { type, num: 1 });
 				},
 			},
 			jlsgsr_huaxiong: {
-				"初始手牌数+3": async function (event, trigger, player) {
-					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
-						const me = player,
-							numx = trigger.num;
-						trigger.num =
-							typeof numx == "function"
-								? function (player) {
-										if (player == me) {
-											return numx(player) + 3;
-										}
-										return numx(player);
-									}
-								: function (player) {
-										if (player == me) {
-											return numx + 3;
-										}
-										return numx;
-									};
-					});
-					event.info[0] = true;
+				"初始手牌数+3": async function (event, player, type) {
+					const { addGamgDrawNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addGamgDrawNum(event, player, { type, num: 3 });
 				},
-				"摸牌数+1": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "draw|1";
+				"摸牌数+1": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "draw", num: 1 });
 				},
 			},
 			jlsgsr_xuzhu: {
-				"初始手牌数+3": async function (event, trigger, player) {
-					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
-						const me = player,
-							numx = trigger.num;
-						trigger.num =
-							typeof numx == "function"
-								? function (player) {
-										if (player == me) {
-											return numx(player) + 3;
-										}
-										return numx(player);
-									}
-								: function (player) {
-										if (player == me) {
-											return numx + 3;
-										}
-										return numx;
-									};
-					});
-					event.info[0] = true;
+				"初始手牌数+3": async function (event, player, type) {
+					const { addGamgDrawNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addGamgDrawNum(event, player, { type, num: 3 });
 				},
-				"体力上限+1": async function (event, trigger, player) {
-					player.maxHp++;
-					player.hp++;
-					player.update();
-					event.info[1] = true;
+				"体力上限+1": async function (event, player, type) {
+					const { addMaxHp } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addMaxHp(event, player, { type, num: 1 });
 				},
 			},
 			jlsgsr_xiaoqiao: {
-				"初始手牌数+3": async function (event, trigger, player) {
-					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
-						const me = player,
-							numx = trigger.num;
-						trigger.num =
-							typeof numx == "function"
-								? function (player) {
-										if (player == me) {
-											return numx(player) + 3;
-										}
-										return numx(player);
-									}
-								: function (player) {
-										if (player == me) {
-											return numx + 3;
-										}
-										return numx;
-									};
-					});
-					event.info[0] = true;
+				"初始手牌数+3": async function (event, player, type) {
+					const { addGamgDrawNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addGamgDrawNum(event, player, { type, num: 3 });
 				},
-				"摸牌数+1": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "draw|1";
+				"摸牌数+1": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "draw", num: 1 });
 				},
 			},
 			jlsgsr_sunshangxiang: {
-				"手牌上限+3": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "maxHandcard|3";
+				"手牌上限+3": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "maxHandcard", num: 3 });
 				},
-				"摸牌数+1": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "draw|1";
+				"摸牌数+1": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "draw", num: 1 });
 				},
 			},
 			jlsgsr_guanyu: {
-				"出【杀】次数+2": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "sha|2";
+				"出【杀】次数+2": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "sha", num: 2 });
 				},
-				"手牌上限+3": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "maxHandcard|3";
+				"手牌上限+3": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "maxHandcard", num: 3 });
 				},
 			},
 			jlsgsr_xiahoudun: {
-				"摸牌数+1": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "draw|1";
+				"摸牌数+1": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "draw", num: 1 });
 				},
-				"手牌上限+3": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "maxHandcard|3";
+				"手牌上限+3": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "maxHandcard", num: 1 });
 				},
 			},
 			jlsgsr_ganning: {
-				"起始手牌数+3": async function (event, trigger, player) {
-					player.directgain(get.cards(3));
-					event.info[0] = true;
+				"起始手牌数+3": async function (event, player, type) {
+					const { addGamgDrawNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addGamgDrawNum(event, player, { type, num: 3 });
 				},
-				"出【杀】次数+2": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "sha|2";
+				"出【杀】次数+2": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "sha", num: 2 });
 				},
 			},
 			jlsgsr_simayi: {
-				"初始手牌数+3": async function (event, trigger, player) {
-					player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
-						const me = player,
-							numx = trigger.num;
-						trigger.num =
-							typeof numx == "function"
-								? function (player) {
-										if (player == me) {
-											return numx(player) + 3;
-										}
-										return numx(player);
-									}
-								: function (player) {
-										if (player == me) {
-											return numx + 3;
-										}
-										return numx;
-									};
-					});
-					event.info[0] = true;
+				"初始手牌数+3": async function (event, player, type) {
+					const { addGamgDrawNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addGamgDrawNum(event, player, { type, num: 3 });
 				},
-				"体力上限+1": async function (event, trigger, player) {
-					game.broadcastAll(function (player) {
-						player.maxHp++;
-						player.hp++;
-						player.update();
-					}, player);
-					event.info[1] = true;
+				"体力上限+1": async function (event, player, type) {
+					const { addMaxHp } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addMaxHp(event, player, { type, num: 1 });
 				},
 			},
 			jlsgsr_zhugeliang: {
-				"手牌上限+3": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "maxHandcard|3";
+				"手牌上限+3": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "maxHandcard", num: 3 });
 				},
-				"体力上限+1": async function (event, trigger, player) {
-					game.broadcastAll(function (player) {
-						player.maxHp++;
-						player.hp++;
-						player.update();
-					}, player);
-					event.info[1] = true;
+				"体力上限+1": async function (event, player, type) {
+					const { addMaxHp } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addMaxHp(event, player, { type, num: 1 });
 				},
 			},
 			jlsgsr_caocao: {
-				"手牌上限+3": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "maxHandcard|3";
+				"手牌上限+3": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "maxHandcard", num: 3 });
 				},
-				"体力上限+1": async function (event, trigger, player) {
-					game.broadcastAll(function (player) {
-						player.maxHp++;
-						player.hp++;
-						player.update();
-					}, player);
-					event.info[1] = true;
+				"体力上限+1": async function (event, player, type) {
+					const { addMaxHp } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addMaxHp(event, player, { type, num: 1 });
 				},
 			},
 			jlsgsr_liubei: {
-				"起始手牌数+3": async function (event, trigger, player) {
-					player.directgain(get.cards(3));
-					event.info[0] = true;
+				"起始手牌数+3": async function (event, player, type) {
+					const { addGamgDrawNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addGamgDrawNum(event, player, { type, num: 3 });
 				},
-				"摸牌数+1": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "draw|1";
+				"摸牌数+1": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "draw", num: 1 });
 				},
 			},
 			jlsgsr_sunquan: {
-				"出【杀】次数+2": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "sha|2";
+				"出【杀】次数+2": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "sha", num: 2 });
 				},
-				"摸牌数+1": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "draw|1";
+				"摸牌数+1": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "draw", num: 1 });
 				},
 			},
 			jlsgsr_lvbu: {
-				"出【杀】次数+2": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[0] = "sha|2";
+				"出【杀】次数+2": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "sha", num: 2 });
 				},
-				"摸牌数+1": async function (event, trigger, player) {
-					game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
-					event.info[1] = "draw|1";
+				"摸牌数+1": async function (event, player, type) {
+					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
+					await addAttributeNum(event, player, { type, attribute: "draw", num: 1 });
 				},
 			},
 		},
+		//属性突破模板
+		upgradeTemplate: {
+			//增加某个属性数值
+			async addAttributeNum(event, player, info) {
+				game.addGlobalSkill("_jlsgsr_upgrade_effect", player);
+				event.info[info.type] = `${info.attribute}|${info.num}`;
+			},
+			//增加初始手牌数
+			async addGamgDrawNum(event, player, info) {
+				player.when({ global: "gameDrawBegin" }).then(async (event, trigger, player) => {
+					const me = player,
+						numx = trigger.num;
+					trigger.num =
+						typeof numx == "function"
+							? function (player) {
+									if (player == me) {
+										return numx(player) + info.num;
+									}
+									return numx(player);
+								}
+							: function (player) {
+									if (player == me) {
+										return numx + info.num;
+									}
+									return numx;
+								};
+				});
+				event.info[info.type] = true;
+			},
+			//增加体力和体力上限
+			async addMaxHp(event, player, info) {
+				game.broadcastAll(
+					function (player, num) {
+						player.maxHp += num;
+						player.hp += num;
+						player.update();
+					},
+					player,
+					info.num
+				);
+				event.info[info.type] = true;
+			},
+		},
+		//非初始技能的突破事件
 		async extraUpgrade(event, trigger, player) {
 			const { skill } = event,
 				upgradeStorage = _status._jlsgsr_upgrade?.[player.playerid] || {};
