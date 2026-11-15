@@ -5002,13 +5002,16 @@ const skills = {
 			let timeout = 20;
 			while (player.hasCards("h") && player.isMaxHandcard() && timeout > 0) {
 				let num = player.countCards("h");
-				const currents = game.filterPlayer(current => current != player);
+				const currents = game.filterPlayer(current => current != player).sortBySeat();
 				while (currents.length) {
 					const target = currents.shift();
-					if (!target?.isIn() || player.hasGainableCards(target, "h")) {
+					if (!target?.isIn() || !player.hasGainableCards(target, "h")) {
 						continue;
 					}
 					await player.chooseToGive({ target, position: "h", forced: true });
+					if (!player.isMaxHandcard()) {
+						break;
+					}
 				}
 				if (player.countCards("h") === num) {
 					timeout--;
