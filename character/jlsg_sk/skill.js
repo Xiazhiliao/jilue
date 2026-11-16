@@ -16275,7 +16275,7 @@ const skills = {
 		},
 		async effects(player, target, cards) {
 			const storage = player.getStorage("jlsg_guanxu", 0);
-			if (storage > 0 && storage < 6) {
+			if (storage > 1 && storage < 7) {
 				await target.discard(cards);
 			}
 			if (storage === 1) {
@@ -16358,11 +16358,11 @@ const skills = {
 					})
 					.forResult();
 				if (result.bool) {
-					const target = result.targets[0];
-					await target.give(cards, target);
+					const targetx = result.targets[0];
+					await targetx.gain(cards, target, "give");
 					const sha = get.autoViewAs({ name: "sha", isCard: true }, []);
-					if (target.canUse(sha, target, false)) {
-						await target.useCard(sha, target);
+					if (targetx.canUse(sha, target, false)) {
+						await targetx.useCard(sha, target);
 					}
 				}
 			} else if (storage === 8) {
