@@ -9498,7 +9498,6 @@ const skills = {
 			markcount: "expansion",
 		},
 		audio: "ext:极略/audio/skill:2",
-		usable: 1,
 		enable: "phaseUse",
 		trigger: {
 			player: "damageEnd",
@@ -9507,6 +9506,9 @@ const skills = {
 			return event.num;
 		},
 		filter(event, player) {
+			if (event?.name !== "damage" && player.hasSkill("jlsg_caijian_used")) {
+				return false;
+			}
 			return game.hasPlayer(current => current.hasCards("he"));
 		},
 		filterTarget(card, player, target) {
@@ -9529,6 +9531,8 @@ const skills = {
 		async content(event, trigger, player) {
 			if (trigger?.name === "damage") {
 				event.target = event.targets[0];
+			} else {
+				player.addTempSkill("jlsg_caijian_used", ["phaseUseAfter", "phaseBeinStart", "phaseAfter"]);
 			}
 			const result = await player.choosePlayerCard({ target: event.target, position: "he", forced: true }).forResult();
 			if (!result?.bool || !result.cards?.length) {
@@ -9564,6 +9568,11 @@ const skills = {
 					}
 				},
 				target: -1,
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
 			},
 		},
 	},
@@ -19796,8 +19805,9 @@ const skills = {
 				.chooseButton([`交给${get.translation(player)}一个技能`, [skills, "skill"]])
 				.set("forced", true)
 				.forResult();
-			player.addSkill(result.links[0]);
-			player.markAuto("jlsg_lixia_gain", result.links[0]);
+			trigger.player.removeSkill(result.links);
+			player.addSkill(result.links);
+			player.markAuto("jlsg_lixia_gain", result.links);
 		},
 	},
 	jlsg_fenyin: {
