@@ -11932,7 +11932,7 @@ const skills = {
 					}
 					player.logSkill(event.name);
 					await player.draw();
-					const characterList = lib.jlsg.characterList.slice().filter(name => get.character(name, 1) === "wu");
+					const characterList = lib.jlsg.characterList.slice().filter(name => get.character(name, 1) === "wu").randomSort();
 					for (const current of game.filterPlayer2()) {
 						characterList.removeArray(get.nameList(current));
 					}
