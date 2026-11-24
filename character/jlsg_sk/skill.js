@@ -11932,7 +11932,10 @@ const skills = {
 					}
 					player.logSkill(event.name);
 					await player.draw();
-					const characterList = lib.jlsg.characterList.slice().filter(name => get.character(name, 1) === "wu").randomSort();
+					const characterList = lib.jlsg.characterList
+						.slice()
+						.filter(name => get.character(name, 1) === "wu")
+						.randomSort();
 					for (const current of game.filterPlayer2()) {
 						characterList.removeArray(get.nameList(current));
 					}
@@ -12788,7 +12791,7 @@ const skills = {
 			}
 		},
 		getSkill(player, num) {
-			const characterList = lib.jlsg.characterList.slice();
+			const characterList = lib.jlsg.characterList.slice().randomSort();
 			for (const current of game.filterPlayer2(() => true, undefined, true)) {
 				characterList.removeArray(get.nameList(current));
 			}
@@ -12948,16 +12951,18 @@ const skills = {
 		getList(player) {
 			const configx = game.getExtensionConfig("极略", "jlsgsk_jiangwei");
 			let list = {};
-			const characterList = lib.jlsg.characterList.filter(name => {
-				if (["character", "all"].includes(configx)) {
-					if (!lib.translate[name]) {
-						return false;
+			const characterList = lib.jlsg.characterList
+				.filter(name => {
+					if (["character", "all"].includes(configx)) {
+						if (!lib.translate[name]) {
+							return false;
+						}
+						return lib.translate[name].includes("诸葛亮") || name.includes("zhugeliang");
+					} else {
+						return ["jlsgsr_zhugeliang", "sp_zhugeliang", "jlsgsoul_zhugeliang", "jlsgsoul_sp_zhugeliang"].includes(name);
 					}
-					return lib.translate[name].includes("诸葛亮") || name.includes("zhugeliang");
-				} else {
-					return ["jlsgsr_zhugeliang", "sp_zhugeliang", "jlsgsoul_zhugeliang", "jlsgsoul_sp_zhugeliang"].includes(name);
-				}
-			});
+				})
+				.randomSort();
 			for (const name of characterList) {
 				list[name] = (get.character(name).skills ?? []).filter(skill => {
 					if (player.hasSkill(skill, null, false, false)) {
@@ -16321,7 +16326,7 @@ const skills = {
 					}
 				}
 			} else if (storage === 4) {
-				const characterList = lib.jlsg.characterList.slice();
+				const characterList = lib.jlsg.characterList.slice().randomSort();
 				for (const current of game.filterPlayer2()) {
 					characterList.removeArray(get.nameList(current));
 				}
