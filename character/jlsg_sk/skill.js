@@ -6471,7 +6471,7 @@ const skills = {
 				.forResult();
 			let targets = [...damage, ...recover].unique().sortBySeat();
 			event.result = {
-				bool: result.bool,
+				bool: result?.bool,
 				targets: targets,
 				cost_data: {
 					damage: damage.sortBySeat(),
