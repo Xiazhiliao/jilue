@@ -242,7 +242,7 @@ const skills = {
 				},
 				"手牌上限+3": async function (event, player, type) {
 					const { addAttributeNum } = get.info("_jlsgsr_upgrade").upgradeTemplate;
-					await addAttributeNum(event, player, { type, attribute: "maxHandcard", num: 1 });
+					await addAttributeNum(event, player, { type, attribute: "maxHandcard", num: 3 });
 				},
 			},
 			jlsgsr_ganning: {
@@ -480,7 +480,7 @@ const skills = {
 			const cards = get.cards(3);
 			await game.cardsGotoOrdering(cards);
 			await player.showCards(cards);
-			if (cards.every(card => get.type(card) == "basic")) {
+			if (!cards.some(card => get.type(card) === "basic")) {
 				await player.gain(cards, "gain2");
 				return;
 			}
@@ -529,9 +529,9 @@ const skills = {
 						cards.removeArray(chooseCard.links);
 					}
 				}
-				if (cards.length) {
-					await player.gain(cards, "gain2");
-				}
+			}
+			if (cards.length) {
+				await player.gain(cards, "gain2");
 			}
 		},
 		ai: {
@@ -2128,9 +2128,9 @@ const skills = {
 					targets: [target],
 				} = event,
 				huogong = get.autoViewAs({ name: "huogong" }, []);
-			let next;
 			while (true) {
 				await target.draw(1);
+				let next;
 				if (player.canUse(huogong, target)) {
 					next = player.useCard(huogong, target);
 					await next;
@@ -2957,24 +2957,26 @@ const skills = {
 					return get.name(event.respondTo[1], player) == "sha";
 				},
 				async cost(event, trigger, player) {
+					const target = trigger.respondTo[0];
 					event.result = await player
-						.chooseToDiscard(get.prompt("jlsg_youdi", trigger.respondTo[0]), [1, Infinity])
+						.chooseToDiscard(get.prompt("jlsg_youdi", target), [1, target.countCards("he")])
 						.set("chooseonly", true)
+						.set("logSkill", [event.skill, target])
 						.set("ai", card => (get.event().check ? 4 - get.value(card) : 0))
 						.set(
 							"check",
 							(function () {
-								return get.attitude(player, trigger.respondTo[0]) <= 0;
+								return get.attitude(player, target) <= 0;
 							})()
 						)
 						.forResult();
-					if (event.result?.bool) {
-						event.result.targets = [trigger.respondTo[0]];
-					}
 				},
+				popup: false,
 				async content(event, trigger, player) {
 					await player.discard(event.cards);
-					await trigger.respondTo[0].chooseToDiscard(event.cards.length, "he", true);
+					const [target] = event.targets;
+					const num = Math.min(event.cards.length, target.countDiscardableCards(target, "he"));
+					await target.chooseToDiscard(num, "he", true);
 				},
 			},
 		},
@@ -3679,9 +3681,15 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(1);
 			const result = await player
-				.chooseToUse("蓄劲：请使用一张【杀】")
-				.set("filterCard", (card, player, event) => {
-					return get.name(card, player) == "sha";
+				.chooseToUse("咆哮：请使用一张【杀】")
+				.set("filterCard", function (card, player, event) {
+					if (get.name(card, player) !== "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				})
+				.set("filterTarget", function (card, player, target) {
+					return player.canUse(card, target, false, false);
 				})
 				.forResult();
 			if (!result?.bool) {
@@ -3707,7 +3715,7 @@ const skills = {
 				}
 				player.storage.jlsg_benxi_check = true;
 				const { checkUpgrade } = get.info("_jlsgsr_upgrade");
-				const upgrade = checkUpgrade(from, "jlsg_benxi");
+				const upgrade = checkUpgrade(player, "jlsg_benxi");
 				if (upgrade) {
 					num = get.order({ name: "shunshou" }, player) + 0.1;
 				} else {
@@ -3762,7 +3770,7 @@ const skills = {
 					if (get.name(card, player) !== "sha" || get.distance(player, target) > 1) {
 						return;
 					}
-					const cards = target.countDiscardableCards(target, "he");
+					const cards = target.getDiscardableCards(target, "he");
 					if (cards.length) {
 						const { checkUpgrade } = get.info("_jlsgsr_upgrade");
 						const upgrade = checkUpgrade(player, "jlsg_benxi");
@@ -3873,7 +3881,7 @@ const skills = {
 				}
 				storage.to++;
 			} else {
-				if (target.isIn() & player.canUse(sha, target, false, false)) {
+				if (target.isIn() && player.canUse(sha, target, false, false)) {
 					next = player.useCard({ card: sha, cards: [], targets: [target], addCount: false });
 				}
 				storage.from++;
@@ -3888,7 +3896,7 @@ const skills = {
 			maixie_defend: true,
 			skillTagFilter(player, tag, arg) {
 				const { checkUpgrade } = get.info("_jlsgsr_upgrade"),
-					{ from } = player.getStorage("jlsg_yaozhan", { from: 0 });
+					{ from } = player.getStorage("jlsg_yaozhan_used", { from: 0 });
 				const upgrade = checkUpgrade(player, "jlsg_yaozhan");
 				if (from > (upgrade ? 1 : 0)) {
 					return false;
@@ -3900,7 +3908,7 @@ const skills = {
 						return;
 					}
 					const { checkUpgrade } = get.info("_jlsgsr_upgrade"),
-						{ to } = player.getStorage("jlsg_yaozhan", { to: 0 });
+						{ to } = player.getStorage("jlsg_yaozhan_used", { to: 0 });
 					const upgrade = checkUpgrade(player, "jlsg_yaozhan");
 					if (to > (upgrade ? 1 : 0)) {
 						return;
@@ -3912,7 +3920,7 @@ const skills = {
 						return;
 					}
 					const { checkUpgrade } = get.info("_jlsgsr_upgrade"),
-						{ from } = player.getStorage("jlsg_yaozhan", { from: 0 });
+						{ from } = player.getStorage("jlsg_yaozhan_used", { from: 0 });
 					const upgrade = checkUpgrade(player, "jlsg_yaozhan");
 					if (from > (upgrade ? 1 : 0)) {
 						return;
@@ -4097,8 +4105,11 @@ const skills = {
 				.set("ai", card => 10)
 				.set("jlsg_shuixi_suit", suit)
 				.forResult();
-			if (!result.bool) {
+			if (!result?.bool || !result.cards?.length) {
 				await target.loseHp();
+				if (!upgrade) {
+					return;
+				}
 				const skills = target.getSkills(null, false, false).filter(skill => {
 					const info = get.info(skill);
 					return info && !info.persevereSkill && !info.charlotte && get.skillInfoTranslation(skill).length > 0;
@@ -5089,7 +5100,8 @@ const skills = {
 			}
 		},
 		getCheck(trigger, player, upgrade = false) {
-			const { card, player: source, targets, target } = trigger;
+			const { card, player: source, target } = trigger;
+			const targets = trigger.targets.slice();
 			targets.removeArray(trigger.excluded);
 			let useCardToTargets = targets.reduce((sum, targetx) => sum + get.effect(targetx, card, source, player), 0),
 				useCardToTarget = get.effect(target, card, source, player),
