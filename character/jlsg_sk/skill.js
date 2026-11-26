@@ -15950,7 +15950,7 @@ const skills = {
 				if (!mod) {
 					return;
 				}
-				const result = mod.call(this, ...arg);
+				const result = mod.call(game, ...arg);
 				if (!result || result === Infinity) {
 					return;
 				}
