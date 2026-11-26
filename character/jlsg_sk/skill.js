@@ -884,7 +884,7 @@ const skills = {
 			game.log(player, "选择了", get.translation(result.control + "2") + get.translation(result.control));
 			player.popup("权略" + get.translation(result.control + "2") + get.translation(result.control));
 			await player.draw(player.countCards("h", { suit: result.control }));
-			player.addSkill("jlsg_quanlue_effect");
+			player.addTempSkill("jlsg_quanlue_effect");
 			player.setStorage("jlsg_quanlue_effect", result.control, true);
 		},
 		subSkill: {
@@ -1120,7 +1120,7 @@ const skills = {
 		},
 		ai: {
 			respondSha: true,
-			fireattack: true,
+			fireAttack: true,
 			skillTagFilter(player) {
 				return _status.currentPhase != player && player.countCards("he", card => get.type2(card) == "trick");
 			},
@@ -1344,7 +1344,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			let num = Math.min(player.getHp(), target.countDiscardableCards(player, "h"));
+			let num = Math.min(player.getHp(), target.countDiscardableCards(player, "he"));
 			if (num > 0) {
 				await player.discardPlayerCard({
 					target,
@@ -1388,8 +1388,9 @@ const skills = {
 				if (!player.countCards("h")) {
 					if (!player.hasFriend() && (!player.isTurnedOver() || player.hp == 1)) {
 						eff = 1;
+					} else if (player.isTurnedOver()) {
+						eff = [0, player.maxhp];
 					}
-					eff = player.isTurnedOver() ? [0, 4] : 0.5;
 				} else {
 					if (!player.hasFriend()) {
 						eff = [1, 0];
@@ -1398,7 +1399,7 @@ const skills = {
 					}
 				}
 			}
-			let num = player.getCards("h").reduce((n, c) => n + player.getUseValue(c), 0) / player.countCards("h");
+			let num = player.getCards("h").reduce((n, c) => n + player.getUseValue(c), 0) / (player.countCards("h") + 1);
 			if (Array.isArray(eff)) {
 				return event.num + Math.abs(eff[1]) > num;
 			}
@@ -1586,7 +1587,12 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {
-			return player != target && target.countCards("h");
+			if (player == target) {
+				return false;
+			} else if (["identity", "guozhan"].includes(get.mode())) {
+				return true;
+			}
+			return target.countCards("h") > 0;
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
@@ -1636,7 +1642,6 @@ const skills = {
 						.forResult();
 					control = result.control;
 				}
-				let content;
 				if (control === "手牌") {
 					game.log(player, "观看了", target, "的手牌");
 				} else if (control === "主将") {
@@ -2349,7 +2354,7 @@ const skills = {
 			},
 		},
 		mod: {
-			globalTo(from, to, distance) {
+			globalFrom(from, to, distance) {
 				const map = from.getStorage("jlsg_zhuiji", new Map());
 				let info = map.get(to) || 0;
 				return distance - info;
@@ -2634,10 +2639,10 @@ const skills = {
 			if (event.target.hasCards("h")) {
 				await player.viewHandcards(event.target);
 			}
-			if (event.target.hasGainableCards(player, "he")) {
+			if (event.target.hasGainableCards(player, "h")) {
 				await player.gainPlayerCard({
 					target: event.target,
-					position: "he",
+					position: "h",
 					visible: true,
 					forced: true,
 				});
@@ -2667,7 +2672,7 @@ const skills = {
 		audio: "ext:极略/audio/skill:1",
 		trigger: {
 			player: "gainAfter",
-			global: "loseAsync",
+			global: "loseAsyncAfter",
 		},
 		getIndex(event, player) {
 			return game.filterPlayer2(current => current != player && event.getl(current)?.cards2?.length).sortBySeat();
@@ -3122,9 +3127,9 @@ const skills = {
 								peff = get.effect(player, trigger.card, trigger.player, player);
 							if (player.hasCards("h", "shan") && teff < 0) {
 								return true;
-							} else if (player.hp == 1 && event.player.hasCards("e", "guanshi")) {
+							} else if (player.hp == 1 && trigger.player.hasCards("e", "guanshi")) {
 								return false;
-							} else if (get.attitude(player, event.target) > 0 && ((player.hp >= 2 && teff < 0) || peff >= 0)) {
+							} else if (get.attitude(player, trigger.target) > 0 && ((player.hp >= 2 && teff < 0) || peff >= 0)) {
 								return true;
 							}
 							return false;
@@ -3319,7 +3324,7 @@ const skills = {
 			const result = await player.chooseToCompare(target).forResult();
 			if (result?.bool) {
 				await player.draw({ num: 2 });
-			} else if (result?.bool == false) {
+			} else if (!result?.tie) {
 				await target.draw({ num: 2 });
 			}
 		},
@@ -3485,6 +3490,9 @@ const skills = {
 			if (_status.currentPhase == player) {
 				return false;
 			}
+			if (player.getEquips(3).length || player.getEquips(4).length) {
+				return false;
+			}
 			return game.hasPlayer2(current => {
 				if (current == player) {
 					return false;
@@ -3575,7 +3583,7 @@ const skills = {
 	},
 	jlsg_fengyi: {
 		audio: "ext:极略/audio/skill:2",
-		trigger: { target: "useCardToBefore" },
+		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
 			return get.type(event.card) == "trick" && event.targets.length == 1;
 		},
@@ -3612,9 +3620,12 @@ const skills = {
 					},
 				})
 				.forResult();
+			if (event.result?.bool) {
+				event.result.cards = event.cards;
+			}
 		},
 		async content(event, trigger, player) {
-			const cards = get.cards(2);
+			const { cards } = event;
 			await game.cardsGotoOrdering(cards);
 			await game.cardsGotoPile(cards, "insert");
 			const result = await player
@@ -3971,7 +3982,7 @@ const skills = {
 							});
 							const discard = check(list, 0),
 								draw = check(list, 1);
-							if (discard[1][0] > draw[1][2]) {
+							if (discard[1][0] > draw[1][1]) {
 								return {
 									bool: true,
 									targets: [discard[0]],
@@ -4170,7 +4181,7 @@ const skills = {
 				(!player.hasJudge("lebu") || !player.hasJudge("bingliang")) &&
 				(player.hp >= 2 || player.hasCards("hs", "tao")) &&
 				game.hasPlayer(function (cur) {
-					return get.attitude(player, cur) != 0;
+					return get.attitude(player, cur) < 0;
 				})
 			);
 		},
@@ -9532,7 +9543,7 @@ const skills = {
 			if (trigger?.name === "damage") {
 				event.target = event.targets[0];
 			} else {
-				player.addTempSkill("jlsg_caijian_used", ["phaseUseAfter", "phaseBeinStart", "phaseAfter"]);
+				player.addTempSkill("jlsg_caijian_used", ["phaseUseAfter", "phaseBeginStart", "phaseAfter"]);
 			}
 			const result = await player.choosePlayerCard({ target: event.target, position: "he", forced: true }).forResult();
 			if (!result?.bool || !result.cards?.length) {
