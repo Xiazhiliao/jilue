@@ -16,7 +16,7 @@ for (let character in config) {
 	if (!["jlsgsk", "jlsgsr", "jlsgsoul", "jlsgsy"].includes(prefix)) {
 		continue;
 	}
-	const configx = lib.config[`extension_极略_${character}`];
+	const configx = game.getExtensionConfig(`极略`, character);
 	if (!configx || configx == "false") {
 		continue;
 	}
@@ -40,8 +40,28 @@ for (let character in config) {
 		}
 	}
 }
+//给突破的SR武将加上突破后描述
+const upgradeList = (game.getExtensionConfig("极略", "upgradeList") || []).concat(jlsg_sr.skill._jlsgsr_upgrade.originUpgradeList);
+for (let character in jlsg_sr.character) {
+	if (!upgradeList.includes(character)) {
+		continue;
+	}
+	const skills = jlsg_sr.character[character][3];
+	for (const skill of skills) {
+		if (skill in jlsg_sr.dynamicTranslate) {
+			jlsg_sr.skill[skill].derivation ??= [];
+			if (typeof jlsg_sr.skill[skill].derivation == "string") {
+				jlsg_sr.skill[skill].derivation = [jlsg_sr.skill[skill].derivation];
+			}
+			const faq = skill + "_faq";
+			jlsg_sr.skill[skill].derivation.push(faq);
+			jlsg_sr.translate[faq] = "突破";
+			jlsg_sr.translate[faq + "_info"] = jlsg_sr.dynamicTranslate[skill]({ index: true }, skill);
+		}
+	}
+}
 //导入jlsgZhu里的skill和translate
-if (lib.config?.extension_极略_jlsg_zhuBuff) {
+if (game.getExtensionConfig("极略", "jlsg_zhuBuff")) {
 	//清除原有主公技
 	for (let character in jlsg_sr.character) {
 		const skills = jlsg_sr.character[character][3];
@@ -71,32 +91,18 @@ if (lib.config?.extension_极略_jlsg_zhuBuff) {
 		jlsg_sr.translate[i] = jlsgZhu.translate[i];
 	}
 }
-//给突破的SR武将加上突破后描述
-let upgradeList = lib.config.extension_极略_upgradeList || [];
-for (let character in jlsg_sr.character) {
-	if (!upgradeList.includes(character)) {
-		continue;
-	}
-	const skills = jlsg_sr.character[character][3];
-	for (let skill of skills) {
-		//如果原技能的derivation里的技能也有突破的话就显示不了了，不过等有的时候再改吧（
-		jlsg_sr.skill[skill].derivation ??= [];
-		if (typeof jlsg_sr.skill[skill].derivation == "string") {
-			jlsg_sr.skill[skill].derivation = [jlsg_sr.skill[skill].derivation];
-		}
-		if (jlsg_sr?.dynamicTranslate?.[skill]) {
-			jlsg_sr.skill[skill].derivation.add(skill + "_upgrade");
-			jlsg_sr.translate[skill + "_upgrade"] = jlsg_sr.translate[skill];
-			jlsg_sr.translate[skill + "_upgrade_info"] = "突破后效果：" + jlsg_sr.dynamicTranslate[skill]({ index: true });
-		}
-	}
+//三英调整
+//三英武将称号补充
+for (const name in jlsg_sy.character) {
+	jlsg_sy.characterTitle[name] ??= jlsg_sy.translate[name];
 }
-//魔将调整
-if (lib.config?.extension_极略_syRefactor) {
+//三英武将重构
+if (game.getExtensionConfig("极略", "syRefactor")) {
 	for (const name in jlsg_sy.character) {
 		if (!name.startsWith("jlsgsy_")) {
 			continue;
 		}
+		//调整国别
 		jlsg_sy.character[name][1] = "jlsgsy";
 		const title = jlsg_sy.translate[name],
 			baonu = name.endsWith("baonu") ? true : false;
@@ -109,15 +115,22 @@ if (lib.config?.extension_极略_syRefactor) {
 			jlsg_sy.character[name][2] = num2;
 		}
 		if (get.mode() != "boss") {
+			//删除魔将Boss标签，确保能被ai禁将影响
+			if (baonu) {
+				jlsg_sy.character[name][4] ??= [];
+				jlsg_sy.character[name][4] = jlsg_sy.character[name][4].slice(0, 1);
+			}
 			if (!title) {
 				continue;
 			} else {
+				lib.arenaReady ??= [];
 				lib.arenaReady.push(function () {
-					lib.characterTitle[name] = title;
+					lib.characterTitle[name] ??= title;
 					let translation = get.rawName(info);
 					lib.translate[name] = "SY" + (baonu ? "暴怒" : "") + translation;
 					lib.translate[name + "_ab"] = "极略SY" + (baonu ? "暴怒" : "") + translation;
 					lib.translate[name + "_prefix"] = baonu ? "极略SY暴怒" : "极略SY";
+					//魔孙皓调整
 					if (name == "jlsgsy_sunhaobaonu") {
 						if (lib.characterPack.jlsg_sy?.[name]) {
 							lib.characterPack.jlsg_sy[name][3].remove("jlsgsy_shisha");
@@ -133,6 +146,7 @@ if (lib.config?.extension_极略_syRefactor) {
 		}
 	}
 }
+
 const prefixList = ["SK神", "SP神", "SK", "SR", "SP"];
 for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
 	for (let name in pack.character) {
@@ -141,7 +155,14 @@ for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
 		//原画
 		pack.character[name][4].push(`img:${lib.assetURL}extension/极略/image/character/${name}.jpg`);
 		//阵亡语音
-		pack.character[name][4].add("die:ext:极略/audio/die:true");
+		if (!pack.character[name][4].some(info => info.startsWith("die"))) {
+			if (pack.name === "jlsg_sy" && !name.endsWith("baonu")) {
+				//非暴怒武将调用暴怒阵亡语音
+				pack.character[name][4].add(`die:ext:极略/audio/die/${name}baonu.mp3`);
+			} else {
+				pack.character[name][4].add("die:ext:极略/audio/die:true");
+			}
+		}
 		//Character类化
 		pack.character[name] = get.convertedCharacter(pack.character[name]);
 		//前缀
@@ -157,6 +178,7 @@ for (let pack of [jlsg_sk, jlsg_sr, jlsg_soul, jlsg_sy, jlsg_skpf]) {
 		}
 	}
 }
+
 export const characters = {
 	jlsg_sk,
 	jlsg_sr,
