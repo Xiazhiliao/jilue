@@ -35,6 +35,10 @@ let skill = {
 		jlsg_sslh_qingguo2: "奇服旷世，骨像应图。",
 		jlsg_syqj_wusheng1: "刀锋在前，忠义当先！",
 		jlsg_syqj_wusheng2: "以义传魂，以武入圣！",
+		jlsg_zyzh_xingzhan1: "顺天者逸，逆天者劳。",
+		jlsg_zyzh_xingzhan2: "荧惑守心，将星移位。",
+		jlsg_zyzh_kongcheng1: "阁下，何不入城一叙？",
+		jlsg_zyzh_kongcheng2: "心无一物，何惧百万雄兵？",
 	},
 	die = {
 		jlsgsk_jdjg_sunshangxiang: "此生此身，唯与君随。",
@@ -48,6 +52,7 @@ let skill = {
 		jlsgsk_lhsh_liubei: "若见中原复汉鼎，江陵灯火告孤魂！",
 		jlsgsk_fqym_xiaoqiao: "朱砂点染相思意，不若君心似月明...",
 		jlsgsk_dmtt_xiahoudun: "力拔山河终不溃，独目何惧赴黄泉！",
+		jlsgsk_zyzh_zhugeliang: "中原未复，先帝...",
 	};
 for (let i in skill) {
 	let ii = "#ext:极略/audio/skill/" + i;

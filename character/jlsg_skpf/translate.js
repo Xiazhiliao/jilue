@@ -57,6 +57,12 @@ const translates = {
 	jlsgsk_dmtt_xiahoudun_ab: "夏侯惇",
 	jlsg_dmtt_shichou: "誓仇",
 	jlsg_dmtt_shichou_info: "其他角色的准备阶段，你可以令其视为对你使用随机基本牌或非延时锦囊牌。当你受到伤害后、失去体力后、弃置牌后，若效果来源不为你，你可以令效果来源执行相同的效果，此效果的数值为该角色能够执行的最大值，若以此法有角色进入濒死状态，你摸等同于此效果数值的牌。",
+	jlsgsk_zyzh_zhugeliang: "SPF诸葛亮",
+	jlsgsk_zyzh_zhugeliang_ab: "诸葛亮",
+	jlsg_zyzh_xingzhan: "星占",
+	jlsg_zyzh_xingzhan_info: "任意角色的准备阶段开始时，或当你需要使用或打出牌时，你可以观看牌堆顶的五张牌并使用或打出其中一张，以此法使用的牌不计入次数限制。每回合限一次，当你以此法使用或打出牌后，你可以摸四张牌，然后可以将任意张手牌置于牌堆顶或牌堆底。",
+	jlsg_zyzh_kongcheng: "空城",
+	jlsg_zyzh_kongcheng_info: "锁定技，若你没有手牌，其他角色使用的本轮你使用过的【杀】和锦囊牌对你无效。当你受到其他角色造成的伤害时，若你有手牌，你可以弃置所有手牌并防止此伤害，然后令该角色随机弃置等量的牌。",
 };
 
 export default translates;

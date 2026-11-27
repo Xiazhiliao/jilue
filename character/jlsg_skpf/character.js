@@ -10,6 +10,7 @@ const characters = {
 	jlsgsk_lhsh_liubei: ["male", "shu", 4, ["jlsg_lhsh_dade"], []],
 	jlsgsk_fqym_xiaoqiao: ["female", "wu", 3, ["jlsg_fqym_tianxiang", "jlsg_fqym_hongyan"], ["name:乔|null"]],
 	jlsgsk_dmtt_xiahoudun: ["male", "wei", 4, ["jlsg_dmtt_shichou"], ["name:夏侯|惇"]],
+	jlsgsk_zyzh_zhugeliang: ["male", "shu", 3, ["jlsg_zyzh_xingzhan", "jlsg_zyzh_kongcheng"], ["name:诸葛|亮"]],
 };
 
 export default characters;
