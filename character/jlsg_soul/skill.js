@@ -1031,9 +1031,9 @@ const skills = {
 			}
 			storage[flashName].add(control);
 			player.setStorage(event.name, storage);
-			player.addTempSkill(control, "phaseUseEnd");
-			player.addTempSkill("jlsg_yaozhi_temp", "phaseUseEnd");
-			player.markAuto("jlsg_yaozhi_temp", [control]);
+			await player.addTempSkills(control, ["phaseAnyEnd", "phaseAfter", "phaseBeforeStart"]);
+			//player.addTempSkill("jlsg_yaozhi_temp", "phaseUseEnd");
+			//player.markAuto("jlsg_yaozhi_temp", [control]);
 		},
 		ai: {
 			order: 10,
@@ -1177,13 +1177,7 @@ const skills = {
 					}
 					storage[flashName].add(control);
 					player.setStorage("jlsg_yaozhi", storage);
-					let expire = "damageAfter";
-					if (event.triggername == "phaseJieshuBegin") {
-						expire = "phaseJieshuEnd";
-					} else if (["phaseBegin", "phaseZhunbeiBegin"].includes(event.triggername)) {
-						expire = "phaseZhunbeiEnd";
-					}
-					player.addTempSkill(control, expire);
+					await player.addTempSkills(control, ["phaseAnyEnd", "phaseAfter", "phaseBeforeStart"]);
 				},
 				ai: {
 					maixie: true,
@@ -1219,6 +1213,7 @@ const skills = {
 					},
 				},
 			},
+			/*
 			temp: {
 				charlotte: true,
 				trigger: {
@@ -1241,6 +1236,7 @@ const skills = {
 					player.unmarkAuto("jlsg_yaozhi_temp", [skill]);
 				},
 			},
+			*/
 		},
 	},
 	jlsg_xingyun: {
@@ -1251,8 +1247,32 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			await player.loseMaxHp();
+			const list = game.getAllGlobalHistory("everything", evt => evt.name === "changeSkills" && evt.addSkill.length).flatMap(evt => evt.addSkill);
 			const storage = player.getStorage("jlsg_yaozhi", {});
+			const list2 = Object.values(storage).flat();
+			for (const skill of list) {
+				if (list2.includes(list2)) {
+					continue;
+				}
+				let defaultName = _status.skillOwner[skill] || "shibing";
+				if ("clanSkill" in get.info(skill)) {
+					let name = get.nameList(player).find(name => {
+						return get.character(name, 3).includes(skill);
+					});
+					defaultName = name || defaultName;
+				}
+				storage[defaultName] ??= [];
+				storage[defaultName].add(skill);
+			}
+			for (let name in storage) {
+				const skills = storage[name].filter(skill => !lib.jlsg.skillDisabled(skill, player));
+				storage[name] = skills;
+				if (!skills.length) {
+					delete storage[name];
+				}
+			}
 			if (!Object.keys(storage).length) {
+				game.log("但是没有可获得的技能");
 				return;
 			}
 			let dialog, id;
@@ -1403,11 +1423,6 @@ const skills = {
 						}
 					} else {
 						finish(dialog, id);
-						storage[name].remove(control);
-						if (!storage[name].length) {
-							delete storage[name];
-						}
-						player.setStorage("jlsg_yaozhi", storage);
 						await player.addSkills([control]);
 						return;
 					}
@@ -1454,7 +1469,7 @@ const skills = {
 						if (lib.skill[skills[i]] && lib.skill[skills[i]].nobracket) {
 							uiintro.add('<div><div class="skilln">' + get.translation(skills[i]) + "</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
 						} else {
-							uiintro.add('<div><div class="skill">【' + translation + "】</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
+							uiintro.add('<div><div class="skill">〖' + translation + "〗</div><div>" + get.skillInfoTranslation(skills[i]) + "</div></div>");
 						}
 						if (lib.translate[skills[i] + "_append"]) {
 							uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skills[i] + "_append"] + "</div>");
@@ -1466,7 +1481,6 @@ const skills = {
 		},
 		ai: {
 			halfneg: true,
-			combo: "jlsg_yaozhi",
 		},
 	},
 	jlsg_jilve: {
