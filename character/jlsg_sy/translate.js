@@ -1,3 +1,5 @@
+import { get } from "../../../../noname.js";
+
 const translates = {
 	jlsgsy_baonu: "暴怒",
 	jlsgsy_baonu_info: "锁定技，当你的体力值降至4或更低时，你进入暴怒状态并立即开始你的回合。",
@@ -51,7 +53,7 @@ const translates = {
 	jlsgsy_kuangxi_info: "你使用锦囊牌后，可以视为对此牌的目标使用【杀】。若你以此法没有造成伤害，你失去1点体力。",
 	jlsgsy_sunhao: "末世暴君",
 	jlsgsy_mingzheng: "明政",
-	jlsgsy_mingzheng_info: "锁定技，其他角色摸牌阶段摸牌数+1，你的摸牌阶段摸牌数+2。当你受到一次伤害或变身后，你摸X张牌（X为你的行动回合数），然后失去该技能，并获得技能〖嗜杀〗",
+	jlsgsy_mingzheng_info: `锁定技，其他角色摸牌阶段摸牌数+1，你的摸牌阶段摸牌数+2。当你受到一次伤害或变身后，你摸X张牌（X为你的行动回合数），然后失去该技能，并获得技能${get.poptip("jlsgsy_shisha")}`,
 	jlsgsy_sunhaobaonu: "末世暴君",
 	jlsgsy_shisha: "嗜杀",
 	jlsgsy_shisha_info: "锁定技，当你使用【杀】指定目标后，你令目标角色随机弃置一至三张牌。",
@@ -74,9 +76,9 @@ const translates = {
 	jlsgsy_bolue_info: "锁定技，回合开始前，你随机获得一个魏/一个蜀/一个吴势力的技能，直到下个回合开始。",
 	jlsgsy_simayibaonu: "三分归晋",
 	jlsgsy_renji: "忍忌",
-	jlsgsy_renji_info: "当你受到伤害后，你可以摸一张牌，若如此做，你发动〖博略〗时额外随机获得一个与伤害来源势力相同的技能。",
+	jlsgsy_renji_info: `当你受到伤害后，你可以摸一张牌，若如此做，你发动${get.poptip("jlsgsy_bolue")}时额外随机获得一个与伤害来源势力相同的技能。`,
 	jlsgsy_biantian: "变天",
-	jlsgsy_biantian_info: "锁定技，其他角色的判定阶段开始前，需先进行一次额外的闪电判定",
+	jlsgsy_biantian_info: "锁定技，其他角色的判定阶段开始前，需先进行一次额外的【闪电】判定",
 	jlsgsy_tianyou: "天佑",
 	jlsgsy_tianyou_info: "锁定技，结束阶段，若没有角色受到过【闪电】伤害，你回复1点体力，否则你摸所有角色受到【闪电】伤害次数的牌.",
 	jlsgsy_diaochan: "妖狐之魅",
