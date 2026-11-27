@@ -1022,7 +1022,7 @@ const skills = {
 			expose: 0.4,
 			threaten: 4.8,
 			order: 8,
-			preSha: true,
+			presha: true,
 			respondSha: true,
 			skillTagFilter(player, tag, arg) {
 				if (!player.countCards("h")) {

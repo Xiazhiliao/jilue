@@ -305,9 +305,45 @@ const skills = {
 					}
 					return get.attitude(player, evt.player) > 1;
 				},
+				firstDo: true,
 				silent: true,
 				async content(event, trigger, player) {
 					trigger.toUse = false;
+				},
+				ai: {
+					noShan: true,
+					skillTagFilter(player, tag, arg) {
+						if (arg !== "use") {
+							return false;
+						}
+						let event = get.event();
+						const { card, source } = (function () {
+							let count = 0;
+							do {
+								const evt = event.getParent(count, true, true);
+								let name = evt?.skill || evt?.name;
+								if (!name) {
+									break;
+								}
+								if (name.startsWith("pre_")) {
+									name = name.slice(4);
+								}
+								for (const suffix of ["_backup", "ContentBefore", "ContentAfter", "_cost"]) {
+									if (name.endsWith(suffix)) {
+										name = name.slice(0, name.lastIndexOf(suffix));
+									}
+								}
+								if (!(name in lib.card) || !evt.card || !evt.player) {
+									continue;
+								}
+								return { card: evt.card, source: evt.player };
+							} while (count++ < 10);
+							return {};
+						})();
+						if (card?.name !== "sha" || card.storage?.["jlsg_miaojian"] || !source.hasSkill("jlsg_miaojian")) {
+							return false;
+						}
+					},
 				},
 			},
 		},

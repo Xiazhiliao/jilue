@@ -3116,7 +3116,6 @@ const skills = {
 			player.markAuto("jlsgsy_jianmie_dying", trigger.targets);
 			player.addTempSkill("jlsgsy_jianmie_dying");
 		},
-		group: ["jlsgsy_jianmie_dying"],
 		subSkill: {
 			dying: {
 				onremove: true,
