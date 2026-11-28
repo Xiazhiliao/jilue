@@ -332,6 +332,83 @@ export async function precontent(config, originalPack) {
 			this.characterList = list;
 			return list;
 		},
+		/**
+		 * player能否对target使用card，特别的，能对自己使用【杀】
+		 * @param { Player } player - 使用/指定此目标的角色
+		 * @param { Card | VCard | object | string } card
+		 * @param { Player } target
+		 * @param { false } [distance] false：无距离限制
+		 * @param { boolean | GameEvent } [includecard] 是否受使用次数限制，可以填入用于检测的事件
+		 * @returns { boolean }
+		 */
+		canUse(player, card, target, distance, includecard) {
+			if (!card || !player || player.removed || !target || target.removed) {
+				return false;
+			}
+			if (typeof card == "string") {
+				card = get.info({ name: card, isCard: true }, []);
+			}
+			const info = get.info(card);
+			if (!info?.deadTarget && target.isDead()) {
+				return false;
+			} else if (!info?.includeOut && target.isOut()) {
+				return false;
+			} else if (info.multicheck && !info.multicheck(card, player)) {
+				return false;
+			} else if (!lib.filter.cardEnabled(card, player)) {
+				return false;
+			}
+			if (distance !== false && !lib.filter.targetInRange(card, player, target)) {
+				return false;
+			}
+			if (includecard) {
+				const event = get.event();
+				let evt = includecard;
+				if (get.itemtype(evt) !== "event") {
+					evt = _status.event.getParent("chooseToUse", false, true);
+				}
+				if (get.itemtype(evt) !== "event") {
+					evt = event;
+				}
+				if (event._backup && event._backup.filterCard === lib.filter.filterCard && (!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, evt))) {
+					return false;
+				} else if (event.addCount_extra) {
+					const usableTarget = game.checkMod(card, player, target, false, "cardUsableTarget", player);
+					if (!lib.filter.cardUsable2(card, player) && !usableTarget) {
+						return false;
+					}
+				}
+				if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
+					return Boolean(info.filterAddedTarget(card, player, target, ui.selected.targets[0]));
+				}
+			}
+			if (!info.singleCard || ui.selected.targets.length === 0) {
+				const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
+				if (playerEnabled !== "unchanged") {
+					return Boolean(playerEnabled);
+				}
+				const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
+				if (targetEnabled !== "unchanged") {
+					return Boolean(targetEnabled);
+				}
+			}
+			if (card.name === "sha") {
+				return true;
+			}
+			const filterTarget = info.filterTarget;
+			if (filterTarget === true) {
+				return true;
+			} else if (typeof filterTarget === "function" && Boolean(filterTarget(card, player, target))) {
+				return true;
+			}
+			const modTarget = info.modTarget;
+			if (modTarget === true) {
+				return true;
+			} else if (typeof modTarget === "function" && Boolean(modTarget(card, player, target))) {
+				return true;
+			}
+			return false;
+		},
 		/***
 		 * 技能筛选，用法同`lib.filter.skillDisabled`
 		 * @param {string} skill 需要检测的技能

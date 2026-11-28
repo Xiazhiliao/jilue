@@ -73,92 +73,6 @@ const skills = {
 		},
 	},
 	jlsg_miaojian: {
-		/**
-		 * player能否对target使用card，特别的，能对自己使用【杀】
-		 * @param { Player } player - 使用/指定此目标的角色
-		 * @param { Card | VCard | object | string } card
-		 * @param { Player } target
-		 * @param { false } [distance] false：无距离限制
-		 * @param { boolean | GameEvent } [includecard] 是否受使用次数限制，可以填入用于检测的事件
-		 * @returns { boolean }
-		 */
-		canUse(player, card, target, distance, includecard) {
-			if (!card || !player || player.removed || !target || target.removed) {
-				return false;
-			}
-			if (typeof card == "string") {
-				card = { name: card, isCard: true };
-			}
-			const info = get.info(card);
-			if (!info?.deadTarget && target.isDead()) {
-				return false;
-			} else if (!info?.includeOut && target.isOut()) {
-				return false;
-			} else if (info.multicheck && !info.multicheck(card, player)) {
-				return false;
-			} else if (!lib.filter.cardEnabled(card, player)) {
-				return false;
-			}
-			if (includecard) {
-				let evt = includecard;
-				if (typeof evt !== "object") {
-					evt = _status.event.getParent("chooseToUse", false, true);
-				}
-				if (get.itemtype(evt) !== "event") {
-					evt = undefined;
-				}
-				if (!lib.filter.cardUsable(card, player, evt)) {
-					return false;
-				}
-			}
-			if (distance !== false && !lib.filter.targetInRange(card, player, target)) {
-				return false;
-			}
-			if (includecard) {
-				const event = _status.event;
-				let evt = event.getParent("chooseToUse");
-				if (get.itemtype(evt) !== "event") {
-					evt = event;
-				}
-				if (event._backup && event._backup.filterCard === lib.filter.filterCard && (!lib.filter.cardEnabled(card, player, event) || !lib.filter.cardUsable(card, player, evt))) {
-					return false;
-				} else if (event.addCount_extra) {
-					const usableTarget = game.checkMod(card, player, target, false, "cardUsableTarget", player);
-					if (!lib.filter.cardUsable2(card, player) && !usableTarget) {
-						return false;
-					}
-				}
-				if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
-					return Boolean(info.filterAddedTarget(card, player, target, ui.selected.targets[ui.selected.targets.length - 1]));
-				}
-			}
-			if (!info.singleCard || ui.selected.targets.length === 0) {
-				const playerEnabled = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-				if (playerEnabled !== "unchanged") {
-					return Boolean(playerEnabled);
-				}
-				const targetEnabled = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-				if (targetEnabled !== "unchanged") {
-					return Boolean(targetEnabled);
-				}
-			}
-			if (card.name === "sha") {
-				return true;
-			}
-			const filterTarget = info.filterTarget;
-			if (filterTarget === true) {
-				return true;
-			} else if (typeof filterTarget === "function" && Boolean(filterTarget(card, player, target))) {
-				return true;
-			}
-			const modTarget = info.modTarget;
-			if (modTarget === true) {
-				return true;
-			} else if (typeof modTarget === "function" && Boolean(modTarget(card, player, target))) {
-				return true;
-			}
-			return false;
-		},
 		mod: {
 			targetInRange(card) {
 				if (card.storage?.jlsg_miaojian) {
@@ -184,7 +98,7 @@ const skills = {
 				return false;
 			}
 			const sha = get.autoViewAs({ name: "sha", storage: { jlsg_miaojian: true } }, "unsure");
-			return game.hasPlayer(current => get.info("jlsg_miaojian").canUse(player, sha, current, true, true));
+			return game.hasPlayer(current => lib.jlsg.canUse(player, sha, current, true, true));
 		},
 		position: "h",
 		selectCard() {
@@ -202,7 +116,7 @@ const skills = {
 			return [1, num];
 		},
 		filterTarget(card, player, target) {
-			return get.info("jlsg_miaojian").canUse(player, card, target, true, true);
+			return lib.jlsg.canUse(player, card, target, true, true);
 		},
 		ai: {
 			order(skill, player) {
@@ -235,7 +149,7 @@ const skills = {
 							return false;
 						}
 						const vcard = get.autoViewAs({ name, nature, storage: { jlsg_miaojian: true } }, trigger.cards || []);
-						return get.info("jlsg_miaojian").canUse(player, vcard, target, true, true);
+						return lib.jlsg.canUse(player, vcard, target, true, true);
 					});
 					if (!vcards.length) {
 						return;
@@ -17388,7 +17302,7 @@ const skills = {
 			if (card.name != "sha") {
 				return targets.some(current => player.canUse(card, current, false));
 			}
-			return targets.some(current => get.info("jlsg_luanzhan").canUse(card, player, current));
+			return targets.some(current => lib.jlsg.canUse(card, player, current));
 		},
 		async cost(event, trigger, player) {
 			let { card } = trigger,
@@ -17444,26 +17358,6 @@ const skills = {
 				await player.useCard(card, targets);
 			}
 			await player.draw(2);
-		},
-		canUse(card, player, target) {
-			const info = get.info(card);
-			if (info.multicheck && !info.multicheck(card, this)) {
-				return false;
-			}
-			if (!lib.filter.cardEnabled(card, player)) {
-				return false;
-			}
-			if (!info.singleCard || ui.selected.targets.length == 0) {
-				var mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
-				}
-				var mod = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
-				if (mod != "unchanged") {
-					return mod;
-				}
-			}
-			return true;
 		},
 	},
 	jlsg_yuqi: {
