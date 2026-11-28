@@ -1,6 +1,6 @@
 let skill = {
-		jlsg_beizhu1: "执金吾在此，宵小何敢窥伺皇城？",
-		jlsg_beizhu2: "哼！奉先何在？",
+		jlsg_beizhu1: "执金吾在此，宵小何敢窥视皇城？",
+		jlsg_beizhu2: "哼，奉先何在？",
 		jlsg_chongxu1: "青丝绾三魂，素手拂尘寰。",
 		jlsg_chongxu2: "踏遍越溪烟雨，方窥云中玉阙。",
 		jlsg_miaojian1: "袖舞流云断旧念，剑裁星河落情丝。",
