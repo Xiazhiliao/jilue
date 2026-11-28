@@ -2012,7 +2012,7 @@ const skills = {
 			delete args2.selectTarget;
 			delete args2.filterTarget;
 			//选择牌
-			const next = player
+			const result = await player
 				.chooseButton({
 					...args2,
 					createDialog: [`星占：选择一张牌${trigger?.name === "chooseToRespond" ? "打出" : "使用"}`, cards],
@@ -2039,119 +2039,120 @@ const skills = {
 					},
 				})
 				.set("filterCardx", args.filterCard)
-				.set("filterCardEvent", filterCardEvent);
-			const result = await next.forResult();
+				.set("filterCardEvent", filterCardEvent)
+				.forResult();
 			//把牌塞回牌堆
 			if (cards.length) {
 				cards.reverse();
 				await game.cardsGotoPile(cards, "insert");
+				game.addCardKnower(cards, player);
 			}
-			const card = result?.bool ? result.links?.[0] : null;
-			let vcard;
-			if (card) {
-				vcard = get.autoViewAs(card);
-				vcard.storage[event.name] = true;
+			if (!result?.bool || !result.links?.length) {
+				if (evt.name !== "phaseZhunbei") {
+					evt.goto(0);
+				}
+				return;
 			}
+			const card = result.links?.[0];
+			const vcard = get.autoViewAs(card);
+			vcard.storage[event.name] = true;
 			if (evt.name !== "phaseZhunbei") {
-				if (vcard) {
-					//使用牌
-					if (evt.name === "chooseToUse") {
-						//寻找该selectTarget(range)和filterTarget
-						const info = get.info(card),
-							range = args.selectTarget || lib.filter.selectTarget(card, player);
-						let bool = false,
-							targets;
-						//无目标
-						if (info.notarget) {
-							targets = [];
-						}
-						//对自己使用
-						else if (info.toself) {
-							bool = true;
-							targets = [player];
-						}
-						//全选
-						else if (range[1] === -1) {
-							bool = true;
-							const temp = _status.event;
-							_status.event = filterCardEvent;
-							targets = game.filterPlayer(current => args.filterTarget(vcard, player, current));
-							_status.event = temp;
-						}
-						//可自由选择
-						else if (range[1] !== -1) {
-							delete args.selectCard;
-							delete args.filterCard;
-							const next = player
-								.chooseTarget({
-									...args,
-									prompt: `选择${get.translation(vcard)}的目标`,
-									prompt2: args.prompt + (args.prompt2 || ""),
-									selectTarget: range,
-									filterTarget(card, player, target) {
-										const event = get.event();
-										if (event.filterCardEvent) {
-											return event.filterTargetx(card, player, target);
-										}
-										return player.canUse(card, target);
-									},
-									complexTarget: Boolean(args.complexTarget) || Boolean(info.complexTarget),
-									complexSelect: Boolean(args.complexSelect) || Boolean(info.complexSelect),
-									ai(target) {
-										const { _get_card: card, player } = get.event();
-										const info = get.info(card);
-										if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
-											_status.event.preTarget = ui.selected.targets[0];
-											let num = get.effect(target, card, player, player);
-											delete _status.event.preTarget;
-											return num;
-										}
-										return get.effect_use(target, card, player, player);
-									},
-									forced: true,
-								})
-								.set("_get_card", vcard)
-								.set("filterTargetx", args.filterTarget)
-								.set("filterCardEvent", filterCardEvent);
-							if (info.targetprompt) {
-								next.set("targetprompt", info.targetprompt);
-							}
-							const result2 = await next.forResult();
-							if (result2?.bool && result2.targets?.length) {
-								bool = true;
-								targets = result2.targets;
-							}
-						}
-						evt.result = {
-							bool,
-							card: vcard,
-							cards: [card],
-							targets,
-							_apply_args: {
-								addCount: false,
-							},
-						};
-					} else {
-						let key;
-						if (evt.name === "_wuxie") {
-							key = "wuxieresult2";
-						} else {
-							key = "result";
-						}
-						delete evt[key].used;
-						delete evt[key].skill;
-						evt[key].card = vcard;
-						evt[key].cards = [card];
+				//非无懈使用牌
+				if (evt.name === "chooseToUse") {
+					//寻找该selectTarget(range)和filterTarget
+					const info = get.info(card),
+						range = args.selectTarget || lib.filter.selectTarget(card, player);
+					let bool = false,
+						targets;
+					//无目标
+					if (info.notarget) {
+						bool = true;
+						targets = [];
 					}
-					evt.redo();
-					return;
+					//对自己使用
+					else if (info.toself) {
+						bool = true;
+						targets = [player];
+					}
+					//全选
+					else if (range[1] === -1) {
+						bool = true;
+						const temp = _status.event;
+						_status.event = filterCardEvent;
+						targets = game.filterPlayer(current => args.filterTarget(vcard, player, current));
+						_status.event = temp;
+					}
+					//可自由选择
+					else if (range[1] !== -1) {
+						delete args.selectCard;
+						delete args.filterCard;
+						const next = player
+							.chooseTarget({
+								...args,
+								prompt: `选择${get.translation(vcard)}的目标`,
+								prompt2: args.prompt + (args.prompt2 || ""),
+								selectTarget: range,
+								filterTarget(card, player, target) {
+									const event = get.event();
+									if (event.filterCardEvent) {
+										return event.filterTargetx(card, player, target);
+									}
+									return player.canUse(card, target);
+								},
+								complexTarget: Boolean(args.complexTarget) || Boolean(info.complexTarget),
+								complexSelect: Boolean(args.complexSelect) || Boolean(info.complexSelect),
+								ai(target) {
+									const { _get_card: card, player } = get.event();
+									const info = get.info(card);
+									if (info.singleCard && info.filterAddedTarget && ui.selected.targets.length) {
+										_status.event.preTarget = ui.selected.targets[0];
+										let num = get.effect(target, card, player, player);
+										delete _status.event.preTarget;
+										return num;
+									}
+									return get.effect_use(target, card, player, player);
+								},
+								forced: true,
+							})
+							.set("_get_card", vcard)
+							.set("filterTargetx", args.filterTarget)
+							.set("filterCardEvent", filterCardEvent);
+						if (info.targetprompt) {
+							next.set("targetprompt", info.targetprompt);
+						}
+						const result2 = await next.forResult();
+						if (result2?.bool && result2.targets?.length) {
+							bool = true;
+							targets = result2.targets;
+						}
+					}
+					evt.result = {
+						bool,
+						card: vcard,
+						cards: [card],
+						targets,
+						_apply_args: {
+							addCount: false,
+						},
+					};
 				}
-				evt.goto(0);
+				//打出和无懈部分
+				else {
+					let key;
+					if (evt.name === "_wuxie") {
+						key = "wuxieresult2";
+					} else {
+						key = "result";
+					}
+					delete evt[key].used;
+					delete evt[key].skill;
+					evt[key].card = vcard;
+					evt[key].cards = [card];
+				}
+				evt.redo();
+				return;
 			} else {
-				if (!vcard) {
-					return;
-				}
-				await player.chooseUseTarget({ card: vcard, cards: [card], addCount: false });
+				await player.chooseUseTarget({ card: vcard, cards: [card], forced: true, addCount: false });
 			}
 		},
 		group: ["jlsg_zyzh_xingzhan_followUp"],
@@ -2305,9 +2306,11 @@ const skills = {
 					await game.loseAsync({ player, top, bottom }).setContent(async (event, trigger, player) => {
 						const { top, bottom } = event;
 						top.reverse();
+						event.cards = top.concat(bottom);
+						player.$throw(event.cards.length, 500);
 						await player
 							.lose({
-								cards: top.concat(bottom),
+								cards: event.cards,
 								position: ui.cardPile,
 								insert_index(event, card) {
 									if (event.top_cards.includes(card)) {
@@ -2318,7 +2321,7 @@ const skills = {
 							})
 							.set("top_cards", top)
 							.set("getlx", false);
-						game.addCardKnower(top.concat(bottom), player);
+						game.addCardKnower(event.cards, player);
 						player.popup(`${get.cnNumber(top.length)}上${get.cnNumber(bottom.length)}下`);
 						game.log(player, `将${get.cnNumber(top.length)}张牌置于牌堆顶，${get.cnNumber(bottom.length)}张牌置于牌堆底`);
 						await game.delayx();
