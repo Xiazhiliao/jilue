@@ -1,4 +1,5 @@
 const characters = {
+	jlsgsk_dingyuan: ["male", "qun", 5, ["jlsg_beizhu"], []],
 	jlsgsk_sunhanhua: ["female", "wu", 3, ["jlsg_chongxu", "jlsg_miaojian", "jlsg_lianhua_x"], ["name:孙|null"]],
 	jlsgsk_zhoufang: ["male", "wu", 3, ["jlsg_duanfa"], []],
 	jlsgsk_madai: ["male", "shu", 4, ["jlsg_qianxi", "mashu"], []],

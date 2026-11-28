@@ -154,6 +154,7 @@ const characterTitle = {
 	jlsgsk_pangtong: "南州冠冕",
 	jlsgsk_mayunlu: "关山凤吟",
 	jlsgsk_sunhanhua: "绽世青莲",
+	jlsgsk_dingyuan: "养虎遗患",
 };
 
 export default characterTitle;

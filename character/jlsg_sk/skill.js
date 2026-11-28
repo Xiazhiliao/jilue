@@ -3,6 +3,301 @@ import { CacheContext } from "../../../../noname/library/cache/cacheContext.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	jlsg_beizhu: {
+		onremove(player, skill) {
+			player.removeGaintag(skill);
+		},
+		audio: "ext:极略/audio/skill:2",
+		usable: 1,
+		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(current => current !== player && current.hasCards("h"));
+		},
+		filterTarget(card, player, target) {
+			return target !== player && target.hasCards("h");
+		},
+		async content(event, trigger, player) {
+			await player.loseHp();
+			if (!player?.isIn()) {
+				return;
+			}
+			const target = event.target;
+			let cards = target.getGainableCards(player, "h");
+			if (!cards.length) {
+				game.log(target, "没有", player, "能获得的手牌");
+				target.chat("不给！");
+				return;
+			}
+			await player.gain({
+				cards,
+				source: target,
+				animate: "giveAuto",
+				log: true,
+				gaintag: [event.name],
+			});
+			cards = player.getCards("h", card => card.hasGaintag(event.name));
+			if (!cards.length) {
+				player.chat("牌呢？");
+				return;
+			}
+			const num = player.getHp();
+			event.cards = cards;
+			const result = await player
+				.chooseControlList({
+					prompt: `###${get.translation(event.name)}：请选择一项###然后你对你使用获得牌中的【杀】`,
+					list: [`你本阶段内受到的前${get.cnNumber(num)}次负面效果改为其执行`, `该角色本阶段内受到的前${get.cnNumber(num)}次正面效果改为你执行`],
+					forced: true,
+					ai(event, player) {
+						const cards = event.cards,
+							num = player.getHp();
+						const shas = cards.filter(card => get.name(card, false) === "sha");
+						if (num <= 0 || !shas.length) {
+							return 1;
+						} else if (num < shas.filter(card => get.effect_use(player, card, player, player) < 0).length) {
+							return 1;
+						}
+						return 0;
+					},
+				})
+				.forResult();
+			if (result?.control && result.control !== "cancel2" && num > 0) {
+				game.log(player, "选择了转移前", get.cnNumber(num), "次", result.index === 0 ? "负面" : "正面", "效果");
+				const skill = `${event.name}_${result.index === 0 ? "de" : ""}buff`;
+				const targetx = result.index === 0 ? player : target;
+				targetx.setStorage(skill, [targetx === player ? target : player, num], true);
+				targetx.addTempSkill(skill, ["phaseUseAfter", "phaseAfter", "phaseBeforeStart"]);
+			}
+			const shas = cards.filter(card => get.name(card, false) === "sha");
+			while (shas.length) {
+				const sha = get.autoViewAs(shas.shift());
+				sha.storage[event.name] = true;
+				if (lib.jlsg.canUse(player, sha, player, false, false)) {
+					await player.useCard({ card: sha, cards: sha.cards, targets: [player], addCount: false });
+				}
+			}
+			player.removeGaintag(event.name);
+		},
+		ai: {
+			order(item, player) {
+				if (player.hasCards("hs", card => get.tag(card, "draw") && player.hasUseTarget(card))) {
+					return 0;
+				}
+				return 12;
+			},
+			result: {
+				player(player, target) {
+					if (!target) {
+						return 0;
+					}
+					const eff1 = get.effect(player, { name: "losehp" }, player, player) / 10,
+						eff2 = get.effect(target, { name: "shunshou_copy2" }, player, player) / 10;
+					return [1, eff1 + eff2];
+				},
+				target: -1,
+			},
+		},
+		group: "jlsg_beizhu_shanAI",
+		subSkill: {
+			buff: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				intro: {
+					mark(dialog, storage, player, evt, skill) {
+						storage ??= player.getStorage(skill, []);
+						const [target, num = 0] = storage;
+						dialog.addText(`下${get.cnNumber(num)}次正面效果改为${get.translation(target)}(${get.cnNumber(target.getSeatNum(), true)}号位)执行`);
+					},
+				},
+				trigger: {
+					player: ["drawBefore", "recoverBefore", "gainMaxHpBefore", "phaseBefore", "changeSkillsBefore"],
+				},
+				fiter(event, player) {
+					const [target, num = 0] = player.getStorage("jlsg_beizhu_buff");
+					if (!target?.isIn() || num <= 0) {
+						return false;
+					} else if (!event.isPhaseUsing(target)) {
+						return false;
+					} else if (event.name === "phase" && !event.skill) {
+						return false;
+					} else if (event.name === "changeSkills" && !event.addSkill.length) {
+						return false;
+					}
+					return true;
+				},
+				logTarget: "player",
+				forced: true,
+				async content(event, trigger, player) {
+					let [target, num = 0] = player.getStorage(event.name);
+					player.setStorage(event.name, [target, --num], true);
+					if (trigger.name === "changeSkills" && trigger.removeSkill.length) {
+						const addSkill = trigger.addSkill.slice();
+						trigger.addSkill = [];
+						await player.addSkills(addSkill);
+						game.log(target, "将", player, "获得的技能据为己有");
+					} else {
+						game.log(target, "将", player, "执行的效果改为自己执行");
+						trigger.player = target;
+					}
+				},
+				ai: {
+					effect: {
+						target(card, player, target) {
+							const [targetx, num = 0] = target.getStorage("jlsg_beizhu_debuff");
+							if (targetx?.isIn() || num <= 0 || player.storage.jlsg_beizhu_buff_check) {
+								return;
+							}
+							player.storage.jlsg_beizhu_buff_check = true;
+							const eff = get.effect(targetx, card, player, target) / 10;
+							delete player.storage.jlsg_beizhu_buff_check;
+							if (card.name == "draw" && !target.isLinked()) {
+								return [0, eff];
+							} else if (get.tag(card, "draw")) {
+								return [0, eff];
+							} else if (get.tag(card, "recover")) {
+								return [0, eff];
+							}
+						},
+					},
+				},
+			},
+			debuff: {
+				charlotte: true,
+				onremove: true,
+				mark: true,
+				intro: {
+					mark(dialog, storage, player, evt, skill) {
+						storage ??= player.getStorage(skill, []);
+						const [target, num = 0] = storage;
+						dialog.addText(`下${get.cnNumber(num)}次负面效果改为${get.translation(target)}(${get.cnNumber(target.getSeatNum(), true)}号位)执行`);
+					},
+				},
+				get trigger() {
+					return lib.jlsg.debuffSkill.trigger;
+				},
+				filter(event, player) {
+					const [target, num = 0] = player.getStorage("jlsg_beizhu_debuff");
+					if (!target?.isIn() || num <= 0) {
+						return false;
+					}
+					return lib.jlsg.debuffSkill.filter.apply(this, arguments);
+				},
+				logTarget(event, player) {
+					const [target] = player.getStorage("jlsg_beizhu_debuff");
+					return target;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					let [target, num = 0] = player.getStorage(event.name);
+					player.setStorage(event.name, [target, --num], true);
+					let key = lib.jlsg.debuffSkill.translate[trigger.name];
+					const { str, num: number } = lib.jlsg.debuffSkill.getInfo(trigger, player, key);
+					game.log(player, "将", `#y${str}`, "改为", target, "执行");
+					if (trigger.name == "changeSkills") {
+						const skills = target.getSkills(null, false, false).randomGets(number);
+						trigger.removeSkill = [];
+						if (skills.length) {
+							await target.removeSkills(skills);
+						}
+					} else if (trigger.name == "lose") {
+						const cards = trigger.cards.filter(card => {
+							if (get.owner(card) == target) {
+								return false;
+							}
+							return !["h", "e"].includes(get.position(card));
+						});
+						if (target.hasDiscardableCards(target, "he") && cards.length) {
+							await target.randomDiscard({ num: cards.length });
+						}
+						trigger.cards.removeArray(cards);
+						if (!trigger.cards.length) {
+							trigger.cancel();
+						}
+					} else {
+						trigger.player = target;
+					}
+				},
+				ai: {
+					effect: {
+						target(card, player, target) {
+							const [targetx, num = 0] = target.getStorage("jlsg_beizhu_debuff");
+							if (targetx?.isIn() || num <= 0 || player.storage.jlsg_beizhu_debuff_check) {
+								return;
+							}
+							player.storage.jlsg_beizhu_debuff_check = true;
+							const eff = get.effect(targetx, card, player, target) / 10;
+							delete player.storage.jlsg_beizhu_debuff_check;
+							if (card.name == "tiesuo" && !target.isLinked()) {
+								return [0, eff];
+							} else if (get.tag(card, "loseCard")) {
+								return [0, eff];
+							} else if (get.tag(card, "damage")) {
+								return [0, eff];
+							}
+						},
+					},
+				},
+			},
+			shanAI: {
+				charlotte: true,
+				trigger: {
+					player: "chooseToUseBefore",
+				},
+				filter(event, player) {
+					const evt = event.getParent();
+					if (evt.name !== "sha" || !evt.card.storage?.["jlsg_beizhu"]) {
+						return false;
+					}
+					const [target, num = 0] = player.getStorage("jlsg_beizhu_debuff", []);
+					return num > 0 && target?.isIn() && get.attitude(player, target) <= 0;
+				},
+				firstDo: true,
+				silent: true,
+				async content(event, trigger, player) {
+					trigger.toUse = false;
+				},
+				ai: {
+					noShan: true,
+					skillTagFilter(player, tag, arg) {
+						if (arg !== "use") {
+							return false;
+						}
+						let event = get.event();
+						const { card, source } = (function () {
+							let count = 0;
+							do {
+								const evt = event.getParent(count, true, true);
+								let name = evt?.skill || evt?.name;
+								if (!name) {
+									break;
+								}
+								if (name.startsWith("pre_")) {
+									name = name.slice(4);
+								}
+								for (const suffix of ["_backup", "ContentBefore", "ContentAfter", "_cost"]) {
+									if (name.endsWith(suffix)) {
+										name = name.slice(0, name.lastIndexOf(suffix));
+									}
+								}
+								if (!(name in lib.card) || !evt.card || !evt.player) {
+									continue;
+								}
+								return { card: evt.card, source: evt.player };
+							} while (count++ < 10);
+							return {};
+						})();
+						if (card?.name !== "sha" || card.storage?.["jlsg_beizhu"]) {
+							return false;
+						}
+						const [target, num = 0] = player.getStorage("jlsg_beizhu_debuff", []);
+						if (num <= 0 || !target?.isIn() || get.attitude(player, target) > 0) {
+							return false;
+						}
+					},
+				},
+			},
+		},
+	},
 	jlsg_chongxu: {
 		audio: "ext:极略/audio/skill:2",
 		trigger: {

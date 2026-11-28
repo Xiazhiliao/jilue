@@ -1,6 +1,9 @@
 import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
 
 const translates = {
+	jlsgsk_dingyuan: "SK丁原",
+	jlsg_beizhu: "备诛",
+	jlsg_beizhu_info: "出牌阶段限一次，你可以失去1点体力并获得一名其他角色的所有手牌，然后选择一项：1，你本阶段内受到的前X次负面效果改为其执行（X为你的体力）；2，该角色本阶段内受到的前X次正面效果改为你执行。若如此做，你依次对你使用这些牌里的【杀】。",
 	jlsgsk_sunhanhua: "SK孙寒华",
 	jlsg_chongxu: "冲虚",
 	jlsg_chongxu_info: "锁定技，当你使用牌时，若你手牌数小于弃牌堆牌数，你依次执行以下选项：①随机获得一张弃牌堆中颜色较多的牌；②若弃牌堆中两种颜色的牌数量相同，你令下一次使用【杀】造成的伤害+1。",

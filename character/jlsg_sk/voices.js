@@ -1,4 +1,6 @@
 let skill = {
+		jlsg_beizhu1: "执金吾在此，宵小何敢窥伺皇城？",
+		jlsg_beizhu2: "哼！奉先何在？",
 		jlsg_chongxu1: "青丝绾三魂，素手拂尘寰。",
 		jlsg_chongxu2: "踏遍越溪烟雨，方窥云中玉阙。",
 		jlsg_miaojian1: "袖舞流云断旧念，剑裁星河落情丝。",
@@ -496,6 +498,7 @@ let skill = {
 		jlsg_zuilun2: "空有其表，溢美其实，吾不堪此时！",
 	},
 	die = {
+		jlsgsk_dingyuan: "奉先何故心变？",
 		jlsgsk_sunhanhua: "华姥云散，唯余半阙青词......",
 		jlsgsk_baosanniang: "花落终别离..",
 		jlsgsk_beimihu: "我会在黄泉路上等着你",
